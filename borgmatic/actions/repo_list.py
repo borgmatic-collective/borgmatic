@@ -22,7 +22,8 @@ def run_repo_list(
     If repo_list_arguments.json is True, yield the JSON output from listing the repository.
     '''
     if repo_list_arguments.repository is None or borgmatic.config.validate.repositories_match(
-        repository, repo_list_arguments.repository
+        repository,
+        repo_list_arguments.repository,
     ):
         if not repo_list_arguments.json:
             logger.answer('Listing repository')

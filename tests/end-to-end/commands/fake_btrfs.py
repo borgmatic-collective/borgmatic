@@ -62,7 +62,7 @@ def print_subvolume_list(arguments, snapshot_paths):
     for snapshot_path in snapshot_paths:
         print(
             SUBVOLUME_LIST_LINE_PREFIX
-            + snapshot_path[snapshot_path.index('.borgmatic-snapshot-') :]
+            + snapshot_path[snapshot_path.index('.borgmatic-snapshot-') :],
         )
 
 

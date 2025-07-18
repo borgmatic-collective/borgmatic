@@ -25,12 +25,12 @@ def normalize_sections(config_filename, config):
         and location.get('prefix') != consistency.get('prefix')
     ):
         raise ValueError(
-            'The retention prefix and the consistency prefix cannot have different values (unless one is not set).'
+            'The retention prefix and the consistency prefix cannot have different values (unless one is not set).',
         )
 
     if storage.get('umask') and hooks.get('umask') and storage.get('umask') != hooks.get('umask'):
         raise ValueError(
-            'The storage umask and the hooks umask cannot have different values (unless one is not set).'
+            'The storage umask and the hooks umask cannot have different values (unless one is not set).',
         )
 
     any_section_upgraded = False
@@ -51,8 +51,8 @@ def normalize_sections(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: Configuration sections (like location:, storage:, retention:, consistency:, and hooks:) are deprecated and support will be removed from a future release. To prepare for this, move your options out of sections to the global scope.',
-                )
-            )
+                ),
+            ),
         ]
 
     return []
@@ -68,7 +68,7 @@ def make_command_hook_deprecation_log(config_filename, option_name):  # pragma: 
             levelno=logging.WARNING,
             levelname='WARNING',
             msg=f'{config_filename}: {option_name} is deprecated and support will be removed from a future release. Use commands: instead.',
-        )
+        ),
     )
 
 
@@ -90,7 +90,7 @@ def normalize_commands(config_filename, config):
                 {
                     preposition: 'repository',
                     'run': commands,
-                }
+                },
             )
 
     # Normalize "before_backup", "before_prune", "after_backup", "after_prune", etc.
@@ -108,7 +108,7 @@ def normalize_commands(config_filename, config):
                     preposition: 'action',
                     'when': [action_name],
                     'run': commands,
-                }
+                },
             )
 
     # Normalize "on_error".
@@ -121,7 +121,7 @@ def normalize_commands(config_filename, config):
                 'after': 'error',
                 'when': ['create', 'prune', 'compact', 'check'],
                 'run': commands,
-            }
+            },
         )
 
     # Normalize "before_everything" and "after_everything".
@@ -136,13 +136,13 @@ def normalize_commands(config_filename, config):
                     preposition: 'everything',
                     'when': ['create'],
                     'run': commands,
-                }
+                },
             )
 
     return logs
 
 
-def normalize(config_filename, config):
+def normalize(config_filename, config):  # noqa: PLR0912, PLR0915
     '''
     Given a configuration filename and a configuration dict of its loaded contents, apply particular
     hard-coded rules to normalize the configuration to adhere to the current schema. Return any log
@@ -160,8 +160,8 @@ def normalize(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: The borgmatic_source_directory option is deprecated and will be removed from a future release. Use user_runtime_directory and user_state_directory instead.',
-                )
-            )
+                ),
+            ),
         )
 
     # Upgrade exclude_if_present from a string to a list.
@@ -173,8 +173,8 @@ def normalize(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: The exclude_if_present option now expects a list value. String values for this option are deprecated and support will be removed from a future release.',
-                )
-            )
+                ),
+            ),
         )
         config['exclude_if_present'] = [exclude_if_present]
 
@@ -191,8 +191,8 @@ def normalize(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: The store_config_files option has moved under the bootstrap hook. Specifying store_config_files at the global scope is deprecated and support will be removed from a future release.',
-                )
-            )
+                ),
+            ),
         )
         del config['store_config_files']
         config['bootstrap']['store_config_files'] = store_config_files
@@ -206,8 +206,8 @@ def normalize(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: The healthchecks hook now expects a key/value pair with "ping_url" as a key. String values for this option are deprecated and support will be removed from a future release.',
-                )
-            )
+                ),
+            ),
         )
         config['healthchecks'] = {'ping_url': healthchecks}
 
@@ -219,8 +219,8 @@ def normalize(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: The healthchecks hook now expects key/value pairs. String values for this option are deprecated and support will be removed from a future release.',
-                )
-            )
+                ),
+            ),
         )
         config['cronitor'] = {'ping_url': cronitor}
 
@@ -232,8 +232,8 @@ def normalize(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: The healthchecks hook now expects key/value pairs. String values for this option are deprecated and support will be removed from a future release.',
-                )
-            )
+                ),
+            ),
         )
         config['pagerduty'] = {'integration_key': pagerduty}
 
@@ -245,8 +245,8 @@ def normalize(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: The healthchecks hook now expects key/value pairs. String values for this option are deprecated and support will be removed from a future release.',
-                )
-            )
+                ),
+            ),
         )
         config['cronhub'] = {'ping_url': cronhub}
 
@@ -259,8 +259,8 @@ def normalize(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: The checks option now expects a list of key/value pairs. Lists of strings for this option are deprecated and support will be removed from a future release.',
-                )
-            )
+                ),
+            ),
         )
         config['checks'] = [{'name': check_type} for check_type in checks]
 
@@ -273,8 +273,8 @@ def normalize(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: The numeric_owner option has been renamed to numeric_ids. numeric_owner is deprecated and support will be removed from a future release.',
-                )
-            )
+                ),
+            ),
         )
         config['numeric_ids'] = numeric_owner
 
@@ -286,8 +286,8 @@ def normalize(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: The bsd_flags option has been renamed to flags. bsd_flags is deprecated and support will be removed from a future release.',
-                )
-            )
+                ),
+            ),
         )
         config['flags'] = bsd_flags
 
@@ -299,8 +299,8 @@ def normalize(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: The remote_rate_limit option has been renamed to upload_rate_limit. remote_rate_limit is deprecated and support will be removed from a future release.',
-                )
-            )
+                ),
+            ),
         )
         config['upload_rate_limit'] = remote_rate_limit
 
@@ -314,8 +314,8 @@ def normalize(config_filename, config):
                         levelno=logging.WARNING,
                         levelname='WARNING',
                         msg=f'{config_filename}: The repositories option now expects a list of key/value pairs. Lists of strings for this option are deprecated and support will be removed from a future release.',
-                    )
-                )
+                    ),
+                ),
             )
             config['repositories'] = [
                 {'path': repository} if isinstance(repository, str) else repository
@@ -338,28 +338,22 @@ def normalize(config_filename, config):
                             levelno=logging.WARNING,
                             levelname='WARNING',
                             msg=f'{config_filename}: Repository paths containing "~" are deprecated in borgmatic and support will be removed from a future release.',
-                        )
-                    )
+                        ),
+                    ),
                 )
 
             if ':' in repository_path:
                 if repository_path.startswith('file://'):
                     updated_repository_path = os.path.abspath(
-                        repository_path.partition('file://')[-1]
+                        repository_path.partition('file://')[-1],
                     )
                     config['repositories'].append(
                         dict(
                             repository_dict,
                             path=updated_repository_path,
-                        )
+                        ),
                     )
-                elif (
-                    repository_path.startswith('ssh://')
-                    or repository_path.startswith('sftp://')
-                    or repository_path.startswith('rclone:')
-                    or repository_path.startswith('s3:')
-                    or repository_path.startswith('b2:')
-                ):
+                elif repository_path.startswith(('ssh://', 'sftp://', 'rclone:', 's3:', 'b2:')):
                     config['repositories'].append(repository_dict)
                 else:
                     rewritten_repository_path = f"ssh://{repository_path.replace(':~', '/~').replace(':/', '/').replace(':', '/./')}"
@@ -369,14 +363,14 @@ def normalize(config_filename, config):
                                 levelno=logging.WARNING,
                                 levelname='WARNING',
                                 msg=f'{config_filename}: Remote repository paths without ssh://, sftp://, rclone:, s3:, or b2:, syntax are deprecated and support will be removed from a future release. Interpreting "{repository_path}" as "{rewritten_repository_path}"',
-                            )
-                        )
+                            ),
+                        ),
                     )
                     config['repositories'].append(
                         dict(
                             repository_dict,
                             path=rewritten_repository_path,
-                        )
+                        ),
                     )
             else:
                 config['repositories'].append(repository_dict)
@@ -388,8 +382,8 @@ def normalize(config_filename, config):
                     levelno=logging.WARNING,
                     levelname='WARNING',
                     msg=f'{config_filename}: The prefix option is deprecated and support will be removed from a future release. Use archive_name_format or match_archives instead.',
-                )
-            )
+                ),
+            ),
         )
 
     return logs

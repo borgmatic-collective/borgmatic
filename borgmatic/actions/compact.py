@@ -23,7 +23,8 @@ def run_compact(
     Run the "compact" action for the given repository.
     '''
     if compact_arguments.repository and not borgmatic.config.validate.repositories_match(
-        repository, compact_arguments.repository
+        repository,
+        compact_arguments.repository,
     ):
         return
 

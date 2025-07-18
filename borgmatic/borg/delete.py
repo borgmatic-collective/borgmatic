@@ -11,6 +11,9 @@ import borgmatic.execute
 logger = logging.getLogger(__name__)
 
 
+FORCE_HARDER_FLAG_COUNT = 2
+
+
 def make_delete_command(
     repository,
     config,
@@ -36,7 +39,10 @@ def make_delete_command(
         + borgmatic.borg.flags.make_flags('lock-wait', config.get('lock_wait'))
         + borgmatic.borg.flags.make_flags('list', config.get('list_details'))
         + (
-            (('--force',) + (('--force',) if delete_arguments.force >= 2 else ()))
+            (
+                ('--force',)
+                + (('--force',) if delete_arguments.force >= FORCE_HARDER_FLAG_COUNT else ())
+            )
             if delete_arguments.force
             else ()
         )
@@ -98,10 +104,11 @@ def delete_archives(
         for argument_name in ARCHIVE_RELATED_ARGUMENT_NAMES
     ):
         if borgmatic.borg.feature.available(
-            borgmatic.borg.feature.Feature.REPO_DELETE, local_borg_version
+            borgmatic.borg.feature.Feature.REPO_DELETE,
+            local_borg_version,
         ):
             logger.warning(
-                'Deleting an entire repository with the delete action is deprecated when using Borg 2.x+. Use the repo-delete action instead.'
+                'Deleting an entire repository with the delete action is deprecated when using Borg 2.x+. Use the repo-delete action instead.',
             )
 
         repo_delete_arguments = argparse.Namespace(

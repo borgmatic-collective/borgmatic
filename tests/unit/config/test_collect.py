@@ -59,7 +59,7 @@ def test_collect_config_filenames_collects_files_from_given_directories_and_igno
     flexmock(module.os).should_receive('access').and_return(True)
     flexmock(module.os).should_receive('listdir')
     flexmock(sys.modules['builtins']).should_receive('sorted').and_return(
-        ['foo.yaml', 'bar', 'baz.yaml']
+        ['foo.yaml', 'bar', 'baz.yaml'],
     )
 
     config_filenames = tuple(module.collect_config_filenames(config_paths))
@@ -83,7 +83,7 @@ def test_collect_config_filenames_collects_files_from_given_directories_and_igno
     flexmock(module.os).should_receive('access').and_return(True)
     flexmock(module.os).should_receive('listdir')
     flexmock(sys.modules['builtins']).should_receive('sorted').and_return(
-        ['foo.yaml', 'bar.yaml~', 'baz.txt']
+        ['foo.yaml', 'bar.yaml~', 'baz.txt'],
     )
 
     config_filenames = tuple(module.collect_config_filenames(config_paths))

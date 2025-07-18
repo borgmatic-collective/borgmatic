@@ -24,7 +24,8 @@ def run_info(
     If info_arguments.json is True, yield the JSON output from the info for the archive.
     '''
     if info_arguments.repository is None or borgmatic.config.validate.repositories_match(
-        repository, info_arguments.repository
+        repository,
+        info_arguments.repository,
     ):
         if not info_arguments.json:
             logger.answer('Displaying archive summary information')

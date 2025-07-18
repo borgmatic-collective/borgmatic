@@ -1,3 +1,4 @@
+import contextlib
 import glob
 import importlib
 import json
@@ -38,7 +39,9 @@ def dump_data_sources(
         return []
 
     borgmatic_manifest_path = os.path.join(
-        borgmatic_runtime_directory, 'bootstrap', 'manifest.json'
+        borgmatic_runtime_directory,
+        'bootstrap',
+        'manifest.json',
     )
 
     if dry_run:
@@ -46,7 +49,7 @@ def dump_data_sources(
 
     os.makedirs(os.path.dirname(borgmatic_manifest_path), exist_ok=True)
 
-    with open(borgmatic_manifest_path, 'w') as manifest_file:
+    with open(borgmatic_manifest_path, 'w', encoding='utf-8') as manifest_file:
         json.dump(
             {
                 'borgmatic_version': importlib.metadata.version('borgmatic'),
@@ -57,7 +60,8 @@ def dump_data_sources(
 
     patterns.extend(
         borgmatic.borg.pattern.Pattern(
-            config_path, source=borgmatic.borg.pattern.Pattern_source.HOOK
+            config_path,
+            source=borgmatic.borg.pattern.Pattern_source.HOOK,
         )
         for config_path in config_paths
     )
@@ -65,7 +69,7 @@ def dump_data_sources(
         borgmatic.borg.pattern.Pattern(
             os.path.join(borgmatic_runtime_directory, 'bootstrap'),
             source=borgmatic.borg.pattern.Pattern_source.HOOK,
-        )
+        ),
     )
 
     return []
@@ -86,7 +90,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
         'bootstrap',
     )
     logger.debug(
-        f'Looking for bootstrap manifest files to remove in {manifest_glob}{dry_run_label}'
+        f'Looking for bootstrap manifest files to remove in {manifest_glob}{dry_run_label}',
     )
 
     for manifest_directory in glob.glob(manifest_glob):
@@ -96,19 +100,18 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
         if dry_run:
             continue
 
-        try:
+        with contextlib.suppress(FileNotFoundError):
             os.remove(manifest_file_path)
-        except FileNotFoundError:
-            pass
 
-        try:
+        with contextlib.suppress(FileNotFoundError):
             os.rmdir(manifest_directory)
-        except FileNotFoundError:
-            pass
 
 
 def make_data_source_dump_patterns(
-    hook_config, config, borgmatic_runtime_directory, name=None
+    hook_config,
+    config,
+    borgmatic_runtime_directory,
+    name=None,
 ):  # pragma: no cover
     '''
     Restores are implemented via the separate, purpose-specific "bootstrap" action rather than the

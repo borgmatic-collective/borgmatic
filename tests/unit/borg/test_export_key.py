@@ -10,7 +10,10 @@ from ..test_verbosity import insert_logging_mock
 
 
 def insert_execute_command_mock(
-    command, output_file=module.DO_NOT_CAPTURE, working_directory=None, borg_exit_codes=None
+    command,
+    output_file=module.DO_NOT_CAPTURE,
+    working_directory=None,
+    borg_exit_codes=None,
 ):
     borgmatic.logger.add_custom_log_levels()
 
@@ -276,7 +279,7 @@ def test_export_key_calls_borg_with_working_directory():
 def test_export_key_calls_borg_with_path_argument_and_working_directory():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').with_args('/working/dir/dest').and_return(
-        False
+        False,
     ).once()
     insert_execute_command_mock(
         ('borg', 'key', 'export', 'repo', 'dest'),

@@ -22,7 +22,8 @@ def run_repo_info(
     If repo_info_arguments.json is True, yield the JSON output from the info for the repository.
     '''
     if repo_info_arguments.repository is None or borgmatic.config.validate.repositories_match(
-        repository, repo_info_arguments.repository
+        repository,
+        repo_info_arguments.repository,
     ):
         if not repo_info_arguments.json:
             logger.answer('Displaying repository summary information')

@@ -1,6 +1,8 @@
 2.0.8.dev0
  * #1118: Fix a bug in which Borg hangs during database backup when different filesystems are in
    use.
+ * When running tests, use Ruff for faster and more comprehensive code linting and formatting,
+   replacing Flake8, Black, isort, etc.
 
 2.0.7
  * #1032: Fix a bug in which a Borg archive gets created even when a database hook fails.

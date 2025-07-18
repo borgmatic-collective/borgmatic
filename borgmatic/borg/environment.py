@@ -64,7 +64,8 @@ def make_environment(config):
         environment.pop('BORG_PASSCOMMAND', None)
 
     passphrase = borgmatic.hooks.credential.parse.resolve_credential(
-        config.get('encryption_passphrase'), config
+        config.get('encryption_passphrase'),
+        config,
     )
 
     if passphrase is None:

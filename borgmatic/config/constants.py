@@ -1,3 +1,4 @@
+import contextlib
 import shlex
 
 
@@ -6,18 +7,18 @@ def coerce_scalar(value):
     Given a configuration value, coerce it to an integer or a boolean as appropriate and return the
     result.
     '''
-    try:
+    with contextlib.suppress(TypeError, ValueError):
         return int(value)
-    except (TypeError, ValueError):
-        pass
 
-    if value == 'true' or value == 'True':
-        return True
-
-    if value == 'false' or value == 'False':
-        return False
-
-    return value
+    try:
+        return {
+            'true': True,
+            'True': True,
+            'false': False,
+            'False': False,
+        }.get(value, value)
+    except TypeError:  # e.g. for an unhashable type
+        return value
 
 
 def apply_constants(value, constants, shell_escape=False):
@@ -56,8 +57,7 @@ def apply_constants(value, constants, shell_escape=False):
                 constants,
                 shell_escape=(
                     shell_escape
-                    or option_name.startswith('before_')
-                    or option_name.startswith('after_')
+                    or option_name.startswith(('before_', 'after_'))
                     or option_name == 'on_error'
                 ),
             )

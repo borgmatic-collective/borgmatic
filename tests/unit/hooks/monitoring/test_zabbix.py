@@ -70,11 +70,14 @@ def test_send_zabbix_request_with_post_error_bails():
     data = {'method': 'do.stuff'}
     response = flexmock(ok=False)
     response.should_receive('raise_for_status').and_raise(
-        module.requests.exceptions.RequestException
+        module.requests.exceptions.RequestException,
     )
 
     flexmock(module.requests).should_receive('post').with_args(
-        server, headers=headers, json=data, timeout=int
+        server,
+        headers=headers,
+        json=data,
+        timeout=int,
     ).and_return(response)
 
     assert module.send_zabbix_request(server, headers, data) is None
@@ -89,7 +92,10 @@ def test_send_zabbix_request_with_invalid_json_response_bails():
     response.should_receive('json').and_raise(module.requests.exceptions.JSONDecodeError)
 
     flexmock(module.requests).should_receive('post').with_args(
-        server, headers=headers, json=data, timeout=int
+        server,
+        headers=headers,
+        json=data,
+        timeout=int,
     ).and_return(response)
 
     assert module.send_zabbix_request(server, headers, data) is None
@@ -103,7 +109,10 @@ def test_send_zabbix_request_with_success_returns_response_result():
     response.should_receive('json').and_return({'result': {'foo': 'bar'}})
 
     flexmock(module.requests).should_receive('post').with_args(
-        server, headers=headers, json=data, timeout=int
+        server,
+        headers=headers,
+        json=data,
+        timeout=int,
     ).and_return(response)
 
     assert module.send_zabbix_request(server, headers, data) == {'foo': 'bar'}
@@ -117,7 +126,10 @@ def test_send_zabbix_request_with_success_passes_through_missing_result():
     response.should_receive('json').and_return({})
 
     flexmock(module.requests).should_receive('post').with_args(
-        server, headers=headers, json=data, timeout=int
+        server,
+        headers=headers,
+        json=data,
+        timeout=int,
     ).and_return(response)
 
     assert module.send_zabbix_request(server, headers, data) is None
@@ -131,7 +143,10 @@ def test_send_zabbix_request_with_error_bails():
     response.should_receive('json').and_return({'result': {'data': [{'error': 'oops'}]}})
 
     flexmock(module.requests).should_receive('post').with_args(
-        server, headers=headers, json=data, timeout=int
+        server,
+        headers=headers,
+        json=data,
+        timeout=int,
     ).and_return(response)
 
     assert module.send_zabbix_request(server, headers, data) is None
@@ -156,7 +171,7 @@ def test_ping_monitor_config_with_api_key_only_bails():
     # for the hook to work
     hook_config = {'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('send_zabbix_request').never()
@@ -176,7 +191,7 @@ def test_ping_monitor_config_with_host_only_bails():
     # for the hook to work
     hook_config = {'host': HOST}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('send_zabbix_request').never()
@@ -196,7 +211,7 @@ def test_ping_monitor_config_with_key_only_bails():
     # for the hook to work
     hook_config = {'key': KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('send_zabbix_request').never()
@@ -216,7 +231,7 @@ def test_ping_monitor_config_with_server_only_bails():
     # for the hook to work
     hook_config = {'server': SERVER}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('send_zabbix_request').never()
@@ -235,7 +250,7 @@ def test_ping_monitor_config_user_password_no_zabbix_data_bails():
     # This test should exit early since there are HOST/KEY or ITEMID provided to publish data to
     hook_config = {'server': SERVER, 'username': USERNAME, 'password': PASSWORD}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('send_zabbix_request').never()
@@ -254,7 +269,7 @@ def test_ping_monitor_config_api_key_no_zabbix_data_bails():
     # This test should exit early since there are HOST/KEY or ITEMID provided to publish data to
     hook_config = {'server': SERVER, 'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('send_zabbix_request').never()
@@ -274,7 +289,7 @@ def test_ping_monitor_config_itemid_no_auth_data_bails():
     # and Zabbix requires authentication to use it's API
     hook_config = {'server': SERVER, 'itemid': ITEMID}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('send_zabbix_request').never()
@@ -294,7 +309,7 @@ def test_ping_monitor_config_host_and_key_no_auth_data_bails():
     # and Zabbix requires authentication to use it's API
     hook_config = {'server': SERVER, 'host': HOST, 'key': KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('send_zabbix_request').never()
@@ -314,7 +329,7 @@ def test_ping_monitor_config_host_and_key_with_api_key_auth_data_successful():
     # to authenticate and HOST/KEY to know which item to populate in Zabbix.
     hook_config = {'server': SERVER, 'host': HOST, 'key': KEY, 'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('send_zabbix_request').with_args(
         f'{SERVER}',
@@ -338,7 +353,7 @@ def test_ping_monitor_config_adds_missing_api_endpoint_to_server_url():
     # to authenticate and HOST/KEY to know which item to populate in Zabbix.
     hook_config = {'server': SERVER, 'host': HOST, 'key': KEY, 'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('send_zabbix_request').with_args(
         f'{SERVER}',
@@ -360,7 +375,7 @@ def test_ping_monitor_config_adds_missing_api_endpoint_to_server_url():
 def test_ping_monitor_config_host_and_missing_key_bails():
     hook_config = {'server': SERVER, 'host': HOST, 'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('send_zabbix_request').never()
@@ -378,7 +393,7 @@ def test_ping_monitor_config_host_and_missing_key_bails():
 def test_ping_monitor_config_key_and_missing_host_bails():
     hook_config = {'server': SERVER, 'key': KEY, 'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('send_zabbix_request').never()
@@ -405,7 +420,7 @@ def test_ping_monitor_config_host_and_key_with_username_password_auth_data_succe
     }
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
 
     flexmock(module).should_receive('send_zabbix_request').with_args(
@@ -448,7 +463,7 @@ def test_ping_monitor_config_host_and_key_with_username_password_auth_data_and_a
     }
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
 
     flexmock(module).should_receive('send_zabbix_request').with_args(
@@ -487,7 +502,7 @@ def test_ping_monitor_config_host_and_key_with_username_and_missing_password_bai
     }
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('send_zabbix_request').never()
@@ -511,7 +526,7 @@ def test_ping_monitor_config_host_and_key_with_password_and_missing_username_bai
     }
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('send_zabbix_request').never()
@@ -531,7 +546,7 @@ def test_ping_monitor_config_itemid_with_api_key_auth_data_successful():
     # to authenticate and HOST/KEY to know which item to populate in Zabbix.
     hook_config = {'server': SERVER, 'itemid': ITEMID, 'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('send_zabbix_request').with_args(
         f'{SERVER}',
@@ -556,7 +571,7 @@ def test_ping_monitor_config_itemid_with_username_password_auth_data_successful(
     hook_config = {'server': SERVER, 'itemid': ITEMID, 'username': USERNAME, 'password': PASSWORD}
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
 
     flexmock(module).should_receive('send_zabbix_request').with_args(
@@ -593,7 +608,7 @@ def test_ping_monitor_with_credential_error_bails():
     hook_config = {'server': SERVER, 'itemid': ITEMID, 'username': USERNAME, 'password': PASSWORD}
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).and_raise(ValueError)
     flexmock(module).should_receive('send_zabbix_request').never()
     flexmock(module.logger).should_receive('warning').once()

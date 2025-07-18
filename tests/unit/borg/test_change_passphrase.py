@@ -64,7 +64,9 @@ def test_change_passphrase_calls_borg_using_exit_codes():
     borg_exit_codes = flexmock()
     config = {'borg_exit_codes': borg_exit_codes}
     insert_execute_command_mock(
-        ('borg', 'key', 'change-passphrase', 'repo'), config=config, borg_exit_codes=borg_exit_codes
+        ('borg', 'key', 'change-passphrase', 'repo'),
+        config=config,
+        borg_exit_codes=borg_exit_codes,
     )
 
     module.change_passphrase(
@@ -79,7 +81,7 @@ def test_change_passphrase_calls_borg_using_exit_codes():
 def test_change_passphrase_calls_borg_with_remote_path_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(
-        ('borg', 'key', 'change-passphrase', '--remote-path', 'borg1', 'repo')
+        ('borg', 'key', 'change-passphrase', '--remote-path', 'borg1', 'repo'),
     )
 
     module.change_passphrase(
@@ -96,7 +98,8 @@ def test_change_passphrase_calls_borg_with_umask_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     config = {'umask': '0770'}
     insert_execute_command_mock(
-        ('borg', 'key', 'change-passphrase', '--umask', '0770', 'repo'), config=config
+        ('borg', 'key', 'change-passphrase', '--umask', '0770', 'repo'),
+        config=config,
     )
 
     module.change_passphrase(
@@ -112,7 +115,8 @@ def test_change_passphrase_calls_borg_with_log_json_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     config = {'log_json': True}
     insert_execute_command_mock(
-        ('borg', 'key', 'change-passphrase', '--log-json', 'repo'), config=config
+        ('borg', 'key', 'change-passphrase', '--log-json', 'repo'),
+        config=config,
     )
 
     module.change_passphrase(
@@ -128,7 +132,8 @@ def test_change_passphrase_calls_borg_with_lock_wait_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     config = {'lock_wait': '5'}
     insert_execute_command_mock(
-        ('borg', 'key', 'change-passphrase', '--lock-wait', '5', 'repo'), config=config
+        ('borg', 'key', 'change-passphrase', '--lock-wait', '5', 'repo'),
+        config=config,
     )
 
     module.change_passphrase(
@@ -157,7 +162,7 @@ def test_change_passphrase_with_log_info_calls_borg_with_info_parameter():
 def test_change_passphrase_with_log_debug_calls_borg_with_debug_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(
-        ('borg', 'key', 'change-passphrase', '--debug', '--show-rc', 'repo')
+        ('borg', 'key', 'change-passphrase', '--debug', '--show-rc', 'repo'),
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -187,7 +192,8 @@ def test_change_passphrase_with_dry_run_skips_borg_call():
 def test_change_passphrase_calls_borg_without_passphrase():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(
-        ('borg', 'key', 'change-passphrase', 'repo'), config={'option': 'foo'}
+        ('borg', 'key', 'change-passphrase', 'repo'),
+        config={'option': 'foo'},
     )
 
     module.change_passphrase(

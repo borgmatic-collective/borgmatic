@@ -23,7 +23,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_last_archive():
     flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
     insert_execute_command_mock(('borg', 'extract', '--dry-run', 'repo::archive'))
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
 
     module.extract_last_archive_dry_run(
@@ -53,7 +53,7 @@ def test_extract_last_archive_dry_run_with_log_info_calls_borg_with_info_paramet
     insert_execute_command_mock(('borg', 'extract', '--dry-run', '--info', 'repo::archive'))
     insert_logging_mock(logging.INFO)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
 
     module.extract_last_archive_dry_run(
@@ -68,11 +68,11 @@ def test_extract_last_archive_dry_run_with_log_info_calls_borg_with_info_paramet
 def test_extract_last_archive_dry_run_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
     insert_execute_command_mock(
-        ('borg', 'extract', '--dry-run', '--debug', '--show-rc', '--list', 'repo::archive')
+        ('borg', 'extract', '--dry-run', '--debug', '--show-rc', '--list', 'repo::archive'),
     )
     insert_logging_mock(logging.DEBUG)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
 
     module.extract_last_archive_dry_run(
@@ -88,7 +88,7 @@ def test_extract_last_archive_dry_run_calls_borg_via_local_path():
     flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
     insert_execute_command_mock(('borg1', 'extract', '--dry-run', 'repo::archive'))
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
 
     module.extract_last_archive_dry_run(
@@ -105,10 +105,11 @@ def test_extract_last_archive_dry_run_calls_borg_using_exit_codes():
     flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
     borg_exit_codes = flexmock()
     insert_execute_command_mock(
-        ('borg', 'extract', '--dry-run', 'repo::archive'), borg_exit_codes=borg_exit_codes
+        ('borg', 'extract', '--dry-run', 'repo::archive'),
+        borg_exit_codes=borg_exit_codes,
     )
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
 
     module.extract_last_archive_dry_run(
@@ -123,10 +124,10 @@ def test_extract_last_archive_dry_run_calls_borg_using_exit_codes():
 def test_extract_last_archive_dry_run_calls_borg_with_remote_path_flags():
     flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
     insert_execute_command_mock(
-        ('borg', 'extract', '--dry-run', '--remote-path', 'borg1', 'repo::archive')
+        ('borg', 'extract', '--dry-run', '--remote-path', 'borg1', 'repo::archive'),
     )
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
 
     module.extract_last_archive_dry_run(
@@ -143,7 +144,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_log_json_flag():
     flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
     insert_execute_command_mock(('borg', 'extract', '--dry-run', '--log-json', 'repo::archive'))
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
 
     module.extract_last_archive_dry_run(
@@ -158,10 +159,10 @@ def test_extract_last_archive_dry_run_calls_borg_with_log_json_flag():
 def test_extract_last_archive_dry_run_calls_borg_with_lock_wait_flags():
     flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
     insert_execute_command_mock(
-        ('borg', 'extract', '--dry-run', '--lock-wait', '5', 'repo::archive')
+        ('borg', 'extract', '--dry-run', '--lock-wait', '5', 'repo::archive'),
     )
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
 
     module.extract_last_archive_dry_run(
@@ -179,10 +180,10 @@ def test_extract_archive_calls_borg_with_path_flags():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -202,10 +203,10 @@ def test_extract_archive_calls_borg_with_local_path():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -224,15 +225,16 @@ def test_extract_archive_calls_borg_with_exit_codes():
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
     borg_exit_codes = flexmock()
     insert_execute_command_mock(
-        ('borg', 'extract', 'repo::archive'), borg_exit_codes=borg_exit_codes
+        ('borg', 'extract', 'repo::archive'),
+        borg_exit_codes=borg_exit_codes,
     )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -252,10 +254,10 @@ def test_extract_archive_calls_borg_with_remote_path_flags():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -283,10 +285,10 @@ def test_extract_archive_calls_borg_with_numeric_ids_parameter(feature_available
     flexmock(module.feature).should_receive('available').and_return(feature_available)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -306,10 +308,10 @@ def test_extract_archive_calls_borg_with_umask_flags():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -329,7 +331,7 @@ def test_extract_archive_calls_borg_with_log_json_flags():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
 
     module.extract_archive(
@@ -349,10 +351,10 @@ def test_extract_archive_calls_borg_with_lock_wait_flags():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -373,10 +375,10 @@ def test_extract_archive_with_log_info_calls_borg_with_info_parameter():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -393,16 +395,16 @@ def test_extract_archive_with_log_info_calls_borg_with_info_parameter():
 def test_extract_archive_with_log_debug_calls_borg_with_debug_flags():
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
     insert_execute_command_mock(
-        ('borg', 'extract', '--debug', '--list', '--show-rc', 'repo::archive')
+        ('borg', 'extract', '--debug', '--list', '--show-rc', 'repo::archive'),
     )
     insert_logging_mock(logging.DEBUG)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -422,10 +424,10 @@ def test_extract_archive_calls_borg_with_dry_run_parameter():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -445,10 +447,10 @@ def test_extract_archive_calls_borg_with_destination_path():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -469,10 +471,10 @@ def test_extract_archive_calls_borg_with_strip_components():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -498,15 +500,15 @@ def test_extract_archive_calls_borg_with_strip_components_calculated_from_all():
             'repo::archive',
             'foo/bar/baz.txt',
             'foo/bar.txt',
-        )
+        ),
     )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -532,15 +534,15 @@ def test_extract_archive_calls_borg_with_strip_components_calculated_from_all_wi
             'repo::archive',
             '/foo/bar/baz.txt',
             '/foo/bar.txt',
-        )
+        ),
     )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -560,10 +562,10 @@ def test_extract_archive_with_strip_components_all_and_no_paths_raises():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
     flexmock(module).should_receive('execute_command').never()
 
@@ -595,10 +597,10 @@ def test_extract_archive_calls_borg_with_progress_flag():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -645,10 +647,10 @@ def test_extract_archive_calls_borg_with_stdout_parameter_and_returns_process():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     assert (
@@ -680,10 +682,10 @@ def test_extract_archive_skips_abspath_for_remote_repository():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('server:repo::archive',)
+        ('server:repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).and_return('repo')
 
     module.extract_archive(
@@ -700,14 +702,15 @@ def test_extract_archive_skips_abspath_for_remote_repository():
 def test_extract_archive_uses_configured_working_directory_in_repo_path_and_destination_path():
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
     insert_execute_command_mock(
-        ('borg', 'extract', '/working/dir/repo::archive'), destination_path='/working/dir/dest'
+        ('borg', 'extract', '/working/dir/repo::archive'),
+        destination_path='/working/dir/dest',
     )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('/working/dir/repo::archive',)
+        ('/working/dir/repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).with_args('repo', '/working/dir').and_return('/working/dir/repo').once()
 
     module.extract_archive(
@@ -727,10 +730,10 @@ def test_extract_archive_uses_configured_working_directory_in_repo_path_when_des
     insert_execute_command_mock(('borg', 'extract', '/working/dir/repo::archive'))
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('/working/dir/repo::archive',)
+        ('/working/dir/repo::archive',),
     )
     flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path'
+        'normalize_repository_path',
     ).with_args('repo', '/working/dir').and_return('/working/dir/repo').once()
 
     module.extract_archive(

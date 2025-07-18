@@ -63,7 +63,8 @@ def test_local_borg_version_with_local_borg_path_calls_borg_with_it():
 def test_local_borg_version_with_borg_exit_codes_calls_using_with_them():
     borg_exit_codes = flexmock()
     insert_execute_command_and_capture_output_mock(
-        ('borg', '--version'), borg_exit_codes=borg_exit_codes
+        ('borg', '--version'),
+        borg_exit_codes=borg_exit_codes,
     )
     flexmock(module.environment).should_receive('make_environment')
 
@@ -80,7 +81,8 @@ def test_local_borg_version_with_invalid_version_raises():
 
 def test_local_borg_version_calls_borg_with_working_directory():
     insert_execute_command_and_capture_output_mock(
-        ('borg', '--version'), working_directory='/working/dir'
+        ('borg', '--version'),
+        working_directory='/working/dir',
     )
     flexmock(module.environment).should_receive('make_environment')
 

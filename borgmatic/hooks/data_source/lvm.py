@@ -24,7 +24,8 @@ def use_streaming(hook_config, config):  # pragma: no cover
 
 BORGMATIC_SNAPSHOT_PREFIX = 'borgmatic-'
 Logical_volume = collections.namedtuple(
-    'Logical_volume', ('name', 'device_path', 'mount_point', 'contained_patterns')
+    'Logical_volume',
+    ('name', 'device_path', 'mount_point', 'contained_patterns'),
 )
 
 
@@ -44,15 +45,15 @@ def get_logical_volumes(lsblk_command, patterns=None):
         devices_info = json.loads(
             borgmatic.execute.execute_command_and_capture_output(
                 # Use lsblk instead of lvs here because lvs can't show active mounts.
-                tuple(lsblk_command.split(' '))
-                + (
+                (
+                    *lsblk_command.split(' '),
                     '--output',
                     'name,path,mountpoint,type',
                     '--json',
                     '--list',
                 ),
                 close_fds=True,
-            )
+            ),
         )
     except json.JSONDecodeError as error:
         raise ValueError(f'Invalid {lsblk_command} JSON output: {error}')
@@ -73,7 +74,8 @@ def get_logical_volumes(lsblk_command, patterns=None):
             if device['mountpoint'] and device['type'] == 'lvm'
             for contained_patterns in (
                 borgmatic.hooks.data_source.snapshot.get_contained_patterns(
-                    device['mountpoint'], candidate_patterns
+                    device['mountpoint'],
+                    candidate_patterns,
                 ),
             )
             if not patterns
@@ -98,8 +100,8 @@ def snapshot_logical_volume(
     snapshot, and a snapshot size string, create a new LVM snapshot.
     '''
     borgmatic.execute.execute_command(
-        tuple(lvcreate_command.split(' '))
-        + (
+        (
+            *lvcreate_command.split(' '),
             '--snapshot',
             ('--extents' if '%' in snapshot_size else '--size'),
             snapshot_size,
@@ -123,8 +125,8 @@ def mount_snapshot(mount_command, snapshot_device, snapshot_mount_path):  # prag
     os.makedirs(snapshot_mount_path, mode=0o700, exist_ok=True)
 
     borgmatic.execute.execute_command(
-        tuple(mount_command.split(' '))
-        + (
+        (
+            *mount_command.split(' '),
             '-o',
             'ro',
             snapshot_device,
@@ -162,7 +164,7 @@ def make_borg_snapshot_pattern(pattern, logical_volume, normalized_runtime_direc
         # /var/spool would result in overlapping snapshot patterns and therefore colliding mount
         # attempts.
         hashlib.shake_256(logical_volume.mount_point.encode('utf-8')).hexdigest(
-            MOUNT_POINT_HASH_LENGTH
+            MOUNT_POINT_HASH_LENGTH,
         ),
         '.',  # Borg 1.4+ "slashdot" hack.
         # Included so that the source directory ends up in the Borg archive at its "original" path.
@@ -218,7 +220,7 @@ def dump_data_sources(
     for logical_volume in requested_logical_volumes:
         snapshot_name = f'{logical_volume.name}_{snapshot_suffix}'
         logger.debug(
-            f'Creating LVM snapshot {snapshot_name} of {logical_volume.mount_point}{dry_run_label}'
+            f'Creating LVM snapshot {snapshot_name} of {logical_volume.mount_point}{dry_run_label}',
         )
 
         if not dry_run:
@@ -233,7 +235,8 @@ def dump_data_sources(
         if not dry_run:
             try:
                 snapshot = get_snapshots(
-                    hook_config.get('lvs_command', 'lvs'), snapshot_name=snapshot_name
+                    hook_config.get('lvs_command', 'lvs'),
+                    snapshot_name=snapshot_name,
                 )[0]
             except IndexError:
                 raise ValueError(f'Cannot find LVM snapshot {snapshot_name}')
@@ -244,25 +247,29 @@ def dump_data_sources(
             normalized_runtime_directory,
             'lvm_snapshots',
             hashlib.shake_256(logical_volume.mount_point.encode('utf-8')).hexdigest(
-                MOUNT_POINT_HASH_LENGTH
+                MOUNT_POINT_HASH_LENGTH,
             ),
             logical_volume.mount_point.lstrip(os.path.sep),
         )
 
         logger.debug(
-            f'Mounting LVM snapshot {snapshot_name} at {snapshot_mount_path}{dry_run_label}'
+            f'Mounting LVM snapshot {snapshot_name} at {snapshot_mount_path}{dry_run_label}',
         )
 
         if dry_run:
             continue
 
         mount_snapshot(
-            hook_config.get('mount_command', 'mount'), snapshot.device_path, snapshot_mount_path
+            hook_config.get('mount_command', 'mount'),
+            snapshot.device_path,
+            snapshot_mount_path,
         )
 
         for pattern in logical_volume.contained_patterns:
             snapshot_pattern = make_borg_snapshot_pattern(
-                pattern, logical_volume, normalized_runtime_directory
+                pattern,
+                logical_volume,
+                normalized_runtime_directory,
             )
 
             # Attempt to update the pattern in place, since pattern order matters to Borg.
@@ -279,7 +286,7 @@ def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
     Given a umount command to run and the mount path of a snapshot, unmount it.
     '''
     borgmatic.execute.execute_command(
-        tuple(umount_command.split(' ')) + (snapshot_mount_path,),
+        (*umount_command.split(' '), snapshot_mount_path),
         output_log_level=logging.DEBUG,
         close_fds=True,
     )
@@ -290,8 +297,8 @@ def remove_snapshot(lvremove_command, snapshot_device_path):  # pragma: no cover
     Given an lvremove command to run and the device path of a snapshot, remove it it.
     '''
     borgmatic.execute.execute_command(
-        tuple(lvremove_command.split(' '))
-        + (
+        (
+            *lvremove_command.split(' '),
             '--force',  # Suppress an interactive "are you sure?" type prompt.
             snapshot_device_path,
         ),
@@ -316,8 +323,8 @@ def get_snapshots(lvs_command, snapshot_name=None):
         snapshot_info = json.loads(
             borgmatic.execute.execute_command_and_capture_output(
                 # Use lvs instead of lsblk here because lsblk can't filter to just snapshots.
-                tuple(lvs_command.split(' '))
-                + (
+                (
+                    *lvs_command.split(' '),
                     '--report-format',
                     'json',
                     '--options',
@@ -326,7 +333,7 @@ def get_snapshots(lvs_command, snapshot_name=None):
                     'lv_attr =~ ^s',  # Filter to just snapshots.
                 ),
                 close_fds=True,
-            )
+            ),
         )
     except json.JSONDecodeError as error:
         raise ValueError(f'Invalid {lvs_command} JSON output: {error}')
@@ -343,7 +350,7 @@ def get_snapshots(lvs_command, snapshot_name=None):
         raise ValueError(f'Invalid {lvs_command} output: Missing key "{error}"')
 
 
-def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):
+def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):  # noqa: PLR0912
     '''
     Given an LVM configuration dict, a configuration dict, the borgmatic runtime directory, and
     whether this is a dry run, unmount and delete any LVM snapshots created by borgmatic. If this is
@@ -381,7 +388,8 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
 
         for logical_volume in logical_volumes:
             snapshot_mount_path = os.path.join(
-                snapshots_directory, logical_volume.mount_point.lstrip(os.path.sep)
+                snapshots_directory,
+                logical_volume.mount_point.lstrip(os.path.sep),
             )
 
             # If the snapshot mount path is empty, this is probably just a "shadow" of a nested
@@ -440,7 +448,10 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
 
 
 def make_data_source_dump_patterns(
-    hook_config, config, borgmatic_runtime_directory, name=None
+    hook_config,
+    config,
+    borgmatic_runtime_directory,
+    name=None,
 ):  # pragma: no cover
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".

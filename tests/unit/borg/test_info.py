@@ -11,7 +11,9 @@ from ..test_verbosity import insert_logging_mock
 def test_make_info_command_constructs_borg_info_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -32,7 +34,9 @@ def test_make_info_command_constructs_borg_info_command():
 def test_make_info_command_with_log_info_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -54,7 +58,9 @@ def test_make_info_command_with_log_info_passes_through_to_command():
 def test_make_info_command_with_log_info_and_json_omits_borg_logging_flags():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -76,7 +82,9 @@ def test_make_info_command_with_log_info_and_json_omits_borg_logging_flags():
 def test_make_info_command_with_log_debug_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -98,7 +106,9 @@ def test_make_info_command_with_log_debug_passes_through_to_command():
 def test_make_info_command_with_log_debug_and_json_omits_borg_logging_flags():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -119,7 +129,9 @@ def test_make_info_command_with_log_debug_and_json_omits_borg_logging_flags():
 def test_make_info_command_with_json_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -140,7 +152,9 @@ def test_make_info_command_with_json_passes_through_to_command():
 def test_make_info_command_with_archive_uses_match_archives_flags():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        'archive', None, '2.3.4'
+        'archive',
+        None,
+        '2.3.4',
     ).and_return(('--match-archives', 'archive'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -161,7 +175,9 @@ def test_make_info_command_with_archive_uses_match_archives_flags():
 def test_make_info_command_with_local_path_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -176,16 +192,19 @@ def test_make_info_command_with_local_path_passes_through_to_command():
         remote_path=None,
     )
 
-    command == ('borg1', 'info', '--repo', 'repo')
+    assert command == ('borg1', 'info', '--repo', 'repo')
 
 
 def test_make_info_command_with_remote_path_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(
-        'remote-path', 'borg1'
+        'remote-path',
+        'borg1',
     ).and_return(('--remote-path', 'borg1'))
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -205,10 +224,12 @@ def test_make_info_command_with_remote_path_passes_through_to_command():
 
 def test_make_info_command_with_umask_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').replace_with(
-        lambda name, value: (f'--{name}', value) if value else ()
+        lambda name, value: (f'--{name}', value) if value else (),
     )
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -229,10 +250,12 @@ def test_make_info_command_with_umask_passes_through_to_command():
 def test_make_info_command_with_log_json_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('log-json', True).and_return(
-        ('--log-json',)
+        ('--log-json',),
     )
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -253,10 +276,12 @@ def test_make_info_command_with_log_json_passes_through_to_command():
 def test_make_info_command_with_lock_wait_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('lock-wait', 5).and_return(
-        ('--lock-wait', '5')
+        ('--lock-wait', '5'),
     )
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -278,10 +303,13 @@ def test_make_info_command_with_lock_wait_passes_through_to_command():
 def test_make_info_command_transforms_prefix_into_match_archives_flags():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(
-        'match-archives', 'sh:foo*'
+        'match-archives',
+        'sh:foo*',
     ).and_return(('--match-archives', 'sh:foo*'))
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -302,17 +330,20 @@ def test_make_info_command_transforms_prefix_into_match_archives_flags():
 def test_make_info_command_prefers_prefix_over_archive_name_format():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(
-        'match-archives', 'sh:foo*'
+        'match-archives',
+        'sh:foo*',
     ).and_return(('--match-archives', 'sh:foo*'))
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
 
     command = module.make_info_command(
         repository_path='repo',
-        config={'archive_name_format': 'bar-{now}'},  # noqa: FS003
+        config={'archive_name_format': 'bar-{now}'},
         local_borg_version='2.3.4',
         global_arguments=flexmock(),
         info_arguments=flexmock(archive=None, json=False, prefix='foo'),
@@ -326,14 +357,16 @@ def test_make_info_command_prefers_prefix_over_archive_name_format():
 def test_make_info_command_transforms_archive_name_format_into_match_archives_flags():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, 'bar-{now}', '2.3.4'  # noqa: FS003
+        None,
+        'bar-{now}',
+        '2.3.4',
     ).and_return(('--match-archives', 'sh:bar-*'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
 
     command = module.make_info_command(
         repository_path='repo',
-        config={'archive_name_format': 'bar-{now}'},  # noqa: FS003
+        config={'archive_name_format': 'bar-{now}'},
         local_borg_version='2.3.4',
         global_arguments=flexmock(),
         info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives=None),
@@ -347,7 +380,9 @@ def test_make_info_command_transforms_archive_name_format_into_match_archives_fl
 def test_make_info_command_with_match_archives_option_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        'sh:foo-*', 'bar-{now}', '2.3.4'  # noqa: FS003
+        'sh:foo-*',
+        'bar-{now}',
+        '2.3.4',
     ).and_return(('--match-archives', 'sh:foo-*'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -356,7 +391,7 @@ def test_make_info_command_with_match_archives_option_passes_through_to_command(
     command = module.make_info_command(
         repository_path='repo',
         config={
-            'archive_name_format': 'bar-{now}',  # noqa: FS003
+            'archive_name_format': 'bar-{now}',
             'match_archives': 'sh:foo-*',
         },
         local_borg_version='2.3.4',
@@ -372,7 +407,9 @@ def test_make_info_command_with_match_archives_option_passes_through_to_command(
 def test_make_info_command_with_match_archives_flag_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        'sh:foo-*', 'bar-{now}', '2.3.4'  # noqa: FS003
+        'sh:foo-*',
+        'bar-{now}',
+        '2.3.4',
     ).and_return(('--match-archives', 'sh:foo-*'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -380,7 +417,7 @@ def test_make_info_command_with_match_archives_flag_passes_through_to_command():
 
     command = module.make_info_command(
         repository_path='repo',
-        config={'archive_name_format': 'bar-{now}', 'match_archives': 'sh:foo-*'},  # noqa: FS003
+        config={'archive_name_format': 'bar-{now}', 'match_archives': 'sh:foo-*'},
         local_borg_version='2.3.4',
         global_arguments=flexmock(),
         info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives='sh:foo-*'),
@@ -396,10 +433,12 @@ def test_make_info_command_passes_arguments_through_to_command(argument_name):
     flag_name = f"--{argument_name.replace('_', ' ')}"
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
-        (flag_name, 'value')
+        (flag_name, 'value'),
     )
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
@@ -410,7 +449,11 @@ def test_make_info_command_passes_arguments_through_to_command(argument_name):
         local_borg_version='2.3.4',
         global_arguments=flexmock(),
         info_arguments=flexmock(
-            archive=None, json=False, prefix=None, match_archives=None, **{argument_name: 'value'}
+            archive=None,
+            json=False,
+            prefix=None,
+            match_archives=None,
+            **{argument_name: 'value'},
         ),
         local_path='borg',
         remote_path=None,
@@ -422,10 +465,12 @@ def test_make_info_command_passes_arguments_through_to_command(argument_name):
 def test_make_info_command_with_date_based_matching_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
+        None,
+        None,
+        '2.3.4',
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
-        ('--newer', '1d', '--newest', '1y', '--older', '1m', '--oldest', '1w')
+        ('--newer', '1d', '--newest', '1y', '--older', '1m', '--oldest', '1w'),
     )
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     info_arguments = flexmock(

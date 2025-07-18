@@ -18,7 +18,7 @@ def set_values(config, keys, value):
     if len(keys) == 1:
         if isinstance(config, list):
             raise ValueError(
-                'When overriding a list option, the value must use list syntax (e.g., "[foo, bar]" or "[{key: value}]" as appropriate)'
+                'When overriding a list option, the value must use list syntax (e.g., "[foo, bar]" or "[{key: value}]" as appropriate)',
             )
 
         config[first_key] = value
@@ -69,11 +69,11 @@ def type_for_option(schema, option_keys):
     '''
     option_schema = schema
 
-    for key in option_keys:
-        try:
+    try:
+        for key in option_keys:
             option_schema = option_schema['properties'][key]
-        except KeyError:
-            return None
+    except KeyError:
+        return None
 
     try:
         return option_schema['type']
@@ -103,8 +103,8 @@ def parse_overrides(raw_overrides, schema):
 
     parsed_overrides = []
 
-    for raw_override in raw_overrides:
-        try:
+    try:
+        for raw_override in raw_overrides:
             raw_keys, value = raw_override.split('=', 1)
             keys = tuple(raw_keys.split('.'))
             option_type = type_for_option(schema, keys)
@@ -113,14 +113,14 @@ def parse_overrides(raw_overrides, schema):
                 (
                     keys,
                     convert_value_type(value, option_type),
-                )
+                ),
             )
-        except ValueError:
-            raise ValueError(
-                f"Invalid override '{raw_override}'. Make sure you use the form: OPTION=VALUE or OPTION.SUBOPTION=VALUE"
-            )
-        except ruamel.yaml.error.YAMLError as error:
-            raise ValueError(f"Invalid override '{raw_override}': {error.problem}")
+    except ValueError:
+        raise ValueError(
+            f"Invalid override '{raw_override}'. Make sure you use the form: OPTION=VALUE or OPTION.SUBOPTION=VALUE",
+        )
+    except ruamel.yaml.error.YAMLError as error:
+        raise ValueError(f"Invalid override '{raw_override}': {error.problem}")
 
     return tuple(parsed_overrides)
 
@@ -139,7 +139,7 @@ def apply_overrides(config, schema, raw_overrides):
 
     if overrides:
         logger.warning(
-            "The --override flag is deprecated and will be removed from a future release. Instead, use a command-line flag corresponding to the configuration option you'd like to set."
+            "The --override flag is deprecated and will be removed from a future release. Instead, use a command-line flag corresponding to the configuration option you'd like to set.",
         )
 
     for keys, value in overrides:

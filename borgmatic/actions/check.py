@@ -1,4 +1,5 @@
 import calendar
+import contextlib
 import datetime
 import hashlib
 import itertools
@@ -55,12 +56,12 @@ def parse_checks(config, only_checks=None):
 
     if 'disabled' in checks:
         logger.warning(
-            'The "disabled" value for the "checks" option is deprecated and will be removed from a future release; use "skip_actions" instead'
+            'The "disabled" value for the "checks" option is deprecated and will be removed from a future release; use "skip_actions" instead',
         )
 
         if len(checks) > 1:
             logger.warning(
-                'Multiple checks are configured, but one of them is "disabled"; not running any checks'
+                'Multiple checks are configured, but one of them is "disabled"; not running any checks',
             )
 
         return ()
@@ -175,7 +176,7 @@ def filter_checks_on_frequency(
 
             if calendar.day_name[datetime_now().weekday()] not in days:
                 logger.info(
-                    f"Skipping {check} check due to day of the week; check only runs on {'/'.join(day.title() for day in days)} (use --force to check anyway)"
+                    f"Skipping {check} check due to day of the week; check only runs on {'/'.join(day.title() for day in days)} (use --force to check anyway)",
                 )
                 filtered_checks.remove(check)
                 continue
@@ -193,7 +194,7 @@ def filter_checks_on_frequency(
         if datetime_now() < check_time + frequency_delta:
             remaining = check_time + frequency_delta - datetime_now()
             logger.info(
-                f'Skipping {check} check due to configured frequency; {remaining} until next check (use --force to check anyway)'
+                f'Skipping {check} check due to configured frequency; {remaining} until next check (use --force to check anyway)',
             )
             filtered_checks.remove(check)
 
@@ -219,7 +220,7 @@ def make_check_time_path(config, borg_repository_id, check_type, archives_check_
     '''
     borgmatic_state_directory = borgmatic.config.paths.get_borgmatic_state_directory(config)
 
-    if check_type in ('archives', 'data'):
+    if check_type in {'archives', 'data'}:
         return os.path.join(
             borgmatic_state_directory,
             'checks',
@@ -254,7 +255,7 @@ def read_check_time(path):
     logger.debug(f'Reading check time from {path}')
 
     try:
-        return datetime.datetime.fromtimestamp(os.stat(path).st_mtime)
+        return datetime.datetime.fromtimestamp(os.stat(path).st_mtime)  # noqa: DTZ006
     except FileNotFoundError:
         return None
 
@@ -285,7 +286,7 @@ def probe_for_check_time(config, borg_repository_id, check, archives_check_id):
             (
                 make_check_time_path(config, borg_repository_id, check, archives_check_id),
                 make_check_time_path(config, borg_repository_id, check),
-            )
+            ),
         )
     )
 
@@ -317,16 +318,17 @@ def upgrade_check_times(config, borg_repository_id):
       {borgmatic_state_directory}/checks/1234567890/archives/all
     '''
     borgmatic_source_checks_path = os.path.join(
-        borgmatic.config.paths.get_borgmatic_source_directory(config), 'checks'
+        borgmatic.config.paths.get_borgmatic_source_directory(config),
+        'checks',
     )
     borgmatic_state_path = borgmatic.config.paths.get_borgmatic_state_directory(config)
     borgmatic_state_checks_path = os.path.join(borgmatic_state_path, 'checks')
 
     if os.path.exists(borgmatic_source_checks_path) and not os.path.exists(
-        borgmatic_state_checks_path
+        borgmatic_state_checks_path,
     ):
         logger.debug(
-            f'Upgrading archives check times directory from {borgmatic_source_checks_path} to {borgmatic_state_checks_path}'
+            f'Upgrading archives check times directory from {borgmatic_source_checks_path} to {borgmatic_state_checks_path}',
         )
         os.makedirs(borgmatic_state_path, mode=0o700, exist_ok=True)
         shutil.move(borgmatic_source_checks_path, borgmatic_state_checks_path)
@@ -341,10 +343,8 @@ def upgrade_check_times(config, borg_repository_id):
 
         logger.debug(f'Upgrading archives check time file from {old_path} to {new_path}')
 
-        try:
+        with contextlib.suppress(FileNotFoundError):
             shutil.move(old_path, temporary_path)
-        except FileNotFoundError:
-            pass
 
         os.mkdir(old_path)
         shutil.move(temporary_path, new_path)
@@ -369,31 +369,29 @@ def collect_spot_check_source_paths(
             'use_streaming',
             config,
             borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
-        ).values()
+        ).values(),
     )
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    (create_flags, create_positional_arguments, pattern_file) = (
-        borgmatic.borg.create.make_base_create_command(
-            dry_run=True,
-            repository_path=repository['path'],
-            # Omit "progress" because it interferes with "list_details".
-            config=dict(
-                {option: value for option, value in config.items() if option != 'progress'},
-                list_details=True,
-            ),
-            patterns=borgmatic.actions.pattern.process_patterns(
-                borgmatic.actions.pattern.collect_patterns(config),
-                config,
-                working_directory,
-            ),
-            local_borg_version=local_borg_version,
-            global_arguments=global_arguments,
-            borgmatic_runtime_directory=borgmatic_runtime_directory,
-            local_path=local_path,
-            remote_path=remote_path,
-            stream_processes=stream_processes,
-        )
+    (create_flags, create_positional_arguments, _) = borgmatic.borg.create.make_base_create_command(
+        dry_run=True,
+        repository_path=repository['path'],
+        # Omit "progress" because it interferes with "list_details".
+        config=dict(
+            {option: value for option, value in config.items() if option != 'progress'},
+            list_details=True,
+        ),
+        patterns=borgmatic.actions.pattern.process_patterns(
+            borgmatic.actions.pattern.collect_patterns(config),
+            config,
+            working_directory,
+        ),
+        local_borg_version=local_borg_version,
+        global_arguments=global_arguments,
+        borgmatic_runtime_directory=borgmatic_runtime_directory,
+        local_path=local_path,
+        remote_path=remote_path,
+        stream_processes=stream_processes,
     )
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
@@ -409,7 +407,7 @@ def collect_spot_check_source_paths(
     paths = tuple(
         path_line.split(' ', 1)[1]
         for path_line in paths_output.splitlines()
-        if path_line and path_line.startswith('- ') or path_line.startswith('+ ')
+        if path_line and path_line.startswith(('- ', '+ '))
     )
 
     return tuple(
@@ -450,12 +448,12 @@ def collect_spot_check_archive_paths(
             config,
             local_borg_version,
             global_arguments,
-            path_format='{type} {path}{NUL}',  # noqa: FS003
+            path_format='{type} {path}{NUL}',
             local_path=local_path,
             remote_path=remote_path,
         )
         for (file_type, path) in (line.split(' ', 1),)
-        if file_type not in (BORG_DIRECTORY_FILE_TYPE, BORG_PIPE_FILE_TYPE)
+        if file_type not in {BORG_DIRECTORY_FILE_TYPE, BORG_PIPE_FILE_TYPE}
         if pathlib.Path('borgmatic') not in pathlib.Path(path).parents
         if pathlib.Path(borgmatic_source_directory.lstrip(os.path.sep))
         not in pathlib.Path(path).parents
@@ -488,7 +486,8 @@ def compare_spot_check_hashes(
     # source directories.
     spot_check_config = next(check for check in config['checks'] if check['name'] == 'spot')
     sample_count = max(
-        int(len(source_paths) * (min(spot_check_config['data_sample_percentage'], 100) / 100)), 1
+        int(len(source_paths) * (min(spot_check_config['data_sample_percentage'], 100) / 100)),
+        1,
     )
     source_sample_paths = tuple(random.SystemRandom().sample(source_paths, sample_count))
     working_directory = borgmatic.config.paths.get_working_directory(config)
@@ -500,7 +499,7 @@ def compare_spot_check_hashes(
         if not os.path.islink(full_source_path)
     }
     logger.debug(
-        f'Sampling {sample_count} source paths (~{spot_check_config["data_sample_percentage"]}%) for spot check'
+        f'Sampling {sample_count} source paths (~{spot_check_config["data_sample_percentage"]}%) for spot check',
     )
 
     source_sample_paths_iterator = iter(source_sample_paths)
@@ -512,7 +511,7 @@ def compare_spot_check_hashes(
     while True:
         # Hash each file in the sample paths (if it exists).
         source_sample_paths_subset = tuple(
-            itertools.islice(source_sample_paths_iterator, SAMPLE_PATHS_SUBSET_COUNT)
+            itertools.islice(source_sample_paths_iterator, SAMPLE_PATHS_SUBSET_COUNT),
         )
         if not source_sample_paths_subset:
             break
@@ -539,7 +538,7 @@ def compare_spot_check_hashes(
                     for path in source_sample_paths_subset
                     if path not in hashable_source_sample_path
                 },
-            )
+            ),
         )
 
         # Get the hash for each file in the archive.
@@ -553,12 +552,12 @@ def compare_spot_check_hashes(
                     local_borg_version,
                     global_arguments,
                     list_paths=source_sample_paths_subset,
-                    path_format='{xxh64} {path}{NUL}',  # noqa: FS003
+                    path_format='{xxh64} {path}{NUL}',
                     local_path=local_path,
                     remote_path=remote_path,
                 )
                 if line
-            )
+            ),
         )
 
     # Compare the source hashes with the archive hashes to see how many match.
@@ -607,7 +606,7 @@ def spot_check(
 
     if spot_check_config['data_tolerance_percentage'] > spot_check_config['data_sample_percentage']:
         raise ValueError(
-            'The data_tolerance_percentage must be less than or equal to the data_sample_percentage'
+            'The data_tolerance_percentage must be less than or equal to the data_sample_percentage',
         )
 
     source_paths = collect_spot_check_source_paths(
@@ -652,7 +651,7 @@ def spot_check(
         )
         logger.debug(f'Paths in latest archive but not source paths: {truncated_archive_paths}')
         raise ValueError(
-            'Spot check failed: There are no source paths to compare against the archive'
+            'Spot check failed: There are no source paths to compare against the archive',
         )
 
     # Calculate the percentage delta between the source paths count and the archive paths count, and
@@ -660,14 +659,14 @@ def spot_check(
     count_delta_percentage = abs(len(source_paths) - len(archive_paths)) / len(source_paths) * 100
 
     if count_delta_percentage > spot_check_config['count_tolerance_percentage']:
-        rootless_source_paths = set(path.lstrip(os.path.sep) for path in source_paths)
+        rootless_source_paths = {path.lstrip(os.path.sep) for path in source_paths}
         truncated_exclusive_source_paths = textwrap.shorten(
             ', '.join(rootless_source_paths - set(archive_paths)) or 'none',
             width=MAX_SPOT_CHECK_PATHS_LENGTH,
             placeholder=' ...',
         )
         logger.debug(
-            f'Paths in source paths but not latest archive: {truncated_exclusive_source_paths}'
+            f'Paths in source paths but not latest archive: {truncated_exclusive_source_paths}',
         )
         truncated_exclusive_archive_paths = textwrap.shorten(
             ', '.join(set(archive_paths) - rootless_source_paths) or 'none',
@@ -675,10 +674,10 @@ def spot_check(
             placeholder=' ...',
         )
         logger.debug(
-            f'Paths in latest archive but not source paths: {truncated_exclusive_archive_paths}'
+            f'Paths in latest archive but not source paths: {truncated_exclusive_archive_paths}',
         )
         raise ValueError(
-            f'Spot check failed: {count_delta_percentage:.2f}% file count delta between source paths and latest archive (tolerance is {spot_check_config["count_tolerance_percentage"]}%)'
+            f'Spot check failed: {count_delta_percentage:.2f}% file count delta between source paths and latest archive (tolerance is {spot_check_config["count_tolerance_percentage"]}%)',
         )
 
     failing_paths = compare_spot_check_hashes(
@@ -704,14 +703,14 @@ def spot_check(
             placeholder=' ...',
         )
         logger.debug(
-            f'Source paths with data not matching the latest archive: {truncated_failing_paths}'
+            f'Source paths with data not matching the latest archive: {truncated_failing_paths}',
         )
         raise ValueError(
-            f'Spot check failed: {failing_percentage:.2f}% of source paths with data not matching the latest archive (tolerance is {data_tolerance_percentage}%)'
+            f'Spot check failed: {failing_percentage:.2f}% of source paths with data not matching the latest archive (tolerance is {data_tolerance_percentage}%)',
         )
 
     logger.info(
-        f'Spot check passed with a {count_delta_percentage:.2f}% file count delta and a {failing_percentage:.2f}% file data delta'
+        f'Spot check passed with a {count_delta_percentage:.2f}% file count delta and a {failing_percentage:.2f}% file data delta',
     )
 
 
@@ -731,7 +730,8 @@ def run_check(
     Raise ValueError if the Borg repository ID cannot be determined.
     '''
     if check_arguments.repository and not borgmatic.config.validate.repositories_match(
-        repository, check_arguments.repository
+        repository,
+        check_arguments.repository,
     ):
         return
 
@@ -748,7 +748,10 @@ def run_check(
     upgrade_check_times(config, repository_id)
     configured_checks = parse_checks(config, check_arguments.only_checks)
     archive_filter_flags = borgmatic.borg.check.make_archive_filter_flags(
-        local_borg_version, config, configured_checks, check_arguments
+        local_borg_version,
+        config,
+        configured_checks,
+        check_arguments,
     )
     archives_check_id = make_archives_check_id(archive_filter_flags)
     checks = filter_checks_on_frequency(

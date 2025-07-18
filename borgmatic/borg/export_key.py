@@ -35,7 +35,7 @@ def export_key(
     if export_arguments.path and export_arguments.path != '-':
         if os.path.exists(os.path.join(working_directory or '', export_arguments.path)):
             raise FileExistsError(
-                f'Destination path {export_arguments.path} already exists. Aborting.'
+                f'Destination path {export_arguments.path} already exists. Aborting.',
             )
 
         output_file = None

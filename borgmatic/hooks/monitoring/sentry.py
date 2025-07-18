@@ -10,16 +10,19 @@ TIMEOUT_SECONDS = 10
 
 
 def initialize_monitor(
-    ping_url, config, config_filename, monitoring_log_level, dry_run
+    ping_url,
+    config,
+    config_filename,
+    monitoring_log_level,
+    dry_run,
 ):  # pragma: no cover
     '''
     No initialization is necessary for this monitor.
     '''
-    pass
 
 
 DATA_SOURCE_NAME_URL_PATTERN = re.compile(
-    '^(?P<protocol>.+)://(?P<username>.+)@(?P<hostname>.+)/(?P<project_id>.+)$'
+    r'^(?P<protocol>.+)://(?P<username>.+)@(?P<hostname>.+)/(?P<project_id>.+)$',
 )
 
 
@@ -31,7 +34,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     '''
     run_states = hook_config.get('states', ['start', 'finish', 'fail'])
 
-    if not state.name.lower() in run_states:
+    if state.name.lower() not in run_states:
         return
 
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
@@ -75,4 +78,3 @@ def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  #
     '''
     No destruction is necessary for this monitor.
     '''
-    pass

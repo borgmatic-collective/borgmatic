@@ -12,12 +12,15 @@ TIMEOUT_SECONDS = 10
 
 
 def initialize_monitor(
-    ping_url, config, config_filename, monitoring_log_level, dry_run
+    ping_url,
+    config,
+    config_filename,
+    monitoring_log_level,
+    dry_run,
 ):  # pragma: no cover
     '''
     No initialization is necessary for this monitor.
     '''
-    pass
 
 
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
@@ -37,7 +40,8 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     try:
         token = borgmatic.hooks.credential.parse.resolve_credential(
-            hook_config.get('token'), config
+            hook_config.get('token'),
+            config,
         )
         user = borgmatic.hooks.credential.parse.resolve_credential(hook_config.get('user'), config)
     except ValueError as error:
@@ -54,11 +58,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         if 'retry' not in state_config:
             logger.info('Setting retry to default (30 sec)')
             state_config['retry'] = 30
-    else:
-        if 'expire' in state_config or 'retry' in state_config:
-            raise ValueError(
-                'The configuration parameters retry and expire should not be set when priority is not equal to 2. Please remove them from the configuration.'
-            )
+    elif 'expire' in state_config or 'retry' in state_config:
+        raise ValueError(
+            'The configuration parameters retry and expire should not be set when priority is not equal to 2. Please remove them from the configuration.',
+        )
 
     state_config = {
         key: (int(value) if key == 'html' else value) for key, value in state_config.items()
@@ -93,4 +96,3 @@ def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  #
     '''
     No destruction is necessary for this monitor.
     '''
-    pass

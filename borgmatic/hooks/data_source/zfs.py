@@ -45,8 +45,8 @@ def get_datasets_to_backup(zfs_command, patterns):
     Return the result as a sequence of Dataset instances, sorted by mount point.
     '''
     list_output = borgmatic.execute.execute_command_and_capture_output(
-        tuple(zfs_command.split(' '))
-        + (
+        (
+            *zfs_command.split(' '),
             'list',
             '-H',
             '-t',
@@ -103,7 +103,8 @@ def get_datasets_to_backup(zfs_command, patterns):
                             else ()
                         )
                         + borgmatic.hooks.data_source.snapshot.get_contained_patterns(
-                            dataset.mount_point, candidate_patterns
+                            dataset.mount_point,
+                            candidate_patterns,
                         )
                     ),
                 )
@@ -115,7 +116,7 @@ def get_datasets_to_backup(zfs_command, patterns):
                 )
             ),
             key=lambda dataset: dataset.mount_point,
-        )
+        ),
     )
 
 
@@ -124,8 +125,8 @@ def get_all_dataset_mount_points(zfs_command):
     Given a ZFS command to run, return all ZFS datasets as a sequence of sorted mount points.
     '''
     list_output = borgmatic.execute.execute_command_and_capture_output(
-        tuple(zfs_command.split(' '))
-        + (
+        (
+            *zfs_command.split(' '),
             'list',
             '-H',
             '-t',
@@ -143,8 +144,8 @@ def get_all_dataset_mount_points(zfs_command):
                 for line in list_output.splitlines()
                 for mount_point in (line.rstrip(),)
                 if mount_point != 'none'
-            }
-        )
+            },
+        ),
     )
 
 
@@ -154,8 +155,8 @@ def snapshot_dataset(zfs_command, full_snapshot_name):  # pragma: no cover
     snapshot.
     '''
     borgmatic.execute.execute_command(
-        tuple(zfs_command.split(' '))
-        + (
+        (
+            *zfs_command.split(' '),
             'snapshot',
             full_snapshot_name,
         ),
@@ -173,8 +174,8 @@ def mount_snapshot(mount_command, full_snapshot_name, snapshot_mount_path):  # p
     os.makedirs(snapshot_mount_path, mode=0o700, exist_ok=True)
 
     borgmatic.execute.execute_command(
-        tuple(mount_command.split(' '))
-        + (
+        (
+            *mount_command.split(' '),
             '-t',
             'zfs',
             '-o',
@@ -265,7 +266,7 @@ def dump_data_sources(
     for dataset in requested_datasets:
         full_snapshot_name = f'{dataset.name}@{snapshot_name}'
         logger.debug(
-            f'Creating ZFS snapshot {full_snapshot_name} of {dataset.mount_point}{dry_run_label}'
+            f'Creating ZFS snapshot {full_snapshot_name} of {dataset.mount_point}{dry_run_label}',
         )
 
         if not dry_run:
@@ -277,25 +278,29 @@ def dump_data_sources(
             normalized_runtime_directory,
             'zfs_snapshots',
             hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(
-                MOUNT_POINT_HASH_LENGTH
+                MOUNT_POINT_HASH_LENGTH,
             ),
             dataset.mount_point.lstrip(os.path.sep),
         )
 
         logger.debug(
-            f'Mounting ZFS snapshot {full_snapshot_name} at {snapshot_mount_path}{dry_run_label}'
+            f'Mounting ZFS snapshot {full_snapshot_name} at {snapshot_mount_path}{dry_run_label}',
         )
 
         if dry_run:
             continue
 
         mount_snapshot(
-            hook_config.get('mount_command', 'mount'), full_snapshot_name, snapshot_mount_path
+            hook_config.get('mount_command', 'mount'),
+            full_snapshot_name,
+            snapshot_mount_path,
         )
 
         for pattern in dataset.contained_patterns:
             snapshot_pattern = make_borg_snapshot_pattern(
-                pattern, dataset, normalized_runtime_directory
+                pattern,
+                dataset,
+                normalized_runtime_directory,
             )
 
             # Attempt to update the pattern in place, since pattern order matters to Borg.
@@ -312,7 +317,7 @@ def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
     Given a umount command to run and the mount path of a snapshot, unmount it.
     '''
     borgmatic.execute.execute_command(
-        tuple(umount_command.split(' ')) + (snapshot_mount_path,),
+        (*umount_command.split(' '), snapshot_mount_path),
         output_log_level=logging.DEBUG,
         close_fds=True,
     )
@@ -324,8 +329,8 @@ def destroy_snapshot(zfs_command, full_snapshot_name):  # pragma: no cover
     it.
     '''
     borgmatic.execute.execute_command(
-        tuple(zfs_command.split(' '))
-        + (
+        (
+            *tuple(zfs_command.split(' ')),
             'destroy',
             full_snapshot_name,
         ),
@@ -340,8 +345,8 @@ def get_all_snapshots(zfs_command):
     form "dataset@snapshot".
     '''
     list_output = borgmatic.execute.execute_command_and_capture_output(
-        tuple(zfs_command.split(' '))
-        + (
+        (
+            *tuple(zfs_command.split(' ')),
             'list',
             '-H',
             '-t',
@@ -355,7 +360,7 @@ def get_all_snapshots(zfs_command):
     return tuple(line.rstrip() for line in list_output.splitlines())
 
 
-def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):
+def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):  # noqa: PLR0912
     '''
     Given a ZFS configuration dict, a configuration dict, the borgmatic runtime directory, and
     whether this is a dry run, unmount and destroy any ZFS snapshots created by borgmatic. If this
@@ -444,7 +449,10 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
 
 
 def make_data_source_dump_patterns(
-    hook_config, config, borgmatic_runtime_directory, name=None
+    hook_config,
+    config,
+    borgmatic_runtime_directory,
+    name=None,
 ):  # pragma: no cover
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".

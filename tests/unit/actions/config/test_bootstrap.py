@@ -14,7 +14,7 @@ def test_make_bootstrap_config_uses_ssh_command_argument():
 
 def test_get_config_paths_returns_list_of_config_paths():
     flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_source_directory'
+        'get_borgmatic_source_directory',
     ).and_return('/source')
     flexmock(module).should_receive('make_bootstrap_config').and_return({})
     bootstrap_arguments = flexmock(
@@ -31,10 +31,10 @@ def test_get_config_paths_returns_list_of_config_paths():
     )
     local_borg_version = flexmock()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
-        flexmock()
+        flexmock(),
     )
     flexmock(module.borgmatic.config.paths).should_receive(
-        'make_runtime_directory_glob'
+        'make_runtime_directory_glob',
     ).replace_with(lambda path: path)
     extract_process = flexmock(
         stdout=flexmock(
@@ -42,17 +42,20 @@ def test_get_config_paths_returns_list_of_config_paths():
         ),
     )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        extract_process
+        extract_process,
     )
 
     assert module.get_config_paths(
-        'archive', bootstrap_arguments, global_arguments, local_borg_version
+        'archive',
+        bootstrap_arguments,
+        global_arguments,
+        local_borg_version,
     ) == ['/borgmatic/config.yaml']
 
 
 def test_get_config_paths_probes_for_manifest():
     flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_source_directory'
+        'get_borgmatic_source_directory',
     ).and_return('/source')
     flexmock(module).should_receive('make_bootstrap_config').and_return({})
     bootstrap_arguments = flexmock(
@@ -73,16 +76,22 @@ def test_get_config_paths_probes_for_manifest():
         borgmatic_runtime_directory,
     )
     flexmock(module.borgmatic.config.paths).should_receive(
-        'make_runtime_directory_glob'
+        'make_runtime_directory_glob',
     ).replace_with(lambda path: path)
     flexmock(module.os.path).should_receive('join').with_args(
-        'borgmatic', 'bootstrap', 'manifest.json'
+        'borgmatic',
+        'bootstrap',
+        'manifest.json',
     ).and_return('borgmatic/bootstrap/manifest.json').once()
     flexmock(module.os.path).should_receive('join').with_args(
-        borgmatic_runtime_directory, 'bootstrap', 'manifest.json'
+        borgmatic_runtime_directory,
+        'bootstrap',
+        'manifest.json',
     ).and_return('run/borgmatic/bootstrap/manifest.json').once()
     flexmock(module.os.path).should_receive('join').with_args(
-        '/source', 'bootstrap', 'manifest.json'
+        '/source',
+        'bootstrap',
+        'manifest.json',
     ).and_return('/source/bootstrap/manifest.json').once()
     manifest_missing_extract_process = flexmock(
         stdout=flexmock(read=lambda: None),
@@ -93,17 +102,20 @@ def test_get_config_paths_probes_for_manifest():
         ),
     )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        manifest_missing_extract_process
+        manifest_missing_extract_process,
     ).and_return(manifest_missing_extract_process).and_return(manifest_found_extract_process)
 
     assert module.get_config_paths(
-        'archive', bootstrap_arguments, global_arguments, local_borg_version
+        'archive',
+        bootstrap_arguments,
+        global_arguments,
+        local_borg_version,
     ) == ['/borgmatic/config.yaml']
 
 
 def test_get_config_paths_translates_ssh_command_argument_to_config():
     flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_source_directory'
+        'get_borgmatic_source_directory',
     ).and_return('/source')
     config = {}
     flexmock(module).should_receive('make_bootstrap_config').and_return(config)
@@ -121,10 +133,10 @@ def test_get_config_paths_translates_ssh_command_argument_to_config():
     )
     local_borg_version = flexmock()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
-        flexmock()
+        flexmock(),
     )
     flexmock(module.borgmatic.config.paths).should_receive(
-        'make_runtime_directory_glob'
+        'make_runtime_directory_glob',
     ).replace_with(lambda path: path)
     extract_process = flexmock(
         stdout=flexmock(
@@ -145,13 +157,16 @@ def test_get_config_paths_translates_ssh_command_argument_to_config():
     ).and_return(extract_process)
 
     assert module.get_config_paths(
-        'archive', bootstrap_arguments, global_arguments, local_borg_version
+        'archive',
+        bootstrap_arguments,
+        global_arguments,
+        local_borg_version,
     ) == ['/borgmatic/config.yaml']
 
 
 def test_get_config_paths_with_missing_manifest_raises_value_error():
     flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_source_directory'
+        'get_borgmatic_source_directory',
     ).and_return('/source')
     flexmock(module).should_receive('make_bootstrap_config').and_return({})
     bootstrap_arguments = flexmock(
@@ -168,26 +183,29 @@ def test_get_config_paths_with_missing_manifest_raises_value_error():
     )
     local_borg_version = flexmock()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
-        flexmock()
+        flexmock(),
     )
     flexmock(module.borgmatic.config.paths).should_receive(
-        'make_runtime_directory_glob'
+        'make_runtime_directory_glob',
     ).replace_with(lambda path: path)
     flexmock(module.os.path).should_receive('join').and_return('run/borgmatic')
     extract_process = flexmock(stdout=flexmock(read=lambda: ''))
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        extract_process
+        extract_process,
     )
 
     with pytest.raises(ValueError):
         module.get_config_paths(
-            'archive', bootstrap_arguments, global_arguments, local_borg_version
+            'archive',
+            bootstrap_arguments,
+            global_arguments,
+            local_borg_version,
         )
 
 
 def test_get_config_paths_with_broken_json_raises_value_error():
     flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_source_directory'
+        'get_borgmatic_source_directory',
     ).and_return('/source')
     flexmock(module).should_receive('make_bootstrap_config').and_return({})
     bootstrap_arguments = flexmock(
@@ -204,27 +222,30 @@ def test_get_config_paths_with_broken_json_raises_value_error():
     )
     local_borg_version = flexmock()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
-        flexmock()
+        flexmock(),
     )
     flexmock(module.borgmatic.config.paths).should_receive(
-        'make_runtime_directory_glob'
+        'make_runtime_directory_glob',
     ).replace_with(lambda path: path)
     extract_process = flexmock(
         stdout=flexmock(read=lambda: '{"config_paths": ["/oops'),
     )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        extract_process
+        extract_process,
     )
 
     with pytest.raises(ValueError):
         module.get_config_paths(
-            'archive', bootstrap_arguments, global_arguments, local_borg_version
+            'archive',
+            bootstrap_arguments,
+            global_arguments,
+            local_borg_version,
         )
 
 
 def test_get_config_paths_with_json_missing_key_raises_value_error():
     flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_source_directory'
+        'get_borgmatic_source_directory',
     ).and_return('/source')
     flexmock(module).should_receive('make_bootstrap_config').and_return({})
     bootstrap_arguments = flexmock(
@@ -241,21 +262,24 @@ def test_get_config_paths_with_json_missing_key_raises_value_error():
     )
     local_borg_version = flexmock()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
-        flexmock()
+        flexmock(),
     )
     flexmock(module.borgmatic.config.paths).should_receive(
-        'make_runtime_directory_glob'
+        'make_runtime_directory_glob',
     ).replace_with(lambda path: path)
     extract_process = flexmock(
         stdout=flexmock(read=lambda: '{}'),
     )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        extract_process
+        extract_process,
     )
 
     with pytest.raises(ValueError):
         module.get_config_paths(
-            'archive', bootstrap_arguments, global_arguments, local_borg_version
+            'archive',
+            bootstrap_arguments,
+            global_arguments,
+            local_borg_version,
         )
 
 
@@ -278,10 +302,10 @@ def test_run_bootstrap_does_not_raise():
     )
     local_borg_version = flexmock()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
-        flexmock()
+        flexmock(),
     )
     flexmock(module.borgmatic.config.paths).should_receive(
-        'make_runtime_directory_glob'
+        'make_runtime_directory_glob',
     ).replace_with(lambda path: path)
     extract_process = flexmock(
         stdout=flexmock(
@@ -289,10 +313,10 @@ def test_run_bootstrap_does_not_raise():
         ),
     )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        extract_process
+        extract_process,
     ).once()
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
-        'archive'
+        'archive',
     )
 
     module.run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version)
@@ -318,10 +342,10 @@ def test_run_bootstrap_translates_ssh_command_argument_to_config():
     )
     local_borg_version = flexmock()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
-        flexmock()
+        flexmock(),
     )
     flexmock(module.borgmatic.config.paths).should_receive(
-        'make_runtime_directory_glob'
+        'make_runtime_directory_glob',
     ).replace_with(lambda path: path)
     extract_process = flexmock(
         stdout=flexmock(

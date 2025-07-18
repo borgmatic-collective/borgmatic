@@ -27,12 +27,12 @@ def test_recreate_archive_dry_run_skips_execution():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     flexmock(module.borgmatic.execute).should_receive('execute_command').never()
 
@@ -65,12 +65,12 @@ def test_recreate_calls_borg_with_required_flags():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--repo', 'repo'))
 
@@ -100,12 +100,12 @@ def test_recreate_with_remote_path():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--remote-path', 'borg1', '--repo', 'repo'))
 
@@ -135,12 +135,12 @@ def test_recreate_with_lock_wait():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--lock-wait', '5', '--repo', 'repo'))
 
@@ -169,12 +169,12 @@ def test_recreate_with_log_info():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--info', '--repo', 'repo'))
 
@@ -205,12 +205,12 @@ def test_recreate_with_log_debug():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--debug', '--show-rc', '--repo', 'repo'))
     insert_logging_mock(logging.DEBUG)
@@ -240,12 +240,12 @@ def test_recreate_with_log_json():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--log-json', '--repo', 'repo'))
 
@@ -273,18 +273,18 @@ def test_recreate_with_list_config_calls_borg_with_list_flag():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return(
-        'AME+-'
+        'AME+-',
     )
     insert_execute_command_mock(
-        ('borg', 'recreate', '--list', '--filter', 'AME+-', '--repo', 'repo')
+        ('borg', 'recreate', '--list', '--filter', 'AME+-', '--repo', 'repo'),
     )
 
     module.recreate_archive(
@@ -311,17 +311,17 @@ def test_recreate_with_patterns_from_flag():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     mock_patterns_file = flexmock(name='patterns_file')
     flexmock(module).should_receive('write_patterns_file').and_return(mock_patterns_file)
     insert_execute_command_mock(
-        ('borg', 'recreate', '--patterns-from', 'patterns_file', '--repo', 'repo')
+        ('borg', 'recreate', '--patterns-from', 'patterns_file', '--repo', 'repo'),
     )
 
     module.recreate_archive(
@@ -348,15 +348,15 @@ def test_recreate_with_exclude_flags():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(
-        ('--exclude', 'pattern')
+        ('--exclude', 'pattern'),
     )
     insert_execute_command_mock(('borg', 'recreate', '--exclude', 'pattern', '--repo', 'repo'))
 
@@ -385,12 +385,12 @@ def test_recreate_with_target_flag():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--target', 'new-archive', '--repo', 'repo'))
 
@@ -419,15 +419,15 @@ def test_recreate_with_comment_flag():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(
-        ('borg', 'recreate', '--comment', shlex.quote('This is a test comment'), '--repo', 'repo')
+        ('borg', 'recreate', '--comment', shlex.quote('This is a test comment'), '--repo', 'repo'),
     )
 
     module.recreate_archive(
@@ -455,15 +455,15 @@ def test_recreate_with_timestamp_flag():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(
-        ('borg', 'recreate', '--timestamp', '2023-10-01T12:00:00', '--repo', 'repo')
+        ('borg', 'recreate', '--timestamp', '2023-10-01T12:00:00', '--repo', 'repo'),
     )
 
     module.recreate_archive(
@@ -491,12 +491,12 @@ def test_recreate_with_compression_flag():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--compression', 'lz4', '--repo', 'repo'))
 
@@ -525,15 +525,15 @@ def test_recreate_with_chunker_params_flag():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(
-        ('borg', 'recreate', '--chunker-params', '19,23,21,4095', '--repo', 'repo')
+        ('borg', 'recreate', '--chunker-params', '19,23,21,4095', '--repo', 'repo'),
     )
 
     module.recreate_archive(
@@ -561,12 +561,12 @@ def test_recreate_with_recompress_flag():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--recompress', 'always', '--repo', 'repo'))
 
@@ -595,12 +595,12 @@ def test_recreate_with_match_archives_star():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--repo', 'repo'))
 
@@ -629,12 +629,12 @@ def test_recreate_with_match_archives_regex():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--repo', 'repo'))
 
@@ -663,12 +663,12 @@ def test_recreate_with_match_archives_shell():
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--repo', 'repo'))
 
@@ -695,11 +695,13 @@ def test_recreate_with_match_archives_and_feature_available_calls_borg_with_matc
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').with_args(
-        'foo-*', None, '1.2.3'
+        'foo-*',
+        None,
+        '1.2.3',
     ).and_return(('--match-archives', 'foo-*'))
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
-        ('--repo', 'repo')
+        ('--repo', 'repo'),
     )
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_archive_flags').never()
     insert_execute_command_mock(('borg', 'recreate', '--repo', 'repo', '--match-archives', 'foo-*'))
@@ -727,15 +729,17 @@ def test_recreate_with_archives_flag_and_feature_available_calls_borg_with_match
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').with_args(
-        'archive', None, '1.2.3'
+        'archive',
+        None,
+        '1.2.3',
     ).and_return(('--match-archives', 'archive'))
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
-        ('--repo', 'repo')
+        ('--repo', 'repo'),
     )
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_archive_flags').never()
     insert_execute_command_mock(
-        ('borg', 'recreate', '--repo', 'repo', '--match-archives', 'archive')
+        ('borg', 'recreate', '--repo', 'repo', '--match-archives', 'archive'),
     )
 
     module.recreate_archive(
@@ -763,7 +767,7 @@ def test_recreate_with_match_archives_and_feature_not_available_calls_borg_witho
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').never()
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
-        ('repo',)
+        ('repo',),
     )
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_archive_flags').never()
     insert_execute_command_mock(('borg', 'recreate', 'repo'))
@@ -793,7 +797,7 @@ def test_recreate_with_archives_flags_and_feature_not_available_calls_borg_with_
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').never()
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
+        'make_repository_archive_flags',
     ).and_return(('repo::archive',))
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').never()
     insert_execute_command_mock(('borg', 'recreate', 'repo::archive'))

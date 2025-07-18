@@ -11,12 +11,15 @@ TIMEOUT_SECONDS = 10
 
 
 def initialize_monitor(
-    ping_url, config, config_filename, monitoring_log_level, dry_run
+    ping_url,
+    config,
+    config_filename,
+    monitoring_log_level,
+    dry_run,
 ):  # pragma: no cover
     '''
     No initialization is necessary for this monitor.
     '''
-    pass
 
 
 def send_zabbix_request(server, headers, data):
@@ -55,7 +58,7 @@ def send_zabbix_request(server, headers, data):
         return None
 
 
-def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):  # noqa: PLR0911, PLR0912, PLR0915
     '''
     Update the configured Zabbix item using either the itemid, or a host and key.
     If this is a dry run, then don't actually update anything.
@@ -77,13 +80,16 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     try:
         username = borgmatic.hooks.credential.parse.resolve_credential(
-            hook_config.get('username'), config
+            hook_config.get('username'),
+            config,
         )
         password = borgmatic.hooks.credential.parse.resolve_credential(
-            hook_config.get('password'), config
+            hook_config.get('password'),
+            config,
         )
         api_key = borgmatic.hooks.credential.parse.resolve_credential(
-            hook_config.get('api_key'), config
+            hook_config.get('api_key'),
+            config,
         )
     except ValueError as error:
         logger.warning(f'Zabbix credential error: {error}')
@@ -184,4 +190,3 @@ def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  #
     '''
     No destruction is necessary for this monitor.
     '''
-    pass

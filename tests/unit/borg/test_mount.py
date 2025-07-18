@@ -43,10 +43,10 @@ def test_mount_archive_with_borg_features_calls_borg_with_repository_and_match_a
         (
             '--repo',
             'repo',
-        )
+        ),
     )
     insert_execute_command_mock(
-        ('borg', 'mount', '--repo', 'repo', '--match-archives', 'archive', '/mnt')
+        ('borg', 'mount', '--repo', 'repo', '--match-archives', 'archive', '/mnt'),
     )
 
     mount_arguments = flexmock(mount_point='/mnt', options=None, paths=None, foreground=False)
@@ -63,7 +63,7 @@ def test_mount_archive_with_borg_features_calls_borg_with_repository_and_match_a
 def test_mount_archive_without_archive_calls_borg_with_repository_flags_only():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(('borg', 'mount', 'repo::archive', '/mnt'))
 
@@ -81,12 +81,15 @@ def test_mount_archive_without_archive_calls_borg_with_repository_flags_only():
 def test_mount_archive_calls_borg_with_path_flags():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(('borg', 'mount', 'repo::archive', '/mnt', 'path1', 'path2'))
 
     mount_arguments = flexmock(
-        mount_point='/mnt', options=None, paths=['path1', 'path2'], foreground=False
+        mount_point='/mnt',
+        options=None,
+        paths=['path1', 'path2'],
+        foreground=False,
     )
     module.mount_archive(
         repository_path='repo',
@@ -101,7 +104,7 @@ def test_mount_archive_calls_borg_with_path_flags():
 def test_mount_archive_calls_borg_with_local_path():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(('borg1', 'mount', 'repo::archive', '/mnt'))
 
@@ -120,7 +123,7 @@ def test_mount_archive_calls_borg_with_local_path():
 def test_mount_archive_calls_borg_using_exit_codes():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     borg_exit_codes = flexmock()
     insert_execute_command_mock(
@@ -142,10 +145,10 @@ def test_mount_archive_calls_borg_using_exit_codes():
 def test_mount_archive_calls_borg_with_remote_path_flags():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(
-        ('borg', 'mount', '--remote-path', 'borg1', 'repo::archive', '/mnt')
+        ('borg', 'mount', '--remote-path', 'borg1', 'repo::archive', '/mnt'),
     )
 
     mount_arguments = flexmock(mount_point='/mnt', options=None, paths=None, foreground=False)
@@ -163,7 +166,7 @@ def test_mount_archive_calls_borg_with_remote_path_flags():
 def test_mount_archive_calls_borg_with_umask_flags():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(('borg', 'mount', '--umask', '0770', 'repo::archive', '/mnt'))
 
@@ -181,7 +184,7 @@ def test_mount_archive_calls_borg_with_umask_flags():
 def test_mount_archive_calls_borg_with_log_json_flags():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(('borg', 'mount', '--log-json', 'repo::archive', '/mnt'))
 
@@ -199,7 +202,7 @@ def test_mount_archive_calls_borg_with_log_json_flags():
 def test_mount_archive_calls_borg_with_lock_wait_flags():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(('borg', 'mount', '--lock-wait', '5', 'repo::archive', '/mnt'))
 
@@ -217,7 +220,7 @@ def test_mount_archive_calls_borg_with_lock_wait_flags():
 def test_mount_archive_with_log_info_calls_borg_with_info_parameter():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(('borg', 'mount', '--info', 'repo::archive', '/mnt'))
     insert_logging_mock(logging.INFO)
@@ -236,7 +239,7 @@ def test_mount_archive_with_log_info_calls_borg_with_info_parameter():
 def test_mount_archive_with_log_debug_calls_borg_with_debug_flags():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(('borg', 'mount', '--debug', '--show-rc', 'repo::archive', '/mnt'))
     insert_logging_mock(logging.DEBUG)
@@ -255,7 +258,7 @@ def test_mount_archive_with_log_debug_calls_borg_with_debug_flags():
 def test_mount_archive_calls_borg_with_foreground_parameter():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
@@ -282,12 +285,15 @@ def test_mount_archive_calls_borg_with_foreground_parameter():
 def test_mount_archive_calls_borg_with_options_flags():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(('borg', 'mount', '-o', 'super_mount', 'repo::archive', '/mnt'))
 
     mount_arguments = flexmock(
-        mount_point='/mnt', options='super_mount', paths=None, foreground=False
+        mount_point='/mnt',
+        options='super_mount',
+        paths=None,
+        foreground=False,
     )
     module.mount_archive(
         repository_path='repo',
@@ -314,7 +320,7 @@ def test_mount_archive_with_date_based_matching_calls_borg_with_date_based_flags
             '1w',
             '--match-archives',
             None,
-        )
+        ),
     )
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')

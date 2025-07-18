@@ -1,4 +1,5 @@
 import collections
+import contextlib
 import io
 import os
 import re
@@ -18,7 +19,8 @@ def insert_newline_before_comment(config, field_name):
     field and its comments.
     '''
     config.ca.items[field_name][1].insert(
-        0, ruamel.yaml.tokens.CommentToken('\n', ruamel.yaml.error.CommentMark(0), None)
+        0,
+        ruamel.yaml.tokens.CommentToken('\n', ruamel.yaml.error.CommentMark(0), None),
     )
 
 
@@ -40,13 +42,17 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
         config = ruamel.yaml.comments.CommentedSeq(
             example
             if borgmatic.config.schema.compare_types(
-                schema['items'].get('type'), SCALAR_SCHEMA_TYPES
+                schema['items'].get('type'),
+                SCALAR_SCHEMA_TYPES,
             )
             else [
                 schema_to_sample_configuration(
-                    schema['items'], source_config, level, parent_is_sequence=True
-                )
-            ]
+                    schema['items'],
+                    source_config,
+                    level,
+                    parent_is_sequence=True,
+                ),
+            ],
         )
         add_comments_to_configuration_sequence(config, schema, indent=(level * INDENT))
     elif borgmatic.config.schema.compare_types(schema_type, {'object'}):
@@ -59,19 +65,25 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
                     (
                         field_name,
                         schema_to_sample_configuration(
-                            sub_schema, (source_config or {}).get(field_name, {}), level + 1
+                            sub_schema,
+                            (source_config or {}).get(field_name, {}),
+                            level + 1,
                         ),
                     )
                     for field_name, sub_schema in borgmatic.config.schema.get_properties(
-                        schema
+                        schema,
                     ).items()
-                ]
+                ],
             )
             or example
         )
         indent = (level * INDENT) + (SEQUENCE_INDENT if parent_is_sequence else 0)
         add_comments_to_configuration_object(
-            config, schema, source_config, indent=indent, skip_first_field=parent_is_sequence
+            config,
+            schema,
+            source_config,
+            indent=indent,
+            skip_first_field=parent_is_sequence,
         )
     elif borgmatic.config.schema.compare_types(schema_type, SCALAR_SCHEMA_TYPES, match=all):
         return example
@@ -121,12 +133,8 @@ def comment_out_optional_configuration(rendered_config):
             indent_characters_at_sentinel = indent_characters
             continue
 
-        # Hit a blank line, so reset commenting.
-        if not line.strip():
-            optional = False
-            indent_characters_at_sentinel = None
-        # Dedented, so reset commenting.
-        elif (
+        # Hit a blank line or dedented, so reset commenting.
+        if not line.strip() or (
             indent_characters_at_sentinel is not None
             and indent_characters < indent_characters_at_sentinel
         ):
@@ -158,15 +166,13 @@ def write_configuration(config_filename, rendered_config, mode=0o600, overwrite=
     '''
     if not overwrite and os.path.exists(config_filename):
         raise FileExistsError(
-            f'{config_filename} already exists. Aborting. Use --overwrite to replace the file.'
+            f'{config_filename} already exists. Aborting. Use --overwrite to replace the file.',
         )
 
-    try:
+    with contextlib.suppress(FileExistsError, FileNotFoundError):
         os.makedirs(os.path.dirname(config_filename), mode=0o700)
-    except (FileExistsError, FileNotFoundError):
-        pass
 
-    with open(config_filename, 'w') as config_file:
+    with open(config_filename, 'w', encoding='utf-8') as config_file:
         config_file.write(rendered_config)
 
     os.chmod(config_filename, mode)
@@ -191,7 +197,7 @@ def add_comments_to_configuration_sequence(config, schema, indent=0):
     if schema['items'].get('type') != 'object':
         return
 
-    for field_name in config[0].keys():
+    for field_name in config[0]:
         field_schema = borgmatic.config.schema.get_properties(schema['items']).get(field_name, {})
         description = field_schema.get('description')
 
@@ -211,7 +217,11 @@ COMMENTED_OUT_SENTINEL = 'COMMENT_OUT'
 
 
 def add_comments_to_configuration_object(
-    config, schema, source_config=None, indent=0, skip_first_field=False
+    config,
+    schema,
+    source_config=None,
+    indent=0,
+    skip_first_field=False,
 ):
     '''
     Using descriptions from a schema as a source, add those descriptions as comments to the given
@@ -239,7 +249,7 @@ def add_comments_to_configuration_object(
             source_config is None or field_name not in source_config
         ):
             description = (
-                '\n'.join((description, COMMENTED_OUT_SENTINEL))
+                f'{description}\n{COMMENTED_OUT_SENTINEL}'
                 if description
                 else COMMENTED_OUT_SENTINEL
             )
@@ -275,7 +285,8 @@ def merge_source_configuration_into_destination(destination_config, source_confi
         # This is a mapping. Recurse for this key/value.
         if isinstance(source_value, collections.abc.Mapping):
             destination_config[field_name] = merge_source_configuration_into_destination(
-                destination_config[field_name], source_value
+                destination_config[field_name],
+                source_value,
             )
             continue
 
@@ -289,18 +300,22 @@ def merge_source_configuration_into_destination(destination_config, source_confi
                         source_item,
                     )
                     for index, source_item in enumerate(source_value)
-                ]
+                ],
             )
             continue
 
         # This is some sort of scalar. Set it into the destination.
-        destination_config[field_name] = source_config[field_name]
+        destination_config[field_name] = source_value
 
     return destination_config
 
 
 def generate_sample_configuration(
-    dry_run, source_filename, destination_filename, schema_filename, overwrite=False
+    dry_run,
+    source_filename,
+    destination_filename,
+    schema_filename,
+    overwrite=False,
 ):
     '''
     Given an optional source configuration filename, and a required destination configuration
@@ -309,7 +324,7 @@ def generate_sample_configuration(
     schema. If a source filename is provided, merge the parsed contents of that configuration into
     the generated configuration.
     '''
-    schema = ruamel.yaml.YAML(typ='safe').load(open(schema_filename))
+    schema = ruamel.yaml.YAML(typ='safe').load(open(schema_filename, encoding='utf-8'))
     source_config = None
 
     if source_filename:
@@ -323,7 +338,8 @@ def generate_sample_configuration(
             del source_config['bootstrap']
 
     destination_config = merge_source_configuration_into_destination(
-        schema_to_sample_configuration(schema, source_config), source_config
+        schema_to_sample_configuration(schema, source_config),
+        source_config,
     )
 
     if dry_run:

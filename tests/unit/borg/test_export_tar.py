@@ -34,10 +34,10 @@ def test_export_tar_archive_calls_borg_with_path_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(
-        ('borg', 'export-tar', 'repo::archive', 'test.tar', 'path1', 'path2')
+        ('borg', 'export-tar', 'repo::archive', 'test.tar', 'path1', 'path2'),
     )
 
     module.export_tar_archive(
@@ -56,10 +56,11 @@ def test_export_tar_archive_calls_borg_with_local_path_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(
-        ('borg1', 'export-tar', 'repo::archive', 'test.tar'), borg_local_path='borg1'
+        ('borg1', 'export-tar', 'repo::archive', 'test.tar'),
+        borg_local_path='borg1',
     )
 
     module.export_tar_archive(
@@ -79,7 +80,7 @@ def test_export_tar_archive_calls_borg_using_exit_codes():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     borg_exit_codes = flexmock()
     insert_execute_command_mock(
@@ -103,10 +104,10 @@ def test_export_tar_archive_calls_borg_with_remote_path_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(
-        ('borg', 'export-tar', '--remote-path', 'borg1', 'repo::archive', 'test.tar')
+        ('borg', 'export-tar', '--remote-path', 'borg1', 'repo::archive', 'test.tar'),
     )
 
     module.export_tar_archive(
@@ -126,10 +127,10 @@ def test_export_tar_archive_calls_borg_with_umask_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(
-        ('borg', 'export-tar', '--umask', '0770', 'repo::archive', 'test.tar')
+        ('borg', 'export-tar', '--umask', '0770', 'repo::archive', 'test.tar'),
     )
 
     module.export_tar_archive(
@@ -148,7 +149,7 @@ def test_export_tar_archive_calls_borg_with_log_json_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(('borg', 'export-tar', '--log-json', 'repo::archive', 'test.tar'))
 
@@ -168,10 +169,10 @@ def test_export_tar_archive_calls_borg_with_lock_wait_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(
-        ('borg', 'export-tar', '--lock-wait', '5', 'repo::archive', 'test.tar')
+        ('borg', 'export-tar', '--lock-wait', '5', 'repo::archive', 'test.tar'),
     )
 
     module.export_tar_archive(
@@ -190,7 +191,7 @@ def test_export_tar_archive_with_log_info_calls_borg_with_info_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(('borg', 'export-tar', '--info', 'repo::archive', 'test.tar'))
     insert_logging_mock(logging.INFO)
@@ -211,10 +212,10 @@ def test_export_tar_archive_with_log_debug_calls_borg_with_debug_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(
-        ('borg', 'export-tar', '--debug', '--show-rc', 'repo::archive', 'test.tar')
+        ('borg', 'export-tar', '--debug', '--show-rc', 'repo::archive', 'test.tar'),
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -234,7 +235,7 @@ def test_export_tar_archive_calls_borg_with_dry_run_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     flexmock(module).should_receive('execute_command').never()
 
@@ -254,10 +255,10 @@ def test_export_tar_archive_calls_borg_with_tar_filter_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(
-        ('borg', 'export-tar', '--tar-filter', 'bzip2', 'repo::archive', 'test.tar')
+        ('borg', 'export-tar', '--tar-filter', 'bzip2', 'repo::archive', 'test.tar'),
     )
 
     module.export_tar_archive(
@@ -277,7 +278,7 @@ def test_export_tar_archive_calls_borg_with_list_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(
         ('borg', 'export-tar', '--list', 'repo::archive', 'test.tar'),
@@ -300,10 +301,10 @@ def test_export_tar_archive_calls_borg_with_strip_components_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(
-        ('borg', 'export-tar', '--strip-components', '5', 'repo::archive', 'test.tar')
+        ('borg', 'export-tar', '--strip-components', '5', 'repo::archive', 'test.tar'),
     )
 
     module.export_tar_archive(
@@ -323,7 +324,7 @@ def test_export_tar_archive_skips_abspath_for_remote_repository_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('server:repo::archive',)
+        ('server:repo::archive',),
     )
     insert_execute_command_mock(('borg', 'export-tar', 'server:repo::archive', 'test.tar'))
 
@@ -343,7 +344,7 @@ def test_export_tar_archive_calls_borg_with_stdout_destination_path():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(('borg', 'export-tar', 'repo::archive', '-'), capture=False)
 
@@ -363,7 +364,7 @@ def test_export_tar_archive_calls_borg_with_working_directory():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',)
+        ('repo::archive',),
     )
     insert_execute_command_mock(
         ('borg', 'export-tar', 'repo::archive', 'test.tar'),

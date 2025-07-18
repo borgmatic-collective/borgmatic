@@ -50,38 +50,44 @@ code reference](https://torsion.org/borgmatic/docs/reference/source-code/).
 ## Automated tests
 
 Assuming you've cloned the borgmatic source code as described above and you're
-in the `borgmatic/` working copy, install tox, which is used for setting up
-testing environments. You can either install a system package of tox (likely
-called `tox` or `python-tox`) or you can install tox with pipx:
+in the `borgmatic/` working copy, install [tox](https://tox.wiki/), which is
+used for setting up testing environments. You can either install a system
+package of tox (likely called `tox` or `python-tox`) or you can install tox with
+pipx:
 
 ```bash
 pipx install tox
 ```
 
+Also install [Ruff](https://docs.astral.sh/ruff/), which tox calls for code
+linting and formatting:
+
+```bash
+pipx install ruff
+```
+
 Finally, to actually run tests, run tox from inside the borgmatic
-sourcedirectory:
+source directory:
 
 ```bash
 tox
 ```
 
-### Code formatting
+### Code style
 
-If when running tests, you get an error from the
-[Black](https://black.readthedocs.io/en/stable/) code formatter about files
-that would be reformatted, you can ask Black to format them for you via the
-following:
+If when running tests, you get an error from Ruff's linter about files that
+don't meet linting requirements, you can ask Ruff to attempt to fix them for you
+via the following:
 
 ```bash
-tox -e black
+tox -e lint
 ```
 
-And if you get a complaint from the
-[isort](https://github.com/timothycrosley/isort) Python import orderer, you
-can ask isort to order your imports for you:
+And if you get an error from the Ruff's code formatter about files that would be
+reformatted, you can ask Ruff to format them for you:
 
 ```bash
-tox -e isort
+tox -e format
 ```
 
 Similarly, if you get errors about spelling mistakes in source code, you can
@@ -89,7 +95,7 @@ ask [codespell](https://github.com/codespell-project/codespell) to correct
 them:
 
 ```bash
-tox -e codespell
+tox -e spell
 ```
 
 
@@ -162,11 +168,8 @@ the following deviations from it:
  * Prefer functional code where it makes sense, e.g. when constructing a
    command (to subsequently execute imperatively).
 
-borgmatic uses the [Black](https://black.readthedocs.io/en/stable/) code
-formatter, the [Flake8](http://flake8.pycqa.org/en/latest/) code checker, and
-the [isort](https://github.com/timothycrosley/isort) import orderer, so
-certain code style requirements are enforced when running automated tests. See
-the Black, Flake8, and isort documentation for more information.
+Since borgmatic uses Ruff for code lining and formatting, many other code style
+requirements are also enforced when running automated tests.
 
 
 ## Continuous integration

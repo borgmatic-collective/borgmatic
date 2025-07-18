@@ -21,7 +21,8 @@ def run_change_passphrase(
     if (
         change_passphrase_arguments.repository is None
         or borgmatic.config.validate.repositories_match(
-            repository, change_passphrase_arguments.repository
+            repository,
+            change_passphrase_arguments.repository,
         )
     ):
         logger.info('Changing repository passphrase')

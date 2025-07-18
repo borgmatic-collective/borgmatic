@@ -34,8 +34,10 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
 
     borgmatic.hooks.monitoring.logs.add_handler(
         borgmatic.hooks.monitoring.logs.Forgetful_buffering_handler(
-            HANDLER_IDENTIFIER, ping_body_limit, monitoring_log_level
-        )
+            HANDLER_IDENTIFIER,
+            ping_body_limit,
+            monitoring_log_level,
+        ),
     )
 
 
@@ -56,14 +58,15 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     try:
         integration_key = borgmatic.hooks.credential.parse.resolve_credential(
-            hook_config.get('integration_key'), config
+            hook_config.get('integration_key'),
+            config,
         )
     except ValueError as error:
         logger.warning(f'PagerDuty credential error: {error}')
         return
 
     logs_payload = borgmatic.hooks.monitoring.logs.format_buffered_logs_for_payload(
-        HANDLER_IDENTIFIER
+        HANDLER_IDENTIFIER,
     )
 
     hostname = platform.node()
@@ -87,7 +90,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
                     'logs': logs_payload,
                 },
             },
-        }
+        },
     )
 
     if dry_run:
@@ -96,7 +99,9 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     logging.getLogger('urllib3').setLevel(logging.ERROR)
     try:
         response = requests.post(
-            EVENTS_API_URL, data=payload.encode('utf-8'), timeout=TIMEOUT_SECONDS
+            EVENTS_API_URL,
+            data=payload.encode('utf-8'),
+            timeout=TIMEOUT_SECONDS,
         )
         if not response.ok:
             response.raise_for_status()

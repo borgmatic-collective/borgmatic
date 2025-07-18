@@ -9,9 +9,11 @@ from ..test_verbosity import insert_logging_mock
 
 
 def insert_execute_command_mock(
-    command, input_file=module.DO_NOT_CAPTURE, working_directory=None, borg_exit_codes=None
+    command,
+    input_file=module.DO_NOT_CAPTURE,
+    working_directory=None,
+    borg_exit_codes=None,
 ):
-
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         working_directory,
@@ -262,7 +264,7 @@ def test_import_key_calls_borg_with_path_argument_and_working_directory():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').with_args('/working/dir/source').and_return(
-        True
+        True,
     ).once()
     insert_execute_command_mock(
         ('borg', 'key', 'import', 'repo', 'source'),

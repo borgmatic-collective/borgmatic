@@ -5,7 +5,7 @@ from borgmatic.actions import json as module
 
 def test_parse_json_loads_json_from_string():
     assert module.parse_json('{"repository": {"id": "foo"}}', label=None) == {
-        'repository': {'id': 'foo', 'label': ''}
+        'repository': {'id': 'foo', 'label': ''},
     }
 
 
@@ -23,7 +23,7 @@ def test_parse_json_skips_with_invalid_json_raises():
 
 def test_parse_json_injects_label_into_parsed_data():
     assert module.parse_json('{"repository": {"id": "foo"}}', label='bar') == {
-        'repository': {'id': 'foo', 'label': 'bar'}
+        'repository': {'id': 'foo', 'label': 'bar'},
     }
 
 

@@ -27,7 +27,9 @@ def make_data_source_dump_filename(dump_path, name, hostname=None, port=None):
         raise ValueError(f'Invalid data source name {name}')
 
     return os.path.join(
-        dump_path, (hostname or 'localhost') + ('' if port is None else f':{port}'), name
+        dump_path,
+        (hostname or 'localhost') + ('' if port is None else f':{port}'),
+        name,
     )
 
 

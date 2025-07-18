@@ -37,8 +37,10 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
 
     borgmatic.hooks.monitoring.logs.add_handler(
         borgmatic.hooks.monitoring.logs.Forgetful_buffering_handler(
-            HANDLER_IDENTIFIER, ping_body_limit, monitoring_log_level
-        )
+            HANDLER_IDENTIFIER,
+            ping_body_limit,
+            monitoring_log_level,
+        ),
     )
 
 
@@ -74,9 +76,9 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     logger.info(f'Pinging Healthchecks {state.name.lower()}{dry_run_label}')
     logger.debug(f'Using Healthchecks ping URL {ping_url}')
 
-    if state in (monitor.State.FINISH, monitor.State.FAIL, monitor.State.LOG):
+    if state in {monitor.State.FINISH, monitor.State.FAIL, monitor.State.LOG}:
         payload = borgmatic.hooks.monitoring.logs.format_buffered_logs_for_payload(
-            HANDLER_IDENTIFIER
+            HANDLER_IDENTIFIER,
         )
     else:
         payload = ''

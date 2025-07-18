@@ -11,12 +11,15 @@ TIMEOUT_SECONDS = 10
 
 
 def initialize_monitor(
-    ping_url, config, config_filename, monitoring_log_level, dry_run
+    ping_url,
+    config,
+    config_filename,
+    monitoring_log_level,
+    dry_run,
 ):  # pragma: no cover
     '''
     No initialization is necessary for this monitor.
     '''
-    pass
 
 
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
@@ -54,13 +57,16 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
         try:
             username = borgmatic.hooks.credential.parse.resolve_credential(
-                hook_config.get('username'), config
+                hook_config.get('username'),
+                config,
             )
             password = borgmatic.hooks.credential.parse.resolve_credential(
-                hook_config.get('password'), config
+                hook_config.get('password'),
+                config,
             )
             access_token = borgmatic.hooks.credential.parse.resolve_credential(
-                hook_config.get('access_token'), config
+                hook_config.get('access_token'),
+                config,
             )
         except ValueError as error:
             logger.warning(f'Ntfy credential error: {error}')
@@ -71,7 +77,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         if access_token is not None:
             if username or password:
                 logger.warning(
-                    'ntfy access_token is set but so is username/password, only using access_token'
+                    'ntfy access_token is set but so is username/password, only using access_token',
                 )
 
             auth = requests.auth.HTTPBasicAuth('', access_token)
@@ -87,7 +93,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             logging.getLogger('urllib3').setLevel(logging.ERROR)
             try:
                 response = requests.post(
-                    f'{base_url}/{topic}', headers=headers, auth=auth, timeout=TIMEOUT_SECONDS
+                    f'{base_url}/{topic}',
+                    headers=headers,
+                    auth=auth,
+                    timeout=TIMEOUT_SECONDS,
                 )
                 if not response.ok:
                     response.raise_for_status()
@@ -99,4 +108,3 @@ def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  #
     '''
     No destruction is necessary for this monitor.
     '''
-    pass

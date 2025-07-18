@@ -83,7 +83,7 @@ def test_run_repo_create_without_encryption_mode_raises():
 def test_run_repo_create_bails_if_repository_does_not_match():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(
-        False
+        False,
     )
     flexmock(module.borgmatic.borg.repo_create).should_receive('create_repository').never()
     arguments = flexmock(

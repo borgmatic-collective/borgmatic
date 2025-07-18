@@ -43,12 +43,13 @@ def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_code
 
                 if treat_as == 'error':
                     logger.error(
-                        f'Treating exit code {exit_code} as an error, as per configuration'
+                        f'Treating exit code {exit_code} as an error, as per configuration',
                     )
                     return Exit_status.ERROR
-                elif treat_as == 'warning':
+
+                if treat_as == 'warning':
                     logger.warning(
-                        f'Treating exit code {exit_code} as a warning, as per configuration'
+                        f'Treating exit code {exit_code} as a warning, as per configuration',
                     )
                     return Exit_status.WARNING
 
@@ -103,7 +104,7 @@ def append_last_lines(last_lines, captured_output, line, output_log_level):
         logger.log(output_log_level, line)
 
 
-def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, borg_exit_codes):
+def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, borg_exit_codes):  # noqa: PLR0912
     '''
     Given a sequence of subprocess.Popen() instances for multiple processes, log the output for each
     process with the requested log level. Additionally, raise a CalledProcessError if a process
@@ -132,7 +133,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
     still_running = True
 
     # Log output for each process until they all exit.
-    while True:
+    while True:  # noqa: PLR1702
         if output_buffers:
             (ready_buffers, _, _) = select.select(output_buffers, [], [])
 
@@ -182,7 +183,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
             command = process.args.split(' ') if isinstance(process.args, str) else process.args
             exit_status = interpret_exit_code(command, exit_code, borg_local_path, borg_exit_codes)
 
-            if exit_status in (Exit_status.ERROR, Exit_status.WARNING):
+            if exit_status in {Exit_status.ERROR, Exit_status.WARNING}:
                 # If an error occurs, include its output in the raised exception so that we don't
                 # inadvertently hide error output.
                 output_buffer = output_buffer_for_process(process, exclude_stdouts)
@@ -195,7 +196,10 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                         break
 
                     append_last_lines(
-                        last_lines, captured_outputs[process], line, output_log_level=logging.ERROR
+                        last_lines,
+                        captured_outputs[process],
+                        line,
+                        output_log_level=logging.ERROR,
                     )
 
                 if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
@@ -210,7 +214,9 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
 
                 if exit_status == Exit_status.ERROR:
                     raise subprocess.CalledProcessError(
-                        exit_code, command_for_process(process), '\n'.join(last_lines)
+                        exit_code,
+                        command_for_process(process),
+                        '\n'.join(last_lines),
                     )
 
                 still_running = False
@@ -220,6 +226,8 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
         return {
             process: '\n'.join(output_lines) for process, output_lines in captured_outputs.items()
         }
+
+    return None
 
 
 SECRET_COMMAND_FLAG_NAMES = {'--password'}
@@ -256,19 +264,19 @@ def log_command(full_command, input_file=None, output_file=None, environment=Non
             ' '.join(
                 tuple(
                     f'{key}=***'
-                    for key in (environment or {}).keys()
+                    for key in (environment or {})
                     if any(
                         key.startswith(prefix)
                         for prefix in PREFIXES_OF_ENVIRONMENT_VARIABLES_TO_LOG
                     )
                 )
-                + mask_command_secrets(full_command)
+                + mask_command_secrets(full_command),
             ),
             width=MAX_LOGGED_COMMAND_LENGTH,
             placeholder=' ...',
         )
         + (f" < {getattr(input_file, 'name', input_file)}" if input_file else '')
-        + (f" > {getattr(output_file, 'name', output_file)}" if output_file else '')
+        + (f" > {getattr(output_file, 'name', output_file)}" if output_file else ''),
     )
 
 
@@ -309,12 +317,12 @@ def execute_command(
     do_not_capture = bool(output_file is DO_NOT_CAPTURE)
     command = ' '.join(full_command) if shell else full_command
 
-    process = subprocess.Popen(
+    process = subprocess.Popen(  # noqa: S603
         command,
         stdin=input_file,
         stdout=None if do_not_capture else (output_file or subprocess.PIPE),
         stderr=None if do_not_capture else (subprocess.PIPE if output_file else subprocess.STDOUT),
-        shell=shell,  # noqa: S602
+        shell=shell,
         env=environment,
         cwd=working_directory,
         close_fds=close_fds,
@@ -330,6 +338,8 @@ def execute_command(
             borg_local_path,
             borg_exit_codes,
         )
+
+    return None
 
 
 def execute_command_and_capture_output(
@@ -360,11 +370,11 @@ def execute_command_and_capture_output(
     command = ' '.join(full_command) if shell else full_command
 
     try:
-        output = subprocess.check_output(
+        output = subprocess.check_output(  # noqa: S603
             command,
             stdin=input_file,
             stderr=subprocess.STDOUT if capture_stderr else None,
-            shell=shell,  # noqa: S602
+            shell=shell,
             env=environment,
             cwd=working_directory,
             close_fds=close_fds,
@@ -418,14 +428,14 @@ def execute_command_with_processes(
     command = ' '.join(full_command) if shell else full_command
 
     try:
-        command_process = subprocess.Popen(
+        command_process = subprocess.Popen(  # noqa: S603
             command,
             stdin=input_file,
             stdout=None if do_not_capture else (output_file or subprocess.PIPE),
             stderr=(
                 None if do_not_capture else (subprocess.PIPE if output_file else subprocess.STDOUT)
             ),
-            shell=shell,  # noqa: S602
+            shell=shell,
             env=environment,
             cwd=working_directory,
             close_fds=close_fds,
@@ -442,7 +452,7 @@ def execute_command_with_processes(
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
         captured_outputs = log_outputs(
-            tuple(processes) + (command_process,),
+            (*processes, command_process),
             (input_file, output_file),
             output_log_level,
             borg_local_path,
@@ -451,3 +461,5 @@ def execute_command_with_processes(
 
     if output_log_level is None:
         return captured_outputs.get(command_process)
+
+    return None

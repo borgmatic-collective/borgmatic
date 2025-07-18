@@ -3,8 +3,10 @@ import sys
 
 
 def test_borgmatic_command_with_invalid_flag_shows_error_but_not_traceback():
-    output = subprocess.run(
-        'borgmatic -v 2 --invalid'.split(' '), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    output = subprocess.run(  # noqa: PLW1510
+        'borgmatic -v 2 --invalid'.split(' '),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
     ).stdout.decode(sys.stdout.encoding)
 
     assert 'Unrecognized argument' in output

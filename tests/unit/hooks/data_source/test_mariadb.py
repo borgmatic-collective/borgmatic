@@ -36,7 +36,8 @@ def test_make_defaults_file_option_with_username_and_password_writes_them_to_fil
 
     flexmock(module.os).should_receive('pipe').and_return(read_descriptor, write_descriptor)
     flexmock(module.os).should_receive('write').with_args(
-        write_descriptor, b'[client]\nuser=root\npassword="trustsome1"'
+        write_descriptor,
+        b'[client]\nuser=root\npassword="trustsome1"',
     ).once()
     flexmock(module.os).should_receive('close')
     flexmock(module.os).should_receive('set_inheritable')
@@ -52,7 +53,8 @@ def test_make_defaults_file_escapes_password_containing_backslash():
 
     flexmock(module.os).should_receive('pipe').and_return(read_descriptor, write_descriptor)
     flexmock(module.os).should_receive('write').with_args(
-        write_descriptor, b'[client]\nuser=root\n' + br'password="trust\\nsome1"'
+        write_descriptor,
+        b'[client]\nuser=root\n' + rb'password="trust\\nsome1"',
     ).once()
     flexmock(module.os).should_receive('close')
     flexmock(module.os).should_receive('set_inheritable')
@@ -68,7 +70,8 @@ def test_make_defaults_file_pipe_with_only_username_writes_it_to_file_descriptor
 
     flexmock(module.os).should_receive('pipe').and_return(read_descriptor, write_descriptor)
     flexmock(module.os).should_receive('write').with_args(
-        write_descriptor, b'[client]\nuser=root'
+        write_descriptor,
+        b'[client]\nuser=root',
     ).once()
     flexmock(module.os).should_receive('close')
     flexmock(module.os).should_receive('set_inheritable')
@@ -84,7 +87,8 @@ def test_make_defaults_file_pipe_with_only_password_writes_it_to_file_descriptor
 
     flexmock(module.os).should_receive('pipe').and_return(read_descriptor, write_descriptor)
     flexmock(module.os).should_receive('write').with_args(
-        write_descriptor, b'[client]\npassword="trustsome1"'
+        write_descriptor,
+        b'[client]\npassword="trustsome1"',
     ).once()
     flexmock(module.os).should_receive('close')
     flexmock(module.os).should_receive('set_inheritable')
@@ -100,13 +104,16 @@ def test_make_defaults_file_option_with_defaults_extra_filename_includes_it_in_f
 
     flexmock(module.os).should_receive('pipe').and_return(read_descriptor, write_descriptor)
     flexmock(module.os).should_receive('write').with_args(
-        write_descriptor, b'!include extra.cnf\n[client]\nuser=root\npassword="trustsome1"'
+        write_descriptor,
+        b'!include extra.cnf\n[client]\nuser=root\npassword="trustsome1"',
     ).once()
     flexmock(module.os).should_receive('close')
     flexmock(module.os).should_receive('set_inheritable')
 
     assert module.make_defaults_file_options(
-        username='root', password='trustsome1', defaults_extra_filename='extra.cnf'
+        username='root',
+        password='trustsome1',
+        defaults_extra_filename='extra.cnf',
     ) == ('--defaults-extra-file=/dev/fd/99',)
 
 
@@ -114,7 +121,9 @@ def test_make_defaults_file_option_with_only_defaults_extra_filename_uses_it_ins
     flexmock(module.os).should_receive('pipe').never()
 
     assert module.make_defaults_file_options(
-        username=None, password=None, defaults_extra_filename='extra.cnf'
+        username=None,
+        password=None,
+        defaults_extra_filename='extra.cnf',
     ) == ('--defaults-extra-file=extra.cnf',)
 
 
@@ -122,7 +131,12 @@ def test_database_names_to_dump_passes_through_name():
     environment = flexmock()
 
     names = module.database_names_to_dump(
-        {'name': 'foo'}, {}, 'root', 'trustsome1', environment, dry_run=False
+        {'name': 'foo'},
+        {},
+        'root',
+        'trustsome1',
+        environment,
+        dry_run=False,
     )
 
     assert names == ('foo',)
@@ -133,7 +147,12 @@ def test_database_names_to_dump_bails_for_dry_run():
     flexmock(module).should_receive('execute_command_and_capture_output').never()
 
     names = module.database_names_to_dump(
-        {'name': 'all'}, {}, 'root', 'trustsome1', environment, dry_run=True
+        {'name': 'all'},
+        {},
+        'root',
+        'trustsome1',
+        environment,
+        dry_run=True,
     )
 
     assert names == ()
@@ -142,11 +161,13 @@ def test_database_names_to_dump_bails_for_dry_run():
 def test_database_names_to_dump_queries_mariadb_for_database_names():
     environment = flexmock()
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
@@ -161,7 +182,12 @@ def test_database_names_to_dump_queries_mariadb_for_database_names():
     ).and_return('foo\nbar\nmysql\n').once()
 
     names = module.database_names_to_dump(
-        {'name': 'all'}, {}, 'root', 'trustsome1', environment, dry_run=False
+        {'name': 'all'},
+        {},
+        'root',
+        'trustsome1',
+        environment,
+        dry_run=False,
     )
 
     assert names == ('foo', 'bar')
@@ -170,7 +196,7 @@ def test_database_names_to_dump_queries_mariadb_for_database_names():
 def test_database_names_to_dump_with_environment_password_transport_skips_defaults_file_and_passes_user_flag():
     environment = flexmock()
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').never()
@@ -202,11 +228,13 @@ def test_database_names_to_dump_with_environment_password_transport_skips_defaul
 def test_database_names_to_dump_runs_mariadb_with_tls():
     environment = flexmock()
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
@@ -222,7 +250,12 @@ def test_database_names_to_dump_runs_mariadb_with_tls():
     ).and_return('foo\nbar\nmysql\n').once()
 
     names = module.database_names_to_dump(
-        {'name': 'all', 'tls': True}, {}, 'root', 'trustsome1', environment, dry_run=False
+        {'name': 'all', 'tls': True},
+        {},
+        'root',
+        'trustsome1',
+        environment,
+        dry_run=False,
     )
 
     assert names == ('foo', 'bar')
@@ -231,11 +264,13 @@ def test_database_names_to_dump_runs_mariadb_with_tls():
 def test_database_names_to_dump_runs_mariadb_without_tls():
     environment = flexmock()
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
@@ -251,7 +286,12 @@ def test_database_names_to_dump_runs_mariadb_without_tls():
     ).and_return('foo\nbar\nmysql\n').once()
 
     names = module.database_names_to_dump(
-        {'name': 'all', 'tls': False}, {}, 'root', 'trustsome1', environment, dry_run=False
+        {'name': 'all', 'tls': False},
+        {},
+        'root',
+        'trustsome1',
+        environment,
+        dry_run=False,
     )
 
     assert names == ('foo', 'bar')
@@ -273,11 +313,11 @@ def test_dump_data_sources_dumps_each_database():
     processes = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).and_return(None)
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('database_names_to_dump').with_args(
         database=databases[0],
@@ -327,7 +367,7 @@ def test_dump_data_sources_dumps_with_password():
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('database_names_to_dump').with_args(
@@ -371,7 +411,7 @@ def test_dump_data_sources_dumps_with_environment_password_transport_passes_pass
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('database_names_to_dump').with_args(
@@ -410,7 +450,7 @@ def test_dump_data_sources_dumps_all_databases_at_once():
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo', 'bar'))
@@ -441,7 +481,7 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
     processes = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).and_return(None)
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo', 'bar'))
@@ -477,10 +517,10 @@ def test_dump_data_sources_errors_for_missing_all_databases():
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        'databases/localhost/all'
+        'databases/localhost/all',
     )
     flexmock(module).should_receive('database_names_to_dump').and_return(())
 
@@ -500,10 +540,10 @@ def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        'databases/localhost/all'
+        'databases/localhost/all',
     )
     flexmock(module).should_receive('database_names_to_dump').and_return(())
 
@@ -523,10 +563,13 @@ def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run
 def test_database_names_to_dump_runs_mariadb_with_list_options():
     database = {'name': 'all', 'list_options': '--defaults-extra-file=mariadb.cnf --skip-ssl'}
     flexmock(module).should_receive('parse_extra_options').and_return(
-        ('--skip-ssl',), 'mariadb.cnf'
+        ('--skip-ssl',),
+        'mariadb.cnf',
     )
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', 'mariadb.cnf'
+        'root',
+        'trustsome1',
+        'mariadb.cnf',
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
@@ -539,7 +582,7 @@ def test_database_names_to_dump_runs_mariadb_with_list_options():
             'show schemas',
         ),
         environment=None,
-    ).and_return(('foo\nbar')).once()
+    ).and_return('foo\nbar').once()
 
     assert module.database_names_to_dump(database, {}, 'root', 'trustsome1', None, '') == (
         'foo',
@@ -554,10 +597,13 @@ def test_database_names_to_dump_runs_non_default_mariadb_with_list_options():
         'mariadb_command': 'custom_mariadb',
     }
     flexmock(module).should_receive('parse_extra_options').and_return(
-        ('--skip-ssl',), 'mariadb.cnf'
+        ('--skip-ssl',),
+        'mariadb.cnf',
     )
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', 'mariadb.cnf'
+        'root',
+        'trustsome1',
+        'mariadb.cnf',
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         environment=None,
@@ -570,7 +616,7 @@ def test_database_names_to_dump_runs_non_default_mariadb_with_list_options():
             '--execute',
             'show schemas',
         ),
-    ).and_return(('foo\nbar')).once()
+    ).and_return('foo\nbar').once()
 
     assert module.database_names_to_dump(database, {}, 'root', 'trustsome1', None, '') == (
         'foo',
@@ -583,11 +629,13 @@ def test_execute_dump_command_runs_mariadb_dump():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
@@ -626,7 +674,7 @@ def test_execute_dump_command_with_environment_password_transport_skips_defaults
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').never()
@@ -668,11 +716,13 @@ def test_execute_dump_command_runs_mariadb_dump_without_add_drop_database():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
@@ -710,11 +760,13 @@ def test_execute_dump_command_runs_mariadb_dump_with_hostname_and_port():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
@@ -759,11 +811,13 @@ def test_execute_dump_command_runs_mariadb_dump_with_tls():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
@@ -803,11 +857,13 @@ def test_execute_dump_command_runs_mariadb_dump_without_tls():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
@@ -847,11 +903,13 @@ def test_execute_dump_command_runs_mariadb_dump_with_username_and_password():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
@@ -890,11 +948,13 @@ def test_execute_dump_command_runs_mariadb_dump_with_options():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return(('--stuff=such',), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
@@ -934,11 +994,13 @@ def test_execute_dump_command_runs_non_default_mariadb_dump_with_options():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return(('--stuff=such',), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
@@ -982,7 +1044,9 @@ def test_execute_dump_command_with_duplicate_dump_skips_mariadb_dump():
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
@@ -1007,11 +1071,13 @@ def test_execute_dump_command_with_dry_run_skips_mariadb_dump():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
@@ -1038,11 +1104,13 @@ def test_restore_data_source_dump_runs_mariadb_to_restore():
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        None, None, None
+        None,
+        None,
+        None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1074,11 +1142,13 @@ def test_restore_data_source_dump_runs_mariadb_with_options():
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return(('--harder',), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        None, None, None
+        None,
+        None,
+        None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1107,16 +1177,18 @@ def test_restore_data_source_dump_runs_mariadb_with_options():
 
 def test_restore_data_source_dump_runs_non_default_mariadb_with_options():
     hook_config = [
-        {'name': 'foo', 'restore_options': '--harder', 'mariadb_command': 'custom_mariadb'}
+        {'name': 'foo', 'restore_options': '--harder', 'mariadb_command': 'custom_mariadb'},
     ]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return(('--harder',), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        None, None, None
+        None,
+        None,
+        None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1148,11 +1220,13 @@ def test_restore_data_source_dump_runs_mariadb_with_hostname_and_port():
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        None, None, None
+        None,
+        None,
+        None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1193,11 +1267,13 @@ def test_restore_data_source_dump_runs_mariadb_with_tls():
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        None, None, None
+        None,
+        None,
+        None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1233,11 +1309,13 @@ def test_restore_data_source_dump_runs_mariadb_without_tls():
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        None, None, None
+        None,
+        None,
+        None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1273,11 +1351,13 @@ def test_restore_data_source_dump_runs_mariadb_with_username_and_password():
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'root', 'trustsome1', None
+        'root',
+        'trustsome1',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1311,17 +1391,17 @@ def test_restore_data_source_with_environment_password_transport_skips_defaults_
             'username': 'root',
             'password': 'trustsome1',
             'password_transport': 'environment',
-        }
+        },
     ]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').never()
     flexmock(module.os).should_receive('environ').and_return(
-        {'USER': 'root', 'MYSQL_PWD': 'trustsome1'}
+        {'USER': 'root', 'MYSQL_PWD': 'trustsome1'},
     )
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mariadb', '--batch', '--user', 'root'),
@@ -1357,16 +1437,18 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
             'restore_port': 'restoreport',
             'restore_username': 'restoreusername',
             'restore_password': 'restorepassword',
-        }
+        },
     ]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'cliusername', 'clipassword', None
+        'cliusername',
+        'clipassword',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1417,16 +1499,18 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
             'restore_hostname': 'restorehost',
             'restore_port': 'restoreport',
             'restore_tls': False,
-        }
+        },
     ]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        'restoreuser', 'restorepass', None
+        'restoreuser',
+        'restorepass',
+        None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1468,11 +1552,13 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
     hook_config = [{'name': 'foo'}]
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').with_args(
-        None, None, None
+        None,
+        None,
+        None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').never()

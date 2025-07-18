@@ -48,7 +48,7 @@ def compact_segments(
     )
 
     if dry_run and not feature.available(feature.Feature.DRY_RUN_COMPACT, local_borg_version):
-        logging.info('Skipping compact (dry run)')
+        logger.info('Skipping compact (dry run)')
         return
 
     execute_command(

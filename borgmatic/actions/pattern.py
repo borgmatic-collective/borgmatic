@@ -47,7 +47,8 @@ def collect_patterns(config):
         return (
             tuple(
                 borgmatic.borg.pattern.Pattern(
-                    source_directory, source=borgmatic.borg.pattern.Pattern_source.CONFIG
+                    source_directory,
+                    source=borgmatic.borg.pattern.Pattern_source.CONFIG,
                 )
                 for source_directory in config.get('source_directories', ())
             )
@@ -67,7 +68,7 @@ def collect_patterns(config):
             + tuple(
                 parse_pattern(pattern_line.strip())
                 for filename in config.get('patterns_from', ())
-                for pattern_line in open(filename).readlines()
+                for pattern_line in open(filename, encoding='utf-8').readlines()
                 if not pattern_line.lstrip().startswith('#')
                 if pattern_line.strip()
             )
@@ -77,7 +78,7 @@ def collect_patterns(config):
                     borgmatic.borg.pattern.Pattern_style.FNMATCH,
                 )
                 for filename in config.get('exclude_from', ())
-                for exclude_line in open(filename).readlines()
+                for exclude_line in open(filename, encoding='utf-8').readlines()
                 if not exclude_line.lstrip().startswith('#')
                 if exclude_line.strip()
             )
@@ -112,9 +113,8 @@ def expand_directory(directory, working_directory):
             glob_path
             # If these are equal, that means we didn't add any working directory prefix above.
             if normalized_directory == expanded_directory
-            # Remove the working directory prefix that we added above in order to make glob() work.
-            # We can't use os.path.relpath() here because it collapses any use of Borg's slashdot
-            # hack.
+            # Remove the working directory prefix added above in order to make glob() work. We
+            # can't use os.path.relpath() here because it collapses any use of Borg's slashdot hack.
             else glob_path.removeprefix(working_directory_prefix)
         )
         for glob_path in glob_paths
@@ -161,7 +161,7 @@ def expand_patterns(patterns, working_directory=None, skip_paths=None):
                 )
             )
             for pattern in patterns
-        )
+        ),
     )
 
 
@@ -180,8 +180,10 @@ def get_existent_path_or_parent(path):
     try:
         return next(
             candidate_path
-            for candidate_path in (path,)
-            + tuple(str(parent) for parent in pathlib.PurePath(path).parents)
+            for candidate_path in (
+                path,
+                *tuple(str(parent) for parent in pathlib.PurePath(path).parents),
+            )
             if os.path.exists(candidate_path)
         )
     except StopIteration:
@@ -219,7 +221,7 @@ def device_map_patterns(patterns, working_directory=None):
         for pattern in patterns
         for existent_path in (
             get_existent_path_or_parent(
-                os.path.join(working_directory or '', pattern.path.lstrip('^'))
+                os.path.join(working_directory or '', pattern.path.lstrip('^')),
             ),
         )
     )
@@ -289,8 +291,8 @@ def process_patterns(patterns, config, working_directory, skip_expand_paths=None
                     patterns,
                     working_directory=working_directory,
                     skip_paths=skip_paths,
-                )
+                ),
             ),
             config,
-        )
+        ),
     )

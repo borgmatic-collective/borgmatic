@@ -24,7 +24,9 @@ def test_forgetful_buffering_handler_emit_collects_log_records_with_zero_byte_ca
 
 def test_forgetful_buffering_handler_emit_forgets_log_records_when_capacity_reached():
     handler = module.Forgetful_buffering_handler(
-        identifier='test', byte_capacity=len('foo\nbar\n'), log_level=1
+        identifier='test',
+        byte_capacity=len('foo\nbar\n'),
+        log_level=1,
     )
     handler.emit(flexmock(getMessage=lambda: 'foo'))
     assert handler.buffer == ['foo\n']

@@ -1,3 +1,4 @@
+import contextlib
 import logging
 
 IS_A_HOOK = False
@@ -88,9 +89,7 @@ def remove_handler(identifier):
     '''
     logger = logging.getLogger()
 
-    try:
+    with contextlib.suppress(ValueError):
         logger.removeHandler(get_handler(identifier))
-    except ValueError:
-        pass
 
     logger.setLevel(min(handler.level for handler in logger.handlers))

@@ -9,7 +9,7 @@ def test_get_properties_with_simple_object():
         'properties': dict(
             [
                 ('field1', {'example': 'Example'}),
-            ]
+            ],
         ),
     }
 
@@ -25,7 +25,7 @@ def test_get_properties_merges_oneof_list_properties():
                     [
                         ('field1', {'example': 'Example 1'}),
                         ('field2', {'example': 'Example 2'}),
-                    ]
+                    ],
                 ),
             },
             {
@@ -33,14 +33,15 @@ def test_get_properties_merges_oneof_list_properties():
                     [
                         ('field2', {'example': 'Example 2'}),
                         ('field3', {'example': 'Example 3'}),
-                    ]
+                    ],
                 ),
             },
         ],
     }
 
     assert module.get_properties(schema) == dict(
-        schema['oneOf'][0]['properties'], **schema['oneOf'][1]['properties']
+        schema['oneOf'][0]['properties'],
+        **schema['oneOf'][1]['properties'],
     )
 
 
@@ -54,7 +55,7 @@ def test_get_properties_interleaves_oneof_list_properties():
                         ('field1', {'example': 'Example 1'}),
                         ('field2', {'example': 'Example 2'}),
                         ('field3', {'example': 'Example 3'}),
-                    ]
+                    ],
                 ),
             },
             {
@@ -62,7 +63,7 @@ def test_get_properties_interleaves_oneof_list_properties():
                     [
                         ('field4', {'example': 'Example 4'}),
                         ('field5', {'example': 'Example 5'}),
-                    ]
+                    ],
                 ),
             },
         ],
@@ -75,12 +76,12 @@ def test_get_properties_interleaves_oneof_list_properties():
             ('field2', {'example': 'Example 2'}),
             ('field5', {'example': 'Example 5'}),
             ('field3', {'example': 'Example 3'}),
-        ]
+        ],
     )
 
 
 def test_parse_type_maps_schema_type_to_python_type():
-    module.parse_type('boolean') == bool
+    assert module.parse_type('boolean') is bool
 
 
 def test_parse_type_with_unknown_schema_type_raises():
@@ -89,7 +90,7 @@ def test_parse_type_with_unknown_schema_type_raises():
 
 
 def test_parse_type_respect_overrides_when_mapping_types():
-    module.parse_type('boolean', boolean=int) == int
+    assert module.parse_type('boolean', boolean=int) is int
 
 
 @pytest.mark.parametrize(
@@ -152,7 +153,10 @@ def test_parse_type_respect_overrides_when_mapping_types():
     ),
 )
 def test_compare_types_returns_whether_schema_type_matches_target_types(
-    schema_type, target_types, match, expected_result
+    schema_type,
+    target_types,
+    match,
+    expected_result,
 ):
     if match:
         assert module.compare_types(schema_type, target_types, match) == expected_result

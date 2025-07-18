@@ -17,13 +17,16 @@ from borgmatic.borg.pattern import Pattern, Pattern_source, Pattern_style, Patte
         (
             '+ sh:/foo*',
             Pattern(
-                '/foo*', Pattern_type.INCLUDE, Pattern_style.SHELL, source=Pattern_source.CONFIG
+                '/foo*',
+                Pattern_type.INCLUDE,
+                Pattern_style.SHELL,
+                source=Pattern_source.CONFIG,
             ),
         ),
     ),
 )
 def test_parse_pattern_transforms_pattern_line_to_instance(pattern_line, expected_pattern):
-    module.parse_pattern(pattern_line) == expected_pattern
+    assert module.parse_pattern(pattern_line) == expected_pattern
 
 
 def test_parse_pattern_with_invalid_pattern_line_errors():
@@ -54,22 +57,33 @@ def test_collect_patterns_parses_config_patterns():
 def test_collect_patterns_converts_exclude_patterns():
     assert module.collect_patterns({'exclude_patterns': ['/foo', '/bar', 'sh:**/baz']}) == (
         Pattern(
-            '/foo', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH, source=Pattern_source.CONFIG
+            '/foo',
+            Pattern_type.NO_RECURSE,
+            Pattern_style.FNMATCH,
+            source=Pattern_source.CONFIG,
         ),
         Pattern(
-            '/bar', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH, source=Pattern_source.CONFIG
+            '/bar',
+            Pattern_type.NO_RECURSE,
+            Pattern_style.FNMATCH,
+            source=Pattern_source.CONFIG,
         ),
         Pattern(
-            '**/baz', Pattern_type.NO_RECURSE, Pattern_style.SHELL, source=Pattern_source.CONFIG
+            '**/baz',
+            Pattern_type.NO_RECURSE,
+            Pattern_style.SHELL,
+            source=Pattern_source.CONFIG,
         ),
     )
 
 
 def test_collect_patterns_reads_config_patterns_from_file():
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('file1.txt').and_return(io.StringIO('R /foo'))
-    builtins.should_receive('open').with_args('file2.txt').and_return(
-        io.StringIO('R /bar\n# comment\n\n   \nR /baz')
+    builtins.should_receive('open').with_args('file1.txt', encoding='utf-8').and_return(
+        io.StringIO('R /foo')
+    )
+    builtins.should_receive('open').with_args('file2.txt', encoding='utf-8').and_return(
+        io.StringIO('R /bar\n# comment\n\n   \nR /baz'),
     )
     flexmock(module).should_receive('parse_pattern').with_args('R /foo').and_return(Pattern('/foo'))
     flexmock(module).should_receive('parse_pattern').with_args('# comment').never()
@@ -87,7 +101,9 @@ def test_collect_patterns_reads_config_patterns_from_file():
 
 def test_collect_patterns_errors_on_missing_config_patterns_from_file():
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('file1.txt').and_raise(FileNotFoundError)
+    builtins.should_receive('open').with_args('file1.txt', encoding='utf-8').and_raise(
+        FileNotFoundError
+    )
     flexmock(module).should_receive('parse_pattern').never()
 
     with pytest.raises(ValueError):
@@ -96,21 +112,26 @@ def test_collect_patterns_errors_on_missing_config_patterns_from_file():
 
 def test_collect_patterns_reads_config_exclude_from_file():
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('file1.txt').and_return(io.StringIO('/foo'))
-    builtins.should_receive('open').with_args('file2.txt').and_return(
-        io.StringIO('/bar\n# comment\n\n   \n/baz')
+    builtins.should_receive('open').with_args('file1.txt', encoding='utf-8').and_return(
+        io.StringIO('/foo')
+    )
+    builtins.should_receive('open').with_args('file2.txt', encoding='utf-8').and_return(
+        io.StringIO('/bar\n# comment\n\n   \n/baz'),
     )
     flexmock(module).should_receive('parse_pattern').with_args(
-        '! /foo', default_style=Pattern_style.FNMATCH
+        '! /foo',
+        default_style=Pattern_style.FNMATCH,
     ).and_return(Pattern('/foo', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH))
     flexmock(module).should_receive('parse_pattern').with_args(
-        '! /bar', default_style=Pattern_style.FNMATCH
+        '! /bar',
+        default_style=Pattern_style.FNMATCH,
     ).and_return(Pattern('/bar', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH))
     flexmock(module).should_receive('parse_pattern').with_args('# comment').never()
     flexmock(module).should_receive('parse_pattern').with_args('').never()
     flexmock(module).should_receive('parse_pattern').with_args('   ').never()
     flexmock(module).should_receive('parse_pattern').with_args(
-        '! /baz', default_style=Pattern_style.FNMATCH
+        '! /baz',
+        default_style=Pattern_style.FNMATCH,
     ).and_return(Pattern('/baz', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH))
 
     assert module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']}) == (
@@ -122,7 +143,7 @@ def test_collect_patterns_reads_config_exclude_from_file():
 
 def test_collect_patterns_errors_on_missing_config_exclude_from_file():
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('file1.txt').and_raise(OSError)
+    builtins.should_receive('open').with_args('file1.txt', encoding='utf-8').and_raise(OSError)
     flexmock(module).should_receive('parse_pattern').never()
 
     with pytest.raises(ValueError):
@@ -159,7 +180,7 @@ def test_expand_directory_strips_off_working_directory():
 def test_expand_directory_globs_working_directory_and_strips_it_off():
     flexmock(module.os.path).should_receive('expanduser').and_return('foo*')
     flexmock(module.glob).should_receive('glob').with_args('/working/dir/foo*').and_return(
-        ['/working/dir/foo', '/working/dir/food']
+        ['/working/dir/foo', '/working/dir/food'],
     ).once()
 
     paths = module.expand_directory('foo*', working_directory='/working/dir')
@@ -170,7 +191,7 @@ def test_expand_directory_globs_working_directory_and_strips_it_off():
 def test_expand_directory_with_slashdot_hack_globs_working_directory_and_strips_it_off():
     flexmock(module.os.path).should_receive('expanduser').and_return('./foo*')
     flexmock(module.glob).should_receive('glob').with_args('/working/dir/./foo*').and_return(
-        ['/working/dir/./foo', '/working/dir/./food']
+        ['/working/dir/./foo', '/working/dir/./food'],
     ).once()
 
     paths = module.expand_directory('./foo*', working_directory='/working/dir')
@@ -181,7 +202,7 @@ def test_expand_directory_with_slashdot_hack_globs_working_directory_and_strips_
 def test_expand_directory_with_working_directory_matching_start_of_directory_does_not_strip_it_off():
     flexmock(module.os.path).should_receive('expanduser').and_return('/working/dir/foo')
     flexmock(module.glob).should_receive('glob').with_args('/working/dir/foo').and_return(
-        ['/working/dir/foo']
+        ['/working/dir/foo'],
     ).once()
 
     paths = module.expand_directory('/working/dir/foo', working_directory='/working/dir')
@@ -191,10 +212,10 @@ def test_expand_directory_with_working_directory_matching_start_of_directory_doe
 
 def test_expand_patterns_flattens_expanded_directories():
     flexmock(module).should_receive('expand_directory').with_args('~/foo', None).and_return(
-        ['/root/foo']
+        ['/root/foo'],
     )
     flexmock(module).should_receive('expand_directory').with_args('bar*', None).and_return(
-        ['bar', 'barf']
+        ['bar', 'barf'],
     )
 
     paths = module.expand_patterns((Pattern('~/foo'), Pattern('bar*')))
@@ -204,7 +225,7 @@ def test_expand_patterns_flattens_expanded_directories():
 
 def test_expand_patterns_with_working_directory_passes_it_through():
     flexmock(module).should_receive('expand_directory').with_args('foo', '/working/dir').and_return(
-        ['/working/dir/foo']
+        ['/working/dir/foo'],
     )
 
     patterns = module.expand_patterns((Pattern('foo'),), working_directory='/working/dir')
@@ -228,7 +249,7 @@ def test_expand_patterns_considers_none_as_no_patterns():
 def test_expand_patterns_expands_tildes_and_globs_in_root_patterns():
     flexmock(module.os.path).should_receive('expanduser').never()
     flexmock(module).should_receive('expand_directory').and_return(
-        ['/root/foo/one', '/root/foo/two']
+        ['/root/foo/one', '/root/foo/two'],
     )
 
     paths = module.expand_patterns((Pattern('~/foo/*'),))
@@ -290,23 +311,26 @@ def test_device_map_patterns_gives_device_id_per_path():
         (
             Pattern('/foo'),
             Pattern('^/bar', type=Pattern_type.INCLUDE, style=Pattern_style.REGULAR_EXPRESSION),
-        )
+        ),
     )
 
     assert device_map == (
         Pattern('/foo', device=55),
         Pattern(
-            '^/bar', type=Pattern_type.INCLUDE, style=Pattern_style.REGULAR_EXPRESSION, device=66
+            '^/bar',
+            type=Pattern_type.INCLUDE,
+            style=Pattern_style.REGULAR_EXPRESSION,
+            device=66,
         ),
     )
 
 
 def test_device_map_patterns_with_missing_path_does_not_error():
     flexmock(module).should_receive('get_existent_path_or_parent').with_args('/foo').and_return(
-        '/foo'
+        '/foo',
     )
     flexmock(module).should_receive('get_existent_path_or_parent').with_args('/bar').and_return(
-        None
+        None,
     )
     flexmock(module.os).should_receive('stat').with_args('/foo').and_return(flexmock(st_dev=55))
     flexmock(module.os).should_receive('stat').with_args('/bar').never()
@@ -323,11 +347,12 @@ def test_device_map_patterns_uses_working_directory_to_construct_path():
     flexmock(module).should_receive('get_existent_path_or_parent').replace_with(lambda path: path)
     flexmock(module.os).should_receive('stat').with_args('/foo').and_return(flexmock(st_dev=55))
     flexmock(module.os).should_receive('stat').with_args('/working/dir/bar').and_return(
-        flexmock(st_dev=66)
+        flexmock(st_dev=66),
     )
 
     device_map = module.device_map_patterns(
-        (Pattern('/foo'), Pattern('bar')), working_directory='/working/dir'
+        (Pattern('/foo'), Pattern('bar')),
+        working_directory='/working/dir',
     )
 
     assert device_map == (
@@ -519,7 +544,9 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
     ),
 )
 def test_deduplicate_patterns_omits_child_paths_based_on_device_and_one_file_system(
-    patterns, expected_patterns, one_file_system
+    patterns,
+    expected_patterns,
+    one_file_system,
 ):
     assert (
         module.deduplicate_patterns(patterns, {'one_file_system': one_file_system})
@@ -529,7 +556,7 @@ def test_deduplicate_patterns_omits_child_paths_based_on_device_and_one_file_sys
 
 def test_process_patterns_includes_patterns():
     flexmock(module).should_receive('deduplicate_patterns').and_return(
-        (Pattern('foo'), Pattern('bar'))
+        (Pattern('foo'), Pattern('bar')),
     )
     flexmock(module).should_receive('device_map_patterns').and_return({})
     flexmock(module).should_receive('expand_patterns').with_args(
@@ -548,7 +575,7 @@ def test_process_patterns_includes_patterns():
 def test_process_patterns_skips_expand_for_requested_paths():
     skip_paths = {flexmock()}
     flexmock(module).should_receive('deduplicate_patterns').and_return(
-        (Pattern('foo'), Pattern('bar'))
+        (Pattern('foo'), Pattern('bar')),
     )
     flexmock(module).should_receive('device_map_patterns').and_return({})
     flexmock(module).should_receive('expand_patterns').with_args(

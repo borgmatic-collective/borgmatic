@@ -23,7 +23,8 @@ def load_credential(hook_config, config, credential_parameters):
 
     try:
         with open(
-            os.path.join(config.get('working_directory', ''), expanded_credential_path)
+            os.path.join(config.get('working_directory', ''), expanded_credential_path),
+            encoding='utf-8',
         ) as credential_file:
             return credential_file.read().rstrip(os.linesep)
     except (FileNotFoundError, OSError) as error:

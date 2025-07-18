@@ -23,7 +23,8 @@ def run_list(
     If list_arguments.json is True, yield the JSON output from listing the archive.
     '''
     if list_arguments.repository is None or borgmatic.config.validate.repositories_match(
-        repository, list_arguments.repository
+        repository,
+        list_arguments.repository,
     ):
         if not list_arguments.json:
             if list_arguments.find_paths:  # pragma: no cover

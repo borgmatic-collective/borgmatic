@@ -371,7 +371,7 @@ def test_add_comments_to_configuration_object_with_skip_first_field_does_not_com
 
 def test_generate_sample_configuration_does_not_raise():
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('schema.yaml').and_return('')
+    builtins.should_receive('open').with_args('schema.yaml', encoding='utf-8').and_return('')
     flexmock(module.ruamel.yaml).should_receive('YAML').and_return(
         flexmock(load=lambda filename: {})
     )
@@ -386,7 +386,7 @@ def test_generate_sample_configuration_does_not_raise():
 
 def test_generate_sample_configuration_with_source_filename_omits_empty_bootstrap_field():
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('schema.yaml').and_return('')
+    builtins.should_receive('open').with_args('schema.yaml', encoding='utf-8').and_return('')
     flexmock(module.ruamel.yaml).should_receive('YAML').and_return(
         flexmock(load=lambda filename: {})
     )
@@ -407,7 +407,7 @@ def test_generate_sample_configuration_with_source_filename_omits_empty_bootstra
 
 def test_generate_sample_configuration_with_source_filename_keeps_non_empty_bootstrap_field():
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('schema.yaml').and_return('')
+    builtins.should_receive('open').with_args('schema.yaml', encoding='utf-8').and_return('')
     flexmock(module.ruamel.yaml).should_receive('YAML').and_return(
         flexmock(load=lambda filename: {})
     )
@@ -427,7 +427,7 @@ def test_generate_sample_configuration_with_source_filename_keeps_non_empty_boot
 
 def test_generate_sample_configuration_with_dry_run_does_not_write_file():
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('schema.yaml').and_return('')
+    builtins.should_receive('open').with_args('schema.yaml', encoding='utf-8').and_return('')
     flexmock(module.ruamel.yaml).should_receive('YAML').and_return(
         flexmock(load=lambda filename: {})
     )

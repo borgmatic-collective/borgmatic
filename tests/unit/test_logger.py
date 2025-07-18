@@ -81,7 +81,7 @@ def test_should_do_markup_prefers_any_false_config_value():
 
 def test_should_do_markup_respects_PY_COLORS_environment_variable():
     flexmock(module.os.environ).should_receive('get').with_args('PY_COLORS', None).and_return(
-        'True'
+        'True',
     )
     flexmock(module.os.environ).should_receive('get').with_args('NO_COLOR', None).and_return(None)
 
@@ -126,7 +126,7 @@ def test_should_do_markup_respects_interactive_console_value():
 
 def test_should_do_markup_prefers_PY_COLORS_to_interactive_console_value():
     flexmock(module.os.environ).should_receive('get').with_args('PY_COLORS', None).and_return(
-        'True'
+        'True',
     )
     flexmock(module.os.environ).should_receive('get').with_args('NO_COLOR', None).and_return(None)
     flexmock(module).should_receive('to_bool').and_return(True)
@@ -161,10 +161,10 @@ def test_should_do_markup_ignores_empty_NO_COLOR_environment_variable():
 
 def test_should_do_markup_prefers_NO_COLOR_to_PY_COLORS():
     flexmock(module.os.environ).should_receive('get').with_args('PY_COLORS', None).and_return(
-        'True'
+        'True',
     )
     flexmock(module.os.environ).should_receive('get').with_args('NO_COLOR', None).and_return(
-        'SomeValue'
+        'SomeValue',
     )
     flexmock(module).should_receive('interactive_console').never()
 
@@ -177,7 +177,7 @@ def test_multi_stream_handler_logs_to_handler_for_log_level():
     info_handler = flexmock()
 
     multi_handler = module.Multi_stream_handler(
-        {module.logging.ERROR: error_handler, module.logging.INFO: info_handler}
+        {module.logging.ERROR: error_handler, module.logging.INFO: info_handler},
     )
     multi_handler.emit(flexmock(levelno=module.logging.ERROR))
 
@@ -244,7 +244,7 @@ def test_get_log_prefix_gets_prefix_from_first_handler_formatter_with_prefix():
                 flexmock(formatter=flexmock(prefix='myprefix')),
             ],
             removeHandler=lambda handler: None,
-        )
+        ),
     )
 
     assert module.get_log_prefix() == 'myprefix'
@@ -255,7 +255,7 @@ def test_get_log_prefix_with_no_handlers_does_not_raise():
         flexmock(
             handlers=[],
             removeHandler=lambda handler: None,
-        )
+        ),
     )
 
     assert module.get_log_prefix() is None
@@ -269,7 +269,7 @@ def test_get_log_prefix_with_no_formatters_does_not_raise():
                 flexmock(formatter=None),
             ],
             removeHandler=lambda handler: None,
-        )
+        ),
     )
 
     assert module.get_log_prefix() is None
@@ -284,7 +284,7 @@ def test_get_log_prefix_with_no_prefix_does_not_raise():
                 ),
             ],
             removeHandler=lambda handler: None,
-        )
+        ),
     )
 
     assert module.get_log_prefix() is None
@@ -307,7 +307,7 @@ def test_set_log_prefix_updates_all_handler_formatters():
                 ),
             ],
             removeHandler=lambda handler: None,
-        )
+        ),
     )
 
     module.set_log_prefix('myprefix')
@@ -330,7 +330,7 @@ def test_set_log_prefix_skips_handlers_without_a_formatter():
                 ),
             ],
             removeHandler=lambda handler: None,
-        )
+        ),
     )
 
     module.set_log_prefix('myprefix')
@@ -455,12 +455,13 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux(
     flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.DEBUG, handlers=list
+        level=logging.DEBUG,
+        handlers=list,
     )
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
     syslog_handler = logging.handlers.SysLogHandler()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
-        address='/dev/log'
+        address='/dev/log',
     ).and_return(syslog_handler).once()
 
     module.configure_logging(logging.INFO, syslog_log_level=logging.DEBUG)
@@ -477,13 +478,14 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_macos(
     flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.DEBUG, handlers=list
+        level=logging.DEBUG,
+        handlers=list,
     )
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/var/run/syslog').and_return(True)
     syslog_handler = logging.handlers.SysLogHandler()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
-        address='/var/run/syslog'
+        address='/var/run/syslog',
     ).and_return(syslog_handler).once()
 
     module.configure_logging(logging.INFO, syslog_log_level=logging.DEBUG)
@@ -500,14 +502,15 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_freebs
     flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.DEBUG, handlers=list
+        level=logging.DEBUG,
+        handlers=list,
     )
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/var/run/syslog').and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/var/run/log').and_return(True)
     syslog_handler = logging.handlers.SysLogHandler()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
-        address='/var/run/log'
+        address='/var/run/log',
     ).and_return(syslog_handler).once()
 
     module.configure_logging(logging.INFO, syslog_log_level=logging.DEBUG)
@@ -523,7 +526,8 @@ def test_configure_logging_without_syslog_log_level_skips_syslog():
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
     flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.INFO, handlers=list
+        level=logging.INFO,
+        handlers=list,
     )
     flexmock(module.os.path).should_receive('exists').never()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
@@ -541,7 +545,8 @@ def test_configure_logging_skips_syslog_if_not_found():
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
     flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.INFO, handlers=list
+        level=logging.INFO,
+        handlers=list,
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
@@ -560,14 +565,17 @@ def test_configure_logging_skips_log_file_if_log_file_logging_is_disabled():
 
     flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.INFO, handlers=list
+        level=logging.INFO,
+        handlers=list,
     )
     flexmock(module.os.path).should_receive('exists').never()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').never()
 
     module.configure_logging(
-        console_log_level=logging.INFO, log_file_log_level=logging.DISABLED, log_file='/tmp/logfile'
+        console_log_level=logging.INFO,
+        log_file_log_level=logging.DISABLED,
+        log_file='/tmp/logfile',
     )
 
 
@@ -582,13 +590,14 @@ def test_configure_logging_to_log_file_instead_of_syslog():
 
     flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.DEBUG, handlers=list
+        level=logging.DEBUG,
+        handlers=list,
     )
     flexmock(module.os.path).should_receive('exists').never()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
     file_handler = logging.handlers.WatchedFileHandler('/tmp/logfile')
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').with_args(
-        '/tmp/logfile'
+        '/tmp/logfile',
     ).and_return(file_handler).once()
 
     module.configure_logging(
@@ -610,16 +619,17 @@ def test_configure_logging_to_both_log_file_and_syslog():
 
     flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.DEBUG, handlers=list
+        level=logging.DEBUG,
+        handlers=list,
     )
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
     syslog_handler = logging.handlers.SysLogHandler()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
-        address='/dev/log'
+        address='/dev/log',
     ).and_return(syslog_handler).once()
     file_handler = logging.handlers.WatchedFileHandler('/tmp/logfile')
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').with_args(
-        '/tmp/logfile'
+        '/tmp/logfile',
     ).and_return(file_handler).once()
 
     module.configure_logging(
@@ -634,7 +644,7 @@ def test_configure_logging_to_log_file_formats_with_custom_log_format():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Log_prefix_formatter').with_args(
-        '{message}',  # noqa: FS003
+        '{message}',
     ).once()
     fake_formatter = flexmock()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
@@ -645,20 +655,21 @@ def test_configure_logging_to_log_file_formats_with_custom_log_format():
     flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.DEBUG, handlers=list
+        level=logging.DEBUG,
+        handlers=list,
     )
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
     file_handler = logging.handlers.WatchedFileHandler('/tmp/logfile')
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').with_args(
-        '/tmp/logfile'
+        '/tmp/logfile',
     ).and_return(file_handler).once()
 
     module.configure_logging(
         console_log_level=logging.INFO,
         log_file_log_level=logging.DEBUG,
         log_file='/tmp/logfile',
-        log_file_format='{message}',  # noqa: FS003
+        log_file_format='{message}',
     )
 
 
@@ -673,7 +684,8 @@ def test_configure_logging_skips_log_file_if_argument_is_none():
 
     flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.INFO, handlers=list
+        level=logging.INFO,
+        handlers=list,
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').never()
@@ -693,7 +705,8 @@ def test_configure_logging_uses_console_no_color_formatter_if_color_disabled():
 
     flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.INFO, handlers=list
+        level=logging.INFO,
+        handlers=list,
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').never()

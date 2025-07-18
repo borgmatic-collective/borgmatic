@@ -22,7 +22,8 @@ def run_extract(
     Run the "extract" action for the given repository.
     '''
     if extract_arguments.repository is None or borgmatic.config.validate.repositories_match(
-        repository, extract_arguments.repository
+        repository,
+        extract_arguments.repository,
     ):
         logger.info(f'Extracting archive {extract_arguments.archive}')
         borgmatic.borg.extract.extract_archive(

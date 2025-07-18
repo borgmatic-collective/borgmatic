@@ -40,7 +40,7 @@ class Web_server(http.server.BaseHTTPRequestHandler):
         self.send_response(http.HTTPStatus.OK)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(''.encode('utf-8'))
+        self.wfile.write(b'')
 
     def do_GET(self):
         self.handle_method()
@@ -50,7 +50,7 @@ class Web_server(http.server.BaseHTTPRequestHandler):
 
 
 def serve_web_request(count):
-    for index in range(0, count):
+    for _ in range(count):
         with http.server.HTTPServer(('localhost', 12345), Web_server) as server:
             server.handle_request()
 
@@ -61,7 +61,7 @@ class Background_web_server:
 
     def __enter__(self):
         self.thread = threading.Thread(
-            target=lambda: serve_web_request(count=self.expected_request_count)
+            target=lambda: serve_web_request(count=self.expected_request_count),
         )
         self.thread.start()
 
@@ -125,14 +125,14 @@ def test_borgmatic_command(monitoring_hook_configuration, expected_request_count
         generate_configuration(config_path, repository_path, monitoring_hook_configuration)
 
         subprocess.check_call(
-            f'borgmatic -v 2 --config {config_path} repo-create --encryption repokey'.split(' ')
+            f'borgmatic -v 2 --config {config_path} repo-create --encryption repokey'.split(' '),
         )
 
         with Background_web_server(expected_request_count):
             # Run borgmatic to generate a backup archive, and then list it to make sure it exists.
             subprocess.check_call(f'borgmatic -v 2 --config {config_path}'.split(' '))
             output = subprocess.check_output(
-                f'borgmatic --config {config_path} list --json'.split(' ')
+                f'borgmatic --config {config_path} list --json'.split(' '),
             ).decode(sys.stdout.encoding)
             parsed_output = json.loads(output)
 

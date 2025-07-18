@@ -86,7 +86,7 @@ def test_run_arbitrary_borg_with_lock_wait_calls_borg_with_lock_wait_flags():
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     config = {'lock_wait': 5}
     flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(
-        ('--lock-wait', '5')
+        ('--lock-wait', '5'),
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
@@ -187,7 +187,7 @@ def test_run_arbitrary_borg_with_remote_path_calls_borg_with_remote_path_flags()
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(
-        ('--remote-path', 'borg1')
+        ('--remote-path', 'borg1'),
     ).and_return(())
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
@@ -214,7 +214,7 @@ def test_run_arbitrary_borg_with_remote_path_injection_attack_gets_escaped():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(
-        ('--remote-path', 'borg1; naughty-command')
+        ('--remote-path', 'borg1; naughty-command'),
     ).and_return(())
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)

@@ -31,8 +31,8 @@ def get_contained_subvolume_paths(btrfs_command, subvolume_path):
     '''
     try:
         btrfs_output = borgmatic.execute.execute_command_and_capture_output(
-            tuple(btrfs_command.split(' '))
-            + (
+            (
+                *btrfs_command.split(' '),
                 'subvolume',
                 'list',
                 subvolume_path,
@@ -41,15 +41,18 @@ def get_contained_subvolume_paths(btrfs_command, subvolume_path):
         )
     except subprocess.CalledProcessError as error:
         logger.debug(
-            f'Ignoring Btrfs subvolume {subvolume_path} because of error listing its subvolumes: {error}'
+            f'Ignoring Btrfs subvolume {subvolume_path} because of error listing its subvolumes: {error}',
         )
 
         return ()
 
-    return (subvolume_path,) + tuple(
-        os.path.join(subvolume_path, line.split(' ')[-1])
-        for line in btrfs_output.splitlines()
-        if line.strip()
+    return (
+        subvolume_path,
+        *tuple(
+            os.path.join(subvolume_path, line.split(' ')[-1])
+            for line in btrfs_output.splitlines()
+            if line.strip()
+        ),
     )
 
 
@@ -62,8 +65,8 @@ def get_all_subvolume_paths(btrfs_command, findmnt_command):
     system.
     '''
     findmnt_output = borgmatic.execute.execute_command_and_capture_output(
-        tuple(findmnt_command.split(' '))
-        + (
+        (
+            *findmnt_command.split(' '),
             '-t',  # Filesystem type.
             'btrfs',
             '--json',
@@ -88,8 +91,8 @@ def get_all_subvolume_paths(btrfs_command, findmnt_command):
                         else (filesystem['target'],)
                     )
                     for filesystem in json.loads(findmnt_output)['filesystems']
-                )
-            )
+                ),
+            ),
         )
     except json.JSONDecodeError as error:
         raise ValueError(f'Invalid {findmnt_command} JSON output: {error}')
@@ -108,8 +111,8 @@ def get_subvolume_property(btrfs_command, subvolume_path, property_name):
     Raise subprocess.CalledProcessError if the btrfs command errors.
     '''
     output = borgmatic.execute.execute_command_and_capture_output(
-        tuple(btrfs_command.split(' '))
-        + (
+        (
+            *btrfs_command.split(' '),
             'property',
             'get',
             '-t',  # Type.
@@ -145,9 +148,9 @@ def omit_read_only_subvolume_paths(btrfs_command, subvolume_paths):
                 logger.debug(f'Ignoring Btrfs subvolume {subvolume_path} because it is read-only')
             else:
                 retained_subvolume_paths.append(subvolume_path)
-        except subprocess.CalledProcessError as error:
+        except subprocess.CalledProcessError as error:  # noqa: PERF203
             logger.debug(
-                f'Error determining read-only status of Btrfs subvolume {subvolume_path}: {error}'
+                f'Error determining read-only status of Btrfs subvolume {subvolume_path}: {error}',
             )
 
     return tuple(retained_subvolume_paths)
@@ -174,14 +177,16 @@ def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
     # this process, so no two subvolumes end up with the same contained patterns.)
     for subvolume_path in reversed(
         omit_read_only_subvolume_paths(
-            btrfs_command, get_all_subvolume_paths(btrfs_command, findmnt_command)
-        )
+            btrfs_command,
+            get_all_subvolume_paths(btrfs_command, findmnt_command),
+        ),
     ):
         subvolumes.extend(
             Subvolume(subvolume_path, contained_patterns)
             for contained_patterns in (
                 borgmatic.hooks.data_source.snapshot.get_contained_patterns(
-                    subvolume_path, candidate_patterns
+                    subvolume_path,
+                    candidate_patterns,
                 ),
             )
             if patterns is None
@@ -282,8 +287,8 @@ def snapshot_subvolume(btrfs_command, subvolume_path, snapshot_path):  # pragma:
     os.makedirs(os.path.dirname(snapshot_path), mode=0o700, exist_ok=True)
 
     borgmatic.execute.execute_command(
-        tuple(btrfs_command.split(' '))
-        + (
+        (
+            *btrfs_command.split(' '),
             'subvolume',
             'snapshot',
             '-r',  # Read-only.
@@ -356,8 +361,8 @@ def delete_snapshot(btrfs_command, snapshot_path):  # pragma: no cover
     Given a Btrfs command to run and the name of a snapshot path, delete it.
     '''
     borgmatic.execute.execute_command(
-        tuple(btrfs_command.split(' '))
-        + (
+        (
+            *btrfs_command.split(' '),
             'subvolume',
             'delete',
             snapshot_path,
@@ -399,7 +404,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
         )
 
         logger.debug(
-            f'Looking for snapshots to remove in {subvolume_snapshots_glob}{dry_run_label}'
+            f'Looking for snapshots to remove in {subvolume_snapshots_glob}{dry_run_label}',
         )
 
         for snapshot_path in glob.glob(subvolume_snapshots_glob):
@@ -429,7 +434,10 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
 
 
 def make_data_source_dump_patterns(
-    hook_config, config, borgmatic_runtime_directory, name=None
+    hook_config,
+    config,
+    borgmatic_runtime_directory,
+    name=None,
 ):  # pragma: no cover
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".

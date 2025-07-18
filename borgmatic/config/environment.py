@@ -2,7 +2,7 @@ import os
 import re
 
 VARIABLE_PATTERN = re.compile(
-    r'(?P<escape>\\)?(?P<variable>\$\{(?P<name>[A-Za-z0-9_]+)((:?-)(?P<default>[^}]+))?\})'
+    r'(?P<escape>\\)?(?P<variable>\$\{(?P<name>[A-Za-z0-9_]+)((:?-)(?P<default>[^}]+))?\})',
 )
 
 

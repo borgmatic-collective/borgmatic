@@ -17,7 +17,8 @@ MAKE_FLAGS_EXCLUDES = (
     'archive',
     'paths',
     'find_paths',
-) + ARCHIVE_FILTER_FLAGS_MOVED_TO_REPO_LIST
+    *ARCHIVE_FILTER_FLAGS_MOVED_TO_REPO_LIST,
+)
 
 
 def make_list_command(
@@ -53,7 +54,9 @@ def make_list_command(
         + flags.make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
         + (
             flags.make_repository_archive_flags(
-                repository_path, list_arguments.archive, local_borg_version
+                repository_path,
+                list_arguments.archive,
+                local_borg_version,
             )
             if list_arguments.archive
             else flags.make_repository_flags(repository_path, local_borg_version)
@@ -115,10 +118,10 @@ def capture_archive_listing(
                 argparse.Namespace(
                     repository=repository_path,
                     archive=archive,
-                    paths=[path for path in list_paths] if list_paths else None,
+                    paths=list(list_paths) if list_paths else None,
                     find_paths=None,
                     json=None,
-                    format=path_format or '{path}{NUL}',  # noqa: FS003
+                    format=path_format or '{path}{NUL}',
                 ),
                 global_arguments,
                 local_path,
@@ -130,7 +133,7 @@ def capture_archive_listing(
             borg_exit_codes=config.get('borg_exit_codes'),
         )
         .strip('\0')
-        .split('\0')
+        .split('\0'),
     )
 
 
@@ -156,7 +159,7 @@ def list_archive(
     if not list_arguments.archive and not list_arguments.find_paths:
         if feature.available(feature.Feature.REPO_LIST, local_borg_version):
             logger.warning(
-                'Omitting the --archive flag on the list action is deprecated when using Borg 2.x+. Use the repo-list action instead.'
+                'Omitting the --archive flag on the list action is deprecated when using Borg 2.x+. Use the repo-list action instead.',
             )
 
         repo_list_arguments = argparse.Namespace(
@@ -184,12 +187,12 @@ def list_archive(
         for name in ARCHIVE_FILTER_FLAGS_MOVED_TO_REPO_LIST:
             if getattr(list_arguments, name, None):
                 logger.warning(
-                    f"The --{name.replace('_', '-')} flag on the list action is ignored when using the --archive flag."
+                    f"The --{name.replace('_', '-')} flag on the list action is ignored when using the --archive flag.",
                 )
 
     if list_arguments.json:
         raise ValueError(
-            'The --json flag on the list action is not supported when using the --archive/--find flags.'
+            'The --json flag on the list action is not supported when using the --archive/--find flags.',
         )
 
     borg_exit_codes = config.get('borg_exit_codes')
@@ -227,7 +230,7 @@ def list_archive(
                 borg_exit_codes=borg_exit_codes,
             )
             .strip('\n')
-            .splitlines()
+            .splitlines(),
         )
     else:
         archive_lines = (list_arguments.archive,)
@@ -262,3 +265,5 @@ def list_archive(
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
+
+    return None

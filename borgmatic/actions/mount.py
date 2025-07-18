@@ -20,7 +20,8 @@ def run_mount(
     Run the "mount" action for the given repository.
     '''
     if mount_arguments.repository is None or borgmatic.config.validate.repositories_match(
-        repository, mount_arguments.repository
+        repository,
+        mount_arguments.repository,
     ):
         if mount_arguments.archive:
             logger.info(f'Mounting archive {mount_arguments.archive}')

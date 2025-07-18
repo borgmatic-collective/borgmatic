@@ -27,7 +27,7 @@ def test_make_flags_formats_name_with_underscore():
 def test_make_flags_from_arguments_flattens_and_sorts_multiple_arguments():
     flexmock(module).should_receive('make_flags').with_args('foo', 'bar').and_return(('foo', 'bar'))
     flexmock(module).should_receive('make_flags').with_args('baz', 'quux').and_return(
-        ('baz', 'quux')
+        ('baz', 'quux'),
     )
     arguments = flexmock(foo='bar', baz='quux')
 
@@ -69,7 +69,9 @@ def test_make_repository_archive_flags_with_borg_features_separates_repository_a
     flexmock(module.feature).should_receive('available').and_return(True)
 
     assert module.make_repository_archive_flags(
-        repository_path='repo', archive='archive', local_borg_version='1.2.3'
+        repository_path='repo',
+        archive='archive',
+        local_borg_version='1.2.3',
     ) == (
         '--repo',
         'repo',
@@ -81,7 +83,9 @@ def test_make_repository_archive_flags_with_borg_features_joins_repository_and_a
     flexmock(module.feature).should_receive('available').and_return(False)
 
     assert module.make_repository_archive_flags(
-        repository_path='repo', archive='archive', local_borg_version='1.2.3'
+        repository_path='repo',
+        archive='archive',
+        local_borg_version='1.2.3',
     ) == ('repo::archive',)
 
 
@@ -106,90 +110,90 @@ def test_get_default_archive_name_format_without_archive_series_feature_uses_non
 @pytest.mark.parametrize(
     'match_archives,archive_name_format,feature_available,expected_result',
     (
-        (None, None, True, ('--match-archives', 'sh:{hostname}-*')),  # noqa: FS003
-        (None, '', True, ('--match-archives', 'sh:{hostname}-*')),  # noqa: FS003
+        (None, None, True, ('--match-archives', 'sh:{hostname}-*')),
+        (None, '', True, ('--match-archives', 'sh:{hostname}-*')),
         (
             're:foo-.*',
-            '{hostname}-{now}',  # noqa: FS003
+            '{hostname}-{now}',
             True,
             ('--match-archives', 're:foo-.*'),
         ),
         (
             'sh:foo-*',
-            '{hostname}-{now}',  # noqa: FS003
+            '{hostname}-{now}',
             False,
             ('--glob-archives', 'foo-*'),
         ),
         (
             'foo-*',
-            '{hostname}-{now}',  # noqa: FS003
+            '{hostname}-{now}',
             False,
             ('--glob-archives', 'foo-*'),
         ),
         (
             None,
-            '{hostname}-docs-{now}',  # noqa: FS003
+            '{hostname}-docs-{now}',
             True,
-            ('--match-archives', 'sh:{hostname}-docs-*'),  # noqa: FS003
+            ('--match-archives', 'sh:{hostname}-docs-*'),
         ),
         (
             None,
-            '{utcnow}-docs-{user}',  # noqa: FS003
+            '{utcnow}-docs-{user}',
             True,
-            ('--match-archives', 'sh:*-docs-{user}'),  # noqa: FS003
+            ('--match-archives', 'sh:*-docs-{user}'),
         ),
-        (None, '{fqdn}-{pid}', True, ('--match-archives', 'sh:{fqdn}-*')),  # noqa: FS003
+        (None, '{fqdn}-{pid}', True, ('--match-archives', 'sh:{fqdn}-*')),
         (
             None,
-            'stuff-{now:%Y-%m-%dT%H:%M:%S.%f}',  # noqa: FS003
+            'stuff-{now:%Y-%m-%dT%H:%M:%S.%f}',
             True,
             ('--match-archives', 'sh:stuff-*'),
         ),
         (
             None,
-            '{hostname}-docs-{now}',  # noqa: FS003
+            '{hostname}-docs-{now}',
             False,
-            ('--glob-archives', '{hostname}-docs-*'),  # noqa: FS003
+            ('--glob-archives', '{hostname}-docs-*'),
         ),
         (
             None,
-            '{now}',  # noqa: FS003
+            '{now}',
             False,
             (),
         ),
         (
             None,
-            '{now}',  # noqa: FS003
+            '{now}',
             True,
             (),
         ),
         (
             None,
-            '{utcnow}-docs-{user}',  # noqa: FS003
+            '{utcnow}-docs-{user}',
             False,
-            ('--glob-archives', '*-docs-{user}'),  # noqa: FS003
+            ('--glob-archives', '*-docs-{user}'),
         ),
         (
             '*',
-            '{now}',  # noqa: FS003
+            '{now}',
             True,
             (),
         ),
         (
             '*',
-            '{now}',  # noqa: FS003
+            '{now}',
             False,
             (),
         ),
         (
             're:.*',
-            '{now}',  # noqa: FS003
+            '{now}',
             True,
             (),
         ),
         (
             'sh:*',
-            '{now}',  # noqa: FS003
+            '{now}',
             True,
             (),
         ),
@@ -208,16 +212,21 @@ def test_get_default_archive_name_format_without_archive_series_feature_uses_non
     ),
 )
 def test_make_match_archives_flags_makes_flags_with_globs(
-    match_archives, archive_name_format, feature_available, expected_result
+    match_archives,
+    archive_name_format,
+    feature_available,
+    expected_result,
 ):
     flexmock(module.feature).should_receive('available').and_return(feature_available)
     flexmock(module).should_receive('get_default_archive_name_format').and_return(
-        module.DEFAULT_ARCHIVE_NAME_FORMAT_WITHOUT_SERIES
+        module.DEFAULT_ARCHIVE_NAME_FORMAT_WITHOUT_SERIES,
     )
 
     assert (
         module.make_match_archives_flags(
-            match_archives, archive_name_format, local_borg_version=flexmock()
+            match_archives,
+            archive_name_format,
+            local_borg_version=flexmock(),
         )
         == expected_result
     )
@@ -247,7 +256,8 @@ def test_warn_for_aggressive_archive_flags_with_glob_archives_and_zero_archives_
     flexmock(module.logger).should_receive('warning').twice()
 
     module.warn_for_aggressive_archive_flags(
-        ('borg', '--glob-archives', 'foo*'), '{"archives": []}'
+        ('borg', '--glob-archives', 'foo*'),
+        '{"archives": []}',
     )
 
 
@@ -255,7 +265,8 @@ def test_warn_for_aggressive_archive_flags_with_match_archives_and_zero_archives
     flexmock(module.logger).should_receive('warning').twice()
 
     module.warn_for_aggressive_archive_flags(
-        ('borg', '--match-archives', 'foo*'), '{"archives": []}'
+        ('borg', '--match-archives', 'foo*'),
+        '{"archives": []}',
     )
 
 
@@ -263,7 +274,8 @@ def test_warn_for_aggressive_archive_flags_with_glob_archives_and_one_archive_do
     flexmock(module.logger).should_receive('warning').never()
 
     module.warn_for_aggressive_archive_flags(
-        ('borg', '--glob-archives', 'foo*'), '{"archives": [{"name": "foo"]}'
+        ('borg', '--glob-archives', 'foo*'),
+        '{"archives": [{"name": "foo"]}',
     )
 
 
@@ -271,7 +283,8 @@ def test_warn_for_aggressive_archive_flags_with_match_archives_and_one_archive_d
     flexmock(module.logger).should_receive('warning').never()
 
     module.warn_for_aggressive_archive_flags(
-        ('borg', '--match-archives', 'foo*'), '{"archives": [{"name": "foo"]}'
+        ('borg', '--match-archives', 'foo*'),
+        '{"archives": [{"name": "foo"]}',
     )
 
 
@@ -305,7 +318,8 @@ def test_omit_flag_without_flag_present_passes_through_arguments():
 
 def test_omit_flag_and_value_removes_flag_and_value_from_arguments():
     assert module.omit_flag_and_value(
-        ('borg', 'create', '--flag', 'value', '--other'), '--flag'
+        ('borg', 'create', '--flag', 'value', '--other'),
+        '--flag',
     ) == (
         'borg',
         'create',
@@ -343,7 +357,7 @@ def test_make_exclude_flags_does_not_include_exclude_caches_when_false_in_config
 
 def test_make_exclude_flags_includes_exclude_if_present_when_in_config():
     exclude_flags = module.make_exclude_flags(
-        config={'exclude_if_present': ['exclude_me', 'also_me']}
+        config={'exclude_if_present': ['exclude_me', 'also_me']},
     )
 
     assert exclude_flags == (

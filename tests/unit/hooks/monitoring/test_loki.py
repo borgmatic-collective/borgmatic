@@ -37,7 +37,7 @@ def test_loki_log_buffer_json_serializes_labels():
     buffer.add_label('test', 'label')
 
     assert json.loads(buffer.to_request()) == json.loads(
-        '{"streams":[{"stream":{"test": "label"},"values":[]}]}'
+        '{"streams":[{"stream":{"test": "label"},"values":[]}]}',
     )
 
 
@@ -80,7 +80,7 @@ def test_loki_log_handler_raw_posts_to_server():
     '''
     handler = module.Loki_log_handler(flexmock(), False)
     flexmock(module.requests).should_receive('post').and_return(
-        flexmock(raise_for_status=lambda: '')
+        flexmock(raise_for_status=lambda: ''),
     ).once()
 
     for num in range(int(module.MAX_BUFFER_LINES * 1.5)):
@@ -93,7 +93,7 @@ def test_loki_log_handler_raw_post_failure_does_not_raise():
     '''
     handler = module.Loki_log_handler(flexmock(), False)
     flexmock(module.requests).should_receive('post').and_return(
-        flexmock(raise_for_status=lambda: (_ for _ in ()).throw(requests.RequestException()))
+        flexmock(raise_for_status=lambda: (_ for _ in ()).throw(requests.RequestException())),
     ).once()
 
     for num in range(int(module.MAX_BUFFER_LINES * 1.5)):

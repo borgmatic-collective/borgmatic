@@ -30,18 +30,19 @@ def run_create(
     If create_arguments.json is True, yield the JSON output from creating the archive.
     '''
     if create_arguments.repository and not borgmatic.config.validate.repositories_match(
-        repository, create_arguments.repository
+        repository,
+        create_arguments.repository,
     ):
         return
 
     if config.get('list_details') and config.get('progress'):
         raise ValueError(
-            'With the create action, only one of --list/--files/list_details and --progress/progress can be used.'
+            'With the create action, only one of --list/--files/list_details and --progress/progress can be used.',
         )
 
     if config.get('list_details') and create_arguments.json:
         raise ValueError(
-            'With the create action, only one of --list/--files/list_details and --json can be used.'
+            'With the create action, only one of --list/--files/list_details and --json can be used.',
         )
 
     logger.info(f'Creating archive{dry_run_label}')
@@ -56,7 +57,9 @@ def run_create(
             global_arguments.dry_run,
         )
         patterns = pattern.process_patterns(
-            pattern.collect_patterns(config), config, working_directory
+            pattern.collect_patterns(config),
+            config,
+            working_directory,
         )
         active_dumps = borgmatic.hooks.dispatch.call_hooks(
             'dump_data_sources',
@@ -72,7 +75,10 @@ def run_create(
         # we could end up with duplicate paths that cause Borg to hang when it tries to read from
         # the same named pipe twice.
         patterns = pattern.process_patterns(
-            patterns, config, working_directory, skip_expand_paths=config_paths
+            patterns,
+            config,
+            working_directory,
+            skip_expand_paths=config_paths,
         )
         stream_processes = [process for processes in active_dumps.values() for process in processes]
 

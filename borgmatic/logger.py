@@ -15,10 +15,7 @@ def to_bool(arg):
     if isinstance(arg, str):
         arg = arg.lower()
 
-    if arg in ('yes', 'on', '1', 'true', 1):
-        return True
-
-    return False
+    return arg in {'yes', 'on', '1', 'true', 1}
 
 
 def interactive_console():
@@ -59,12 +56,12 @@ class Multi_stream_handler(logging.Handler):
     '''
 
     def __init__(self, log_level_to_stream_handler):
-        super(Multi_stream_handler, self).__init__()
+        super().__init__()
         self.log_level_to_handler = log_level_to_stream_handler
         self.handlers = set(self.log_level_to_handler.values())
 
     def flush(self):  # pragma: no cover
-        super(Multi_stream_handler, self).flush()
+        super().flush()
 
         for handler in self.handlers:
             handler.flush()
@@ -75,29 +72,29 @@ class Multi_stream_handler(logging.Handler):
         '''
         self.log_level_to_handler[record.levelno].emit(record)
 
-    def setFormatter(self, formatter):  # pragma: no cover
-        super(Multi_stream_handler, self).setFormatter(formatter)
+    def setFormatter(self, formatter):  # pragma: no cover  # noqa: N802
+        super().setFormatter(formatter)
 
         for handler in self.handlers:
             handler.setFormatter(formatter)
 
-    def setLevel(self, level):  # pragma: no cover
-        super(Multi_stream_handler, self).setLevel(level)
+    def setLevel(self, level):  # pragma: no cover  # noqa: N802
+        super().setLevel(level)
 
         for handler in self.handlers:
             handler.setLevel(level)
 
 
 class Log_prefix_formatter(logging.Formatter):
-    def __init__(self, fmt='{prefix}{message}', style='{', *args, **kwargs):  # pragma: no cover
+    def __init__(self, fmt='{prefix}{message}', *args, style='{', **kwargs):
         self.prefix = None
 
-        super(Log_prefix_formatter, self).__init__(fmt=fmt, style=style, *args, **kwargs)
+        super().__init__(*args, fmt=fmt, style=style, **kwargs)
 
     def format(self, record):  # pragma: no cover
         record.prefix = f'{self.prefix}: ' if self.prefix else ''
 
-        return super(Log_prefix_formatter, self).format(record)
+        return super().format(record)
 
 
 class Color(enum.Enum):
@@ -112,28 +109,27 @@ class Color(enum.Enum):
 class Console_color_formatter(logging.Formatter):
     def __init__(self, *args, **kwargs):
         self.prefix = None
-        super(Console_color_formatter, self).__init__(
-            '{prefix}{message}', style='{', *args, **kwargs
+        super().__init__(
+            '{prefix}{message}',
+            *args,
+            style='{',
+            **kwargs,
         )
 
     def format(self, record):
         add_custom_log_levels()
 
-        color = (
-            {
-                logging.CRITICAL: Color.RED,
-                logging.ERROR: Color.RED,
-                logging.WARN: Color.YELLOW,
-                logging.ANSWER: Color.MAGENTA,
-                logging.INFO: Color.GREEN,
-                logging.DEBUG: Color.CYAN,
-            }
-            .get(record.levelno)
-            .value
-        )
+        color = {
+            logging.CRITICAL: Color.RED,
+            logging.ERROR: Color.RED,
+            logging.WARNING: Color.YELLOW,
+            logging.ANSWER: Color.MAGENTA,
+            logging.INFO: Color.GREEN,
+            logging.DEBUG: Color.CYAN,
+        }.get(record.levelno).value
         record.prefix = f'{self.prefix}: ' if self.prefix else ''
 
-        return color_text(color, super(Console_color_formatter, self).format(record))
+        return color_text(color, super().format(record))
 
 
 def ansi_escape_code(color):  # pragma: no cover
@@ -177,18 +173,18 @@ def add_logging_level(level_name, level_number):
     if not hasattr(logging.getLoggerClass(), method_name):
 
         def log_to_root(message, *args, **kwargs):  # pragma: no cover
-            logging.log(level_number, message, *args, **kwargs)
+            logging.log(level_number, message, *args, **kwargs)  # noqa: LOG015
 
         setattr(logging, method_name, log_to_root)
 
 
-ANSWER = logging.WARN - 5
+ANSWER = logging.WARNING - 5
 DISABLED = logging.CRITICAL + 10
 
 
 def add_custom_log_levels():  # pragma: no cover
     '''
-    Add a custom log level between WARN and INFO for user-requested answers.
+    Add a custom log level between WARNING and INFO for user-requested answers.
     '''
     add_logging_level('ANSWER', ANSWER)
     add_logging_level('DISABLED', DISABLED)
@@ -277,11 +273,11 @@ class Delayed_logging_handler(logging.handlers.BufferingHandler):
     '''
 
     def __init__(self):
-        super(Delayed_logging_handler, self).__init__(capacity=0)
+        super().__init__(capacity=0)
 
         self.targets = None
 
-    def shouldFlush(self, record):
+    def shouldFlush(self, record):  # noqa: N802
         return self.targets is not None
 
     def flush(self):
@@ -361,11 +357,11 @@ def configure_logging(
             logging.DISABLED: console_disabled,
             logging.CRITICAL: console_error_handler,
             logging.ERROR: console_error_handler,
-            logging.WARN: console_error_handler,
+            logging.WARNING: console_error_handler,
             logging.ANSWER: console_standard_handler,
             logging.INFO: console_standard_handler,
             logging.DEBUG: console_standard_handler,
-        }
+        },
     )
 
     if color_enabled:
@@ -390,8 +386,8 @@ def configure_logging(
             syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
             syslog_handler.setFormatter(
                 Log_prefix_formatter(
-                    'borgmatic: {levelname} {prefix}{message}',  # noqa: FS003
-                )
+                    'borgmatic: {levelname} {prefix}{message}',
+                ),
             )
             syslog_handler.setLevel(syslog_log_level)
             handlers.append(syslog_handler)
@@ -400,8 +396,8 @@ def configure_logging(
         file_handler = logging.handlers.WatchedFileHandler(log_file)
         file_handler.setFormatter(
             Log_prefix_formatter(
-                log_file_format or '[{asctime}] {levelname}: {prefix}{message}',  # noqa: FS003
-            )
+                log_file_format or '[{asctime}] {levelname}: {prefix}{message}',
+            ),
         )
         file_handler.setLevel(log_file_log_level)
         handlers.append(file_handler)

@@ -17,7 +17,7 @@ def schema_filename():
     '''
     schema_path = os.path.join(os.path.dirname(borgmatic.config.__file__), 'schema.yaml')
 
-    with open(schema_path):
+    with open(schema_path, encoding='utf-8'):
         return schema_path
 
 
@@ -97,7 +97,11 @@ def apply_logical_validation(config_filename, parsed_configuration):
 
 
 def parse_configuration(
-    config_filename, schema_filename, arguments, overrides=None, resolve_env=True
+    config_filename,
+    schema_filename,
+    arguments,
+    overrides=None,
+    resolve_env=True,
 ):
     '''
     Given the path to a config filename in YAML format, the path to a schema filename in a YAML
@@ -147,7 +151,8 @@ def parse_configuration(
 
     if validation_errors:
         raise Validation_error(
-            config_filename, tuple(format_json_error(error) for error in validation_errors)
+            config_filename,
+            tuple(format_json_error(error) for error in validation_errors),
         )
 
     apply_logical_validation(config_filename, config)
@@ -166,13 +171,14 @@ def normalize_repository_path(repository, base=None):
         return (
             os.path.abspath(os.path.join(base, repository)) if base else os.path.abspath(repository)
         )
-    elif repository.startswith('file://'):
+
+    if repository.startswith('file://'):
         local_path = repository.partition('file://')[-1]
         return (
             os.path.abspath(os.path.join(base, local_path)) if base else os.path.abspath(local_path)
         )
-    else:
-        return repository
+
+    return repository
 
 
 def glob_match(first, second):
@@ -199,7 +205,8 @@ def repositories_match(first, second):
         second = {'path': second, 'label': second}
 
     return glob_match(first.get('label'), second.get('label')) or glob_match(
-        normalize_repository_path(first.get('path')), normalize_repository_path(second.get('path'))
+        normalize_repository_path(first.get('path')),
+        normalize_repository_path(second.get('path')),
     )
 
 
@@ -220,7 +227,7 @@ def guard_configuration_contains_repository(repository, configurations):
             for config in configurations.values()
             for config_repository in config['repositories']
             if repositories_match(config_repository, repository)
-        )
+        ),
     )
 
     if count == 0:

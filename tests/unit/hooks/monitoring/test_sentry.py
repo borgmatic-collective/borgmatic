@@ -132,7 +132,7 @@ def test_ping_monitor_with_network_error_does_not_raise():
 
     response = flexmock(ok=False)
     response.should_receive('raise_for_status').and_raise(
-        module.requests.exceptions.ConnectionError
+        module.requests.exceptions.ConnectionError,
     )
     flexmock(module.requests).should_receive('post').with_args(
         'https://o294220.ingest.us.sentry.io/api/203069/cron/test/5f80ec/?status=in_progress',

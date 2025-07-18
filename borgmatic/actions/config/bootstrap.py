@@ -36,7 +36,7 @@ def get_config_paths(archive_name, bootstrap_arguments, global_arguments, local_
     expected configuration path data.
     '''
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(
-        {'borgmatic_source_directory': bootstrap_arguments.borgmatic_source_directory}
+        {'borgmatic_source_directory': bootstrap_arguments.borgmatic_source_directory},
     )
     config = make_bootstrap_config(bootstrap_arguments)
 
@@ -52,7 +52,9 @@ def get_config_paths(archive_name, bootstrap_arguments, global_arguments, local_
             borgmatic_source_directory,
         ):
             borgmatic_manifest_path = 'sh:' + os.path.join(
-                base_directory, 'bootstrap', 'manifest.json'
+                base_directory,
+                'bootstrap',
+                'manifest.json',
             )
 
             extract_process = borgmatic.borg.extract.extract_archive(
@@ -73,21 +75,21 @@ def get_config_paths(archive_name, bootstrap_arguments, global_arguments, local_
                 break
         else:
             raise ValueError(
-                'Cannot read configuration paths from archive due to missing bootstrap manifest'
+                'Cannot read configuration paths from archive due to missing bootstrap manifest',
             )
 
     try:
         manifest_data = json.loads(manifest_json)
     except json.JSONDecodeError as error:
         raise ValueError(
-            f'Cannot read configuration paths from archive due to invalid bootstrap manifest JSON: {error}'
+            f'Cannot read configuration paths from archive due to invalid bootstrap manifest JSON: {error}',
         )
 
     try:
         return manifest_data['config_paths']
     except KeyError:
         raise ValueError(
-            'Cannot read configuration paths from archive due to invalid bootstrap manifest'
+            'Cannot read configuration paths from archive due to invalid bootstrap manifest',
         )
 
 
@@ -109,7 +111,10 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
         remote_path=bootstrap_arguments.remote_path,
     )
     manifest_config_paths = get_config_paths(
-        archive_name, bootstrap_arguments, global_arguments, local_borg_version
+        archive_name,
+        bootstrap_arguments,
+        global_arguments,
+        local_borg_version,
     )
 
     logger.info(f"Bootstrapping config paths: {', '.join(manifest_config_paths)}")

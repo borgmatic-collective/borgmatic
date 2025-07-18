@@ -61,12 +61,14 @@ def display_repository_info(
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
-    else:
-        execute_command(
-            full_command,
-            output_log_level=logging.ANSWER,
-            environment=environment.make_environment(config),
-            working_directory=working_directory,
-            borg_local_path=local_path,
-            borg_exit_codes=borg_exit_codes,
-        )
+
+    execute_command(
+        full_command,
+        output_log_level=logging.ANSWER,
+        environment=environment.make_environment(config),
+        working_directory=working_directory,
+        borg_local_path=local_path,
+        borg_exit_codes=borg_exit_codes,
+    )
+
+    return None

@@ -35,7 +35,7 @@ def test_validate_config_command_with_show_flag_displays_configuration():
 
         subprocess.check_call(f'borgmatic config generate --destination {config_path}'.split(' '))
         output = subprocess.check_output(
-            f'borgmatic config validate --config {config_path} --show'.split(' ')
+            f'borgmatic config validate --config {config_path} --show'.split(' '),
         ).decode(sys.stdout.encoding)
 
         assert 'repositories:' in output

@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import os
 import tempfile
@@ -34,7 +35,8 @@ TEMPORARY_DIRECTORY_PREFIX = 'borgmatic-'
 
 
 def replace_temporary_subdirectory_with_glob(
-    path, temporary_directory_prefix=TEMPORARY_DIRECTORY_PREFIX
+    path,
+    temporary_directory_prefix=TEMPORARY_DIRECTORY_PREFIX,
 ):
     '''
     Given an absolute temporary directory path and an optional temporary directory prefix, look for
@@ -124,7 +126,7 @@ class Runtime_directory:
                 base_path if final_directory == 'borgmatic' else runtime_directory,
                 '.',  # Borg 1.4+ "slashdot" hack.
                 'borgmatic',
-            )
+            ),
         )
         os.makedirs(self.runtime_path, mode=0o700, exist_ok=True)
 
@@ -141,13 +143,11 @@ class Runtime_directory:
         Delete any temporary directory that was created as part of initialization.
         '''
         if self.temporary_directory:
-            try:
-                self.temporary_directory.cleanup()
             # The cleanup() call errors if, for instance, there's still a
             # mounted filesystem within the temporary directory. There's
             # nothing we can do about that here, so swallow the error.
-            except OSError:
-                pass
+            with contextlib.suppress(OSError):
+                self.temporary_directory.cleanup()
 
 
 def make_runtime_directory_glob(borgmatic_runtime_directory):
@@ -160,7 +160,7 @@ def make_runtime_directory_glob(borgmatic_runtime_directory):
         *(
             '*' if subdirectory.startswith(TEMPORARY_DIRECTORY_PREFIX) else subdirectory
             for subdirectory in os.path.normpath(borgmatic_runtime_directory).split(os.path.sep)
-        )
+        ),
     )
 
 
@@ -177,5 +177,5 @@ def get_borgmatic_state_directory(config):
             or os.environ.get('STATE_DIRECTORY')  # Set by systemd if configured.
             or '~/.local/state',
             'borgmatic',
-        )
+        ),
     )

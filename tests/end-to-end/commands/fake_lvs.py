@@ -31,11 +31,11 @@ def print_snapshots_json(arguments, snapshots):
                 'report': [
                     {
                         'lv': snapshots,
-                    }
+                    },
                 ],
                 'log': [],
-            }
-        )
+            },
+        ),
     )
 
 

@@ -43,7 +43,8 @@ def make_environment(database, config, restore_connection_params=None):
             )
         else:
             environment['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
-                database['password'], config
+                database['password'],
+                config,
             )
     except (AttributeError, KeyError):
         pass
@@ -179,7 +180,7 @@ def dump_data_sources(
             )
             if os.path.exists(dump_filename):
                 logger.warning(
-                    f'Skipping duplicate dump of PostgreSQL database "{database_name}" to {dump_filename}'
+                    f'Skipping duplicate dump of PostgreSQL database "{database_name}" to {dump_filename}',
                 )
                 continue
 
@@ -197,8 +198,9 @@ def dump_data_sources(
                         '--username',
                         shlex.quote(
                             borgmatic.hooks.credential.parse.resolve_credential(
-                                database['username'], config
-                            )
+                                database['username'],
+                                config,
+                            ),
                         ),
                     )
                     if 'username' in database
@@ -221,27 +223,27 @@ def dump_data_sources(
             )
 
             logger.debug(
-                f'Dumping PostgreSQL database "{database_name}" to {dump_filename}{dry_run_label}'
+                f'Dumping PostgreSQL database "{database_name}" to {dump_filename}{dry_run_label}',
             )
             if dry_run:
                 continue
 
             if dump_format == 'directory':
                 dump.create_parent_directory_for_dump(dump_filename)
-                execute_command(
+                execute_command(  # noqa: S604
                     command,
-                    shell=True,  # noqa: S604
+                    shell=True,
                     environment=environment,
                 )
             else:
                 dump.create_named_pipe_for_dump(dump_filename)
                 processes.append(
-                    execute_command(
+                    execute_command(  # noqa: S604
                         command,
-                        shell=True,  # noqa: S604
+                        shell=True,
                         environment=environment,
                         run_to_completion=False,
-                    )
+                    ),
                 )
 
     if not dry_run:
@@ -249,14 +251,17 @@ def dump_data_sources(
             borgmatic.borg.pattern.Pattern(
                 os.path.join(borgmatic_runtime_directory, 'postgresql_databases'),
                 source=borgmatic.borg.pattern.Pattern_source.HOOK,
-            )
+            ),
         )
 
     return processes
 
 
 def remove_data_source_dumps(
-    databases, config, borgmatic_runtime_directory, dry_run
+    databases,
+    config,
+    borgmatic_runtime_directory,
+    dry_run,
 ):  # pragma: no cover
     '''
     Remove all database dump files for this hook regardless of the given databases. Use the
@@ -264,12 +269,17 @@ def remove_data_source_dumps(
     actually remove anything.
     '''
     dump.remove_data_source_dumps(
-        make_dump_path(borgmatic_runtime_directory), 'PostgreSQL', dry_run
+        make_dump_path(borgmatic_runtime_directory),
+        'PostgreSQL',
+        dry_run,
     )
 
 
 def make_data_source_dump_patterns(
-    databases, config, borgmatic_runtime_directory, name=None
+    databases,
+    config,
+    borgmatic_runtime_directory,
+    name=None,
 ):  # pragma: no cover
     '''
     Given a sequence of configurations dicts, a configuration dict, the borgmatic runtime directory,
@@ -281,10 +291,14 @@ def make_data_source_dump_patterns(
     return (
         dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
         dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_runtime_directory), name, hostname='*'
+            make_dump_path(borgmatic_runtime_directory),
+            name,
+            hostname='*',
         ),
         dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_source_directory), name, hostname='*'
+            make_dump_path(borgmatic_source_directory),
+            name,
+            hostname='*',
         ),
     )
 
@@ -313,10 +327,11 @@ def restore_data_source_dump(
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
     hostname = connection_params['hostname'] or data_source.get(
-        'restore_hostname', data_source.get('hostname')
+        'restore_hostname',
+        data_source.get('hostname'),
     )
     port = str(
-        connection_params['port'] or data_source.get('restore_port', data_source.get('port', ''))
+        connection_params['port'] or data_source.get('restore_port', data_source.get('port', '')),
     )
     username = borgmatic.hooks.credential.parse.resolve_credential(
         (
@@ -372,7 +387,7 @@ def restore_data_source_dump(
         + tuple(
             itertools.chain.from_iterable(('--schema', schema) for schema in data_source['schemas'])
             if data_source.get('schemas')
-            else ()
+            else (),
         )
     )
 

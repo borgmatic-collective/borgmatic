@@ -1,6 +1,5 @@
 from argparse import Action
 from collections import namedtuple
-from typing import Tuple
 
 import pytest
 from flexmock import flexmock
@@ -8,7 +7,7 @@ from flexmock import flexmock
 from borgmatic.commands.completion import fish as module
 
 OptionType = namedtuple('OptionType', ['file', 'choice', 'unknown_required'])
-TestCase = Tuple[Action, OptionType]
+TestCase = tuple[Action, OptionType]
 
 test_data = [
     (Action('--flag', 'flag'), OptionType(file=False, choice=False, unknown_required=False)),
@@ -59,10 +58,10 @@ test_data = [
     ),
     *(
         (
-            Action('--flag', 'flag', type=type, default=None),
+            Action('--flag', 'flag', type=flag_type, default=None),
             OptionType(file=False, choice=False, unknown_required=True),
         )
-        for type in (int, str)
+        for flag_type in (int, str)
     ),
     (
         Action('--flag', 'flag', type=int, default=1),
@@ -95,7 +94,8 @@ def test_has_choice_options_detects_choice_options(action: Action, option_type: 
 
 @pytest.mark.parametrize('action, option_type', test_data)
 def test_has_unknown_required_param_options_detects_unknown_required_param_options(
-    action: Action, option_type: OptionType
+    action: Action,
+    option_type: OptionType,
 ):
     assert module.has_unknown_required_param_options(action) == option_type.unknown_required
 
@@ -107,7 +107,8 @@ def test_has_exact_options_detects_exact_options(action: Action, option_type: Op
 
 @pytest.mark.parametrize('action, option_type', test_data)
 def test_exact_options_completion_produces_reasonable_completions(
-    action: Action, option_type: OptionType
+    action: Action,
+    option_type: OptionType,
 ):
     completion = module.exact_options_completion(action)
     if True in option_type:
@@ -131,5 +132,5 @@ def test_dedent_strip_as_tuple_does_not_raise():
         '''
         a
         b
-    '''
+    ''',
     )

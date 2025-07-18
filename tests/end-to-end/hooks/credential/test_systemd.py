@@ -48,17 +48,17 @@ def test_systemd_credential():
 
         subprocess.check_call(
             f'borgmatic -v 2 --config {config_path} repo-create --encryption repokey'.split(' '),
-            env=dict(os.environ, **{'CREDENTIALS_DIRECTORY': temporary_directory}),
+            env=dict(os.environ, CREDENTIALS_DIRECTORY=temporary_directory),
         )
 
         # Run borgmatic to generate a backup archive, and then list it to make sure it exists.
         subprocess.check_call(
             f'borgmatic --config {config_path}'.split(' '),
-            env=dict(os.environ, **{'CREDENTIALS_DIRECTORY': temporary_directory}),
+            env=dict(os.environ, CREDENTIALS_DIRECTORY=temporary_directory),
         )
         output = subprocess.check_output(
             f'borgmatic --config {config_path} list --json'.split(' '),
-            env=dict(os.environ, **{'CREDENTIALS_DIRECTORY': temporary_directory}),
+            env=dict(os.environ, CREDENTIALS_DIRECTORY=temporary_directory),
         ).decode(sys.stdout.encoding)
         parsed_output = json.loads(output)
 

@@ -16,7 +16,7 @@ def test_make_argument_description_with_object_adds_example():
         )
         # Apparently different versions of ruamel.yaml serialize this
         # differently.
-        in ('Thing. Example value: "bar: baz"' 'Thing. Example value: "{bar: baz}"')
+        in ('Thing. Example value: "bar: baz"Thing. Example value: "{bar: baz}"')
     )
 
 
@@ -90,7 +90,7 @@ def test_add_arguments_from_schema_with_nested_object_adds_flag_for_each_option(
                         'bar': {'type': 'integer', 'description': 'help 1'},
                         'baz': {'type': 'string', 'description': 'help 2'},
                     },
-                }
+                },
             },
         },
         unparsed_arguments=(),
@@ -126,11 +126,11 @@ def test_add_arguments_from_schema_with_array_and_nested_object_adds_multiple_fl
                             'bar': {
                                 'type': 'integer',
                                 'description': 'help 1',
-                            }
+                            },
                         },
                     },
                     'description': 'help 2',
-                }
+                },
             },
         },
         unparsed_arguments=(),
@@ -171,7 +171,12 @@ def test_parse_arguments_with_action_after_config_path_omits_aliased_action():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     arguments = module.parse_arguments(
-        {}, '--config', 'myconfig', 'init', '--encryption', 'repokey'
+        {},
+        '--config',
+        'myconfig',
+        'init',
+        '--encryption',
+        'repokey',
     )
 
     global_arguments = arguments['global']
@@ -204,7 +209,13 @@ def test_parse_arguments_with_multiple_overrides_flags_parses():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     arguments = module.parse_arguments(
-        {}, '--override', 'foo.bar=baz', '--override', 'foo.quux=7', '--override', 'this.that=8'
+        {},
+        '--override',
+        'foo.bar=baz',
+        '--override',
+        'foo.quux=7',
+        '--override',
+        'this.that=8',
     )
 
     global_arguments = arguments['global']
@@ -245,10 +256,11 @@ def test_parse_arguments_with_no_actions_passes_argument_to_relevant_actions():
 def test_parse_arguments_with_help_and_no_actions_shows_global_help(capsys):
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit) as exit:
+    with pytest.raises(SystemExit) as system_exit:
         module.parse_arguments({}, '--help')
 
-    assert exit.value.code == 0
+        assert system_exit.value.code == 0
+
     captured = capsys.readouterr()
     assert 'global arguments:' in captured.out
     assert 'actions:' in captured.out
@@ -257,10 +269,11 @@ def test_parse_arguments_with_help_and_no_actions_shows_global_help(capsys):
 def test_parse_arguments_with_help_and_action_shows_action_help(capsys):
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit) as exit:
+    with pytest.raises(SystemExit) as system_exit:
         module.parse_arguments({}, 'create', '--help')
 
-    assert exit.value.code == 0
+        assert system_exit.value.code == 0
+
     captured = capsys.readouterr()
     assert 'global arguments:' not in captured.out
     assert 'actions:' not in captured.out
@@ -355,7 +368,14 @@ def test_parse_arguments_allows_repository_with_extract():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments(
-        {}, '--config', 'myconfig', 'extract', '--repository', 'test.borg', '--archive', 'test'
+        {},
+        '--config',
+        'myconfig',
+        'extract',
+        '--repository',
+        'test.borg',
+        '--archive',
+        'test',
     )
 
 
@@ -413,7 +433,14 @@ def test_parse_arguments_allows_archive_with_mount():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments(
-        {}, '--config', 'myconfig', 'mount', '--archive', 'test', '--mount-point', '/mnt'
+        {},
+        '--config',
+        'myconfig',
+        'mount',
+        '--archive',
+        'test',
+        '--mount-point',
+        '/mnt',
     )
 
 
@@ -618,10 +645,11 @@ def test_parse_arguments_config_with_no_subaction_errors():
 def test_parse_arguments_config_with_help_shows_config_help(capsys):
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit) as exit:
+    with pytest.raises(SystemExit) as system_exit:
         module.parse_arguments({}, 'config', '--help')
 
-    assert exit.value.code == 0
+        assert system_exit.value.code == 0
+
     captured = capsys.readouterr()
     assert 'global arguments:' not in captured.out
     assert 'config arguments:' in captured.out
@@ -631,19 +659,20 @@ def test_parse_arguments_config_with_help_shows_config_help(capsys):
 def test_parse_arguments_config_with_subaction_but_missing_flags_errors():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit) as exit:
+    with pytest.raises(SystemExit) as system_exit:
         module.parse_arguments({}, 'config', 'bootstrap')
 
-    assert exit.value.code == 2
+        assert system_exit.value.code == 2
 
 
 def test_parse_arguments_config_with_subaction_and_help_shows_subaction_help(capsys):
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit) as exit:
+    with pytest.raises(SystemExit) as system_exit:
         module.parse_arguments({}, 'config', 'bootstrap', '--help')
 
-    assert exit.value.code == 0
+        assert system_exit.value.code == 0
+
     captured = capsys.readouterr()
     assert 'config bootstrap arguments:' in captured.out
 
@@ -670,7 +699,13 @@ def test_parse_arguments_config_with_subaction_and_explicit_config_file_does_not
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments(
-        {}, 'config', 'bootstrap', '--repository', 'repo.borg', '--config', 'test.yaml'
+        {},
+        'config',
+        'bootstrap',
+        '--repository',
+        'repo.borg',
+        '--config',
+        'test.yaml',
     )
 
 

@@ -60,7 +60,7 @@ def dump_data_sources(
 
         if not os.path.exists(database_path):
             logger.warning(
-                f'No SQLite database at {database_path}; an empty database will be created and dumped'
+                f'No SQLite database at {database_path}; an empty database will be created and dumped',
             )
 
         dump_path = make_dump_path(borgmatic_runtime_directory)
@@ -68,14 +68,15 @@ def dump_data_sources(
 
         if os.path.exists(dump_filename):
             logger.warning(
-                f'Skipping duplicate dump of SQLite database at {database_path} to {dump_filename}'
+                f'Skipping duplicate dump of SQLite database at {database_path} to {dump_filename}',
             )
             continue
 
         sqlite_command = tuple(
             shlex.quote(part) for part in shlex.split(database.get('sqlite_command') or 'sqlite3')
         )
-        command = sqlite_command + (
+        command = (
+            *sqlite_command,
             shlex.quote(database_path),
             '.dump',
             '>',
@@ -83,14 +84,14 @@ def dump_data_sources(
         )
 
         logger.debug(
-            f'Dumping SQLite database at {database_path} to {dump_filename}{dry_run_label}'
+            f'Dumping SQLite database at {database_path} to {dump_filename}{dry_run_label}',
         )
         if dry_run:
             continue
 
         dump.create_named_pipe_for_dump(dump_filename)
         processes.append(
-            execute_command(command, shell=True, run_to_completion=False)  # noqa: S604
+            execute_command(command, shell=True, run_to_completion=False),  # noqa: S604
         )
 
     if not dry_run:
@@ -98,14 +99,17 @@ def dump_data_sources(
             borgmatic.borg.pattern.Pattern(
                 os.path.join(borgmatic_runtime_directory, 'sqlite_databases'),
                 source=borgmatic.borg.pattern.Pattern_source.HOOK,
-            )
+            ),
         )
 
     return processes
 
 
 def remove_data_source_dumps(
-    databases, config, borgmatic_runtime_directory, dry_run
+    databases,
+    config,
+    borgmatic_runtime_directory,
+    dry_run,
 ):  # pragma: no cover
     '''
     Remove all database dump files for this hook regardless of the given databases. Use the
@@ -116,7 +120,10 @@ def remove_data_source_dumps(
 
 
 def make_data_source_dump_patterns(
-    databases, config, borgmatic_runtime_directory, name=None
+    databases,
+    config,
+    borgmatic_runtime_directory,
+    name=None,
 ):  # pragma: no cover
     '''
     Given a sequence of configurations dicts, a configuration dict, the borgmatic runtime directory,
@@ -128,10 +135,14 @@ def make_data_source_dump_patterns(
     return (
         dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
         dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_runtime_directory), name, hostname='*'
+            make_dump_path(borgmatic_runtime_directory),
+            name,
+            hostname='*',
         ),
         dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_source_directory), name, hostname='*'
+            make_dump_path(borgmatic_source_directory),
+            name,
+            hostname='*',
         ),
     )
 
@@ -153,7 +164,8 @@ def restore_data_source_dump(
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
     database_path = connection_params['restore_path'] or data_source.get(
-        'restore_path', data_source.get('path')
+        'restore_path',
+        data_source.get('path'),
     )
 
     logger.debug(f'Restoring SQLite database at {database_path}{dry_run_label}')
@@ -170,7 +182,7 @@ def restore_data_source_dump(
         shlex.quote(part)
         for part in shlex.split(data_source.get('sqlite_restore_command') or 'sqlite3')
     )
-    restore_command = sqlite_restore_command + (shlex.quote(database_path),)
+    restore_command = (*sqlite_restore_command, shlex.quote(database_path))
     # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
     # if the restore paths don't exist in the archive.
     execute_command_with_processes(

@@ -49,7 +49,7 @@ def change_passphrase(
     config_without_passphrase = {
         option_name: value
         for (option_name, value) in config.items()
-        if option_name not in ('encryption_passphrase', 'encryption_passcommand')
+        if option_name not in {'encryption_passphrase', 'encryption_passcommand'}
     }
 
     borgmatic.execute.execute_command(
@@ -63,5 +63,5 @@ def change_passphrase(
     )
 
     logger.answer(
-        f"{repository_path}: Don't forget to update your encryption_passphrase option (if needed)"
+        f"{repository_path}: Don't forget to update your encryption_passphrase option (if needed)",
     )

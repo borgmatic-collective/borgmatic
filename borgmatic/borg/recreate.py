@@ -38,7 +38,8 @@ def recreate_archive(
 
     # Write patterns to a temporary file and use that file with --patterns-from.
     patterns_file = write_patterns_file(
-        patterns, borgmatic.config.paths.get_working_directory(config)
+        patterns,
+        borgmatic.config.paths.get_working_directory(config),
     )
 
     recreate_command = (
@@ -80,7 +81,8 @@ def recreate_archive(
                 )
             )
             if borgmatic.borg.feature.available(
-                borgmatic.borg.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version
+                borgmatic.borg.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE,
+                local_borg_version,
             )
             else (
                 flags.make_repository_archive_flags(repository, archive, local_borg_version)

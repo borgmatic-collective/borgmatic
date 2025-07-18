@@ -34,7 +34,7 @@ def make_flags_from_arguments(arguments, excludes=()):
             make_flags(name, value=getattr(arguments, name))
             for name in sorted(vars(arguments))
             if name not in excludes and not name.startswith('_')
-        )
+        ),
     )
 
 
@@ -50,7 +50,7 @@ def make_repository_flags(repository_path, local_borg_version):
     ) + (repository_path,)
 
 
-ARCHIVE_HASH_PATTERN = re.compile('[0-9a-fA-F]{8,}$')
+ARCHIVE_HASH_PATTERN = re.compile(r'[0-9a-fA-F]{8,}$')
 
 
 def make_repository_archive_flags(repository_path, archive, local_borg_version):
@@ -76,8 +76,8 @@ def make_repository_archive_flags(repository_path, archive, local_borg_version):
     )
 
 
-DEFAULT_ARCHIVE_NAME_FORMAT_WITHOUT_SERIES = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'  # noqa: FS003
-DEFAULT_ARCHIVE_NAME_FORMAT_WITH_SERIES = '{hostname}'  # noqa: FS003
+DEFAULT_ARCHIVE_NAME_FORMAT_WITHOUT_SERIES = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
+DEFAULT_ARCHIVE_NAME_FORMAT_WITH_SERIES = '{hostname}'
 
 
 def get_default_archive_name_format(local_borg_version):
@@ -90,7 +90,7 @@ def get_default_archive_name_format(local_borg_version):
     return DEFAULT_ARCHIVE_NAME_FORMAT_WITHOUT_SERIES
 
 
-def make_match_archives_flags(
+def make_match_archives_flags(  # noqa: PLR0911
     match_archives,
     archive_name_format,
     local_borg_version,
@@ -115,8 +115,8 @@ def make_match_archives_flags(
                 return ('--match-archives', f'aid:{match_archives}')
 
             return ('--match-archives', match_archives)
-        else:
-            return ('--glob-archives', re.sub(r'^sh:', '', match_archives))
+
+        return ('--glob-archives', re.sub(r'^sh:', '', match_archives))
 
     derived_match_archives = re.sub(
         r'\{(now|utcnow|pid)([:%\w\.-]*)\}',
@@ -131,8 +131,8 @@ def make_match_archives_flags(
 
     if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
         return ('--match-archives', f'sh:{derived_match_archives}')
-    else:
-        return ('--glob-archives', f'{derived_match_archives}')
+
+    return ('--glob-archives', f'{derived_match_archives}')
 
 
 def warn_for_aggressive_archive_flags(json_command, json_output):
@@ -150,7 +150,7 @@ def warn_for_aggressive_archive_flags(json_command, json_output):
         if len(json.loads(json_output)['archives']) == 0:
             logger.warning('An archive filter was applied, but no matching archives were found.')
             logger.warning(
-                'Try adding --match-archives "*" or adjusting archive_name_format/match_archives in configuration.'
+                'Try adding --match-archives "*" or adjusting archive_name_format/match_archives in configuration.',
             )
     except json.JSONDecodeError as error:
         logger.debug(f'Cannot parse JSON output from archive command: {error}')
@@ -193,8 +193,8 @@ def omit_flag_and_value(arguments, flag):
     # its value.
     return tuple(
         argument
-        for (previous_argument, argument) in zip((None,) + arguments, arguments)
-        if flag not in (previous_argument, argument)
+        for (previous_argument, argument) in zip((None, *arguments), arguments)
+        if flag not in {previous_argument, argument}
         if not argument.startswith(f'{flag}=')
     )
 
@@ -209,7 +209,7 @@ def make_exclude_flags(config):
         itertools.chain.from_iterable(
             ('--exclude-if-present', if_present)
             for if_present in config.get('exclude_if_present', ())
-        )
+        ),
     )
     keep_exclude_tags_flags = ('--keep-exclude-tags',) if config.get('keep_exclude_tags') else ()
     exclude_nodump_flags = ('--exclude-nodump',) if config.get('exclude_nodump') else ()
@@ -229,10 +229,10 @@ def make_list_filter_flags(local_borg_version, dry_run):
     if feature.available(feature.Feature.EXCLUDED_FILES_MINUS, local_borg_version):
         if show_excludes or dry_run:
             return f'{base_flags}+-'
-        else:
-            return base_flags
+
+        return base_flags
 
     if show_excludes:
         return f'{base_flags}x-'
-    else:
-        return f'{base_flags}-'
+
+    return f'{base_flags}-'

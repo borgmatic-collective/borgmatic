@@ -96,7 +96,7 @@ class Monitoring_hooks:
         self.config = config
         self.dry_run = global_arguments.dry_run
         self.monitoring_log_level = verbosity_to_log_level(
-            get_verbosity({config_filename: config}, 'monitoring_verbosity')
+            get_verbosity({config_filename: config}, 'monitoring_verbosity'),
         )
         self.monitoring_hooks_are_activated = (
             using_primary_action and self.monitoring_log_level != DISABLED
@@ -182,7 +182,7 @@ class Monitoring_hooks:
         )
 
 
-def run_configuration(config_filename, config, config_paths, arguments):
+def run_configuration(config_filename, config, config_paths, arguments):  # noqa: PLR0912, PLR0915
     '''
     Given a config filename, the corresponding parsed config dict, a sequence of loaded
     configuration paths, and command-line arguments as a dict from subparser name to a namespace of
@@ -206,12 +206,13 @@ def run_configuration(config_filename, config, config_paths, arguments):
 
     if skip_actions:
         logger.debug(
-            f"Skipping {'/'.join(skip_actions)} action{'s' if len(skip_actions) > 1 else ''} due to configured skip_actions"
+            f"Skipping {'/'.join(skip_actions)} action{'s' if len(skip_actions) > 1 else ''} due to configured skip_actions",
         )
 
-    try:
-        with Monitoring_hooks(config_filename, config, arguments, global_arguments):
-            with borgmatic.hooks.command.Before_after_hooks(
+    try:  # noqa: PLR1702
+        with (
+            Monitoring_hooks(config_filename, config, arguments, global_arguments),
+            borgmatic.hooks.command.Before_after_hooks(
                 command_hooks=config.get('commands'),
                 before_after='configuration',
                 umask=config.get('umask'),
@@ -220,75 +221,77 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 action_names=arguments.keys(),
                 configuration_filename=config_filename,
                 log_file=config.get('log_file', ''),
-            ):
-                try:
-                    local_borg_version = borg_version.local_borg_version(config, local_path)
-                    logger.debug(f'Borg {local_borg_version}')
-                except (OSError, CalledProcessError, ValueError) as error:
-                    yield from log_error_records(
-                        f'{config_filename}: Error getting local Borg version', error
-                    )
-                    raise
+            ),
+        ):
+            try:
+                local_borg_version = borg_version.local_borg_version(config, local_path)
+                logger.debug(f'Borg {local_borg_version}')
+            except (OSError, CalledProcessError, ValueError) as error:
+                yield from log_error_records(
+                    f'{config_filename}: Error getting local Borg version',
+                    error,
+                )
+                raise
 
-                for repo in config['repositories']:
-                    repo_queue.put(
-                        (repo, 0),
-                    )
+            for repo in config['repositories']:
+                repo_queue.put(
+                    (repo, 0),
+                )
 
-                while not repo_queue.empty():
-                    repository, retry_num = repo_queue.get()
+            while not repo_queue.empty():
+                repository, retry_num = repo_queue.get()
 
-                    with Log_prefix(repository.get('label', repository['path'])):
-                        logger.debug('Running actions for repository')
-                        timeout = retry_num * retry_wait
+                with Log_prefix(repository.get('label', repository['path'])):
+                    logger.debug('Running actions for repository')
+                    timeout = retry_num * retry_wait
 
-                        if timeout:
-                            logger.warning(f'Sleeping {timeout}s before next retry')
-                            time.sleep(timeout)
+                    if timeout:
+                        logger.warning(f'Sleeping {timeout}s before next retry')
+                        time.sleep(timeout)
 
-                        try:
-                            yield from run_actions(
-                                arguments=arguments,
-                                config_filename=config_filename,
-                                config=config,
-                                config_paths=config_paths,
-                                local_path=local_path,
-                                remote_path=remote_path,
-                                local_borg_version=local_borg_version,
-                                repository=repository,
+                    try:
+                        yield from run_actions(
+                            arguments=arguments,
+                            config_filename=config_filename,
+                            config=config,
+                            config_paths=config_paths,
+                            local_path=local_path,
+                            remote_path=remote_path,
+                            local_borg_version=local_borg_version,
+                            repository=repository,
+                        )
+                    except (OSError, CalledProcessError, ValueError) as error:
+                        if retry_num < retries:
+                            repo_queue.put(
+                                (repository, retry_num + 1),
                             )
-                        except (OSError, CalledProcessError, ValueError) as error:
-                            if retry_num < retries:
-                                repo_queue.put(
-                                    (repository, retry_num + 1),
-                                )
-                                tuple(  # Consume the generator so as to trigger logging.
-                                    log_error_records(
-                                        'Error running actions for repository',
-                                        error,
-                                        levelno=logging.WARNING,
-                                        log_command_error_output=True,
-                                    )
-                                )
-                                logger.warning(f'Retrying... attempt {retry_num + 1}/{retries}')
-                                continue
-
-                            if command.considered_soft_failure(error):
-                                continue
-
-                            yield from log_error_records(
-                                'Error running actions for repository',
-                                error,
+                            tuple(  # Consume the generator so as to trigger logging.
+                                log_error_records(
+                                    'Error running actions for repository',
+                                    error,
+                                    levelno=logging.WARNING,
+                                    log_command_error_output=True,
+                                ),
                             )
-                            encountered_error = error
-                            error_repository = repository
+                            logger.warning(f'Retrying... attempt {retry_num + 1}/{retries}')
+                            continue
 
-                # Re-raise any error, so that the Monitoring_hooks context manager wrapping this
-                # code can see the error and act accordingly. Do this here rather than as soon as
-                # the error is encountered so that an error with one repository doesn't prevent
-                # other repositories from running.
-                if encountered_error:
-                    raise encountered_error
+                        if command.considered_soft_failure(error):
+                            continue
+
+                        yield from log_error_records(
+                            'Error running actions for repository',
+                            error,
+                        )
+                        encountered_error = error
+                        error_repository = repository
+
+            # Re-raise any error, so that the Monitoring_hooks context manager wrapping this
+            # code can see the error and act accordingly. Do this here rather than as soon as
+            # the error is encountered so that an error with one repository doesn't prevent
+            # other repositories from running.
+            if encountered_error:
+                raise encountered_error
 
     except (OSError, CalledProcessError, ValueError) as error:
         yield from log_error_records('Error running configuration')
@@ -323,7 +326,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
         yield from log_error_records(f'{config_filename}: Error running after error hook', error)
 
 
-def run_actions(
+def run_actions(  # noqa: PLR0912, PLR0915
     *,
     arguments,
     config_filename,
@@ -641,9 +644,9 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
                         levelno=logging.DEBUG,
                         levelname='DEBUG',
                         msg=f'{config_filename}: Loading configuration file',
-                    )
+                    ),
                 ),
-            ]
+            ],
         )
         try:
             configs[config_filename], paths, parse_logs = validate.parse_configuration(
@@ -663,9 +666,9 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
                             levelno=logging.WARNING,
                             levelname='WARNING',
                             msg=f'{config_filename}: Insufficient permissions to read configuration file',
-                        )
+                        ),
                     ),
-                ]
+                ],
             )
         except (ValueError, OSError, validate.Validation_error) as error:
             logs.extend(
@@ -675,12 +678,12 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
                             levelno=logging.CRITICAL,
                             levelname='CRITICAL',
                             msg=f'{config_filename}: Error parsing configuration file',
-                        )
+                        ),
                     ),
                     logging.makeLogRecord(
-                        dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=str(error))
+                        dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=str(error)),
                     ),
-                ]
+                ],
             )
 
     return (configs, sorted(config_paths), logs)
@@ -703,7 +706,10 @@ BORG_REPOSITORY_ACCESS_ABORTED_EXIT_CODE = 62
 
 
 def log_error_records(
-    message, error=None, levelno=logging.CRITICAL, log_command_error_output=False
+    message,
+    error=None,
+    levelno=logging.CRITICAL,
+    log_command_error_output=False,
 ):
     '''
     Given error message text, an optional exception object, an optional log level, and whether to
@@ -721,14 +727,14 @@ def log_error_records(
 
     try:
         raise error
-    except CalledProcessError as error:
+    except CalledProcessError as called_process_error:
         yield log_record(levelno=levelno, levelname=level_name, msg=str(message))
 
-        if error.output:
+        if called_process_error.output:
             try:
-                output = error.output.decode('utf-8')
+                output = called_process_error.output.decode('utf-8')
             except (UnicodeDecodeError, AttributeError):
-                output = error.output
+                output = called_process_error.output
 
             # Suppress these logs for now and save the error output for the log summary at the end.
             # Log a separate record per line, as some errors can be really verbose and overflow the
@@ -741,17 +747,17 @@ def log_error_records(
                     suppress_log=True,
                 )
 
-        yield log_record(levelno=levelno, levelname=level_name, msg=str(error))
+        yield log_record(levelno=levelno, levelname=level_name, msg=str(called_process_error))
 
-        if error.returncode == BORG_REPOSITORY_ACCESS_ABORTED_EXIT_CODE:
+        if called_process_error.returncode == BORG_REPOSITORY_ACCESS_ABORTED_EXIT_CODE:
             yield log_record(
                 levelno=levelno,
                 levelname=level_name,
                 msg='\nTo work around this, set either the "relocated_repo_access_is_ok" or "unknown_unencrypted_repo_access_is_ok" option to "true", as appropriate.',
             )
-    except (ValueError, OSError) as error:
+    except (ValueError, OSError) as other_error:
         yield log_record(levelno=levelno, levelname=level_name, msg=str(message))
-        yield log_record(levelno=levelno, levelname=level_name, msg=str(error))
+        yield log_record(levelno=levelno, levelname=level_name, msg=str(other_error))
     except:  # noqa: E722, S110
         # Raising above only as a means of determining the error type. Swallow the exception here
         # because we don't want the exception to propagate out of this function.
@@ -783,7 +789,8 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
         try:
             # No configuration file is needed for bootstrap.
             local_borg_version = borg_version.local_borg_version(
-                {}, arguments['bootstrap'].local_path
+                {},
+                arguments['bootstrap'].local_path,
             )
         except (OSError, CalledProcessError, ValueError) as error:
             yield from log_error_records('Error getting local Borg version', error)
@@ -791,14 +798,16 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
 
         try:
             borgmatic.actions.config.bootstrap.run_bootstrap(
-                arguments['bootstrap'], arguments['global'], local_borg_version
+                arguments['bootstrap'],
+                arguments['global'],
+                local_borg_version,
             )
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.ANSWER,
                     levelname='ANSWER',
                     msg='Bootstrap successful',
-                )
+                ),
             )
         except (
             CalledProcessError,
@@ -812,14 +821,15 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
     if 'generate' in arguments:
         try:
             borgmatic.actions.config.generate.run_generate(
-                arguments['generate'], arguments['global']
+                arguments['generate'],
+                arguments['global'],
             )
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.ANSWER,
                     levelname='ANSWER',
                     msg='Generate successful',
-                )
+                ),
             )
         except (
             CalledProcessError,
@@ -837,7 +847,7 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
                     levelno=logging.CRITICAL,
                     levelname='CRITICAL',
                     msg='Configuration validation failed',
-                )
+                ),
             )
 
             return
@@ -850,7 +860,7 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
                     levelno=logging.ANSWER,
                     levelname='ANSWER',
                     msg='All configuration files are valid',
-                )
+                ),
             )
         except (
             CalledProcessError,
@@ -862,7 +872,7 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
         return
 
 
-def collect_configuration_run_summary_logs(configs, config_paths, arguments, log_file_path):
+def collect_configuration_run_summary_logs(configs, config_paths, arguments, log_file_path):  # noqa: PLR0912
     '''
     Given a dict of configuration filename to corresponding parsed configuration, a sequence of
     loaded configuration paths, parsed command-line arguments as a dict from subparser name to a
@@ -875,9 +885,9 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments, log
     # Run cross-file validation checks.
     repository = None
 
-    for action_name, action_arguments in arguments.items():
+    for action_arguments in arguments.values():
         if hasattr(action_arguments, 'repository'):
-            repository = getattr(action_arguments, 'repository')
+            repository = action_arguments.repository
             break
 
     try:
@@ -942,7 +952,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments, log
                         levelno=logging.INFO,
                         levelname='INFO',
                         msg=f'{config_filename}: Successfully ran configuration file',
-                    )
+                    ),
                 )
                 if results:
                     json_results.extend(results)
@@ -1031,17 +1041,17 @@ def get_singular_option_value(configs, option_name):
         configure_logging(logging.CRITICAL)
         joined_values = ', '.join(str(value) for value in distinct_values)
         logger.critical(
-            f'The {option_name} option has conflicting values across configuration files: {joined_values}'
+            f'The {option_name} option has conflicting values across configuration files: {joined_values}',
         )
         exit_with_help_link()
 
     try:
-        return tuple(distinct_values)[0]
-    except IndexError:
+        return next(iter(distinct_values))
+    except StopIteration:
         return None
 
 
-def main(extra_summary_logs=[]):  # pragma: no cover
+def main(extra_summary_logs=()):  # pragma: no cover
     configure_signals()
     configure_delayed_logging()
     schema_filename = validate.schema_filename()
@@ -1070,15 +1080,15 @@ def main(extra_summary_logs=[]):  # pragma: no cover
     global_arguments = arguments['global']
 
     if global_arguments.version:
-        print(importlib.metadata.version('borgmatic'))
+        print(importlib.metadata.version('borgmatic'))  # noqa: T201
         sys.exit(0)
 
     if global_arguments.bash_completion:
-        print(borgmatic.commands.completion.bash.bash_completion())
+        print(borgmatic.commands.completion.bash.bash_completion())  # noqa: T201
         sys.exit(0)
 
     if global_arguments.fish_completion:
-        print(borgmatic.commands.completion.fish.fish_completion())
+        print(borgmatic.commands.completion.fish.fish_completion())  # noqa: T201
         sys.exit(0)
 
     config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))
@@ -1117,18 +1127,23 @@ def main(extra_summary_logs=[]):  # pragma: no cover
         exit_with_help_link()
 
     summary_logs = (
-        extra_summary_logs
+        list(extra_summary_logs)
         + parse_logs
         + (
             list(
                 collect_highlander_action_summary_logs(
-                    configs, arguments, configuration_parse_errors
-                )
+                    configs,
+                    arguments,
+                    configuration_parse_errors,
+                ),
             )
             or list(
                 collect_configuration_run_summary_logs(
-                    configs, config_paths, arguments, log_file_path
-                )
+                    configs,
+                    config_paths,
+                    arguments,
+                    log_file_path,
+                ),
             )
         )
     )

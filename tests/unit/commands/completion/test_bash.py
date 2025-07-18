@@ -10,8 +10,8 @@ def test_parser_flags_flattens_and_joins_flags():
                 _actions=[
                     flexmock(option_strings=['--foo', '--bar']),
                     flexmock(option_strings=['--baz']),
-                ]
-            )
+                ],
+            ),
         )
         == '--foo --bar --baz'
     )

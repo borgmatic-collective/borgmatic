@@ -11,7 +11,9 @@ def test_load_configuration_parses_contents():
     builtins = flexmock(sys.modules['builtins'])
     config_file = io.StringIO('key: value')
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = {'other.yaml'}
 
     assert module.load_configuration('config.yaml', config_paths) == {'key': 'value'}
@@ -22,7 +24,9 @@ def test_load_configuration_with_only_integer_value_does_not_raise():
     builtins = flexmock(sys.modules['builtins'])
     config_file = io.StringIO('33')
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = {'other.yaml'}
 
     assert module.load_configuration('config.yaml', config_paths) == 33
@@ -36,10 +40,14 @@ def test_load_configuration_inlines_include_relative_to_current_directory():
     flexmock(module.os.path).should_receive('exists').and_return(True)
     include_file = io.StringIO('value')
     include_file.name = 'include.yaml'
-    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/tmp/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO('key: !include include.yaml')
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = {'other.yaml'}
 
     assert module.load_configuration('config.yaml', config_paths) == {'key': 'value'}
@@ -53,17 +61,21 @@ def test_load_configuration_inlines_include_relative_to_config_parent_directory(
     flexmock(module.os.path).should_receive('isabs').with_args('/etc/config.yaml').and_return(True)
     flexmock(module.os.path).should_receive('isabs').with_args('include.yaml').and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/tmp/include.yaml').and_return(
-        False
+        False,
     )
     flexmock(module.os.path).should_receive('exists').with_args('/etc/include.yaml').and_return(
-        True
+        True,
     )
     include_file = io.StringIO('value')
     include_file.name = 'include.yaml'
-    builtins.should_receive('open').with_args('/etc/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/etc/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO('key: !include include.yaml')
     config_file.name = '/etc/config.yaml'
-    builtins.should_receive('open').with_args('/etc/config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('/etc/config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = {'other.yaml'}
 
     assert module.load_configuration('/etc/config.yaml', config_paths) == {'key': 'value'}
@@ -79,7 +91,9 @@ def test_load_configuration_raises_if_relative_include_does_not_exist():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     config_file = io.StringIO('key: !include include.yaml')
     config_file.name = '/etc/config.yaml'
-    builtins.should_receive('open').with_args('/etc/config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('/etc/config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = set()
 
     with pytest.raises(FileNotFoundError):
@@ -93,10 +107,14 @@ def test_load_configuration_inlines_absolute_include():
     flexmock(module.os.path).should_receive('exists').never()
     include_file = io.StringIO('value')
     include_file.name = '/root/include.yaml'
-    builtins.should_receive('open').with_args('/root/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/root/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO('key: !include /root/include.yaml')
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = {'other.yaml'}
 
     assert module.load_configuration('config.yaml', config_paths) == {'key': 'value'}
@@ -107,10 +125,14 @@ def test_load_configuration_raises_if_absolute_include_does_not_exist():
     builtins = flexmock(sys.modules['builtins'])
     flexmock(module.os).should_receive('getcwd').and_return('/tmp')
     flexmock(module.os.path).should_receive('isabs').and_return(True)
-    builtins.should_receive('open').with_args('/root/include.yaml').and_raise(FileNotFoundError)
+    builtins.should_receive('open').with_args('/root/include.yaml', encoding='utf-8').and_raise(
+        FileNotFoundError
+    )
     config_file = io.StringIO('key: !include /root/include.yaml')
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = set()
 
     with pytest.raises(FileNotFoundError):
@@ -124,13 +146,19 @@ def test_load_configuration_inlines_multiple_file_include_as_list():
     flexmock(module.os.path).should_receive('exists').never()
     include1_file = io.StringIO('value1')
     include1_file.name = '/root/include1.yaml'
-    builtins.should_receive('open').with_args('/root/include1.yaml').and_return(include1_file)
+    builtins.should_receive('open').with_args('/root/include1.yaml', encoding='utf-8').and_return(
+        include1_file
+    )
     include2_file = io.StringIO('value2')
     include2_file.name = '/root/include2.yaml'
-    builtins.should_receive('open').with_args('/root/include2.yaml').and_return(include2_file)
+    builtins.should_receive('open').with_args('/root/include2.yaml', encoding='utf-8').and_return(
+        include2_file
+    )
     config_file = io.StringIO('key: !include [/root/include1.yaml, /root/include2.yaml]')
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = {'other.yaml'}
 
     assert module.load_configuration('config.yaml', config_paths) == {'key': ['value2', 'value1']}
@@ -149,7 +177,9 @@ def test_load_configuration_include_with_unsupported_filename_type_raises():
     flexmock(module.os.path).should_receive('exists').never()
     config_file = io.StringIO('key: !include {path: /root/include.yaml}')
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = set()
 
     with pytest.raises(ValueError):
@@ -165,18 +195,22 @@ def test_load_configuration_merges_include():
         '''
         foo: bar
         baz: quux
-        '''
+        ''',
     )
     include_file.name = 'include.yaml'
-    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/tmp/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO(
         '''
         foo: override
         <<: !include include.yaml
-        '''
+        ''',
     )
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = {'other.yaml'}
 
     assert module.load_configuration('config.yaml', config_paths) == {
@@ -196,25 +230,31 @@ def test_load_configuration_merges_multiple_file_include():
         foo: bar
         baz: quux
         original: yes
-        '''
+        ''',
     )
     include1_file.name = 'include1.yaml'
-    builtins.should_receive('open').with_args('/tmp/include1.yaml').and_return(include1_file)
+    builtins.should_receive('open').with_args('/tmp/include1.yaml', encoding='utf-8').and_return(
+        include1_file
+    )
     include2_file = io.StringIO(
         '''
         baz: second
-        '''
+        ''',
     )
     include2_file.name = 'include2.yaml'
-    builtins.should_receive('open').with_args('/tmp/include2.yaml').and_return(include2_file)
+    builtins.should_receive('open').with_args('/tmp/include2.yaml', encoding='utf-8').and_return(
+        include2_file
+    )
     config_file = io.StringIO(
         '''
         foo: override
         <<: !include [include1.yaml, include2.yaml]
-        '''
+        ''',
     )
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = {'other.yaml'}
 
     assert module.load_configuration('config.yaml', config_paths) == {
@@ -239,10 +279,12 @@ def test_load_configuration_with_retain_tag_merges_include_but_keeps_local_value
         other:
           a: b
           c: d
-        '''
+        ''',
     )
     include_file.name = 'include.yaml'
-    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/tmp/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO(
         '''
         stuff: !retain
@@ -251,10 +293,12 @@ def test_load_configuration_with_retain_tag_merges_include_but_keeps_local_value
         other:
           a: override
         <<: !include include.yaml
-        '''
+        ''',
     )
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = {'other.yaml'}
 
     assert module.load_configuration('config.yaml', config_paths) == {
@@ -274,19 +318,23 @@ def test_load_configuration_with_retain_tag_but_without_merge_include_raises():
         stuff: !retain
           foo: bar
           baz: quux
-        '''
+        ''',
     )
     include_file.name = 'include.yaml'
-    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/tmp/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO(
         '''
         stuff:
           foo: override
         <<: !include include.yaml
-        '''
+        ''',
     )
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = set()
 
     with pytest.raises(ValueError):
@@ -303,19 +351,23 @@ def test_load_configuration_with_retain_tag_on_scalar_raises():
         stuff:
           foo: bar
           baz: quux
-        '''
+        ''',
     )
     include_file.name = 'include.yaml'
-    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/tmp/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO(
         '''
         stuff:
           foo: !retain override
         <<: !include include.yaml
-        '''
+        ''',
     )
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = set()
 
     with pytest.raises(ValueError):
@@ -333,10 +385,12 @@ def test_load_configuration_with_omit_tag_merges_include_and_omits_requested_val
           - a
           - b
           - c
-        '''
+        ''',
     )
     include_file.name = 'include.yaml'
-    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/tmp/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO(
         '''
         stuff:
@@ -344,10 +398,12 @@ def test_load_configuration_with_omit_tag_merges_include_and_omits_requested_val
           - !omit b
           - y
         <<: !include include.yaml
-        '''
+        ''',
     )
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = {'other.yaml'}
 
     assert module.load_configuration('config.yaml', config_paths) == {'stuff': ['a', 'c', 'x', 'y']}
@@ -365,10 +421,12 @@ def test_load_configuration_with_omit_tag_on_unknown_value_merges_include_and_do
           - a
           - b
           - c
-        '''
+        ''',
     )
     include_file.name = 'include.yaml'
-    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/tmp/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO(
         '''
         stuff:
@@ -376,14 +434,16 @@ def test_load_configuration_with_omit_tag_on_unknown_value_merges_include_and_do
           - !omit q
           - y
         <<: !include include.yaml
-        '''
+        ''',
     )
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = {'other.yaml'}
 
     assert module.load_configuration('config.yaml', config_paths) == {
-        'stuff': ['a', 'b', 'c', 'x', 'y']
+        'stuff': ['a', 'b', 'c', 'x', 'y'],
     }
     assert config_paths == {'config.yaml', '/tmp/include.yaml', 'other.yaml'}
 
@@ -399,20 +459,24 @@ def test_load_configuration_with_omit_tag_on_non_list_item_raises():
           - a
           - b
           - c
-        '''
+        ''',
     )
     include_file.name = 'include.yaml'
-    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/tmp/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO(
         '''
         stuff: !omit
           - x
           - y
         <<: !include include.yaml
-        '''
+        ''',
     )
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = set()
 
     with pytest.raises(ValueError):
@@ -429,20 +493,24 @@ def test_load_configuration_with_omit_tag_on_non_scalar_list_item_raises():
         stuff:
           - foo: bar
             baz: quux
-        '''
+        ''',
     )
     include_file.name = 'include.yaml'
-    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/tmp/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO(
         '''
         stuff:
           - !omit foo: bar
             baz: quux
         <<: !include include.yaml
-        '''
+        ''',
     )
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = set()
 
     with pytest.raises(ValueError):
@@ -460,20 +528,24 @@ def test_load_configuration_with_omit_tag_but_without_merge_raises():
           - a
           - !omit b
           - c
-        '''
+        ''',
     )
     include_file.name = 'include.yaml'
-    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/tmp/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO(
         '''
         stuff:
           - x
           - y
         <<: !include include.yaml
-        '''
+        ''',
     )
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = set()
 
     with pytest.raises(ValueError):
@@ -489,19 +561,23 @@ def test_load_configuration_does_not_merge_include_list():
         '''
           - one
           - two
-        '''
+        ''',
     )
     include_file.name = 'include.yaml'
-    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    builtins.should_receive('open').with_args('/tmp/include.yaml', encoding='utf-8').and_return(
+        include_file
+    )
     config_file = io.StringIO(
         '''
         foo: bar
         repositories:
           <<: !include include.yaml
-        '''
+        ''',
     )
     config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    builtins.should_receive('open').with_args('config.yaml', encoding='utf-8').and_return(
+        config_file
+    )
     config_paths = set()
 
     with pytest.raises(module.ruamel.yaml.error.YAMLError):
@@ -519,7 +595,8 @@ def test_load_configuration_does_not_merge_include_list():
 def test_raise_retain_node_error_raises(node_class):
     with pytest.raises(ValueError):
         module.raise_retain_node_error(
-            loader=flexmock(), node=node_class(tag=flexmock(), value=flexmock())
+            loader=flexmock(),
+            node=node_class(tag=flexmock(), value=flexmock()),
         )
 
 
@@ -569,15 +646,18 @@ def test_merge_values_combines_mapping_values():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_hourly'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_hourly',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:int', value='24'
+                            tag='tag:yaml.org,2002:int',
+                            value='24',
                         ),
                     ),
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_daily'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_daily',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:int', value='7'),
                     ),
@@ -591,10 +671,12 @@ def test_merge_values_combines_mapping_values():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_daily'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_daily',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:int', value='25'
+                            tag='tag:yaml.org,2002:int',
+                            value='25',
                         ),
                     ),
                 ],
@@ -607,10 +689,12 @@ def test_merge_values_combines_mapping_values():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_nanosecondly'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_nanosecondly',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:int', value='1000'
+                            tag='tag:yaml.org,2002:int',
+                            value='1000',
                         ),
                     ),
                 ],
@@ -681,15 +765,18 @@ def test_deep_merge_nodes_replaces_colliding_scalar_values():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_hourly'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_hourly',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:int', value='24'
+                            tag='tag:yaml.org,2002:int',
+                            value='24',
                         ),
                     ),
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_daily'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_daily',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:int', value='7'),
                     ),
@@ -703,7 +790,8 @@ def test_deep_merge_nodes_replaces_colliding_scalar_values():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_daily'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_daily',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:int', value='5'),
                     ),
@@ -733,15 +821,18 @@ def test_deep_merge_nodes_keeps_non_colliding_scalar_values():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_hourly'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_hourly',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:int', value='24'
+                            tag='tag:yaml.org,2002:int',
+                            value='24',
                         ),
                     ),
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_daily'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_daily',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:int', value='7'),
                     ),
@@ -755,10 +846,12 @@ def test_deep_merge_nodes_keeps_non_colliding_scalar_values():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_minutely'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_minutely',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:int', value='10'
+                            tag='tag:yaml.org,2002:int',
+                            value='10',
                         ),
                     ),
                 ],
@@ -789,23 +882,27 @@ def test_deep_merge_nodes_keeps_deeply_nested_values():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='lock_wait'
+                            tag='tag:yaml.org,2002:str',
+                            value='lock_wait',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:int', value='5'),
                     ),
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='extra_borg_options'
+                            tag='tag:yaml.org,2002:str',
+                            value='extra_borg_options',
                         ),
                         module.ruamel.yaml.nodes.MappingNode(
                             tag='tag:yaml.org,2002:map',
                             value=[
                                 (
                                     module.ruamel.yaml.nodes.ScalarNode(
-                                        tag='tag:yaml.org,2002:str', value='init'
+                                        tag='tag:yaml.org,2002:str',
+                                        value='init',
                                     ),
                                     module.ruamel.yaml.nodes.ScalarNode(
-                                        tag='tag:yaml.org,2002:str', value='--init-option'
+                                        tag='tag:yaml.org,2002:str',
+                                        value='--init-option',
                                     ),
                                 ),
                             ],
@@ -821,17 +918,20 @@ def test_deep_merge_nodes_keeps_deeply_nested_values():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='extra_borg_options'
+                            tag='tag:yaml.org,2002:str',
+                            value='extra_borg_options',
                         ),
                         module.ruamel.yaml.nodes.MappingNode(
                             tag='tag:yaml.org,2002:map',
                             value=[
                                 (
                                     module.ruamel.yaml.nodes.ScalarNode(
-                                        tag='tag:yaml.org,2002:str', value='prune'
+                                        tag='tag:yaml.org,2002:str',
+                                        value='prune',
                                     ),
                                     module.ruamel.yaml.nodes.ScalarNode(
-                                        tag='tag:yaml.org,2002:str', value='--prune-option'
+                                        tag='tag:yaml.org,2002:str',
+                                        value='--prune-option',
                                     ),
                                 ),
                             ],
@@ -868,16 +968,19 @@ def test_deep_merge_nodes_appends_colliding_sequence_values():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='before_backup'
+                            tag='tag:yaml.org,2002:str',
+                            value='before_backup',
                         ),
                         module.ruamel.yaml.nodes.SequenceNode(
                             tag='tag:yaml.org,2002:seq',
                             value=[
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 1'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 1',
                                 ),
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 2'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 2',
                                 ),
                             ],
                         ),
@@ -892,16 +995,19 @@ def test_deep_merge_nodes_appends_colliding_sequence_values():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='before_backup'
+                            tag='tag:yaml.org,2002:str',
+                            value='before_backup',
                         ),
                         module.ruamel.yaml.nodes.SequenceNode(
                             tag='tag:yaml.org,2002:seq',
                             value=[
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 3'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 3',
                                 ),
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 4'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 4',
                                 ),
                             ],
                         ),
@@ -930,10 +1036,12 @@ def test_deep_merge_nodes_errors_on_colliding_values_of_different_types():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='before_backup'
+                            tag='tag:yaml.org,2002:str',
+                            value='before_backup',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='echo oopsie daisy'
+                            tag='tag:yaml.org,2002:str',
+                            value='echo oopsie daisy',
                         ),
                     ),
                 ],
@@ -946,16 +1054,19 @@ def test_deep_merge_nodes_errors_on_colliding_values_of_different_types():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='before_backup'
+                            tag='tag:yaml.org,2002:str',
+                            value='before_backup',
                         ),
                         module.ruamel.yaml.nodes.SequenceNode(
                             tag='tag:yaml.org,2002:seq',
                             value=[
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 3'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 3',
                                 ),
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 4'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 4',
                                 ),
                             ],
                         ),
@@ -978,15 +1089,18 @@ def test_deep_merge_nodes_only_keeps_mapping_values_tagged_with_retain():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_hourly'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_hourly',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:int', value='24'
+                            tag='tag:yaml.org,2002:int',
+                            value='24',
                         ),
                     ),
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_daily'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_daily',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:int', value='7'),
                     ),
@@ -1000,7 +1114,8 @@ def test_deep_merge_nodes_only_keeps_mapping_values_tagged_with_retain():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='keep_daily'
+                            tag='tag:yaml.org,2002:str',
+                            value='keep_daily',
                         ),
                         module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:int', value='5'),
                     ),
@@ -1029,16 +1144,19 @@ def test_deep_merge_nodes_only_keeps_sequence_values_tagged_with_retain():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='before_backup'
+                            tag='tag:yaml.org,2002:str',
+                            value='before_backup',
                         ),
                         module.ruamel.yaml.nodes.SequenceNode(
                             tag='tag:yaml.org,2002:seq',
                             value=[
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 1'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 1',
                                 ),
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 2'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 2',
                                 ),
                             ],
                         ),
@@ -1053,16 +1171,19 @@ def test_deep_merge_nodes_only_keeps_sequence_values_tagged_with_retain():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='before_backup'
+                            tag='tag:yaml.org,2002:str',
+                            value='before_backup',
                         ),
                         module.ruamel.yaml.nodes.SequenceNode(
                             tag='!retain',
                             value=[
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 3'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 3',
                                 ),
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 4'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 4',
                                 ),
                             ],
                         ),
@@ -1092,16 +1213,19 @@ def test_deep_merge_nodes_skips_sequence_values_tagged_with_omit():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='before_backup'
+                            tag='tag:yaml.org,2002:str',
+                            value='before_backup',
                         ),
                         module.ruamel.yaml.nodes.SequenceNode(
                             tag='tag:yaml.org,2002:seq',
                             value=[
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 1'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 1',
                                 ),
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 2'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 2',
                                 ),
                             ],
                         ),
@@ -1116,14 +1240,16 @@ def test_deep_merge_nodes_skips_sequence_values_tagged_with_omit():
                 value=[
                     (
                         module.ruamel.yaml.nodes.ScalarNode(
-                            tag='tag:yaml.org,2002:str', value='before_backup'
+                            tag='tag:yaml.org,2002:str',
+                            value='before_backup',
                         ),
                         module.ruamel.yaml.nodes.SequenceNode(
                             tag='tag:yaml.org,2002:seq',
                             value=[
                                 module.ruamel.yaml.ScalarNode(tag='!omit', value='echo 2'),
                                 module.ruamel.yaml.ScalarNode(
-                                    tag='tag:yaml.org,2002:str', value='echo 3'
+                                    tag='tag:yaml.org,2002:str',
+                                    value='echo 3',
                                 ),
                             ],
                         ),

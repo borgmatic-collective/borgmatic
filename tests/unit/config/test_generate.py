@@ -12,18 +12,21 @@ def test_schema_to_sample_configuration_generates_config_map_with_examples():
                 ('field1', {'type': 'string', 'example': 'Example 1'}),
                 ('field2', {'type': 'string', 'example': 'Example 2'}),
                 ('field3', {'type': 'string', 'example': 'Example 3'}),
-            ]
+            ],
         ),
     }
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').and_return(False)
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').with_args(
-        'object', {'object'}
+        'object',
+        {'object'},
     ).and_return(True)
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').with_args(
-        'string', module.SCALAR_SCHEMA_TYPES, match=all
+        'string',
+        module.SCALAR_SCHEMA_TYPES,
+        match=all,
     ).and_return(True)
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').and_return(
-        schema['properties']
+        schema['properties'],
     )
     flexmock(module.ruamel.yaml.comments).should_receive('CommentedMap').replace_with(dict)
     flexmock(module).should_receive('add_comments_to_configuration_object')
@@ -35,7 +38,7 @@ def test_schema_to_sample_configuration_generates_config_map_with_examples():
             ('field1', 'Example 1'),
             ('field2', 'Example 2'),
             ('field3', 'Example 3'),
-        ]
+        ],
     )
 
 
@@ -49,10 +52,13 @@ def test_schema_to_sample_configuration_with_empty_object_generates_config_map_w
     }
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').and_return(False)
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').with_args(
-        'object', {'object'}
+        'object',
+        {'object'},
     ).and_return(True)
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').with_args(
-        'string', module.SCALAR_SCHEMA_TYPES, match=all
+        'string',
+        module.SCALAR_SCHEMA_TYPES,
+        match=all,
     ).and_return(True)
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').and_return({})
     flexmock(module.ruamel.yaml.comments).should_receive('CommentedMap').replace_with(dict)
@@ -64,7 +70,7 @@ def test_schema_to_sample_configuration_with_empty_object_generates_config_map_w
         [
             ('foo', 'Example 1'),
             ('baz', 'Example 2'),
-        ]
+        ],
     )
 
 
@@ -87,22 +93,26 @@ def test_schema_to_sample_configuration_generates_config_sequence_of_maps_with_e
                 [
                     ('field1', {'type': 'string', 'example': 'Example 1'}),
                     ('field2', {'type': 'string', 'example': 'Example 2'}),
-                ]
+                ],
             ),
         },
     }
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').and_return(False)
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').with_args(
-        'array', {'array'}
+        'array',
+        {'array'},
     ).and_return(True)
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').with_args(
-        'object', {'object'}
+        'object',
+        {'object'},
     ).and_return(True)
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').with_args(
-        'string', module.SCALAR_SCHEMA_TYPES, match=all
+        'string',
+        module.SCALAR_SCHEMA_TYPES,
+        match=all,
     ).and_return(True)
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').and_return(
-        schema['items']['properties']
+        schema['items']['properties'],
     )
     flexmock(module.ruamel.yaml.comments).should_receive('CommentedSeq').replace_with(list)
     flexmock(module).should_receive('add_comments_to_configuration_sequence')
@@ -122,22 +132,26 @@ def test_schema_to_sample_configuration_generates_config_sequence_of_maps_with_m
                 [
                     ('field1', {'type': 'string', 'example': 'Example 1'}),
                     ('field2', {'type': 'string', 'example': 'Example 2'}),
-                ]
+                ],
             ),
         },
     }
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').and_return(False)
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').with_args(
-        'array', {'array'}
+        'array',
+        {'array'},
     ).and_return(True)
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').with_args(
-        ['object', 'null'], {'object'}
+        ['object', 'null'],
+        {'object'},
     ).and_return(True)
     flexmock(module.borgmatic.config.schema).should_receive('compare_types').with_args(
-        'string', module.SCALAR_SCHEMA_TYPES, match=all
+        'string',
+        module.SCALAR_SCHEMA_TYPES,
+        match=all,
     ).and_return(True)
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').and_return(
-        schema['items']['properties']
+        schema['items']['properties'],
     )
     flexmock(module.ruamel.yaml.comments).should_receive('CommentedSeq').replace_with(list)
     flexmock(module).should_receive('add_comments_to_configuration_sequence')

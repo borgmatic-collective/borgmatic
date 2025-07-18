@@ -28,14 +28,16 @@ def load_credential(hook_config, config, credential_parameters):
 
     if not credentials_directory:
         raise ValueError(
-            f'Cannot load credential "{credential_name}" because the systemd CREDENTIALS_DIRECTORY environment variable is not set'
+            f'Cannot load credential "{credential_name}" because the systemd CREDENTIALS_DIRECTORY environment variable is not set',
         )
 
     if not CREDENTIAL_NAME_PATTERN.match(credential_name):
         raise ValueError(f'Cannot load invalid credential name "{credential_name}"')
 
     try:
-        with open(os.path.join(credentials_directory, credential_name)) as credential_file:
+        with open(
+            os.path.join(credentials_directory, credential_name), encoding='utf-8'
+        ) as credential_file:
             return credential_file.read().rstrip(os.linesep)
     except (FileNotFoundError, OSError) as error:
         logger.warning(error)

@@ -42,7 +42,7 @@ def interpolate_context(hook_description, command, context):
         # be a Borg placeholder, as Borg should hopefully consume it.
         if unsupported_variable not in BORG_PLACEHOLDERS:
             logger.warning(
-                f'Variable "{unsupported_variable}" is not supported in the {hook_description} hook'
+                f'Variable "{unsupported_variable}" is not supported in the {hook_description} hook',
             )
 
     return command
@@ -86,7 +86,7 @@ def filter_hooks(command_hooks, before=None, after=None, action_names=None, stat
     )
 
 
-def execute_hooks(command_hooks, umask, working_directory, dry_run, **context):
+def execute_hooks(command_hooks, umask, working_directory, dry_run, **context):  # noqa: PLR0912
     '''
     Given a sequence of command hook dicts from configuration, a umask to execute with (or None), a
     working directory to execute with, and whether this is a dry run, run the commands for each
@@ -139,12 +139,12 @@ def execute_hooks(command_hooks, umask, working_directory, dry_run, **context):
                 if dry_run:
                     continue
 
-                borgmatic.execute.execute_command(
+                borgmatic.execute.execute_command(  # noqa: S604
                     [command],
                     output_log_level=(
                         logging.ERROR if hook_config.get('after') == 'error' else logging.ANSWER
                     ),
-                    shell=True,  # noqa: S604
+                    shell=True,
                     environment=make_environment(os.environ),
                     working_directory=working_directory,
                 )
