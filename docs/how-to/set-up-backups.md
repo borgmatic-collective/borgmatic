@@ -94,6 +94,7 @@ installing borgmatic:
  * [NixOS](https://search.nixos.org/packages?show=borgmatic&sort=relevance&type=packages&query=borgmatic)
  * [Ansible role](https://github.com/borgbase/ansible-role-borgbackup)
  * [Unraid](https://unraid.net/community/apps?q=borgmatic#r)
+ * [uv tool install](https://docs.astral.sh/uv/)
 
 
 ## Hosting providers

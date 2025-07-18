@@ -2,7 +2,7 @@ apprise==1.9.3
 attrs==25.3.0
 certifi==2025.7.14
 charset-normalizer==3.4.2
-click==8.2.1
+click>=8.1.8
 codespell==2.4.1
 coverage==7.9.2
 flexmock==0.12.2
