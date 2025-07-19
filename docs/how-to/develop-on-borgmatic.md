@@ -30,7 +30,7 @@ changes work:
 
 ```bash
 cd borgmatic
-uv tool ensurepath
+uv tool update-shell
 uv tool install --editable .
 ```
 

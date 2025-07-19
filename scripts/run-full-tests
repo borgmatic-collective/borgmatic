@@ -20,6 +20,8 @@ fi
 apk add --no-cache python3 py3-pip borgbackup postgresql17-client mariadb-client mongodb-tools \
     py3-mongo py3-regex py3-ruamel.yaml py3-ruamel.yaml.clib py3-tox py3-yaml ruff sqlite uv bash \
     fish
+export SHELL=/bin/bash
+export PATH="/root/.local/bin:$PATH"
 uv tool install tox --with tox-uv
 export COVERAGE_FILE=/tmp/.coverage
 
