@@ -1,4 +1,5 @@
 2.0.8.dev0
+ * #1116: Add support for database backup labels.
  * #1114: Document systemd configuration changes for the ZFS filesystem hook.
  * #1118: Fix a bug in which Borg hangs during database backup when different filesystems are in
    use.

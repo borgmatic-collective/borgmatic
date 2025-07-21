@@ -72,8 +72,10 @@ Here's a more involved example that connects to remote databases:
 ```yaml
 postgresql_databases:
     - name: users
+      label: database_server1
       hostname: database1.example.org
     - name: orders
+      label: database_server2
       hostname: database2.example.org
       port: 5433
       username: postgres

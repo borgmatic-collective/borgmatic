@@ -1323,6 +1323,11 @@ properties:
                         implicitly enables read_special (see above) to support
                         dump and restore streaming.
                     example: users
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
                 hostname:
                     type: string
                     description: |
@@ -1524,6 +1529,11 @@ properties:
                         database hook implicitly enables read_special (see
                         above) to support dump and restore streaming.
                     example: users
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
                 hostname:
                     type: string
                     description: |
@@ -1689,6 +1699,11 @@ properties:
                         database hook implicitly enables read_special (see
                         above) to support dump and restore streaming.
                     example: users
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
                 hostname:
                     type: string
                     description: |
@@ -1862,6 +1877,11 @@ properties:
                         read_special (see above) to support dump and restore
                         streaming.
                     example: /var/lib/sqlite/users.db
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
                 restore_path:
                     type: string
                     description: |
@@ -1910,6 +1930,11 @@ properties:
                         database hook implicitly enables read_special (see
                         above) to support dump and restore streaming.
                     example: users
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
                 hostname:
                     type: string
                     description: |

@@ -25,6 +25,13 @@ def test_make_data_source_dump_filename_uses_name_and_hostname_and_port():
     )
 
 
+def test_make_data_source_dump_filename_users_label():
+    assert (
+        module.make_data_source_dump_filename('databases', 'test', 'hostname', 1234, 'custom_label')
+        == 'databases/custom_label/test'
+    )
+
+
 def test_make_data_source_dump_filename_without_hostname_defaults_to_localhost():
     assert module.make_data_source_dump_filename('databases', 'test') == 'databases/localhost/test'
 

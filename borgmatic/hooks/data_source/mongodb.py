@@ -71,6 +71,7 @@ def dump_data_sources(
             name,
             database.get('hostname'),
             database.get('port'),
+            database.get('label'),
         )
         dump_format = database.get('format', 'archive')
 
@@ -200,16 +201,16 @@ def make_data_source_dump_patterns(
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
     return (
-        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
+        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, label='*'),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
             name,
-            hostname='*',
+            label='*',
         ),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_source_directory),
             name,
-            hostname='*',
+            label='*',
         ),
     )
 
@@ -238,6 +239,7 @@ def restore_data_source_dump(
         make_dump_path(borgmatic_runtime_directory),
         data_source['name'],
         data_source.get('hostname'),
+        data_source.get('label'),
     )
     restore_command = build_restore_command(
         extract_process,
