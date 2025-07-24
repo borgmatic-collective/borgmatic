@@ -214,35 +214,20 @@ these options in the `hooks:` section of your configuration.
 
 #### Database client on the host
 
-But what if borgmatic is running on the host? You can still connect to a
-database server container if its ports are properly exposed to the host. For
-instance, when running the database container, you can specify `--publish
-127.0.0.1:5433:5432` so that it exposes the container's port 5432 to port 5433
-on the host (only reachable on localhost, in this case). Or the same thing with
-Docker Compose:
-
-```yaml
-services:
-   your-database-server-container-name:
-       image: postgres
-       ports:
-           - 127.0.0.1:5433:5432
-```
-
-And then you can configure borgmatic running on the host to connect to the
-database:
+But what if borgmatic is running on the host? You can connect to the database
+container by specifying its container name or id:
 
 ```yaml
 postgresql_databases:
     - name: users
-      hostname: 127.0.0.1
+      container: your-database-server-container-name
       port: 5433
       username: postgres
       password: trustsome1
 ```
 
-Alter the ports in these examples to suit your particular database system.
-
+Now borgmatic will use the `docker`/`podman` CLI to figure out the container IP.
+Alternatively you can publish your container ports to the host.
 
 #### Database client in a running container
 

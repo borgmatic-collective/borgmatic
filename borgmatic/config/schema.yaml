@@ -1328,6 +1328,12 @@ properties:
                     description: |
                         Label to identify the database dump in the backup.
                     example: my_backup_label
+                container:
+                    type: string
+                    description:
+                        Container name/id to connect to. When specified the
+                        hostname is ignored. Requires docker/podman CLI.
+                    example: debian_stable
                 hostname:
                     type: string
                     description: |
@@ -1534,6 +1540,12 @@ properties:
                     description: |
                         Label to identify the database dump in the backup.
                     example: my_backup_label
+                container:
+                    type: string
+                    description:
+                        Container name/id to connect to. When specified the
+                        hostname is ignored. Requires docker/podman CLI.
+                    example: debian_stable
                 hostname:
                     type: string
                     description: |
@@ -1704,6 +1716,12 @@ properties:
                     description: |
                         Label to identify the database dump in the backup.
                     example: my_backup_label
+                container:
+                    type: string
+                    description:
+                        Container name/id to connect to. When specified the
+                        hostname is ignored. Requires docker/podman CLI.
+                    example: debian_stable
                 hostname:
                     type: string
                     description: |
@@ -1935,6 +1953,12 @@ properties:
                     description: |
                         Label to identify the database dump in the backup.
                     example: my_backup_label
+                container:
+                    type: string
+                    description:
+                        Container name/id to connect to. When specified the
+                        hostname is ignored. Requires docker/podman CLI.
+                    example: debian_stable
                 hostname:
                     type: string
                     description: |

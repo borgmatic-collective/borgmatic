@@ -13,7 +13,7 @@ from borgmatic.execute import (
     execute_command_and_capture_output,
     execute_command_with_processes,
 )
-from borgmatic.hooks.data_source import dump
+from borgmatic.hooks.data_source import dump, utils
 
 logger = logging.getLogger(__name__)
 
@@ -91,10 +91,11 @@ def database_names_to_dump(database, config, environment, dry_run):
     psql_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('psql_command') or 'psql')
     )
+    hostname = utils.get_hostname_from_config(database)
     list_command = (
         psql_command
         + ('--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only')
-        + (('--host', database['hostname']) if 'hostname' in database else ())
+        + (('--host', hostname) if hostname else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (
             (
@@ -184,9 +185,9 @@ def dump_data_sources(
             dump_filename = dump.make_data_source_dump_filename(
                 dump_path,
                 database_name,
-                database.get('hostname'),
-                database.get('port'),
-                database.get('label'),
+                hostname=database.get('hostname'),
+                port=database.get('port'),
+                label=database.get('label', database.get('container')),
             )
 
             if os.path.exists(dump_filename):
@@ -195,6 +196,7 @@ def dump_data_sources(
                 )
                 continue
 
+            hostname = utils.get_hostname_from_config(database)
             command = (
                 dump_command
                 + (
@@ -202,7 +204,7 @@ def dump_data_sources(
                     '--clean',
                     '--if-exists',
                 )
-                + (('--host', shlex.quote(database['hostname'])) if 'hostname' in database else ())
+                + (('--host', shlex.quote(hostname)) if hostname else ())
                 + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
                 + (
                     (
@@ -342,7 +344,7 @@ def restore_data_source_dump(
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
     hostname = connection_params['hostname'] or data_source.get(
         'restore_hostname',
-        data_source.get('hostname'),
+        utils.get_hostname_from_config(data_source),
     )
     port = str(
         connection_params['port'] or data_source.get('restore_port', data_source.get('port', '')),
@@ -359,8 +361,9 @@ def restore_data_source_dump(
     dump_filename = dump.make_data_source_dump_filename(
         make_dump_path(borgmatic_runtime_directory),
         data_source['name'],
-        data_source.get('hostname'),
-        data_source.get('label'),
+        hostname=data_source.get('hostname'),
+        port=data_source.get('port'),
+        label=data_source.get('label', data_source.get('container')),
     )
     psql_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('psql_command') or 'psql')

@@ -6,7 +6,7 @@ import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.hooks.credential.parse
 from borgmatic.execute import execute_command, execute_command_with_processes
-from borgmatic.hooks.data_source import dump
+from borgmatic.hooks.data_source import dump, utils
 
 logger = logging.getLogger(__name__)
 
@@ -69,9 +69,9 @@ def dump_data_sources(
         dump_filename = dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
             name,
-            database.get('hostname'),
-            database.get('port'),
-            database.get('label'),
+            hostname=database.get('hostname'),
+            port=database.get('port'),
+            label=database.get('label', database.get('container')),
         )
         dump_format = database.get('format', 'archive')
 
@@ -139,10 +139,11 @@ def build_dump_command(database, config, dump_filename, dump_format):
     dump_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mongodump_command') or 'mongodump')
     )
+    hostname = utils.get_hostname_from_config(database)
     return (
         dump_command
         + (('--out', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
-        + (('--host', shlex.quote(database['hostname'])) if 'hostname' in database else ())
+        + (('--host', shlex.quote(hostname)) if hostname else ())
         + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
         + (
             (
@@ -238,8 +239,9 @@ def restore_data_source_dump(
     dump_filename = dump.make_data_source_dump_filename(
         make_dump_path(borgmatic_runtime_directory),
         data_source['name'],
-        data_source.get('hostname'),
-        data_source.get('label'),
+        hostname=data_source.get('hostname'),
+        port=data_source.get('port'),
+        label=data_source.get('label', data_source.get('container')),
     )
     restore_command = build_restore_command(
         extract_process,
@@ -269,7 +271,7 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
     '''
     hostname = connection_params['hostname'] or database.get(
         'restore_hostname',
-        database.get('hostname'),
+        utils.get_hostname_from_config(database),
     )
     port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
     username = borgmatic.hooks.credential.parse.resolve_credential(

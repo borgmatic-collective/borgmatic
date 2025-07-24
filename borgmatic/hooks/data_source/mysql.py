@@ -12,7 +12,7 @@ from borgmatic.execute import (
     execute_command_and_capture_output,
     execute_command_with_processes,
 )
-from borgmatic.hooks.data_source import dump
+from borgmatic.hooks.data_source import dump, utils
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +47,7 @@ def database_names_to_dump(database, config, username, password, environment, dr
         borgmatic.hooks.data_source.mariadb.parse_extra_options(database.get('list_options'))
     )
     password_transport = database.get('password_transport', 'pipe')
+    hostname = utils.get_hostname_from_config(database)
     show_command = (
         mysql_show_command
         + (
@@ -59,9 +60,9 @@ def database_names_to_dump(database, config, username, password, environment, dr
             else ()
         )
         + extra_options
-        + (('--host', database['hostname']) if 'hostname' in database else ())
+        + (('--host', hostname) if hostname else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
-        + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
+        + (('--protocol', 'tcp') if hostname or 'port' in database else ())
         + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if database.get('tls') is True else ())
         + (('--skip-ssl',) if database.get('tls') is False else ())
@@ -102,9 +103,9 @@ def execute_dump_command(
     dump_filename = dump.make_data_source_dump_filename(
         dump_path,
         database['name'],
-        database.get('hostname'),
-        database.get('port'),
-        database.get('label'),
+        hostname=database.get('hostname'),
+        port=database.get('port'),
+        label=database.get('label', database.get('container')),
     )
 
     if os.path.exists(dump_filename):
@@ -120,6 +121,7 @@ def execute_dump_command(
         borgmatic.hooks.data_source.mariadb.parse_extra_options(database.get('options'))
     )
     password_transport = database.get('password_transport', 'pipe')
+    hostname = utils.get_hostname_from_config(database)
     dump_command = (
         mysql_dump_command
         + (
@@ -133,9 +135,9 @@ def execute_dump_command(
         )
         + extra_options
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
-        + (('--host', database['hostname']) if 'hostname' in database else ())
+        + (('--host', hostname) if hostname else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
-        + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
+        + (('--protocol', 'tcp') if hostname or 'port' in database else ())
         + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if database.get('tls') is True else ())
         + (('--skip-ssl',) if database.get('tls') is False else ())
@@ -348,7 +350,7 @@ def restore_data_source_dump(
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
     hostname = connection_params['hostname'] or data_source.get(
         'restore_hostname',
-        data_source.get('hostname'),
+        utils.get_hostname_from_config(data_source),
     )
     port = str(
         connection_params['port'] or data_source.get('restore_port', data_source.get('port', '')),
