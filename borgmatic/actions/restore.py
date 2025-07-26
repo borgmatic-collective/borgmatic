@@ -22,8 +22,8 @@ UNSPECIFIED = object()
 
 Dump = collections.namedtuple(
     'Dump',
-    ('hook_name', 'data_source_name', 'hostname', 'port'),
-    defaults=('localhost', None),
+    ('hook_name', 'data_source_name', 'hostname', 'port', 'label'),
+    defaults=('localhost', None, None),
 )
 
 
@@ -57,11 +57,14 @@ def render_dump_metadata(dump):
     '''
     Given a Dump instance, make a display string describing it for use in log messages.
     '''
+    label = dump.label or UNSPECIFIED
     name = 'unspecified' if dump.data_source_name is UNSPECIFIED else dump.data_source_name
     hostname = dump.hostname or UNSPECIFIED
     port = None if dump.port is UNSPECIFIED else dump.port
 
-    if port:
+    if label is not UNSPECIFIED:
+        metadata = f'{name}@{label}'
+    elif port:
         metadata = f'{name}@:{port}' if hostname is UNSPECIFIED else f'{name}@{hostname}:{port}'
     else:
         metadata = f'{name}' if hostname is UNSPECIFIED else f'{name}@{hostname}'
@@ -101,6 +104,7 @@ def get_configured_data_source(config, restore_dump):
                 hook_data_source.get('name'),
                 hook_data_source.get('hostname', 'localhost'),
                 hook_data_source.get('port'),
+                hook_data_source.get('label'),
             ),
             restore_dump,
             default_port,
@@ -172,7 +176,7 @@ def restore_single_dump(
     that data source from the archive.
     '''
     dump_metadata = render_dump_metadata(
-        Dump(hook_name, data_source['name'], data_source.get('hostname'), data_source.get('port')),
+        Dump(hook_name, data_source['name'], data_source.get('hostname'), data_source.get('port'), data_source.get('label')),
     )
 
     logger.info(f'Restoring data source {dump_metadata}')
@@ -371,7 +375,7 @@ def collect_dumps_from_archive(
             except (ValueError, TypeError):
                 port = None
 
-            dumps_from_archive.add(Dump(hook_name, data_source_name, hostname, port))
+            dumps_from_archive.add(Dump(hook_name, data_source_name, hostname, port, host_and_port))
 
             # We've successfully parsed the dump path, so need to probe any further.
             break
@@ -408,6 +412,7 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
                 data_source_name=name,
                 hostname=restore_arguments.original_hostname or UNSPECIFIED,
                 port=restore_arguments.original_port,
+                label=restore_arguments.original_label,
             )
             for name in restore_arguments.data_sources or (UNSPECIFIED,)
         }
@@ -415,12 +420,14 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
         or restore_arguments.data_sources
         or restore_arguments.original_hostname
         or restore_arguments.original_port
+        or restore_arguments.original_label
         else {
             Dump(
                 hook_name=UNSPECIFIED,
                 data_source_name='all',
                 hostname=UNSPECIFIED,
                 port=UNSPECIFIED,
+                label=UNSPECIFIED,
             ),
         }
     )
@@ -541,6 +548,7 @@ def run_restore(
 
         dumps_actually_restored = set()
         connection_params = {
+            'container': restore_arguments.container,
             'hostname': restore_arguments.hostname,
             'port': restore_arguments.port,
             'username': restore_arguments.username,
@@ -560,7 +568,7 @@ def run_restore(
             if not found_data_source:
                 found_data_source = get_configured_data_source(
                     config,
-                    Dump(restore_dump.hook_name, 'all', restore_dump.hostname, restore_dump.port),
+                    Dump(restore_dump.hook_name, 'all', restore_dump.hostname, restore_dump.port, restore_dump.label),
                 )
 
                 if not found_data_source:

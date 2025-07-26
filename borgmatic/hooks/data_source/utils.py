@@ -1,4 +1,5 @@
 import json
+import logging
 import shutil
 import subprocess
 
@@ -6,6 +7,7 @@ from borgmatic.execute import execute_command_and_capture_output
 
 IS_A_HOOK = False
 
+logger = logging.getLogger(__name__)
 
 def resolve_database_option(option, data_source, connection_params=None, restore=False):
     # Special case `hostname` since it overlaps with `container`
@@ -42,8 +44,9 @@ def get_ip_from_container(container):
     engines = [engine for engine in engines if engine]
 
     if not engines:
-        raise xxx  # TODO: What to raise here, tell the user to install docker/podman
+        raise ValueError("Neither 'docker' nor 'podman' could be found on the system")
 
+    last_error = None
     for engine in engines:
         try:
             output = execute_command_and_capture_output(
@@ -55,7 +58,9 @@ def get_ip_from_container(container):
                     container,
                 )
             )
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as error:
+            last_error = error
+            logger.debug(f"Couldn't find container '{container}' with engine '{engine}'")
             continue  # Container does not exist
 
         network_data = json.loads(output.strip())
@@ -68,4 +73,7 @@ def get_ip_from_container(container):
             if ip:
                 return ip
 
-    raise xxx  # No container ip found, what to raise here
+    if last_error:
+        raise last_error
+
+    return None

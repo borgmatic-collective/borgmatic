@@ -173,6 +173,10 @@ def test_dumps_match_compares_two_dumps_while_respecting_unspecified_values(
             'foo@host (postgresql_databases)',
         ),
         (
+            module.Dump('postgresql_databases', 'foo', 'host', 1234, 'label'),
+            'foo@label (postgresql_databases)',
+        ),
+        (
             module.Dump(
                 module.UNSPECIFIED,
                 module.UNSPECIFIED,
@@ -580,9 +584,9 @@ def test_collect_dumps_from_archive_without_dumps_metadata_falls_back_to_parsing
     )
 
     assert archive_dumps == {
-        module.Dump('postgresql_databases', 'foo'),
-        module.Dump('postgresql_databases', 'bar', 'host', 1234),
-        module.Dump('mysql_databases', 'quux'),
+        module.Dump('postgresql_databases', 'foo', label='localhost'),
+        module.Dump('postgresql_databases', 'bar', 'host', 1234, 'host:1234'),
+        module.Dump('mysql_databases', 'quux', label='localhost'),
     }
 
 
@@ -623,10 +627,10 @@ def test_collect_dumps_from_archive_parses_archive_paths_with_different_base_dir
     )
 
     assert archive_dumps == {
-        module.Dump('postgresql_databases', 'foo'),
-        module.Dump('postgresql_databases', 'bar'),
-        module.Dump('postgresql_databases', 'baz'),
-        module.Dump('mysql_databases', 'quux'),
+        module.Dump('postgresql_databases', 'foo', label='localhost'),
+        module.Dump('postgresql_databases', 'bar', label='localhost'),
+        module.Dump('postgresql_databases', 'baz', label='localhost'),
+        module.Dump('mysql_databases', 'quux', label='localhost'),
     }
 
 
@@ -665,7 +669,7 @@ def test_collect_dumps_from_archive_parses_directory_format_archive_paths():
     )
 
     assert archive_dumps == {
-        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('postgresql_databases', 'foo', label='localhost'),
     }
 
 
@@ -707,8 +711,8 @@ def test_collect_dumps_from_archive_skips_bad_archive_paths_or_bad_path_componen
     )
 
     assert archive_dumps == {
-        module.Dump('postgresql_databases', 'foo'),
-        module.Dump('postgresql_databases', 'bar'),
+        module.Dump('postgresql_databases', 'foo', label='localhost'),
+        module.Dump('postgresql_databases', 'bar', label='localhost:abcd'),
     }
 
 
@@ -734,6 +738,7 @@ def test_get_dumps_to_restore_gets_requested_dumps_found_in_archive():
             data_sources=['foo', 'bar'],
             original_hostname=None,
             original_port=None,
+            original_label=None,
         ),
         dumps_from_archive=dumps_from_archive,
     ) == {
@@ -756,6 +761,7 @@ def test_get_dumps_to_restore_raises_for_requested_dumps_missing_from_archive():
                 data_sources=['foo', 'bar'],
                 original_hostname=None,
                 original_port=None,
+                original_label=None,
             ),
             dumps_from_archive=dumps_from_archive,
         )
@@ -775,6 +781,7 @@ def test_get_dumps_to_restore_without_requested_dumps_finds_all_archive_dumps():
                 data_sources=[],
                 original_hostname=None,
                 original_port=None,
+                original_label=None,
             ),
             dumps_from_archive=dumps_from_archive,
         )
@@ -804,6 +811,7 @@ def test_get_dumps_to_restore_with_all_in_requested_dumps_finds_all_archive_dump
                 data_sources=['all'],
                 original_hostname=None,
                 original_port=None,
+                original_label=None,
             ),
             dumps_from_archive=dumps_from_archive,
         )
@@ -833,6 +841,7 @@ def test_get_dumps_to_restore_with_all_in_requested_dumps_plus_additional_reques
                 data_sources=['all', 'foo', 'bar'],
                 original_hostname=None,
                 original_port=None,
+                original_label=None,
             ),
             dumps_from_archive=dumps_from_archive,
         )
@@ -859,6 +868,7 @@ def test_get_dumps_to_restore_raises_for_multiple_matching_dumps_in_archive():
                 data_sources=['foo'],
                 original_hostname=None,
                 original_port=None,
+                original_label=None,
             ),
             dumps_from_archive={
                 module.Dump('postgresql_databases', 'foo'),
@@ -882,6 +892,7 @@ def test_get_dumps_to_restore_raises_for_all_in_requested_dumps_and_requested_du
                 data_sources=['all', 'foo', 'bar'],
                 original_hostname=None,
                 original_port=None,
+                original_label=None,
             ),
             dumps_from_archive={module.Dump('postresql_databases', 'foo')},
         )
@@ -905,6 +916,7 @@ def test_get_dumps_to_restore_with_requested_hook_name_filters_dumps_found_in_ar
             data_sources=['foo'],
             original_hostname=None,
             original_port=None,
+            original_label=None,
         ),
         dumps_from_archive=dumps_from_archive,
     ) == {
@@ -930,6 +942,7 @@ def test_get_dumps_to_restore_with_requested_shortened_hook_name_filters_dumps_f
             data_sources=['foo'],
             original_hostname=None,
             original_port=None,
+            original_label=None,
         ),
         dumps_from_archive=dumps_from_archive,
     ) == {
@@ -955,6 +968,7 @@ def test_get_dumps_to_restore_with_requested_hostname_filters_dumps_found_in_arc
             data_sources=['foo'],
             original_hostname='host',
             original_port=None,
+            original_label=None,
         ),
         dumps_from_archive=dumps_from_archive,
     ) == {
@@ -980,6 +994,7 @@ def test_get_dumps_to_restore_with_requested_port_filters_dumps_found_in_archive
             data_sources=['foo'],
             original_hostname='host',
             original_port=1234,
+            original_label=None,
         ),
         dumps_from_archive=dumps_from_archive,
     ) == {
@@ -1087,6 +1102,7 @@ def test_run_restore_restores_each_data_source():
             username=None,
             password=None,
             restore_path=None,
+            container=None
         ),
         global_arguments=flexmock(dry_run=False),
         local_path=flexmock(),
@@ -1171,6 +1187,7 @@ def test_run_restore_restores_data_source_by_falling_back_to_all_name():
             username=None,
             password=None,
             restore_path=None,
+            container=None,
         ),
         global_arguments=flexmock(dry_run=False),
         local_path=flexmock(),
@@ -1252,6 +1269,7 @@ def test_run_restore_restores_data_source_configured_with_all_name():
             username=None,
             password=None,
             restore_path=None,
+            container=None,
         ),
         global_arguments=flexmock(dry_run=False),
         local_path=flexmock(),
@@ -1333,6 +1351,7 @@ def test_run_restore_skips_missing_data_source():
             username=None,
             password=None,
             restore_path=None,
+            container=None,
         ),
         global_arguments=flexmock(dry_run=False),
         local_path=flexmock(),
@@ -1410,6 +1429,7 @@ def test_run_restore_restores_data_sources_from_different_hooks():
             username=None,
             password=None,
             restore_path=None,
+            container=None,
         ),
         global_arguments=flexmock(dry_run=False),
         local_path=flexmock(),

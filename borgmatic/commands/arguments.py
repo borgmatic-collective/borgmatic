@@ -1492,6 +1492,10 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         help='Path to restore SQLite database dumps to. Defaults to the "restore_path" option in borgmatic\'s configuration',
     )
     restore_group.add_argument(
+        '--original-label',
+        help='The label where to dump to restore came from, only necessary if you need to disambiguate dumps',
+    )
+    restore_group.add_argument(
         '--original-hostname',
         help='The hostname where the dump to restore came from, only necessary if you need to disambiguate dumps',
     )

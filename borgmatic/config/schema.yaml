@@ -1337,8 +1337,8 @@ properties:
                 restore_container:
                     type: string
                     description: |
-                        Container name/id to restore to. Defaults to the "container"
-                        option.
+                        Container name/id to restore to. Defaults to the
+                        "container" option.
                     example: restore_container
                 hostname:
                     type: string
@@ -1555,8 +1555,8 @@ properties:
                 restore_container:
                     type: string
                     description: |
-                        Container name/id to restore to. Defaults to the "container"
-                        option.
+                        Container name/id to restore to. Defaults to the
+                        "container" option.
                     example: restore_container
                 hostname:
                     type: string
@@ -1737,8 +1737,8 @@ properties:
                 restore_container:
                     type: string
                     description: |
-                        Container name/id to restore to. Defaults to the "container"
-                        option.
+                        Container name/id to restore to. Defaults to the
+                        "container" option.
                     example: restore_container
                 hostname:
                     type: string
@@ -1980,8 +1980,8 @@ properties:
                 restore_container:
                     type: string
                     description: |
-                        Container name/id to restore to. Defaults to the "container"
-                        option.
+                        Container name/id to restore to. Defaults to the
+                        "container" option.
                     example: restore_container
                 hostname:
                     type: string
