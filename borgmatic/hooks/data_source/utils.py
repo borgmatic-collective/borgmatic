@@ -7,10 +7,34 @@ from borgmatic.execute import execute_command_and_capture_output
 IS_A_HOOK = False
 
 
-def get_hostname_from_config(database):
-    if 'container' in database:
-        return get_ip_from_container(database['container'])
-    return database.get('hostname', '')
+def resolve_database_option(option, data_source, connection_params=None, restore=False):
+    # Special case `hostname` since it overlaps with `container`
+    if option == 'hostname':
+        return _get_hostname_from_config(data_source, connection_params, restore)
+    if connection_params and (value := connection_params.get(option)):
+        return value
+    if restore and f'restore_{option}' in data_source:
+        return data_source[f'restore_{option}']
+    return data_source.get(option)
+
+
+def _get_hostname_from_config(data_source, connection_params=None, restore=False):
+    # connection params win, full stop
+    if connection_params:
+        if container := connection_params.get('container'):
+            return container
+        if hostname := connection_params.get('hostname'):
+            return hostname
+    # ... then try the restore config
+    if restore:
+        if 'restore_container' in data_source:
+            return get_ip_from_container(data_source['restore_container'])
+        if 'restore_hostname' in data_source:
+            return data_source['restore_hostname']
+    # ... and finally fall back to the normal options
+    if 'container' in data_source:
+        return get_ip_from_container(data_source['container'])
+    return data_source.get('hostname', '')
 
 
 def get_ip_from_container(container):

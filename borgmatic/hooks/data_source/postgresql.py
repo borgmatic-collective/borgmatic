@@ -32,22 +32,15 @@ def make_environment(database, config, restore_connection_params=None):
     '''
     environment = dict(os.environ)
 
-    try:
-        if restore_connection_params:
-            environment['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
-                (
-                    restore_connection_params.get('password')
-                    or database.get('restore_password', database['password'])
-                ),
-                config,
-            )
-        else:
-            environment['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
-                database['password'],
-                config,
-            )
-    except (AttributeError, KeyError):
-        pass
+    password = utils.resolve_database_option(
+        'password', database, restore_connection_params, restore=restore_connection_params
+    )
+
+    if password:
+        environment['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
+            password,
+            config,
+        )
 
     if 'ssl_mode' in database:
         environment['PGSSLMODE'] = database['ssl_mode']
@@ -91,7 +84,7 @@ def database_names_to_dump(database, config, environment, dry_run):
     psql_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('psql_command') or 'psql')
     )
-    hostname = utils.get_hostname_from_config(database)
+    hostname = utils.resolve_database_option('hostname', database)
     list_command = (
         psql_command
         + ('--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only')
@@ -196,7 +189,7 @@ def dump_data_sources(
                 )
                 continue
 
-            hostname = utils.get_hostname_from_config(database)
+            hostname = utils.resolve_database_option('hostname', database)
             command = (
                 dump_command
                 + (
@@ -342,18 +335,12 @@ def restore_data_source_dump(
     hostname, port, username, and password.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
-    hostname = connection_params['hostname'] or data_source.get(
-        'restore_hostname',
-        utils.get_hostname_from_config(data_source),
+    hostname = utils.resolve_database_option(
+        'hostname', data_source, connection_params, restore=True
     )
-    port = str(
-        connection_params['port'] or data_source.get('restore_port', data_source.get('port', '')),
-    )
+    port = utils.resolve_database_option('port', data_source, connection_params, restore=True)
     username = borgmatic.hooks.credential.parse.resolve_credential(
-        (
-            connection_params['username']
-            or data_source.get('restore_username', data_source.get('username'))
-        ),
+        utils.resolve_database_option('username', data_source, connection_params, restore=True),
         config,
     )
 
@@ -372,7 +359,7 @@ def restore_data_source_dump(
         psql_command
         + ('--no-password', '--no-psqlrc', '--quiet')
         + (('--host', hostname) if hostname else ())
-        + (('--port', port) if port else ())
+        + (('--port', str(port)) if port else ())
         + (('--username', username) if username else ())
         + (('--dbname', data_source['name']) if not all_databases else ())
         + (
@@ -393,7 +380,7 @@ def restore_data_source_dump(
         + (('--no-psqlrc',) if use_psql_command else ('--if-exists', '--exit-on-error', '--clean'))
         + (('--dbname', data_source['name']) if not all_databases else ())
         + (('--host', hostname) if hostname else ())
-        + (('--port', port) if port else ())
+        + (('--port', str(port)) if port else ())
         + (('--username', username) if username else ())
         + (('--no-owner',) if data_source.get('no_owner', False) else ())
         + (

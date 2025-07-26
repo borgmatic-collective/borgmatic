@@ -1476,6 +1476,10 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         help='Database port to restore to. Defaults to the "restore_port" option in borgmatic\'s configuration',
     )
     restore_group.add_argument(
+        '--container',
+        help='Container to restore to. Defaults to the "restore_container" option in borgmatic\'s configuration',
+    )
+    restore_group.add_argument(
         '--username',
         help='Username with which to connect to the database. Defaults to the "restore_username" option in borgmatic\'s configuration',
     )

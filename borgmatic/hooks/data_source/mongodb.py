@@ -139,7 +139,7 @@ def build_dump_command(database, config, dump_filename, dump_format):
     dump_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mongodump_command') or 'mongodump')
     )
-    hostname = utils.get_hostname_from_config(database)
+    hostname = utils.resolve_database_option('hostname', database)
     return (
         dump_command
         + (('--out', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
@@ -160,7 +160,10 @@ def build_dump_command(database, config, dump_filename, dump_format):
         )
         + (('--config', make_password_config_file(password)) if password else ())
         + (
-            ('--authenticationDatabase', shlex.quote(database['authentication_database']))
+            (
+                '--authenticationDatabase',
+                shlex.quote(database['authentication_database']),
+            )
             if 'authentication_database' in database
             else ()
         )
@@ -251,7 +254,7 @@ def restore_data_source_dump(
         connection_params,
     )
 
-    logger.debug(f"Restoring MongoDB database {data_source['name']}{dry_run_label}")
+    logger.debug(f'Restoring MongoDB database {data_source["name"]}{dry_run_label}')
     if dry_run:
         return
 
@@ -269,23 +272,14 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
     '''
     Return the custom mongorestore_command from a single database configuration.
     '''
-    hostname = connection_params['hostname'] or database.get(
-        'restore_hostname',
-        utils.get_hostname_from_config(database),
-    )
-    port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
+    hostname = utils.resolve_database_option('hostname', database, connection_params, restore=True)
+    port = utils.resolve_database_option('port', database, connection_params, restore=True)
     username = borgmatic.hooks.credential.parse.resolve_credential(
-        (
-            connection_params['username']
-            or database.get('restore_username', database.get('username'))
-        ),
+        utils.resolve_database_option('username', database, connection_params, restore=True),
         config,
     )
     password = borgmatic.hooks.credential.parse.resolve_credential(
-        (
-            connection_params['password']
-            or database.get('restore_password', database.get('password'))
-        ),
+        utils.resolve_database_option('password', database, connection_params, restore=True),
         config,
     )
 
