@@ -1330,10 +1330,16 @@ properties:
                     example: my_backup_label
                 container:
                     type: string
-                    description:
+                    description: |
                         Container name/id to connect to. When specified the
                         hostname is ignored. Requires docker/podman CLI.
                     example: debian_stable
+                restore_container:
+                    type: string
+                    description: |
+                        Container name/id to restore to. Defaults to the "container"
+                        option.
+                    example: restore_container
                 hostname:
                     type: string
                     description: |
@@ -1542,10 +1548,16 @@ properties:
                     example: my_backup_label
                 container:
                     type: string
-                    description:
+                    description: |
                         Container name/id to connect to. When specified the
                         hostname is ignored. Requires docker/podman CLI.
                     example: debian_stable
+                restore_container:
+                    type: string
+                    description: |
+                        Container name/id to restore to. Defaults to the "container"
+                        option.
+                    example: restore_container
                 hostname:
                     type: string
                     description: |
@@ -1718,10 +1730,16 @@ properties:
                     example: my_backup_label
                 container:
                     type: string
-                    description:
+                    description: |
                         Container name/id to connect to. When specified the
                         hostname is ignored. Requires docker/podman CLI.
                     example: debian_stable
+                restore_container:
+                    type: string
+                    description: |
+                        Container name/id to restore to. Defaults to the "container"
+                        option.
+                    example: restore_container
                 hostname:
                     type: string
                     description: |
@@ -1955,10 +1973,16 @@ properties:
                     example: my_backup_label
                 container:
                     type: string
-                    description:
+                    description: |
                         Container name/id to connect to. When specified the
                         hostname is ignored. Requires docker/podman CLI.
                     example: debian_stable
+                restore_container:
+                    type: string
+                    description: |
+                        Container name/id to restore to. Defaults to the "container"
+                        option.
+                    example: restore_container
                 hostname:
                     type: string
                     description: |
