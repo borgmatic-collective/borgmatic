@@ -1102,7 +1102,7 @@ def test_run_restore_restores_each_data_source():
             username=None,
             password=None,
             restore_path=None,
-            container=None
+            container=None,
         ),
         global_arguments=flexmock(dry_run=False),
         local_path=flexmock(),

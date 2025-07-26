@@ -9,6 +9,7 @@ IS_A_HOOK = False
 
 logger = logging.getLogger(__name__)
 
+
 def resolve_database_option(option, data_source, connection_params=None, restore=False):
     # Special case `hostname` since it overlaps with `container`
     if option == 'hostname':
@@ -24,7 +25,7 @@ def _get_hostname_from_config(data_source, connection_params=None, restore=False
     # connection params win, full stop
     if connection_params:
         if container := connection_params.get('container'):
-            return container
+            return get_ip_from_container(container)
         if hostname := connection_params.get('hostname'):
             return hostname
     # ... then try the restore config

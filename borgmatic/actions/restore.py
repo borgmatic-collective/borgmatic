@@ -176,7 +176,13 @@ def restore_single_dump(
     that data source from the archive.
     '''
     dump_metadata = render_dump_metadata(
-        Dump(hook_name, data_source['name'], data_source.get('hostname'), data_source.get('port'), data_source.get('label')),
+        Dump(
+            hook_name,
+            data_source['name'],
+            data_source.get('hostname'),
+            data_source.get('port'),
+            data_source.get('label'),
+        ),
     )
 
     logger.info(f'Restoring data source {dump_metadata}')
@@ -568,7 +574,13 @@ def run_restore(
             if not found_data_source:
                 found_data_source = get_configured_data_source(
                     config,
-                    Dump(restore_dump.hook_name, 'all', restore_dump.hostname, restore_dump.port, restore_dump.label),
+                    Dump(
+                        restore_dump.hook_name,
+                        'all',
+                        restore_dump.hostname,
+                        restore_dump.port,
+                        restore_dump.label,
+                    ),
                 )
 
                 if not found_data_source:
