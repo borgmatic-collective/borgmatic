@@ -104,7 +104,7 @@ def get_configured_data_source(config, restore_dump):
                 hook_data_source.get('name'),
                 hook_data_source.get('hostname', 'localhost'),
                 hook_data_source.get('port'),
-                hook_data_source.get('label'),
+                hook_data_source.get('label') or hook_data_source.get('container') or UNSPECIFIED,
             ),
             restore_dump,
             default_port,
@@ -181,7 +181,7 @@ def restore_single_dump(
             data_source['name'],
             data_source.get('hostname'),
             data_source.get('port'),
-            data_source.get('label'),
+            data_source.get('label') or data_source.get('container') or UNSPECIFIED,
         ),
     )
 
@@ -568,7 +568,6 @@ def run_restore(
                 config,
                 restore_dump,
             )
-
             # For a dump that wasn't found via an exact match in the configuration, try to fallback
             # to an "all" data source.
             if not found_data_source:

@@ -61,7 +61,7 @@ def get_ip_from_container(container):
             )
         except subprocess.CalledProcessError as error:
             last_error = error
-            logger.debug(f"Couldn't find container '{container}' with engine '{engine}'")
+            logger.debug(f"Could not find container '{container}' with engine '{engine}'")
             continue  # Container does not exist
 
         network_data = json.loads(output.strip())
@@ -77,4 +77,6 @@ def get_ip_from_container(container):
     if last_error:
         raise last_error
 
-    return None
+    raise ValueError(
+        f"Could not determine ip address for container '{container}'; running in host mode or userspace networking?"
+    )

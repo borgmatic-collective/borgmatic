@@ -88,4 +88,6 @@ def test_get_container_ip_container_no_network():
 
     flexmock(utils).should_receive('execute_command_and_capture_output').and_return('{}')
 
-    assert utils.get_ip_from_container('yolo') is None
+    with pytest.raises(ValueError) as exc_info:
+        utils.get_ip_from_container('yolo')
+    assert 'Could not determine ip address for container' in str(exc_info.value)
