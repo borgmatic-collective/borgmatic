@@ -126,6 +126,12 @@ import borgmatic.actions.restore as module
             5432,
             False,
         ),
+        (
+            module.Dump('postgresql_databases', 'foo', 'some_host1', 5433, 'unique'),
+            module.Dump('postgresql_databases', 'foo', 'some_host2', None, 'unique'),
+            5432,
+            True,
+        ),
     ),
 )
 def test_dumps_match_compares_two_dumps_while_respecting_unspecified_values(
@@ -196,7 +202,7 @@ def test_get_configured_data_source_matches_data_source_with_restore_dump():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').and_return(default_port)
     flexmock(module).should_receive('dumps_match').and_return(False)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump('postgresql_databases', 'bar'),
+        module.Dump('postgresql_databases', 'bar', label=module.UNSPECIFIED),
         module.Dump('postgresql_databases', 'bar'),
         default_port=default_port,
     ).and_return(True)
@@ -243,7 +249,7 @@ def test_get_configured_data_source_with_multiple_matching_data_sources_errors()
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').and_return(default_port)
     flexmock(module).should_receive('dumps_match').and_return(False)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump('postgresql_databases', 'bar'),
+        module.Dump('postgresql_databases', 'bar', label=module.UNSPECIFIED),
         module.Dump('postgresql_databases', 'bar'),
         default_port=default_port,
     ).and_return(True)

@@ -33,6 +33,10 @@ def dumps_match(first, second, default_port=None):
     indicates that the field should match any value. If a default port is given, then consider any
     dump having that port to match with a dump having a None port.
     '''
+    # label kinda counts as id, if they match, consider it a full match
+    if first.label not in {None, UNSPECIFIED} and first.label == second.label:
+        return True
+
     for field_name in first._fields:
         first_value = getattr(first, field_name)
         second_value = getattr(second, field_name)

@@ -9,6 +9,8 @@ import pymongo
 import pytest
 import ruamel.yaml
 
+from borgmatic.hooks.data_source import utils
+
 
 def write_configuration(
     source_directory,
@@ -19,6 +21,7 @@ def write_configuration(
     postgresql_all_dump_format=None,
     mariadb_mysql_all_dump_format=None,
     mongodb_dump_format='archive',
+    use_containers=False,
 ):
     '''
     Write out borgmatic configuration into a file at the config path. Set the options so as to work
@@ -32,6 +35,8 @@ def write_configuration(
         f'format: {mariadb_mysql_all_dump_format}' if mariadb_mysql_all_dump_format else ''
     )
 
+    hostname_option = 'container' if use_containers else 'hostname'
+
     config_yaml = f'''
 source_directories:
     - {source_directory}
@@ -43,44 +48,44 @@ encryption_passphrase: "test"
 
 postgresql_databases:
     - name: test
-      hostname: postgresql
+      {hostname_option}: postgresql
       username: postgres
       password: test
       format: {postgresql_dump_format}
     - name: all
       {postgresql_all_format_option}
-      hostname: postgresql
+      {hostname_option}: postgresql
       username: postgres
       password: test
 mariadb_databases:
     - name: test
-      hostname: mariadb
+      {hostname_option}: mariadb
       username: root
       password: test
     - name: all
       {mariadb_mysql_dump_format_option}
-      hostname: mariadb
+      {hostname_option}: mariadb
       username: root
       password: test
 mysql_databases:
     - name: test
-      hostname: not-actually-mysql
+      {hostname_option}: not-actually-mysql
       username: root
       password: test
     - name: all
       {mariadb_mysql_dump_format_option}
-      hostname: not-actually-mysql
+      {hostname_option}: not-actually-mysql
       username: root
       password: test
 mongodb_databases:
     - name: test
-      hostname: mongodb
+      {hostname_option}: mongodb
       username: root
       password: test
       authentication_database: admin
       format: {mongodb_dump_format}
     - name: all
-      hostname: mongodb
+      {hostname_option}: mongodb
       username: root
       password: test
 sqlite_databases:
@@ -110,12 +115,16 @@ def write_custom_restore_configuration(
     postgresql_all_dump_format=None,
     mariadb_mysql_all_dump_format=None,
     mongodb_dump_format='archive',
+    use_containers=False,
 ):
     '''
     Write out borgmatic configuration into a file at the config path. Set the options so as to work
     for testing with custom restore options. This includes a custom restore_hostname, restore_port,
     restore_username, restore_password and restore_path.
     '''
+
+    hostname_option = 'container' if use_containers else 'hostname'
+
     config_yaml = f'''
 source_directories:
     - {source_directory}
@@ -127,39 +136,39 @@ encryption_passphrase: "test"
 
 postgresql_databases:
     - name: test
-      hostname: postgresql
+      {hostname_option}: postgresql
       username: postgres
       password: test
       format: {postgresql_dump_format}
-      restore_hostname: postgresql2
+      restore_{hostname_option}: postgresql2
       restore_port: 5433
       restore_password: test2
 mariadb_databases:
     - name: test
-      hostname: mariadb
+      {hostname_option}: mariadb
       username: root
       password: test
-      restore_hostname: mariadb2
+      restore_{hostname_option}: mariadb2
       restore_port: 3307
       restore_username: root
       restore_password: test2
 mysql_databases:
     - name: test
-      hostname: not-actually-mysql
+      {hostname_option}: not-actually-mysql
       username: root
       password: test
-      restore_hostname: not-actually-mysql2
+      restore_{hostname_option}: not-actually-mysql2
       restore_port: 3307
       restore_username: root
       restore_password: test2
 mongodb_databases:
     - name: test
-      hostname: mongodb
+      {hostname_option}: mongodb
       username: root
       password: test
       authentication_database: admin
       format: {mongodb_dump_format}
-      restore_hostname: mongodb2
+      restore_{hostname_option}: mongodb2
       restore_port: 27018
       restore_username: root2
       restore_password: test2
@@ -212,16 +221,10 @@ postgresql_databases:
 
 
 def get_connection_params(database, use_restore_options=False):
-    hostname = (database.get('restore_hostname') if use_restore_options else None) or database.get(
-        'hostname',
-    )
-    port = (database.get('restore_port') if use_restore_options else None) or database.get('port')
-    username = (database.get('restore_username') if use_restore_options else None) or database.get(
-        'username',
-    )
-    password = (database.get('restore_password') if use_restore_options else None) or database.get(
-        'password',
-    )
+    hostname = utils.resolve_database_option('hostname', database, restore=use_restore_options)
+    port = utils.resolve_database_option('port', database, restore=use_restore_options)
+    username = utils.resolve_database_option('username', database, restore=use_restore_options)
+    password = utils.resolve_database_option('password', database, restore=use_restore_options)
 
     return (hostname, port, username, password)
 
@@ -656,3 +659,66 @@ def test_database_dump_with_error_causes_borgmatic_to_exit():
     finally:
         os.chdir(original_working_directory)
         shutil.rmtree(temporary_directory)
+
+
+def test_database_dump_and_restore_containers():
+    # Create a Borg repository.
+    temporary_directory = tempfile.mkdtemp()
+    repository_path = os.path.join(temporary_directory, 'test.borg')
+
+    original_working_directory = os.getcwd()
+    original_path = os.environ.get('PATH', '')
+
+    os.environ['PATH'] = f'/app/tests/end-to-end/commands:{original_path}'
+
+    try:
+        config_path = os.path.join(temporary_directory, 'test.yaml')
+        config = write_configuration(
+            temporary_directory,
+            config_path,
+            repository_path,
+            temporary_directory,
+            use_containers=True,
+        )
+        create_test_tables(config)
+        select_test_tables(config)
+
+        subprocess.check_call(
+            [
+                'borgmatic',
+                '-v',
+                '2',
+                '--config',
+                config_path,
+                'repo-create',
+                '--encryption',
+                'repokey',
+            ],
+        )
+
+        # Run borgmatic to generate a backup archive including database dumps.
+        subprocess.check_call(['borgmatic', 'create', '--config', config_path, '-v', '2'])
+
+        # Get the created archive name.
+        output = subprocess.check_output(
+            ['borgmatic', '--config', config_path, 'list', '--json'],
+        ).decode(sys.stdout.encoding)
+        parsed_output = json.loads(output)
+
+        assert len(parsed_output) == 1
+        assert len(parsed_output[0]['archives']) == 1
+        archive_name = parsed_output[0]['archives'][0]['archive']
+
+        # Restore the databases from the archive.
+        drop_test_tables(config)
+        subprocess.check_call(
+            ['borgmatic', '-v', '2', '--config', config_path, 'restore', '--archive', archive_name],
+        )
+
+        # Ensure the test tables have actually been restored.
+        select_test_tables(config)
+    finally:
+        os.chdir(original_working_directory)
+        shutil.rmtree(temporary_directory)
+        drop_test_tables(config)
+        os.environ['PATH'] = original_path
