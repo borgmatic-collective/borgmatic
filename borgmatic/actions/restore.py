@@ -35,9 +35,11 @@ def dumps_match(first, second, default_port=None):
     '''
     # label kinda counts as id, if they match ignore hostname & port
     if first.label not in {None, UNSPECIFIED} and first.label == second.label:
-        return first[:2] == second[:2]
+        field_list = ('hook_name', 'data_source_name')
+    else:
+        field_list = Dump._fields
 
-    for field_name in first._fields:
+    for field_name in field_list:
         first_value = getattr(first, field_name)
         second_value = getattr(second, field_name)
 
@@ -422,7 +424,7 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
                 data_source_name=name,
                 hostname=restore_arguments.original_hostname or UNSPECIFIED,
                 port=restore_arguments.original_port,
-                label=restore_arguments.original_label,
+                label=restore_arguments.original_label or UNSPECIFIED,
             )
             for name in restore_arguments.data_sources or (UNSPECIFIED,)
         }
