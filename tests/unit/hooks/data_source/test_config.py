@@ -91,3 +91,13 @@ def test_get_container_ip_container_no_network():
     with pytest.raises(ValueError) as exc_info:
         config.get_ip_from_container('yolo')
     assert 'Could not determine ip address for container' in str(exc_info.value)
+
+
+def test_get_container_ip_broken_output():
+    flexmock(config.shutil).should_receive('which').and_return(None).and_return('/usr/bin/podman')
+
+    flexmock(config).should_receive('execute_command_and_capture_output').and_return('abc')
+
+    with pytest.raises(ValueError) as exc_info:
+        config.get_ip_from_container('yolo')
+    assert 'Could not decode JSON output' in str(exc_info.value)

@@ -64,7 +64,10 @@ def get_ip_from_container(container):
             logger.debug(f"Could not find container '{container}' with engine '{engine}'")
             continue  # Container does not exist
 
-        network_data = json.loads(output.strip())
+        try:
+            network_data = json.loads(output.strip())
+        except json.JSONDecodeError as e:
+            raise ValueError(f'Could not decode JSON output from {engine}') from e
         main_ip = network_data.get('IPAddress')
         if main_ip:
             return main_ip
