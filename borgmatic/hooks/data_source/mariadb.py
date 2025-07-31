@@ -12,7 +12,8 @@ from borgmatic.execute import (
     execute_command_and_capture_output,
     execute_command_with_processes,
 )
-from borgmatic.hooks.data_source import dump, utils
+from borgmatic.hooks.data_source import config as ds_config
+from borgmatic.hooks.data_source import dump
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +123,7 @@ def database_names_to_dump(database, config, username, password, environment, dr
     )
     extra_options, defaults_extra_filename = parse_extra_options(database.get('list_options'))
     password_transport = database.get('password_transport', 'pipe')
-    hostname = utils.resolve_database_option('hostname', database)
+    hostname = ds_config.resolve_database_option('hostname', database)
     show_command = (
         mariadb_show_command
         + (
@@ -194,7 +195,7 @@ def execute_dump_command(
     )
     extra_options, defaults_extra_filename = parse_extra_options(database.get('options'))
     password_transport = database.get('password_transport', 'pipe')
-    hostname = utils.resolve_database_option('hostname', database)
+    hostname = ds_config.resolve_database_option('hostname', database)
     dump_command = (
         mariadb_dump_command
         + (
@@ -417,17 +418,17 @@ def restore_data_source_dump(
     subprocess.Popen) to produce output to consume.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
-    hostname = utils.resolve_database_option(
+    hostname = ds_config.resolve_database_option(
         'hostname', data_source, connection_params, restore=True
     )
-    port = utils.resolve_database_option('port', data_source, connection_params, restore=True)
-    tls = utils.resolve_database_option('tls', data_source, restore=True)
+    port = ds_config.resolve_database_option('port', data_source, connection_params, restore=True)
+    tls = ds_config.resolve_database_option('tls', data_source, restore=True)
     username = borgmatic.hooks.credential.parse.resolve_credential(
-        utils.resolve_database_option('username', data_source, connection_params, restore=True),
+        ds_config.resolve_database_option('username', data_source, connection_params, restore=True),
         config,
     )
     password = borgmatic.hooks.credential.parse.resolve_credential(
-        utils.resolve_database_option('password', data_source, connection_params, restore=True),
+        ds_config.resolve_database_option('password', data_source, connection_params, restore=True),
         config,
     )
 

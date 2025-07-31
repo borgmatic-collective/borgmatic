@@ -9,7 +9,7 @@ import pymongo
 import pytest
 import ruamel.yaml
 
-from borgmatic.hooks.data_source import utils
+from borgmatic.hooks.data_source import config
 
 
 def write_configuration(
@@ -221,10 +221,10 @@ postgresql_databases:
 
 
 def get_connection_params(database, use_restore_options=False):
-    hostname = utils.resolve_database_option('hostname', database, restore=use_restore_options)
-    port = utils.resolve_database_option('port', database, restore=use_restore_options)
-    username = utils.resolve_database_option('username', database, restore=use_restore_options)
-    password = utils.resolve_database_option('password', database, restore=use_restore_options)
+    hostname = config.resolve_database_option('hostname', database, restore=use_restore_options)
+    port = config.resolve_database_option('port', database, restore=use_restore_options)
+    username = config.resolve_database_option('username', database, restore=use_restore_options)
+    password = config.resolve_database_option('password', database, restore=use_restore_options)
 
     return (hostname, port, username, password)
 

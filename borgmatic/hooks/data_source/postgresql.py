@@ -13,7 +13,8 @@ from borgmatic.execute import (
     execute_command_and_capture_output,
     execute_command_with_processes,
 )
-from borgmatic.hooks.data_source import dump, utils
+from borgmatic.hooks.data_source import config as ds_config
+from borgmatic.hooks.data_source import dump
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ def make_environment(database, config, restore_connection_params=None):
     '''
     environment = dict(os.environ)
 
-    password = utils.resolve_database_option(
+    password = ds_config.resolve_database_option(
         'password', database, restore_connection_params, restore=restore_connection_params
     )
 
@@ -84,7 +85,7 @@ def database_names_to_dump(database, config, environment, dry_run):
     psql_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('psql_command') or 'psql')
     )
-    hostname = utils.resolve_database_option('hostname', database)
+    hostname = ds_config.resolve_database_option('hostname', database)
     list_command = (
         psql_command
         + ('--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only')
@@ -189,7 +190,7 @@ def dump_data_sources(
                 )
                 continue
 
-            hostname = utils.resolve_database_option('hostname', database)
+            hostname = ds_config.resolve_database_option('hostname', database)
             command = (
                 dump_command
                 + (
@@ -335,12 +336,12 @@ def restore_data_source_dump(
     hostname, port, username, and password.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
-    hostname = utils.resolve_database_option(
+    hostname = ds_config.resolve_database_option(
         'hostname', data_source, connection_params, restore=True
     )
-    port = utils.resolve_database_option('port', data_source, connection_params, restore=True)
+    port = ds_config.resolve_database_option('port', data_source, connection_params, restore=True)
     username = borgmatic.hooks.credential.parse.resolve_credential(
-        utils.resolve_database_option('username', data_source, connection_params, restore=True),
+        ds_config.resolve_database_option('username', data_source, connection_params, restore=True),
         config,
     )
 
