@@ -21,7 +21,6 @@ def write_configuration(
     postgresql_all_dump_format=None,
     mariadb_mysql_all_dump_format=None,
     mongodb_dump_format='archive',
-    use_containers=False,
 ):
     '''
     Write out borgmatic configuration into a file at the config path. Set the options so as to work
@@ -35,7 +34,79 @@ def write_configuration(
         f'format: {mariadb_mysql_all_dump_format}' if mariadb_mysql_all_dump_format else ''
     )
 
-    hostname_option = 'container' if use_containers else 'hostname'
+    config_yaml = f'''
+source_directories:
+    - {source_directory}
+repositories:
+    - path: {repository_path}
+user_runtime_directory: {user_runtime_directory}
+
+encryption_passphrase: "test"
+
+postgresql_databases:
+    - name: test
+      hostname: postgresql
+      username: postgres
+      password: test
+      format: {postgresql_dump_format}
+    - name: all
+      {postgresql_all_format_option}
+      hostname: postgresql
+      username: postgres
+      password: test
+mariadb_databases:
+    - name: test
+      hostname: mariadb
+      username: root
+      password: test
+    - name: all
+      {mariadb_mysql_dump_format_option}
+      hostname: mariadb
+      username: root
+      password: test
+mysql_databases:
+    - name: test
+      hostname: not-actually-mysql
+      username: root
+      password: test
+    - name: all
+      {mariadb_mysql_dump_format_option}
+      hostname: not-actually-mysql
+      username: root
+      password: test
+mongodb_databases:
+    - name: test
+      hostname: mongodb
+      username: root
+      password: test
+      authentication_database: admin
+      format: {mongodb_dump_format}
+    - name: all
+      hostname: mongodb
+      username: root
+      password: test
+sqlite_databases:
+    - name: sqlite_test
+      path: /tmp/sqlite_test.db
+'''
+
+    with open(config_path, 'w') as config_file:
+        config_file.write(config_yaml)
+
+    return ruamel.yaml.YAML(typ='safe').load(config_yaml)
+
+
+def write_container_configuration(
+    source_directory,
+    config_path,
+    repository_path,
+    user_runtime_directory,
+):
+    '''
+    Write out borgmatic configuration into a file at the config path. Set the options so as to work
+    for testing. This includes injecting the given repository path, borgmatic source directory for
+    storing database dumps, and encryption passphrase.
+    '''
 
     config_yaml = f'''
 source_directories:
@@ -48,46 +119,32 @@ encryption_passphrase: "test"
 
 postgresql_databases:
     - name: test
-      {hostname_option}: postgresql
+      hostname: postgresql
       username: postgres
       password: test
-      format: {postgresql_dump_format}
-    - name: all
-      {postgresql_all_format_option}
-      {hostname_option}: postgresql
-      username: postgres
-      password: test
+      restore_hostname: postgresql2
+      restore_port: 5433
+      restore_password: test2
 mariadb_databases:
     - name: test
-      {hostname_option}: mariadb
+      hostname: mariadb
       username: root
       password: test
-    - name: all
-      {mariadb_mysql_dump_format_option}
-      {hostname_option}: mariadb
-      username: root
-      password: test
+      restore_hostname: mariadb2
+      restore_port: 3307
+      restore_username: root
+      restore_password: test2
 mysql_databases:
     - name: test
-      {hostname_option}: not-actually-mysql
-      username: root
-      password: test
-    - name: all
-      {mariadb_mysql_dump_format_option}
-      {hostname_option}: not-actually-mysql
+      hostname: not-actually-mysql
       username: root
       password: test
 mongodb_databases:
     - name: test
-      {hostname_option}: mongodb
+      hostname: mongodb
       username: root
       password: test
       authentication_database: admin
-      format: {mongodb_dump_format}
-    - name: all
-      {hostname_option}: mongodb
-      username: root
-      password: test
 sqlite_databases:
     - name: sqlite_test
       path: /tmp/sqlite_test.db
@@ -115,15 +172,12 @@ def write_custom_restore_configuration(
     postgresql_all_dump_format=None,
     mariadb_mysql_all_dump_format=None,
     mongodb_dump_format='archive',
-    use_containers=False,
 ):
     '''
     Write out borgmatic configuration into a file at the config path. Set the options so as to work
     for testing with custom restore options. This includes a custom restore_hostname, restore_port,
     restore_username, restore_password and restore_path.
     '''
-
-    hostname_option = 'container' if use_containers else 'hostname'
 
     config_yaml = f'''
 source_directories:
@@ -136,39 +190,39 @@ encryption_passphrase: "test"
 
 postgresql_databases:
     - name: test
-      {hostname_option}: postgresql
+      hostname: postgresql
       username: postgres
       password: test
       format: {postgresql_dump_format}
-      restore_{hostname_option}: postgresql2
+      restore_hostname: postgresql2
       restore_port: 5433
       restore_password: test2
 mariadb_databases:
     - name: test
-      {hostname_option}: mariadb
+      hostname: mariadb
       username: root
       password: test
-      restore_{hostname_option}: mariadb2
+      restore_hostname: mariadb2
       restore_port: 3307
       restore_username: root
       restore_password: test2
 mysql_databases:
     - name: test
-      {hostname_option}: not-actually-mysql
+      hostname: not-actually-mysql
       username: root
       password: test
-      restore_{hostname_option}: not-actually-mysql2
+      restore_hostname: not-actually-mysql2
       restore_port: 3307
       restore_username: root
       restore_password: test2
 mongodb_databases:
     - name: test
-      {hostname_option}: mongodb
+      hostname: mongodb
       username: root
       password: test
       authentication_database: admin
       format: {mongodb_dump_format}
-      restore_{hostname_option}: mongodb2
+      restore_hostname: mongodb2
       restore_port: 27018
       restore_username: root2
       restore_password: test2
@@ -673,12 +727,11 @@ def test_database_dump_and_restore_containers():
 
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
-        config = write_configuration(
+        config = write_container_configuration(
             temporary_directory,
             config_path,
             repository_path,
             temporary_directory,
-            use_containers=True,
         )
         create_test_tables(config)
         select_test_tables(config)
@@ -716,7 +769,7 @@ def test_database_dump_and_restore_containers():
         )
 
         # Ensure the test tables have actually been restored.
-        select_test_tables(config)
+        select_test_tables(config, use_restore_options=True)
     finally:
         os.chdir(original_working_directory)
         shutil.rmtree(temporary_directory)
