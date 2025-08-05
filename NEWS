@@ -4,7 +4,7 @@
    use.
  * When running tests, use Ruff for faster and more comprehensive code linting and formatting,
    replacing Flake8, Black, isort, etc.
- * Switched from pipx to uv for installing development tools, and added tox-uv for speeding up test
+ * Switch from pipx to uv for installing development tools, and added tox-uv for speeding up test
    environment creation. See the developer documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/
 
