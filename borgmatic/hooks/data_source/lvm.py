@@ -106,7 +106,7 @@ def snapshot_logical_volume(
             ('--extents' if '%' in snapshot_size else '--size'),
             snapshot_size,
             '--permission',
-            'r',  # Read-only.
+            'rw',  # Read-write in case an ext4 filesystem has orphaned files that need recovery.
             '--name',
             snapshot_name,
             logical_volume_device,
