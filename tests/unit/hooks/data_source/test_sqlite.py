@@ -122,6 +122,7 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
         ),
         shell=True,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(processes[0])
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
         '/run/borgmatic',
@@ -179,6 +180,7 @@ def test_dump_data_sources_runs_non_default_sqlite_with_path_injection_attack_ge
         ),
         shell=True,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(processes[0])
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
         '/run/borgmatic',
@@ -333,6 +335,7 @@ def test_restore_data_source_dump_restores_database():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     flexmock(module.os).should_receive('remove').once()
@@ -369,6 +372,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_restores_database():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     flexmock(module.os).should_receive('remove').once()
@@ -403,6 +407,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     flexmock(module.os).should_receive('remove').once()
@@ -437,6 +442,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_with_connection_params
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     flexmock(module.os).should_receive('remove').once()
@@ -474,6 +480,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     flexmock(module.os).should_receive('remove').once()
@@ -509,6 +516,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_without_connection_par
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     flexmock(module.os).should_receive('remove').once()

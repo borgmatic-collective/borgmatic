@@ -90,11 +90,20 @@ def dump_data_sources(
 
         if dump_format == 'directory':
             dump.create_parent_directory_for_dump(dump_filename)
-            execute_command(command, shell=True)  # noqa: S604
+            execute_command(  # noqa: S604
+                command,
+                shell=True,
+                working_directory=borgmatic.config.paths.get_working_directory(config),
+            )
         else:
             dump.create_named_pipe_for_dump(dump_filename)
             processes.append(
-                execute_command(command, shell=True, run_to_completion=False),  # noqa: S604
+                execute_command(  # noqa: S604
+                    command,
+                    shell=True,
+                    run_to_completion=False,
+                    working_directory=borgmatic.config.paths.get_working_directory(config),
+                ),
             )
 
     if not dry_run:
@@ -273,6 +282,7 @@ def restore_data_source_dump(
         [extract_process] if extract_process else [],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout if extract_process else None,
+        working_directory=borgmatic.config.paths.get_working_directory(config),
     )
 
 

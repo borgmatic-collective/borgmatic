@@ -37,6 +37,7 @@ def test_dump_data_sources_runs_mongodump_for_each_database():
             ('mongodump', '--db', name, '--archive', '>', f'databases/localhost/{name}'),
             shell=True,
             run_to_completion=False,
+            working_directory=None,
         ).and_return(process).once()
 
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
@@ -116,6 +117,7 @@ def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
         ),
         shell=True,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
         '/run/borgmatic',
@@ -183,6 +185,7 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
         ),
         shell=True,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
         '/run/borgmatic',
@@ -221,6 +224,7 @@ def test_dump_data_sources_runs_mongodump_with_directory_format():
     flexmock(module).should_receive('execute_command').with_args(
         ('mongodump', '--out', 'databases/localhost/foo', '--db', 'foo'),
         shell=True,
+        working_directory=None,
     ).and_return(flexmock()).once()
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
         '/run/borgmatic',
@@ -271,6 +275,7 @@ def test_dump_data_sources_runs_mongodump_with_options():
         ),
         shell=True,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
         '/run/borgmatic',
@@ -310,6 +315,7 @@ def test_dump_data_sources_runs_mongodumpall_for_all_databases():
         ('mongodump', '--archive', '>', 'databases/localhost/all'),
         shell=True,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
         '/run/borgmatic',
@@ -378,6 +384,7 @@ def test_restore_data_source_dump_runs_mongorestore():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -420,6 +427,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_hostname_and_port():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -473,6 +481,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_username_and_password()
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -534,6 +543,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -595,6 +605,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -627,6 +638,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_options():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -667,6 +679,7 @@ def test_restore_databases_dump_runs_mongorestore_with_schemas():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -699,6 +712,7 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -756,6 +770,7 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
         processes=[],
         output_log_level=logging.DEBUG,
         input_file=None,
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -797,6 +812,7 @@ def test_dump_data_sources_uses_custom_mongodump_command():
         ),
         shell=True,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
         '/run/borgmatic',
@@ -865,6 +881,7 @@ def test_restore_data_source_dump_uses_custom_mongorestore_command():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
