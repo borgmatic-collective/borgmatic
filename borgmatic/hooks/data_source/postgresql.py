@@ -349,8 +349,8 @@ def restore_data_source_dump(
     dump_filename = dump.make_data_source_dump_filename(
         make_dump_path(borgmatic_runtime_directory),
         data_source['name'],
-        hostname=data_source.get('hostname'),
-        port=data_source.get('port'),
+        hostname=hostname,
+        port=port,
         label=data_source.get('label', data_source.get('container')),
     )
     psql_command = tuple(

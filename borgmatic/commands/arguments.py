@@ -1493,7 +1493,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     )
     restore_group.add_argument(
         '--original-label',
-        help='The label where to dump to restore came from, only necessary if you need to disambiguate dumps',
+        help='The label where the dump to restore came from, only necessary if you need to disambiguate dumps',
     )
     restore_group.add_argument(
         '--original-hostname',

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def resolve_database_option(option, data_source, connection_params=None, restore=False):
     # Special case `hostname` since it overlaps with `container`
     if option == 'hostname':
-        return _get_hostname_from_config(data_source, connection_params, restore)
+        return get_hostname_from_config(data_source, connection_params, restore)
     if connection_params and (value := connection_params.get(option)):
         return value
     if restore and f'restore_{option}' in data_source:
@@ -21,7 +21,7 @@ def resolve_database_option(option, data_source, connection_params=None, restore
     return data_source.get(option)
 
 
-def _get_hostname_from_config(data_source, connection_params=None, restore=False):
+def get_hostname_from_config(data_source, connection_params=None, restore=False):
     # connection params win, full stop
     if connection_params:
         if container := connection_params.get('container'):
@@ -37,7 +37,7 @@ def _get_hostname_from_config(data_source, connection_params=None, restore=False
     # ... and finally fall back to the normal options
     if 'container' in data_source:
         return get_ip_from_container(data_source['container'])
-    return data_source.get('hostname', '')
+    return data_source.get('hostname')
 
 
 def get_ip_from_container(container):
@@ -68,13 +68,11 @@ def get_ip_from_container(container):
             network_data = json.loads(output.strip())
         except json.JSONDecodeError as e:
             raise ValueError(f'Could not decode JSON output from {engine}') from e
-        main_ip = network_data.get('IPAddress')
-        if main_ip:
+        if main_ip := network_data.get('IPAddress'):
             return main_ip
         # No main IP found, try the networks
         for network in network_data.get('Networks', {}).values():
-            ip = network.get('IPAddress')
-            if ip:
+            if ip := network.get('IPAddress'):
                 return ip
 
     if last_error:
