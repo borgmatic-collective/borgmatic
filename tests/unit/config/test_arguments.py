@@ -209,6 +209,19 @@ def test_prepare_arguments_for_config_skips_option_with_none_value():
     ) == ((('other_option',), 'value2'),)
 
 
+def test_prepare_arguments_for_config_skips_option_with_complex_schema():
+    assert module.prepare_arguments_for_config(
+        global_arguments=flexmock(my_option='value1', other_option='value2'),
+        schema={
+            'type': 'object',
+            'properties': {
+                'my_option': {'type': 'object', 'properties': {'sub_option': {'type': 'string'}}},
+                'other_option': {'type': 'string'},
+            },
+        },
+    ) == ((('other_option',), 'value2'),)
+
+
 def test_prepare_arguments_for_config_skips_option_missing_from_schema():
     assert module.prepare_arguments_for_config(
         global_arguments=flexmock(**{'my_option.sub_option': 'value1', 'other_option': 'value2'}),
