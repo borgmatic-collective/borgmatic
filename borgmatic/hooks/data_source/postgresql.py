@@ -150,12 +150,13 @@ def dump_data_sources(
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
+    dumps_metadata = []
 
     logger.info(f'Dumping PostgreSQL databases{dry_run_label}')
+    dump_path = make_dump_path(borgmatic_runtime_directory)
 
     for database in databases:
         environment = make_environment(database, config)
-        dump_path = make_dump_path(borgmatic_runtime_directory)
         dump_database_names = database_names_to_dump(database, config, environment, dry_run)
 
         if not dump_database_names:
@@ -165,6 +166,14 @@ def dump_data_sources(
             raise ValueError('Cannot find any PostgreSQL databases to dump.')
 
         for database_name in dump_database_names:
+            dumps_metadata.append(
+                borgmatic.actions.restore.Dump(
+                    'postgresql_databases',
+                    database_name,
+                    database.get('hostname'),
+                    database.get('port'),
+                )
+            )
             dump_format = database.get('format', None if database_name == 'all' else 'custom')
             compression = database.get('compression')
             default_dump_command = 'pg_dumpall' if database_name == 'all' else 'pg_dump'
@@ -178,6 +187,7 @@ def dump_data_sources(
                 database.get('hostname'),
                 database.get('port'),
             )
+
             if os.path.exists(dump_filename):
                 logger.warning(
                     f'Skipping duplicate dump of PostgreSQL database "{database_name}" to {dump_filename}',
@@ -245,6 +255,11 @@ def dump_data_sources(
                         run_to_completion=False,
                     ),
                 )
+
+        if not dry_run:
+            dump.write_data_source_dumps_metadata(
+                borgmatic_runtime_directory, 'postgresql_databases', dumps_metadata
+            )
 
     if not dry_run:
         patterns.append(

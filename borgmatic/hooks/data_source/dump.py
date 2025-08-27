@@ -1,7 +1,10 @@
 import fnmatch
+import json
 import logging
 import os
 import shutil
+
+import borgmatic.actions.restore
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +34,30 @@ def make_data_source_dump_filename(dump_path, name, hostname=None, port=None):
         (hostname or 'localhost') + ('' if port is None else f':{port}'),
         name,
     )
+
+
+def write_data_source_dumps_metadata(borgmatic_runtime_directory, hook_name, dumps_metadata):
+    '''
+    Given the borgmatic runtime directory, a data source hook name, and a sequence of
+    borgmatic.actions.restore.Dump instances of dump metadata, write a metadata file describing all
+    of those dumps. This metadata is being dumped so that it's available upon restore, e.g. to
+    support the user selecting which data source(s) should be restored.
+    '''
+    # TODO: Handle file errors?
+    with open(
+        os.path.join(borgmatic_runtime_directory, hook_name, 'dumps.json'), 'w'
+    ) as metadata_file:
+        json.dump([dump._asdict() for dump in dumps_metadata], metadata_file)
+
+
+def parse_data_source_dumps_metadata(dumps_json):
+    '''
+    Given a dumps metadata JSON string as extracted from an archive, parse it into a tuple of
+    borgmatic.actions.restore.Dump instances and return them.
+    '''
+    # TODO: Deal with JSON parse errors.
+    # TODO: Deal with wrong JSON data for the Dump() constructor.
+    return tuple(borgmatic.actions.restore.Dump(**dump) for dump in json.loads(dumps_json))
 
 
 def create_parent_directory_for_dump(dump_path):
