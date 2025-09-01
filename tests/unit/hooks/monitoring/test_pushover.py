@@ -17,7 +17,7 @@ def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -76,7 +76,7 @@ def test_ping_monitor_start_state_backup_default_message_successfully_send_to_pu
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -113,7 +113,7 @@ def test_ping_monitor_start_state_backup_custom_message_successfully_send_to_pus
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -149,7 +149,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -188,7 +188,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -227,7 +227,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -324,7 +324,7 @@ def test_ping_monitor_start_state_backup_based_on_documentation_advanced_example
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -391,7 +391,7 @@ def test_ping_monitor_fail_state_backup_based_on_documentation_advanced_example_
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -463,7 +463,7 @@ def test_ping_monitor_finish_state_backup_based_on_documentation_advanced_exampl
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -553,7 +553,7 @@ def test_ping_monitor_push_post_error_bails():
     ).once()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',

@@ -47,6 +47,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             f'{push_url}?{query}',
             verify=hook_config.get('verify_tls', True),
             timeout=TIMEOUT_SECONDS,
+            headers={'User-Agent': 'borgmatic'},
         )
         if not response.ok:
             response.raise_for_status()

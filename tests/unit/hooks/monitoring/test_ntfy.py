@@ -17,6 +17,7 @@ custom_message_config = {
 }
 
 custom_message_headers = {
+    'User-Agent': 'borgmatic',
     'X-Title': custom_message_config['title'],
     'X-Message': custom_message_config['message'],
     'X-Priority': custom_message_config['priority'],
@@ -26,6 +27,7 @@ custom_message_headers = {
 
 def return_default_message_headers(state=Enum):
     return {
+        'User-Agent': 'borgmatic',
         'X-Title': f'A borgmatic {state.name} event happened',
         'X-Message': f'A borgmatic {state.name} event happened',
         'X-Priority': 'default',

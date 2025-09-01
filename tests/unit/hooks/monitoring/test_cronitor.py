@@ -8,6 +8,7 @@ def test_ping_monitor_hits_ping_url_for_start_state():
     flexmock(module.requests).should_receive('get').with_args(
         'https://example.com/run',
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -25,6 +26,7 @@ def test_ping_monitor_hits_ping_url_for_finish_state():
     flexmock(module.requests).should_receive('get').with_args(
         'https://example.com/complete',
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -42,6 +44,7 @@ def test_ping_monitor_hits_ping_url_for_fail_state():
     flexmock(module.requests).should_receive('get').with_args(
         'https://example.com/fail',
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -94,6 +97,7 @@ def test_ping_monitor_with_other_error_logs_warning():
     flexmock(module.requests).should_receive('get').with_args(
         'https://example.com/run',
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(response)
     flexmock(module.logger).should_receive('warning').once()
 

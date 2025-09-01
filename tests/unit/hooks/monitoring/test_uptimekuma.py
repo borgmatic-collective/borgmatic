@@ -13,6 +13,7 @@ def test_ping_monitor_hits_default_uptimekuma_on_fail():
         f'{DEFAULT_PUSH_URL}?status=down&msg=fail',
         verify=True,
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -31,6 +32,7 @@ def test_ping_monitor_hits_custom_uptimekuma_on_fail():
         f'{CUSTOM_PUSH_URL}?status=down&msg=fail',
         verify=True,
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -49,6 +51,7 @@ def test_ping_monitor_custom_uptimekuma_on_start():
         f'{CUSTOM_PUSH_URL}?status=up&msg=start',
         verify=True,
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -67,6 +70,7 @@ def test_ping_monitor_custom_uptimekuma_on_finish():
         f'{CUSTOM_PUSH_URL}?status=up&msg=finish',
         verify=True,
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -127,6 +131,7 @@ def test_ping_monitor_with_connection_error_logs_warning():
         f'{CUSTOM_PUSH_URL}?status=down&msg=fail',
         verify=True,
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_raise(module.requests.exceptions.ConnectionError)
     flexmock(module.logger).should_receive('warning').once()
 
@@ -150,6 +155,7 @@ def test_ping_monitor_with_other_error_logs_warning():
         f'{CUSTOM_PUSH_URL}?status=down&msg=fail',
         verify=True,
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(response)
     flexmock(module.logger).should_receive('warning').once()
 
@@ -183,6 +189,7 @@ def test_ping_monitor_skips_ssl_verification_when_verify_tls_false():
         f'{CUSTOM_PUSH_URL}?status=down&msg=fail',
         verify=False,
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -201,6 +208,7 @@ def test_ping_monitor_executes_ssl_verification_when_verify_tls_true():
         f'{CUSTOM_PUSH_URL}?status=down&msg=fail',
         verify=True,
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(

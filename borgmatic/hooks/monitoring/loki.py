@@ -65,16 +65,17 @@ class Loki_log_buffer:
             # Skip as there are not logs to send yet
             return
 
-        request_body = self.to_request()
         self.root['streams'][0]['values'] = []
-        request_header = {'Content-Type': 'application/json'}
 
         try:
             result = requests.post(
                 self.url,
-                headers=request_header,
-                data=request_body,
+                data=self.to_request(),
                 timeout=TIMEOUT_SECONDS,
+                headers={
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'borgmatic',
+                },
             )
             result.raise_for_status()
         except requests.RequestException:

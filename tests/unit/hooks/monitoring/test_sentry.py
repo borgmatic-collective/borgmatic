@@ -31,6 +31,7 @@ def test_ping_monitor_constructs_cron_url_and_pings_it(state, configured_states,
     flexmock(module.requests).should_receive('post').with_args(
         f'https://o294220.ingest.us.sentry.io/api/203069/cron/test/5f80ec/?status={expected_status}',
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -137,6 +138,7 @@ def test_ping_monitor_with_network_error_does_not_raise():
     flexmock(module.requests).should_receive('post').with_args(
         'https://o294220.ingest.us.sentry.io/api/203069/cron/test/5f80ec/?status=in_progress',
         timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(response).once()
 
     module.ping_monitor(

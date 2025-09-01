@@ -101,7 +101,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     host = hook_config.get('host')
     key = hook_config.get('key')
     value = state_config.get('value')
-    headers = {'Content-Type': 'application/json-rpc'}
+    headers = {'Content-Type': 'application/json-rpc', 'User-Agent': 'borgmatic'}
 
     logger.info(f'Pinging Zabbix{dry_run_label}')
     logger.debug(f'Using Zabbix URL: {server}')
