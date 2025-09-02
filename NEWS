@@ -4,7 +4,7 @@
    use.
  * #1126: Create LVM snapshots as read-write to avoid an error when snapshotting ext4 filesystems
    with orphaned files that need recovery.
- * #1139: When making HTTP requests in monitoring hooks, set "borgmatic" as the user agent.
+ * #1139: Set "borgmatic" as the user agent when connecting to monitoring services.
  * When running tests, use Ruff for faster and more comprehensive code linting and formatting,
    replacing Flake8, Black, isort, etc.
  * Switch from pipx to uv for installing development tools, and added tox-uv for speeding up test
