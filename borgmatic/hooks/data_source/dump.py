@@ -43,21 +43,26 @@ def write_data_source_dumps_metadata(borgmatic_runtime_directory, hook_name, dum
     of those dumps. This metadata is being dumped so that it's available upon restore, e.g. to
     support the user selecting which data source(s) should be restored.
     '''
-    # TODO: Handle file errors?
-    with open(
-        os.path.join(borgmatic_runtime_directory, hook_name, 'dumps.json'), 'w'
-    ) as metadata_file:
-        json.dump([dump._asdict() for dump in dumps_metadata], metadata_file, sort_keys=True)
+    dumps_metadata_path = os.path.join(borgmatic_runtime_directory, hook_name, 'dumps.json')
+
+    try:
+        with open( dumps_metadata_path, 'w') as metadata_file:
+            json.dump([dump._asdict() for dump in dumps_metadata], metadata_file, sort_keys=True)
+    except OSError as error:
+        raise ValueError(f'Error writing to dumps metadata at {dumps_metadata_path}: {error}')
 
 
-def parse_data_source_dumps_metadata(dumps_json):
+def parse_data_source_dumps_metadata(dumps_json, dumps_metadata_path):
     '''
     Given a dumps metadata JSON string as extracted from an archive, parse it into a tuple of
     borgmatic.actions.restore.Dump instances and return them.
     '''
-    # TODO: Deal with JSON parse errors.
-    # TODO: Deal with wrong JSON data for the Dump() constructor.
-    return tuple(borgmatic.actions.restore.Dump(**dump) for dump in json.loads(dumps_json))
+    try:
+        return tuple(borgmatic.actions.restore.Dump(**dump) for dump in json.loads(dumps_json))
+    except (json.JSONDecodeError, TypeError) as error:
+        raise ValueError(
+            f'Cannot read archive data source dumps metadata at {dumps_metadata_path} due to invalid JSON: {error}',
+        )
 
 
 def create_parent_directory_for_dump(dump_path):

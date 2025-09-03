@@ -255,7 +255,7 @@ def collect_dumps_from_archive(
     dumps_from_archive = set()
 
     # There is (at most) one dump metadata file per data source hook. Load each.
-    for dump_metadata_path in borgmatic.borg.list.capture_archive_listing(
+    for dumps_metadata_path in borgmatic.borg.list.capture_archive_listing(
         repository,
         archive,
         config,
@@ -285,7 +285,7 @@ def collect_dumps_from_archive(
                         global_arguments.dry_run,
                         repository,
                         archive,
-                        [dump_metadata_path],
+                        [dumps_metadata_path],
                         config,
                         local_borg_version,
                         global_arguments,
@@ -294,7 +294,8 @@ def collect_dumps_from_archive(
                         extract_to_stdout=True,
                     )
                     .stdout.read()
-                    .decode()
+                    .decode(),
+                    dumps_metadata_path,
                 )
             )
         )
