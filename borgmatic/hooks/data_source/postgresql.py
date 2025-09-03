@@ -256,12 +256,10 @@ def dump_data_sources(
                     ),
                 )
 
-        if not dry_run:
-            dump.write_data_source_dumps_metadata(
-                borgmatic_runtime_directory, 'postgresql_databases', dumps_metadata
-            )
-
     if not dry_run:
+        dump.write_data_source_dumps_metadata(
+            borgmatic_runtime_directory, 'postgresql_databases', dumps_metadata
+        )
         patterns.append(
             borgmatic.borg.pattern.Pattern(
                 os.path.join(borgmatic_runtime_directory, 'postgresql_databases'),

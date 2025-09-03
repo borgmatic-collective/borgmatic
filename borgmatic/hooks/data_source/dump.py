@@ -47,7 +47,7 @@ def write_data_source_dumps_metadata(borgmatic_runtime_directory, hook_name, dum
     with open(
         os.path.join(borgmatic_runtime_directory, hook_name, 'dumps.json'), 'w'
     ) as metadata_file:
-        json.dump([dump._asdict() for dump in dumps_metadata], metadata_file)
+        json.dump([dump._asdict() for dump in dumps_metadata], metadata_file, sort_keys=True)
 
 
 def parse_data_source_dumps_metadata(dumps_json):
