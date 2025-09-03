@@ -82,9 +82,12 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         try:
             response = requests.post(
                 'https://api.pushover.net/1/messages.json',
-                headers={'Content-type': 'application/x-www-form-urlencoded'},
                 data=data,
                 timeout=TIMEOUT_SECONDS,
+                headers={
+                    'Content-type': 'application/x-www-form-urlencoded',
+                    'User-Agent': 'borgmatic',
+                },
             )
             if not response.ok:
                 response.raise_for_status()

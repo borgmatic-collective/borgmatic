@@ -49,6 +49,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         logger.debug(f'Using Ntfy ping URL {base_url}/{topic}')
 
         headers = {
+            'User-Agent': 'borgmatic',
             'X-Title': state_config.get('title'),
             'X-Message': state_config.get('message'),
             'X-Priority': state_config.get('priority'),
@@ -94,9 +95,9 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             try:
                 response = requests.post(
                     f'{base_url}/{topic}',
-                    headers=headers,
                     auth=auth,
                     timeout=TIMEOUT_SECONDS,
+                    headers=headers,
                 )
                 if not response.ok:
                     response.raise_for_status()

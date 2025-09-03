@@ -56,11 +56,13 @@ DATA_USER_LOGOUT = {
 
 AUTH_HEADERS_LOGIN = {
     'Content-Type': 'application/json-rpc',
+    'User-Agent': 'borgmatic',
 }
 
 AUTH_HEADERS = {
     'Content-Type': 'application/json-rpc',
     'Authorization': f'Bearer {API_KEY}',
+    'User-Agent': 'borgmatic',
 }
 
 
