@@ -49,11 +49,18 @@ def dump_data_sources(
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
+    dumps_metadata = []
 
     logger.info(f'Dumping SQLite databases{dry_run_label}')
 
     for database in databases:
         database_path = database['path']
+        dumps_metadata.append(
+            borgmatic.actions.restore.Dump(
+                'sqlite_databases',
+                database['name'],
+            )
+        )
 
         if database['name'] == 'all':
             logger.warning('The "all" database name has no meaning for SQLite databases')
@@ -95,6 +102,9 @@ def dump_data_sources(
         )
 
     if not dry_run:
+        dump.write_data_source_dumps_metadata(
+            borgmatic_runtime_directory, 'sqlite_databases', dumps_metadata
+        )
         patterns.append(
             borgmatic.borg.pattern.Pattern(
                 os.path.join(borgmatic_runtime_directory, 'sqlite_databases'),
