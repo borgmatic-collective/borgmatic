@@ -273,6 +273,14 @@ def test_dump_data_sources_runs_pg_dump_for_each_database():
             environment={'PGSSLMODE': 'disable'},
             run_to_completion=False,
         ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'bar'),
+        ]
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -336,6 +344,14 @@ def test_dump_data_sources_with_duplicate_dump_skips_pg_dump():
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'bar'),
+        ]
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -366,6 +382,7 @@ def test_dump_data_sources_with_dry_run_skips_pg_dump():
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').never()
 
     assert (
         module.dump_data_sources(
@@ -415,6 +432,13 @@ def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
         environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo', 'database.example.org', 5433),
+        ]
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -461,6 +485,13 @@ def test_dump_data_sources_runs_pg_dump_with_username_and_password():
         environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ]
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -507,6 +538,13 @@ def test_dump_data_sources_with_username_injection_attack_gets_escaped():
         environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ]
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -548,6 +586,13 @@ def test_dump_data_sources_runs_pg_dump_with_directory_format():
         shell=True,
         environment={'PGSSLMODE': 'disable'},
     ).and_return(flexmock()).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ]
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -595,6 +640,13 @@ def test_dump_data_sources_runs_pg_dump_with_string_compression():
         environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(processes[0]).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ]
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -642,6 +694,13 @@ def test_dump_data_sources_runs_pg_dump_with_integer_compression():
         environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(processes[0]).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ]
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -688,6 +747,13 @@ def test_dump_data_sources_runs_pg_dump_with_options():
         environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ]
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -720,6 +786,13 @@ def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
         environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'all'),
+        ]
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -764,6 +837,13 @@ def test_dump_data_sources_runs_non_default_pg_dump():
         environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ]
+    ).once()
 
     assert module.dump_data_sources(
         databases,

@@ -4,7 +4,7 @@
    use.
  * #1126: Create LVM snapshots as read-write to avoid an error when snapshotting ext4 filesystems
    with orphaned files that need recovery.
- * #1136: For all database hooks, record metadata on the dumps contained within an archive.
+ * #1136: For all database hooks, record metadata about the dumps contained within an archive.
  * #1139: Set "borgmatic" as the user agent when connecting to monitoring services.
  * When running tests, use Ruff for faster and more comprehensive code linting and formatting,
    replacing Flake8, Black, isort, etc.

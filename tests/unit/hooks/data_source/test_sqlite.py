@@ -26,6 +26,13 @@ def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'sqlite_databases',
+        [
+            module.borgmatic.actions.restore.Dump('sqlite_databases', 'database'),
+        ]
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -56,6 +63,14 @@ def test_dump_data_sources_dumps_each_database():
     flexmock(module).should_receive('execute_command').and_return(processes[0]).and_return(
         processes[1],
     )
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'sqlite_databases',
+        [
+            module.borgmatic.actions.restore.Dump('sqlite_databases', 'database1'),
+            module.borgmatic.actions.restore.Dump('sqlite_databases', 'database2'),
+        ]
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -93,6 +108,13 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
         shell=True,
         run_to_completion=False,
     ).and_return(processes[0])
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'sqlite_databases',
+        [
+            module.borgmatic.actions.restore.Dump('sqlite_databases', 'database1'),
+        ]
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -135,6 +157,13 @@ def test_dump_data_sources_runs_non_default_sqlite_with_path_injection_attack_ge
         shell=True,
         run_to_completion=False,
     ).and_return(processes[0])
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'sqlite_databases',
+        [
+            module.borgmatic.actions.restore.Dump('sqlite_databases', 'database1'),
+        ]
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -163,6 +192,13 @@ def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
     flexmock(module).should_receive('execute_command').and_return(processes[0])
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'sqlite_databases',
+        [
+            module.borgmatic.actions.restore.Dump('sqlite_databases', 'database1'),
+        ]
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -193,6 +229,13 @@ def test_dump_data_sources_with_name_all_warns_and_dumps_all_databases():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
     flexmock(module).should_receive('execute_command').and_return(processes[0])
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'sqlite_databases',
+        [
+            module.borgmatic.actions.restore.Dump('sqlite_databases', 'all'),
+        ]
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -217,6 +260,7 @@ def test_dump_data_sources_does_not_dump_if_dry_run():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').never()
 
     assert (
         module.dump_data_sources(

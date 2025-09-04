@@ -61,7 +61,7 @@ def dump_data_sources(
             borgmatic.actions.restore.Dump(
                 'mongodb_databases',
                 name,
-                database.get('hostname'),
+                database.get('hostname', 'localhost'),
                 database.get('port'),
             )
         )

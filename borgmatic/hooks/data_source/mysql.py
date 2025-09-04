@@ -225,14 +225,13 @@ def dump_data_sources(
 
             raise ValueError('Cannot find any MySQL databases to dump.')
 
-
         if database['name'] == 'all' and database.get('format'):
             for database_name in dump_database_names:
                 dumps_metadata.append(
                     borgmatic.actions.restore.Dump(
                         'mysql_databases',
                         database_name,
-                        database.get('hostname'),
+                        database.get('hostname', 'localhost'),
                         database.get('port'),
                     )
                 )
@@ -256,7 +255,7 @@ def dump_data_sources(
                 borgmatic.actions.restore.Dump(
                     'mysql_databases',
                     database['name'],
-                    database.get('hostname'),
+                    database.get('hostname', 'localhost'),
                     database.get('port'),
                 )
             )
