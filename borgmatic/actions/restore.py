@@ -311,7 +311,7 @@ def collect_dumps_from_archive(
 
     # No dumps metadata files were found, so for backwards compatibility, fall back to parsing the
     # paths of dumps found in the archive to get their respective dump metadata.
-    logger.debug(f'Collecting database dumps from archive data source dump paths')
+    logger.debug(f'Collecting database dumps from archive data source dump paths (fallback)')
     borgmatic_source_directory = str(
         pathlib.Path(borgmatic.config.paths.get_borgmatic_source_directory(config)),
     )
