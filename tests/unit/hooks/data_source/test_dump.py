@@ -1,3 +1,6 @@
+import io
+import sys
+
 import pytest
 from flexmock import flexmock
 
@@ -29,6 +32,66 @@ def test_make_data_source_dump_filename_without_hostname_defaults_to_localhost()
 def test_make_data_source_dump_filename_with_invalid_name_raises():
     with pytest.raises(ValueError):
         module.make_data_source_dump_filename('databases', 'invalid/name')
+
+
+def test_write_data_source_dumps_metadata_writes_json_to_file():
+    dumps_metadata = [
+        module.borgmatic.actions.restore.Dump('databases', 'foo'),
+        module.borgmatic.actions.restore.Dump('databases', 'bar'),
+    ]
+    dumps_stream = io.StringIO('password')
+    dumps_stream.name = '/run/borgmatic/databases/dumps.json'
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args(dumps_stream.name, 'w', encoding='utf-8').and_return(
+        dumps_stream
+    )
+    flexmock(dumps_stream).should_receive('close')  # Prevent close() so getvalue() below works.
+
+    module.write_data_source_dumps_metadata('/run/borgmatic', 'databases', dumps_metadata)
+
+    assert (
+        dumps_stream.getvalue()
+        == '[{"data_source_name": "foo", "hook_name": "databases", "hostname": "localhost", "port": null}, {"data_source_name": "bar", "hook_name": "databases", "hostname": "localhost", "port": null}]'
+    )
+
+
+def test_write_data_source_dumps_metadata_with_operating_system_error_raises():
+    dumps_metadata = [
+        module.borgmatic.actions.restore.Dump('databases', 'foo'),
+        module.borgmatic.actions.restore.Dump('databases', 'bar'),
+    ]
+    dumps_stream = io.StringIO('password')
+    dumps_stream.name = '/run/borgmatic/databases/dumps.json'
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args(dumps_stream.name, 'w', encoding='utf-8').and_raise(
+        OSError
+    )
+
+    with pytest.raises(ValueError):
+        module.write_data_source_dumps_metadata('/run/borgmatic', 'databases', dumps_metadata)
+
+
+def test_parse_data_source_dumps_metadata_converts_json_to_dump_instances():
+    dumps_json = '[{"data_source_name": "foo", "hook_name": "databases", "hostname": "localhost", "port": null}, {"data_source_name": "bar", "hook_name": "databases", "hostname": "example.org", "port": 1234}]'
+
+    assert module.parse_data_source_dumps_metadata(
+        dumps_json, 'borgmatic/databases/dumps.json'
+    ) == (
+        module.borgmatic.actions.restore.Dump('databases', 'foo'),
+        module.borgmatic.actions.restore.Dump('databases', 'bar', 'example.org', 1234),
+    )
+
+
+def test_parse_data_source_dumps_metadata_with_invalid_json_raises():
+    with pytest.raises(ValueError):
+        module.parse_data_source_dumps_metadata('[{', 'borgmatic/databases/dumps.json')
+
+
+def test_parse_data_source_dumps_metadata_with_unknown_keys_raises():
+    dumps_json = '[{"data_source_name": "foo", "hook_name": "databases", "wtf": "is this"}]'
+
+    with pytest.raises(ValueError):
+        module.parse_data_source_dumps_metadata(dumps_json, 'borgmatic/databases/dumps.json')
 
 
 def test_create_parent_directory_for_dump_does_not_raise():

@@ -48,7 +48,7 @@ def write_data_source_dumps_metadata(borgmatic_runtime_directory, hook_name, dum
     dumps_metadata_path = os.path.join(borgmatic_runtime_directory, hook_name, 'dumps.json')
 
     try:
-        with open(dumps_metadata_path, 'w') as metadata_file:
+        with open(dumps_metadata_path, 'w', encoding='utf-8') as metadata_file:
             json.dump([dump._asdict() for dump in dumps_metadata], metadata_file, sort_keys=True)
     except OSError as error:
         raise ValueError(f'Error writing to dumps metadata at {dumps_metadata_path}: {error}')
@@ -56,8 +56,8 @@ def write_data_source_dumps_metadata(borgmatic_runtime_directory, hook_name, dum
 
 def parse_data_source_dumps_metadata(dumps_json, dumps_metadata_path):
     '''
-    Given a dumps metadata JSON string as extracted from an archive, parse it into a tuple of
-    borgmatic.actions.restore.Dump instances and return them.
+    Given a dumps metadata JSON string as extracted from an archive and its path within the archive,
+    parse it into a tuple of borgmatic.actions.restore.Dump instances and return them.
 
     Raise ValueError if parsing the JSON results in a JSON decode error or the data does not have
     the expected keys.
