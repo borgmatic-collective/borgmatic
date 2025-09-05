@@ -279,7 +279,7 @@ def test_dump_data_sources_runs_pg_dump_for_each_database():
         [
             module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
             module.borgmatic.actions.restore.Dump('postgresql_databases', 'bar'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -350,7 +350,7 @@ def test_dump_data_sources_with_duplicate_dump_skips_pg_dump():
         [
             module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
             module.borgmatic.actions.restore.Dump('postgresql_databases', 'bar'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -436,8 +436,10 @@ def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
         '/run/borgmatic',
         'postgresql_databases',
         [
-            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo', 'database.example.org', 5433),
-        ]
+            module.borgmatic.actions.restore.Dump(
+                'postgresql_databases', 'foo', 'database.example.org', 5433
+            ),
+        ],
     ).once()
 
     assert module.dump_data_sources(
@@ -490,7 +492,7 @@ def test_dump_data_sources_runs_pg_dump_with_username_and_password():
         'postgresql_databases',
         [
             module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert module.dump_data_sources(
@@ -543,7 +545,7 @@ def test_dump_data_sources_with_username_injection_attack_gets_escaped():
         'postgresql_databases',
         [
             module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert module.dump_data_sources(
@@ -591,7 +593,7 @@ def test_dump_data_sources_runs_pg_dump_with_directory_format():
         'postgresql_databases',
         [
             module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -645,7 +647,7 @@ def test_dump_data_sources_runs_pg_dump_with_string_compression():
         'postgresql_databases',
         [
             module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -699,7 +701,7 @@ def test_dump_data_sources_runs_pg_dump_with_integer_compression():
         'postgresql_databases',
         [
             module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -752,7 +754,7 @@ def test_dump_data_sources_runs_pg_dump_with_options():
         'postgresql_databases',
         [
             module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert module.dump_data_sources(
@@ -791,7 +793,7 @@ def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
         'postgresql_databases',
         [
             module.borgmatic.actions.restore.Dump('postgresql_databases', 'all'),
-        ]
+        ],
     ).once()
 
     assert module.dump_data_sources(
@@ -842,7 +844,7 @@ def test_dump_data_sources_runs_non_default_pg_dump():
         'postgresql_databases',
         [
             module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert module.dump_data_sources(

@@ -45,7 +45,7 @@ def test_dump_data_sources_runs_mongodump_for_each_database():
         [
             module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
             module.borgmatic.actions.restore.Dump('mongodb_databases', 'bar'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -113,8 +113,10 @@ def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
         '/run/borgmatic',
         'mongodb_databases',
         [
-            module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo', 'database.example.org', 27018),
-        ]
+            module.borgmatic.actions.restore.Dump(
+                'mongodb_databases', 'foo', 'database.example.org', 27018
+            ),
+        ],
     ).once()
 
     assert module.dump_data_sources(
@@ -172,7 +174,7 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
         'mongodb_databases',
         [
             module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert module.dump_data_sources(
@@ -203,7 +205,7 @@ def test_dump_data_sources_runs_mongodump_with_directory_format():
         'mongodb_databases',
         [
             module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -246,7 +248,7 @@ def test_dump_data_sources_runs_mongodump_with_options():
         'mongodb_databases',
         [
             module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert module.dump_data_sources(
@@ -278,7 +280,7 @@ def test_dump_data_sources_runs_mongodumpall_for_all_databases():
         'mongodb_databases',
         [
             module.borgmatic.actions.restore.Dump('mongodb_databases', 'all'),
-        ]
+        ],
     ).once()
 
     assert module.dump_data_sources(
@@ -758,7 +760,7 @@ def test_dump_data_sources_uses_custom_mongodump_command():
         'mongodb_databases',
         [
             module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert module.dump_data_sources(

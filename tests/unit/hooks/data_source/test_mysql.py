@@ -238,7 +238,7 @@ def test_dump_data_sources_dumps_each_database():
         [
             module.borgmatic.actions.restore.Dump('mysql_databases', 'foo'),
             module.borgmatic.actions.restore.Dump('mysql_databases', 'bar'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -287,7 +287,7 @@ def test_dump_data_sources_dumps_with_password():
         'mysql_databases',
         [
             module.borgmatic.actions.restore.Dump('mysql_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert module.dump_data_sources(
@@ -338,7 +338,7 @@ def test_dump_data_sources_dumps_with_environment_password_transport_passes_pass
         'mysql_databases',
         [
             module.borgmatic.actions.restore.Dump('mysql_databases', 'foo'),
-        ]
+        ],
     ).once()
 
     assert module.dump_data_sources(
@@ -377,7 +377,7 @@ def test_dump_data_sources_dumps_all_databases_at_once():
         'mysql_databases',
         [
             module.borgmatic.actions.restore.Dump('mysql_databases', 'all'),
-        ]
+        ],
     ).once()
 
     assert module.dump_data_sources(
@@ -419,7 +419,7 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
         [
             module.borgmatic.actions.restore.Dump('mysql_databases', 'foo'),
             module.borgmatic.actions.restore.Dump('mysql_databases', 'bar'),
-        ]
+        ],
     ).once()
 
     assert (

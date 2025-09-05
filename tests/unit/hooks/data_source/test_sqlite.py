@@ -31,7 +31,7 @@ def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
         'sqlite_databases',
         [
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'database'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -69,7 +69,7 @@ def test_dump_data_sources_dumps_each_database():
         [
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'database1'),
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'database2'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -113,7 +113,7 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
         'sqlite_databases',
         [
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'database1'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -162,7 +162,7 @@ def test_dump_data_sources_runs_non_default_sqlite_with_path_injection_attack_ge
         'sqlite_databases',
         [
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'database1'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -197,7 +197,7 @@ def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
         'sqlite_databases',
         [
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'database1'),
-        ]
+        ],
     ).once()
 
     assert (
@@ -234,7 +234,7 @@ def test_dump_data_sources_with_name_all_warns_and_dumps_all_databases():
         'sqlite_databases',
         [
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'all'),
-        ]
+        ],
     ).once()
 
     assert (
