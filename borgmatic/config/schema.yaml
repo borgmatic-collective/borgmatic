@@ -1340,7 +1340,7 @@ properties:
                         Port to connect to. Defaults to 8086.
                     example: 8086
                 organization_id:
-                    type: number
+                    type: string
                     description: |
                         The ID of the organization. 
                         If provided, do not use organization_name.
@@ -1355,7 +1355,7 @@ properties:
                         The name of the bucket to backup. 
                         If provided, do not use bucket_id.
                 bucket_id:
-                    type: number
+                    type: string
                     description: |
                         The ID of the bucket to backup. 
                         If provided, do not use bucket_name.

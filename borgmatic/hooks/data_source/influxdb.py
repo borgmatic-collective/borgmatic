@@ -52,8 +52,11 @@ def dump_data_sources(
     logger.info(f'Dumping InfluxDB databases{dry_run_label}')
 
     processes = []
+
     for database in databases:
-        name = database['name']
+        name = 'all'
+        # name = database['name']
+
         dump_filename = dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
             name,
@@ -68,6 +71,10 @@ def dump_data_sources(
         command = build_dump_command(database, dump_filename)
         if dry_run:
             continue
+
+        logger.debug(
+            f'Command: {command}',
+        )
 
         dump.create_named_pipe_for_dump(dump_filename)
         execute_command(command, run_to_completion=False)
@@ -139,6 +146,8 @@ def build_dump_command(database, dump_filename):
             if 'bucket_name' in database
             else ()
         )
+        + (dump_filename,)
+
     )
 
 
