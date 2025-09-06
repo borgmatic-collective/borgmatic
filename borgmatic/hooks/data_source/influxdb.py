@@ -89,13 +89,13 @@ def build_dump_command(database, dump_filename):
     '''
     host = database.get('hostname')
     port = database.get('port') or get_default_port(None, None)  # Use default port if not specified
-    
+
     if host:
         # Add protocol prefix based on tls setting
         protocol = "https://" if database.get('tls', True) else "http://"
         # Format as protocol://hostname:port
         host = f"{protocol}{host}:{port}"
-    
+
     token = database.get('token')
     skip_verify = database.get('skip_verify')
     http_debug = database.get('http_debug')
@@ -108,13 +108,37 @@ def build_dump_command(database, dump_filename):
         + (('--skip-verify',) if skip_verify else ())
         + (('--http-debug',) if http_debug else ())
         + (('--host', shlex.quote(str(host))) if host else ())
-        + (('--configs-path', shlex.quote(str(database['configurations_path']))) if 'configurations_path' in database else ())
-        + (('--active-config', shlex.quote(str(database['active_configuration']))) if 'active_configuration' in database else ())
+        + (
+            ('--configs-path', shlex.quote(str(database['configurations_path'])))
+            if 'configurations_path' in database
+            else ()
+        )
+        + (
+            ('--active-config', shlex.quote(str(database['active_configuration'])))
+            if 'active_configuration' in database
+            else ()
+        )
         + (('--token', shlex.quote(str(token))) if token else ())
-        + (('--org-id', shlex.quote(str(database['organization_id']))) if 'organization_id' in database else ())
-        + (('--org', shlex.quote(str(database['organization_name']))) if 'organization_name' in database else ())
-        + (('--bucket-id', shlex.quote(str(database['bucket_id']))) if 'bucket_id' in database else ())
-        + (('--bucket', shlex.quote(str(database['bucket_name']))) if 'bucket_name' in database else ())
+        + (
+            ('--org-id', shlex.quote(str(database['organization_id'])))
+            if 'organization_id' in database
+            else ()
+        )
+        + (
+            ('--org', shlex.quote(str(database['organization_name'])))
+            if 'organization_name' in database
+            else ()
+        )
+        + (
+            ('--bucket-id', shlex.quote(str(database['bucket_id'])))
+            if 'bucket_id' in database
+            else ()
+        )
+        + (
+            ('--bucket', shlex.quote(str(database['bucket_name'])))
+            if 'bucket_name' in database
+            else ()
+        )
     )
 
 
@@ -126,9 +150,7 @@ def remove_data_source_dumps(
     borgmatic_runtime_directory to construct the destination path and the log prefix in any log
     entries. If this is a dry run, then don't actually remove anything.
     '''
-    dump.remove_data_source_dumps(
-        make_dump_path(borgmatic_runtime_directory), 'InfluxDB', dry_run
-    )
+    dump.remove_data_source_dumps(make_dump_path(borgmatic_runtime_directory), 'InfluxDB', dry_run)
 
 
 def make_data_source_dump_patterns(
@@ -169,10 +191,11 @@ def restore_data_source_dump(
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
     dump_filename = dump.make_data_source_dump_filename(
         make_dump_path(borgmatic_runtime_directory),
+        data_source['name'],
         data_source.get('hostname'),
         data_source.get('port'),
     )
-    
+
     restore_command = build_restore_command(
         extract_process, data_source, dump_filename, connection_params
     )
@@ -196,7 +219,7 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     Return the restore command.
     '''
     hostname = connection_params['hostname'] or database.get('hostname')
-    port = connection_params['port'] or database.get('port') 
+    port = connection_params['port'] or database.get('port')
     # Add protocol prefix based on tls setting
     protocol = "https://" if database.get('tls', True) else "http://"
     # Format as protocol://hostname:port
