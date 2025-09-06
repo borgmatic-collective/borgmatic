@@ -92,9 +92,9 @@ def build_dump_command(database, dump_filename):
 
     if host:
         # Add protocol prefix based on tls setting
-        protocol = "https://" if database.get('tls', True) else "http://"
+        protocol = 'https://' if database.get('tls', True) else 'http://'
         # Format as protocol://hostname:port
-        host = f"{protocol}{host}:{port}"
+        host = f'{protocol}{host}:{port}'
 
     token = database.get('token')
     skip_verify = database.get('skip_verify')
@@ -221,9 +221,9 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     hostname = connection_params['hostname'] or database.get('hostname')
     port = connection_params['port'] or database.get('port')
     # Add protocol prefix based on tls setting
-    protocol = "https://" if database.get('tls', True) else "http://"
+    protocol = 'https://' if database.get('tls', True) else 'http://'
     # Format as protocol://hostname:port
-    host = f"{protocol}{hostname}:{port}"
+    host = f'{protocol}{hostname}:{port}'
 
     token = connection_params['token'] or database.get('token')
     organization_id = database.get('organization_id')

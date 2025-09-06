@@ -1,4 +1,3 @@
-import pytest
 from flexmock import flexmock
 
 from borgmatic.hooks.data_source import influxdb as module
@@ -29,7 +28,7 @@ def test_build_dump_command_creates_correct_command():
         'skip_verify': True,
         'http_debug': False,
         'organization_id': 'ccf6258c1e195e27',
-        'bucket_name': "TestBucket",
+        'bucket_name': 'TestBucket',
     }
     dump_filename = '/tmp/dumpfile'
     command = module.build_dump_command(database, dump_filename)
