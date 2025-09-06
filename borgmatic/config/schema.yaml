@@ -1306,6 +1306,98 @@ properties:
         description: |
             Support for the "borgmatic bootstrap" action, used to extract
             borgmatic configuration files from a backup archive.
+    influxdb_databases:
+        type: array
+        items:
+            type: object
+            required:
+                - token
+            additionalProperties: false
+            properties:
+                influx_command:
+                    type: string
+                    description: |
+                        The InfluxDB executable to use. Defaults to `influx`.
+                token:
+                    type: string
+                    description: |
+                        Token to authenticate request. Required to use InfluxDB.
+                tls:
+                    type: boolean
+                    description: |
+                        Selects if using HTTP (false) or HTTPS (true).
+                        Defaults to true.
+                    example: True
+                hostname:
+                    type: string
+                    description: |
+                        InfluxDB hostname/IP to connect to. 
+                        Defaults to 127.0.0.1.
+                    example: 127.0.0.1
+                port:
+                    type: integer
+                    description: |
+                        Port to connect to. Defaults to 8086.
+                    example: 8086
+                organization_id:
+                    type: number
+                    description: |
+                        The ID of the organization. 
+                        If provided, do not use organization_name.
+                organization_name:
+                    type: string
+                    description: |
+                        The name of the organization. 
+                        If provided, do not use organization_id.
+                bucket_name:
+                    type: string
+                    description: |
+                        The name of the bucket to backup. 
+                        If provided, do not use bucket_id.
+                bucket_id:
+                    type: number
+                    description: |
+                        The ID of the bucket to backup. 
+                        If provided, do not use bucket_name.
+                configurations_path:
+                    type: string
+                    description: |
+                        Path to the influx CLI configurations.
+                active_configuration:
+                    type: string
+                    description: |
+                        Config name to use for command.
+                restore_bucket:
+                    type: string
+                    description: |
+                        New name to use for the restored bucket.
+                restore_organization:
+                    type: string
+                    description: |
+                        New name to use for the restored organization.
+                skip_verify:
+                    type: boolean
+                    description: |
+                        Skip TLS certificate chain and host name verification.
+                        Defaults to false.
+                http_debug:
+                    type: boolean
+                    description: |
+                        Enable debug logging for HTTP requests.
+                full:
+                    type: boolean
+                    description: |
+                        Fully restore and replace all data on server.
+                        Defaults to false.
+                compression:
+                    type: string
+                    description: |
+                        Compression to use for local backup files, 
+                        either 'none' or 'gzip'.
+                        Defaults to gzip.
+                    enum:
+                        - none
+                        - gzip
     postgresql_databases:
         type: array
         items:
