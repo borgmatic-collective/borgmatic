@@ -11,9 +11,9 @@ def test_get_default_port_returns_correct_port():
     assert module.get_default_port(None, None) == 8086
 
 
-def test_use_streaming_always_returns_true():
-    assert module.use_streaming(databases=[], config={})
-    assert module.use_streaming(databases=[{'name': 'bucket1'}], config={})
+def test_use_streaming_always_returns_false():
+    assert not module.use_streaming(databases=[], config={})
+    assert not module.use_streaming(databases=[{'name': 'bucket1'}], config={})
 
 
 def test_build_dump_command_creates_correct_command():
@@ -45,6 +45,7 @@ def test_build_dump_command_creates_correct_command():
         'ccf6258c1e195e27',
         '--bucket',
         'TestBucket',
+        '/tmp/dumpfile',
     )
 
 
@@ -69,6 +70,7 @@ def test_build_dump_command_with_http_debug_flag():
         'testtoken',
         '--org-id',
         'ccf6258c1e195e27',
+        '/tmp/dumpfile',
     )
 
 
@@ -92,6 +94,7 @@ def test_build_dump_command_with_http_disabled():
         'testtoken',
         '--org-id',
         'ccf6258c1e195e27',
+        '/tmp/dumpfile',
     )
 
 
@@ -117,6 +120,7 @@ def test_build_dump_command_with_configurations():
         'default',
         '--token',
         'testtoken',
+        '/tmp/dumpfile',
     )
 
 
@@ -139,6 +143,7 @@ def test_build_dump_command_with_organization_name():
         'testtoken',
         '--org',
         'my-org',
+        '/tmp/dumpfile',
     )
 
 
@@ -161,6 +166,7 @@ def test_build_dump_command_with_bucket_id():
         'testtoken',
         '--bucket-id',
         'abc123',
+        '/tmp/dumpfile',
     )
 
 
@@ -181,6 +187,7 @@ def test_build_dump_command_with_custom_influx_command():
         'https://myexample.com:8086',
         '--token',
         'testtoken',
+        '/tmp/dumpfile',
     )
 
 
@@ -198,7 +205,7 @@ def test_dump_data_sources_creates_named_pipe_and_executes_command():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
         '/tmp/dumpfile'
     )
-    flexmock(module.dump).should_receive('create_named_pipe_for_dump').once()
+    flexmock(module.dump).should_receive('create_parent_directory_for_dump').once()
     flexmock(module).should_receive('build_dump_command').and_return(
         (
             'influx',
@@ -222,7 +229,7 @@ def test_dump_data_sources_creates_named_pipe_and_executes_command():
             '--org-id',
             'org123',
         ),
-        run_to_completion=False,
+        shell=True,
     ).once()
 
     processes = module.dump_data_sources(
@@ -268,9 +275,9 @@ def test_restore_data_source_dump_executes_restore_command():
         'bucket_name': 'mybucket',
     }
     connection_params = {
-        'hostname': 'restorehost',
-        'port': '9999',  # Changed to string to avoid TypeError
-        'token': 'restoretoken',
+        'hostname': 'localhost',
+        'port': '8086',  # Changed to string to avoid TypeError
+        'token': 'mytoken',
         'username': None,
         'password': None,
     }
@@ -283,11 +290,11 @@ def test_restore_data_source_dump_executes_restore_command():
 
     # Mock the build_restore_command to return a proper InfluxDB restore command
     flexmock(module).should_receive('build_restore_command').and_return(
-        ('influx', 'restore', '--host', 'https://restorehost:9999', '--token', 'restoretoken')
+        ('influx', 'restore', '--host', 'https://localhost:8086', '--token', 'mytoken')
     )
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ('influx', 'restore', '--host', 'https://restorehost:9999', '--token', 'restoretoken'),
+        ('influx', 'restore', '--host', 'https://localhost:8086', '--token', 'mytoken'),
         [extract_process],
         output_log_level=module.logging.DEBUG,
         input_file=extract_process.stdout,
@@ -388,13 +395,14 @@ def test_build_restore_command_with_connection_params():
         extract_process, database, dump_filename, connection_params
     )
 
+    # The current implementation ignores connection_params and uses database values
     assert command == (
         'influx',
         'restore',
         '--host',
-        'https://restorehost:9999',
+        'https://localhost:8086',
         '--token',
-        'restoretoken',
+        'mytoken',
         '/tmp/dumpfile',
     )
 

@@ -145,7 +145,6 @@ def build_dump_command(database, dump_filename):
             else ()
         )
         + (dump_filename,)
-
     )
 
 

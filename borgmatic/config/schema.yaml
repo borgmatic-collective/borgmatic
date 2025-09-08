@@ -1324,7 +1324,7 @@ properties:
                     type: string
                     enum: ['directory']
                     description: |
-                        Database dump output format (required to be 'directory').
+                        Database dump format (required to be 'directory').
                     example: directory
                 influx_command:
                     type: string
