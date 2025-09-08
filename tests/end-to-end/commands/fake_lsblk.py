@@ -29,7 +29,7 @@ BUILTIN_BLOCK_DEVICES = {
             'mountpoint': None,
             'type': 'lvm',
         },
-    ]
+    ],
 }
 
 

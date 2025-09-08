@@ -41,8 +41,8 @@ def test_apply_overrides_updates_config():
     }
     schema = {
         'properties': {
-            'new': {'properties': {'mylist': {'type': 'array'}, 'nonlist': {'type': 'string'}}}
-        }
+            'new': {'properties': {'mylist': {'type': 'array'}, 'nonlist': {'type': 'string'}}},
+        },
     }
 
     module.apply_overrides(config, schema, raw_overrides)

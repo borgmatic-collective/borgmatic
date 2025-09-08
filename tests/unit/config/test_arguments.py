@@ -74,7 +74,7 @@ def test_set_values_with_final_list_index_key_adds_it_to_config():
 
 def test_type_for_option_with_option_finds_type():
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
-        lambda sub_schema: sub_schema['properties']
+        lambda sub_schema: sub_schema['properties'],
     )
 
     assert (
@@ -88,7 +88,7 @@ def test_type_for_option_with_option_finds_type():
 
 def test_type_for_option_with_nested_option_finds_type():
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
-        lambda sub_schema: sub_schema['properties']
+        lambda sub_schema: sub_schema['properties'],
     )
 
     assert (
@@ -96,7 +96,7 @@ def test_type_for_option_with_nested_option_finds_type():
             schema={
                 'type': 'object',
                 'properties': {
-                    'foo': {'type': 'object', 'properties': {'bar': {'type': 'boolean'}}}
+                    'foo': {'type': 'object', 'properties': {'bar': {'type': 'boolean'}}},
                 },
             },
             option_keys=('foo', 'bar'),
@@ -107,7 +107,7 @@ def test_type_for_option_with_nested_option_finds_type():
 
 def test_type_for_option_with_missing_nested_option_finds_nothing():
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
-        lambda sub_schema: sub_schema['properties']
+        lambda sub_schema: sub_schema['properties'],
     )
 
     assert (
@@ -115,7 +115,7 @@ def test_type_for_option_with_missing_nested_option_finds_nothing():
             schema={
                 'type': 'object',
                 'properties': {
-                    'foo': {'type': 'object', 'properties': {'other': {'type': 'integer'}}}
+                    'foo': {'type': 'object', 'properties': {'other': {'type': 'integer'}}},
                 },
             },
             option_keys=('foo', 'bar'),
@@ -126,7 +126,7 @@ def test_type_for_option_with_missing_nested_option_finds_nothing():
 
 def test_type_for_option_with_typeless_nested_option_finds_nothing():
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
-        lambda sub_schema: sub_schema['properties']
+        lambda sub_schema: sub_schema['properties'],
     )
 
     assert (
@@ -143,7 +143,7 @@ def test_type_for_option_with_typeless_nested_option_finds_nothing():
 
 def test_type_for_option_with_list_index_option_finds_type():
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
-        lambda sub_schema: sub_schema['properties']
+        lambda sub_schema: sub_schema['properties'],
     )
 
     assert (
@@ -160,7 +160,7 @@ def test_type_for_option_with_list_index_option_finds_type():
 
 def test_type_for_option_with_nested_list_index_option_finds_type():
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
-        lambda sub_schema: sub_schema['properties']
+        lambda sub_schema: sub_schema['properties'],
     )
 
     assert (
@@ -171,7 +171,7 @@ def test_type_for_option_with_nested_list_index_option_finds_type():
                     'foo': {
                         'type': 'array',
                         'items': {'type': 'object', 'properties': {'bar': {'type': 'integer'}}},
-                    }
+                    },
                 },
             },
             option_keys=('foo[0]', 'bar'),
@@ -227,7 +227,7 @@ def test_apply_arguments_to_config_does_not_raise():
         (
             (('foo', 'bar'), 'baz'),
             (('one', 'two'), 'three'),
-        )
+        ),
     )
     flexmock(module).should_receive('set_values')
 

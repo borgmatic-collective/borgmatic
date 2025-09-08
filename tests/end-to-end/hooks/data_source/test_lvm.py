@@ -45,7 +45,7 @@ def test_lvm_create_and_list():
         generate_configuration(config_path, repository_path)
 
         subprocess.check_call(
-            f'borgmatic -v 2 --config {config_path} repo-create --encryption repokey'.split(' ')
+            f'borgmatic -v 2 --config {config_path} repo-create --encryption repokey'.split(' '),
         )
 
         # Run a create action to exercise LVM snapshotting and backup.
@@ -53,7 +53,7 @@ def test_lvm_create_and_list():
 
         # List the resulting archive and assert that the snapshotted files are there.
         output = subprocess.check_output(
-            f'borgmatic --config {config_path} list --archive latest'.split(' ')
+            f'borgmatic --config {config_path} list --archive latest'.split(' '),
         ).decode(sys.stdout.encoding)
 
         assert 'e2e/mnt/lvolume/subdir/file.txt' in output
@@ -61,11 +61,13 @@ def test_lvm_create_and_list():
         # Assert that the snapshot has been deleted.
         assert not json.loads(
             subprocess.check_output(
-                'python3 /app/tests/end-to-end/commands/fake_lvs.py --report-format json --options lv_name,lv_path --select'.split(
-                    ' '
-                )
-                + ['lv_attr =~ ^s']
-            )
+                [
+                    *'python3 /app/tests/end-to-end/commands/fake_lvs.py --report-format json --options lv_name,lv_path --select'.split(
+                        ' ',
+                    ),
+                    'lv_attr =~ ^s',
+                ],
+            ),
         )['report'][0]['lv']
     finally:
         shutil.rmtree(temporary_directory)

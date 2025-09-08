@@ -5,7 +5,7 @@ def variants(flag_name):
     "--foo[9].bar".
     '''
     if '[0]' in flag_name:
-        for index in range(0, 10):
+        for index in range(10):
             yield flag_name.replace('[0]', f'[{index}]')
 
         return

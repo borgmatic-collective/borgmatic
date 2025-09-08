@@ -18,7 +18,7 @@ def run_validate(validate_arguments, configs):
     borgmatic.logger.add_custom_log_levels()
 
     if validate_arguments.show:
-        for config_path, config in configs.items():
+        for config in configs.values():
             if len(configs) > 1:
                 logger.answer('---')
 

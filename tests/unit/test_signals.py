@@ -29,7 +29,7 @@ def test_handle_signal_exits_on_sigterm():
     flexmock(module.os).should_receive('getpgrp').and_return(flexmock())
     flexmock(module.os).should_receive('killpg')
     flexmock(module.sys).should_receive('exit').with_args(
-        module.EXIT_CODE_FROM_SIGNAL + signal_number
+        module.EXIT_CODE_FROM_SIGNAL + signal_number,
     ).once()
 
     module.handle_signal(signal_number, frame)

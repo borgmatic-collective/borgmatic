@@ -20,7 +20,8 @@ def run_borg(
     Run the "borg" action for the given repository.
     '''
     if borg_arguments.repository is None or borgmatic.config.validate.repositories_match(
-        repository, borg_arguments.repository
+        repository,
+        borg_arguments.repository,
     ):
         logger.info('Running arbitrary Borg command')
         archive_name = borgmatic.borg.repo_list.resolve_archive_name(

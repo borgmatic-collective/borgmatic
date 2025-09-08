@@ -155,7 +155,7 @@ def prepare_arguments_for_config(global_arguments, schema):
             (
                 keys,
                 convert_value_type(value, option_type),
-            )
+            ),
         )
 
     return tuple(prepared_values)

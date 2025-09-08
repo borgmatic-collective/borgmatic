@@ -19,7 +19,8 @@ def run_break_lock(
     Run the "break-lock" action for the given repository.
     '''
     if break_lock_arguments.repository is None or borgmatic.config.validate.repositories_match(
-        repository, break_lock_arguments.repository
+        repository,
+        break_lock_arguments.repository,
     ):
         logger.info('Breaking repository and cache locks')
         borgmatic.borg.break_lock.break_lock(

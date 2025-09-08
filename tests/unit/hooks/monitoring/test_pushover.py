@@ -12,12 +12,12 @@ def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_
     '''
     hook_config = {'token': 'ksdjfwoweijfvwoeifvjmwghagy92', 'user': '983hfe0of902lkjfa2amanfgui'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -43,7 +43,7 @@ def test_ping_monitor_config_with_minimum_config_start_state_backup_not_send_to_
     '''
     hook_config = {'token': 'ksdjfwoweijfvwoeifvjmwghagy92', 'user': '983hfe0of902lkjfa2amanfgui'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').never()
@@ -71,12 +71,12 @@ def test_ping_monitor_start_state_backup_default_message_successfully_send_to_pu
         'states': {'start', 'fail', 'finish'},
     }
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -108,12 +108,12 @@ def test_ping_monitor_start_state_backup_custom_message_successfully_send_to_pus
         'start': {'message': 'custom start message'},
     }
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -144,12 +144,12 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
         'start': {'priority': 2},
     }
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -183,12 +183,12 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
         'start': {'priority': 2, 'expire': 600},
     }
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -222,12 +222,12 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
         'start': {'priority': 2, 'retry': 30},
     }
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -264,7 +264,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_high_decl
     }
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').never()
@@ -319,12 +319,12 @@ def test_ping_monitor_start_state_backup_based_on_documentation_advanced_example
         },
     }
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -386,12 +386,12 @@ def test_ping_monitor_fail_state_backup_based_on_documentation_advanced_example_
         },
     }
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -458,12 +458,12 @@ def test_ping_monitor_finish_state_backup_based_on_documentation_advanced_exampl
         },
     }
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -495,7 +495,7 @@ def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_
     '''
     hook_config = {'token': 'ksdjfwoweijfvwoeifvjmwghagy92', 'user': '983hfe0of902lkjfa2amanfgui'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').and_return(flexmock(ok=True)).never()
@@ -519,7 +519,7 @@ def test_ping_monitor_config_incorrect_state_exit_early():
         'user': '983hfe0of902lkjfa2amanfgui',
     }
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').and_return(flexmock(ok=True)).never()
@@ -539,21 +539,21 @@ def test_ping_monitor_push_post_error_bails():
     This test simulates the Pushover servers not responding with a 200 OK. We
     should raise for status and warn then exit.
     '''
-    hook_config = hook_config = {
+    hook_config = {
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
     }
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).replace_with(lambda value, config: value)
     push_response = flexmock(ok=False)
     push_response.should_receive('raise_for_status').and_raise(
-        module.requests.ConnectionError
+        module.requests.ConnectionError,
     ).once()
     flexmock(module.requests).should_receive('post').with_args(
         'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        headers={'Content-type': 'application/x-www-form-urlencoded', 'User-Agent': 'borgmatic'},
         data={
             'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
             'user': '983hfe0of902lkjfa2amanfgui',
@@ -575,13 +575,13 @@ def test_ping_monitor_push_post_error_bails():
 
 
 def test_ping_monitor_credential_error_bails():
-    hook_config = hook_config = {
+    hook_config = {
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
     }
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
+        'resolve_credential',
     ).and_raise(ValueError)
     flexmock(module.requests).should_receive('post').never()
     flexmock(module.logger).should_receive('warning').once()

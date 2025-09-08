@@ -56,13 +56,10 @@ def export_tar_archive(
         + (tuple(paths) if paths else ())
     )
 
-    if config.get('list_details'):
-        output_log_level = logging.ANSWER
-    else:
-        output_log_level = logging.INFO
+    output_log_level = logging.ANSWER if config.get('list_details') else logging.INFO
 
     if dry_run:
-        logging.info('Skipping export to tar file (dry run)')
+        logger.info('Skipping export to tar file (dry run)')
         return
 
     execute_command(

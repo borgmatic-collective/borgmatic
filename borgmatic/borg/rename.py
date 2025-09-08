@@ -25,7 +25,9 @@ def make_rename_command(
         + borgmatic.borg.flags.make_flags('log-json', config.get('log_json'))
         + borgmatic.borg.flags.make_flags('lock-wait', config.get('lock_wait'))
         + borgmatic.borg.flags.make_repository_archive_flags(
-            repository_name, old_archive_name, local_borg_version
+            repository_name,
+            old_archive_name,
+            local_borg_version,
         )
         + (new_archive_name,)
     )

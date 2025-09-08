@@ -9,12 +9,15 @@ TIMEOUT_SECONDS = 10
 
 
 def initialize_monitor(
-    push_url, config, config_filename, monitoring_log_level, dry_run
+    push_url,
+    config,
+    config_filename,
+    monitoring_log_level,
+    dry_run,
 ):  # pragma: no cover
     '''
     No initialization is necessary for this monitor.
     '''
-    pass
 
 
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
@@ -44,6 +47,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             f'{push_url}?{query}',
             verify=hook_config.get('verify_tls', True),
             timeout=TIMEOUT_SECONDS,
+            headers={'User-Agent': 'borgmatic'},
         )
         if not response.ok:
             response.raise_for_status()
@@ -55,4 +59,3 @@ def destroy_monitor(push_url_or_uuid, config, monitoring_log_level, dry_run):  #
     '''
     No destruction is necessary for this monitor.
     '''
-    pass

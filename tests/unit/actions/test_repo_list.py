@@ -18,7 +18,7 @@ def test_run_repo_list_does_not_raise():
             global_arguments=flexmock(),
             local_path=None,
             remote_path=None,
-        )
+        ),
     )
 
 
@@ -26,7 +26,7 @@ def test_run_repo_list_produces_json():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_list).should_receive('list_repository').and_return(
-        flexmock()
+        flexmock(),
     )
     parsed_json = flexmock()
     flexmock(module.borgmatic.actions.json).should_receive('parse_json').and_return(parsed_json)
@@ -41,5 +41,5 @@ def test_run_repo_list_produces_json():
             global_arguments=flexmock(),
             local_path=None,
             remote_path=None,
-        )
+        ),
     ) == [parsed_json]

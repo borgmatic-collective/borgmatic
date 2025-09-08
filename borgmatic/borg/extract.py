@@ -52,7 +52,9 @@ def extract_last_archive_dry_run(
         + verbosity_flags
         + list_flag
         + flags.make_repository_archive_flags(
-            repository_path, last_archive_name, local_borg_version
+            repository_path,
+            last_archive_name,
+            local_borg_version,
         )
     )
 
@@ -178,3 +180,5 @@ def extract_archive(
         borg_local_path=local_path,
         borg_exit_codes=borg_exit_codes,
     )
+
+    return None

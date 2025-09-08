@@ -19,7 +19,7 @@ def run_transfer(
     '''
     if transfer_arguments.archive and config.get('match_archives'):
         raise ValueError(
-            'With the transfer action, only one of --archive and --match-archives/match_archives can be used.'
+            'With the transfer action, only one of --archive and --match-archives/match_archives can be used.',
         )
 
     logger.info('Transferring archives to repository')

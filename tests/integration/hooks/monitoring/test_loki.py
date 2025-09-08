@@ -25,7 +25,7 @@ def test_initialize_monitor_replaces_labels():
             assert handler.buffer.root['streams'][0]['stream']['config_full'] == config_filename
             return
 
-    assert False
+    raise AssertionError()
 
 
 def test_initialize_monitor_adds_log_handler():
@@ -45,7 +45,7 @@ def test_initialize_monitor_adds_log_handler():
         if isinstance(handler, module.Loki_log_handler):
             return
 
-    assert False
+    raise AssertionError()
 
 
 def test_ping_monitor_adds_log_message():
@@ -57,21 +57,23 @@ def test_ping_monitor_adds_log_message():
     dry_run = True
     module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run)
     module.ping_monitor(
-        hook_config, flexmock(), config_filename, module.monitor.State.FINISH, flexmock(), dry_run
+        hook_config,
+        flexmock(),
+        config_filename,
+        module.monitor.State.FINISH,
+        flexmock(),
+        dry_run,
     )
 
     for handler in tuple(logging.getLogger().handlers):
         if isinstance(handler, module.Loki_log_handler):
             assert any(
-                map(
-                    lambda log: log
-                    == f'{module.MONITOR_STATE_TO_LOKI[module.monitor.State.FINISH]} backup',
-                    map(lambda value: value[1], handler.buffer.root['streams'][0]['values']),
-                )
+                value[1] == f'{module.MONITOR_STATE_TO_LOKI[module.monitor.State.FINISH]} backup'
+                for value in handler.buffer.root['streams'][0]['values']
             )
             return
 
-    assert False
+    raise AssertionError()
 
 
 def test_destroy_monitor_removes_log_handler():
@@ -86,4 +88,4 @@ def test_destroy_monitor_removes_log_handler():
 
     for handler in tuple(logging.getLogger().handlers):
         if isinstance(handler, module.Loki_log_handler):
-            assert False
+            raise AssertionError()

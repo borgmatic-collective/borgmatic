@@ -22,15 +22,15 @@ def available_actions(subparsers, current_action=None):
     action of "config" but not "list".
     '''
     action_to_subactions = borgmatic.commands.arguments.get_subactions_for_actions(
-        subparsers.choices
+        subparsers.choices,
     )
     current_subactions = action_to_subactions.get(current_action)
 
     if current_subactions:
         return current_subactions
 
-    all_subactions = set(
+    all_subactions = {
         subaction for subactions in action_to_subactions.values() for subaction in subactions
-    )
+    }
 
-    return tuple(action for action in subparsers.choices.keys() if action not in all_subactions)
+    return tuple(action for action in subparsers.choices if action not in all_subactions)

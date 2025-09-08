@@ -45,13 +45,13 @@ def test_borgmatic_command():
         generate_configuration(config_path, repository_path)
 
         subprocess.check_call(
-            f'borgmatic -v 2 --config {config_path} repo-create --encryption repokey'.split(' ')
+            f'borgmatic -v 2 --config {config_path} repo-create --encryption repokey'.split(' '),
         )
 
         # Run borgmatic to generate a backup archive, and then list it to make sure it exists.
         subprocess.check_call(f'borgmatic -v 2 --config {config_path}'.split(' '))
         output = subprocess.check_output(
-            f'borgmatic --config {config_path} list --json'.split(' ')
+            f'borgmatic --config {config_path} list --json'.split(' '),
         ).decode(sys.stdout.encoding)
         parsed_output = json.loads(output)
 

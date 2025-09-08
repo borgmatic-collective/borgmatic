@@ -28,8 +28,10 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
 
     borgmatic.hooks.monitoring.logs.add_handler(
         borgmatic.hooks.monitoring.logs.Forgetful_buffering_handler(
-            HANDLER_IDENTIFIER, logs_size_limit, monitoring_log_level
-        )
+            HANDLER_IDENTIFIER,
+            logs_size_limit,
+            monitoring_log_level,
+        ),
     )
 
 
@@ -39,8 +41,8 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     entries. If this is a dry run, then don't actually ping anything.
     '''
     try:
-        import apprise
-        from apprise import NotifyFormat, NotifyType
+        import apprise  # noqa: PLC0415
+        from apprise import NotifyFormat, NotifyType  # noqa: PLC0415
     except ImportError:  # pragma: no cover
         logger.warning('Unable to import Apprise in monitoring hook')
         return
@@ -81,13 +83,13 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     body = state_config.get('body')
 
-    if state in (
+    if state in {
         borgmatic.hooks.monitoring.monitor.State.FINISH,
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         borgmatic.hooks.monitoring.monitor.State.LOG,
-    ):
+    }:
         formatted_logs = borgmatic.hooks.monitoring.logs.format_buffered_logs_for_payload(
-            HANDLER_IDENTIFIER
+            HANDLER_IDENTIFIER,
         )
         if formatted_logs:
             body += f'\n\n{formatted_logs}'

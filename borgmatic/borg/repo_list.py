@@ -58,22 +58,20 @@ def get_latest_archive(
     '''
 
     full_command = (
+        local_path,
         (
-            local_path,
-            (
-                'repo-list'
-                if feature.available(feature.Feature.REPO_LIST, local_borg_version)
-                else 'list'
-            ),
-        )
-        + flags.make_flags('remote-path', remote_path)
-        + flags.make_flags('umask', config.get('umask'))
-        + flags.make_flags('log-json', config.get('log_json'))
-        + flags.make_flags('lock-wait', config.get('lock_wait'))
-        + flags.make_flags('consider-checkpoints', consider_checkpoints)
-        + flags.make_flags('last', 1)
-        + ('--json',)
-        + flags.make_repository_flags(repository_path, local_borg_version)
+            'repo-list'
+            if feature.available(feature.Feature.REPO_LIST, local_borg_version)
+            else 'list'
+        ),
+        *flags.make_flags('remote-path', remote_path),
+        *flags.make_flags('umask', config.get('umask')),
+        *flags.make_flags('log-json', config.get('log_json')),
+        *flags.make_flags('lock-wait', config.get('lock_wait')),
+        *flags.make_flags('consider-checkpoints', consider_checkpoints),
+        *flags.make_flags('last', 1),
+        '--json',
+        *flags.make_repository_flags(repository_path, local_borg_version),
     )
 
     json_output = execute_command_and_capture_output(
@@ -215,3 +213,5 @@ def list_repository(
         borg_local_path=local_path,
         borg_exit_codes=borg_exit_codes,
     )
+
+    return None

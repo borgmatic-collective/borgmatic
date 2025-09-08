@@ -13,7 +13,7 @@ def test_schema_filename_finds_schema_path():
 
     flexmock(os.path).should_receive('dirname').and_return('/var/borgmatic/config')
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args(schema_path).and_return(StringIO())
+    builtins.should_receive('open').with_args(schema_path, encoding='utf-8').and_return(StringIO())
     assert module.schema_filename() == schema_path
 
 
@@ -22,18 +22,20 @@ def test_schema_filename_raises_filenotfounderror():
 
     flexmock(os.path).should_receive('dirname').and_return('/var/borgmatic/config')
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args(schema_path).and_raise(FileNotFoundError)
+    builtins.should_receive('open').with_args(schema_path, encoding='utf-8').and_raise(
+        FileNotFoundError
+    )
 
     with pytest.raises(FileNotFoundError):
         module.schema_filename()
 
 
 def test_format_json_error_path_element_formats_array_index():
-    module.format_json_error_path_element(3) == '[3]'
+    assert module.format_json_error_path_element(3) == '[3]'
 
 
 def test_format_json_error_path_element_formats_property():
-    module.format_json_error_path_element('foo') == '.foo'
+    assert module.format_json_error_path_element('foo') == '.foo'
 
 
 def test_format_json_error_formats_error_including_path():
@@ -91,55 +93,56 @@ def test_apply_logical_validation_does_not_raise_if_known_repository_in_check_re
 def test_normalize_repository_path_passes_through_remote_repository():
     repository = 'example.org:test.borg'
 
-    module.normalize_repository_path(repository) == repository
+    assert module.normalize_repository_path(repository) == repository
 
 
 def test_normalize_repository_path_passes_through_remote_repository_with_base_dir():
     repository = 'example.org:test.borg'
 
     flexmock(module.os.path).should_receive('abspath').never()
-    module.normalize_repository_path(repository, '/working') == repository
+
+    assert module.normalize_repository_path(repository, '/working') == repository
 
 
 def test_normalize_repository_path_passes_through_file_repository():
     repository = 'file:///foo/bar/test.borg'
     flexmock(module.os.path).should_receive('abspath').with_args('/foo/bar/test.borg').and_return(
-        '/foo/bar/test.borg'
+        '/foo/bar/test.borg',
     )
 
-    module.normalize_repository_path(repository) == '/foo/bar/test.borg'
+    assert module.normalize_repository_path(repository) == '/foo/bar/test.borg'
 
 
 def test_normalize_repository_path_passes_through_absolute_file_repository_with_base_dir():
     repository = 'file:///foo/bar/test.borg'
     flexmock(module.os.path).should_receive('abspath').with_args('/foo/bar/test.borg').and_return(
-        '/foo/bar/test.borg'
+        '/foo/bar/test.borg',
     )
 
-    module.normalize_repository_path(repository, '/working') == '/foo/bar/test.borg'
+    assert module.normalize_repository_path(repository, '/working') == '/foo/bar/test.borg'
 
 
 def test_normalize_repository_path_resolves_relative_file_repository_with_base_dir():
     repository = 'file://foo/bar/test.borg'
     flexmock(module.os.path).should_receive('abspath').with_args(
-        '/working/foo/bar/test.borg'
+        '/working/foo/bar/test.borg',
     ).and_return('/working/foo/bar/test.borg')
 
-    module.normalize_repository_path(repository, '/working') == '/working/foo/bar/test.borg'
+    assert module.normalize_repository_path(repository, '/working') == '/working/foo/bar/test.borg'
 
 
 def test_normalize_repository_path_passes_through_absolute_repository():
     repository = '/foo/bar/test.borg'
     flexmock(module.os.path).should_receive('abspath').and_return(repository)
 
-    module.normalize_repository_path(repository) == repository
+    assert module.normalize_repository_path(repository) == repository
 
 
 def test_normalize_repository_path_passes_through_absolute_repository_with_base_dir():
     repository = '/foo/bar/test.borg'
     flexmock(module.os.path).should_receive('abspath').and_return(repository)
 
-    module.normalize_repository_path(repository, '/working') == repository
+    assert module.normalize_repository_path(repository, '/working') == repository
 
 
 def test_normalize_repository_path_resolves_relative_repository():
@@ -147,7 +150,7 @@ def test_normalize_repository_path_resolves_relative_repository():
     absolute = '/foo/bar/test.borg'
     flexmock(module.os.path).should_receive('abspath').with_args(repository).and_return(absolute)
 
-    module.normalize_repository_path(repository) == absolute
+    assert module.normalize_repository_path(repository) == absolute
 
 
 def test_normalize_repository_path_resolves_relative_repository_with_base_dir():
@@ -155,10 +158,10 @@ def test_normalize_repository_path_resolves_relative_repository_with_base_dir():
     base = '/working'
     absolute = '/working/test.borg'
     flexmock(module.os.path).should_receive('abspath').with_args('/working/test.borg').and_return(
-        absolute
+        absolute,
     )
 
-    module.normalize_repository_path(repository, base) == absolute
+    assert module.normalize_repository_path(repository, base) == absolute
 
 
 @pytest.mark.parametrize(
@@ -179,63 +182,75 @@ def test_glob_match_matches_globs(first, second, expected_result):
 
 
 def test_repositories_match_matches_on_path():
-    flexmock(module).should_receive('normalize_repository_path')
+    flexmock(module).should_receive('normalize_repository_path').replace_with(lambda path: path)
     flexmock(module).should_receive('glob_match').replace_with(
-        lambda first, second: first == second
+        lambda first, second: first == second,
     )
 
-    module.repositories_match(
-        {'path': 'foo', 'label': 'my repo'}, {'path': 'foo', 'label': 'other repo'}
-    ) is True
+    assert (
+        module.repositories_match(
+            {'path': 'foo', 'label': 'my repo'},
+            {'path': 'foo', 'label': 'other repo'},
+        )
+        is True
+    )
 
 
 def test_repositories_match_matches_on_label():
-    flexmock(module).should_receive('normalize_repository_path')
+    flexmock(module).should_receive('normalize_repository_path').replace_with(lambda path: path)
     flexmock(module).should_receive('glob_match').replace_with(
-        lambda first, second: first == second
+        lambda first, second: first == second,
     )
 
-    module.repositories_match(
-        {'path': 'foo', 'label': 'my repo'}, {'path': 'bar', 'label': 'my repo'}
-    ) is True
+    assert (
+        module.repositories_match(
+            {'path': 'foo', 'label': 'my repo'},
+            {'path': 'bar', 'label': 'my repo'},
+        )
+        is True
+    )
 
 
 def test_repositories_match_with_different_paths_and_labels_does_not_match():
-    flexmock(module).should_receive('normalize_repository_path')
+    flexmock(module).should_receive('normalize_repository_path').replace_with(lambda path: path)
     flexmock(module).should_receive('glob_match').replace_with(
-        lambda first, second: first == second
+        lambda first, second: first == second,
     )
 
-    module.repositories_match(
-        {'path': 'foo', 'label': 'my repo'}, {'path': 'bar', 'label': 'other repo'}
-    ) is False
+    assert (
+        module.repositories_match(
+            {'path': 'foo', 'label': 'my repo'},
+            {'path': 'bar', 'label': 'other repo'},
+        )
+        is False
+    )
 
 
 def test_repositories_match_matches_on_string_repository():
-    flexmock(module).should_receive('normalize_repository_path')
+    flexmock(module).should_receive('normalize_repository_path').replace_with(lambda path: path)
     flexmock(module).should_receive('glob_match').replace_with(
-        lambda first, second: first == second
+        lambda first, second: first == second,
     )
 
-    module.repositories_match('foo', 'foo') is True
+    assert module.repositories_match('foo', 'foo') is True
 
 
 def test_repositories_match_with_different_string_repositories_does_not_match():
-    flexmock(module).should_receive('normalize_repository_path')
+    flexmock(module).should_receive('normalize_repository_path').replace_with(lambda path: path)
     flexmock(module).should_receive('glob_match').replace_with(
-        lambda first, second: first == second
+        lambda first, second: first == second,
     )
 
-    module.repositories_match('foo', 'bar') is False
+    assert module.repositories_match('foo', 'bar') is False
 
 
 def test_repositories_match_supports_mixed_repositories():
-    flexmock(module).should_receive('normalize_repository_path')
+    flexmock(module).should_receive('normalize_repository_path').replace_with(lambda path: path)
     flexmock(module).should_receive('glob_match').replace_with(
-        lambda first, second: first == second
+        lambda first, second: first == second,
     )
 
-    module.repositories_match({'path': 'foo', 'label': 'my foo'}, 'bar') is False
+    assert module.repositories_match({'path': 'foo', 'label': 'my foo'}, 'bar') is False
 
 
 def test_guard_configuration_contains_repository_does_not_raise_when_repository_matches():

@@ -72,8 +72,13 @@ def collect_special_file_paths(
     # files including any named pipe we've created. And omit "--filter" because that can break the
     # paths output parsing below such that path lines no longer start with the expected "- ".
     paths_output = execute_command_and_capture_output(
-        flags.omit_flag_and_value(flags.omit_flag(create_command, '--exclude-nodump'), '--filter')
-        + ('--dry-run', '--list'),
+        (
+            *flags.omit_flag_and_value(
+                flags.omit_flag(create_command, '--exclude-nodump'), '--filter'
+            ),
+            '--dry-run',
+            '--list',
+        ),
         capture_stderr=True,
         working_directory=working_directory,
         environment=environment.make_environment(config),
@@ -86,7 +91,7 @@ def collect_special_file_paths(
     paths = tuple(
         path_line.split(' ', 1)[1]
         for path_line in paths_output.split('\n')
-        if path_line and path_line.startswith('- ') or path_line.startswith('+ ')
+        if path_line and path_line.startswith(('- ', '+ '))
     )
 
     # These are the subset of those files that contain the borgmatic runtime directory.
@@ -100,7 +105,7 @@ def collect_special_file_paths(
         # If no paths to backup contain the runtime directory, it must've been excluded.
         if not paths_containing_runtime_directory and not dry_run:
             raise ValueError(
-                f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.'
+                f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.',
             )
 
     return tuple(
@@ -142,7 +147,8 @@ def make_base_create_command(
         borgmatic.borg.pattern.check_all_root_patterns_exist(patterns)
 
     patterns_file = borgmatic.borg.pattern.write_patterns_file(
-        patterns, borgmatic_runtime_directory
+        patterns,
+        borgmatic_runtime_directory,
     )
     checkpoint_interval = config.get('checkpoint_interval', None)
     checkpoint_volume = config.get('checkpoint_volume', None)
@@ -218,14 +224,16 @@ def make_base_create_command(
     )
 
     create_positional_arguments = flags.make_repository_archive_flags(
-        repository_path, archive_name_format, local_borg_version
+        repository_path,
+        archive_name_format,
+        local_borg_version,
     )
 
     # If database hooks are enabled (as indicated by streaming processes), exclude files that might
     # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
     if stream_processes and not config.get('read_special'):
         logger.warning(
-            'Ignoring configured "read_special" value of false, as true is needed for database hooks.'
+            'Ignoring configured "read_special" value of false, as true is needed for database hooks.',
         )
         working_directory = borgmatic.config.paths.get_working_directory(config)
 
@@ -246,7 +254,7 @@ def make_base_create_command(
                 placeholder=' ...',
             )
             logger.warning(
-                f'Excluding special files to prevent Borg from hanging: {truncated_special_file_paths}'
+                f'Excluding special files to prevent Borg from hanging: {truncated_special_file_paths}',
             )
             patterns_file = borgmatic.borg.pattern.write_patterns_file(
                 tuple(
@@ -298,7 +306,7 @@ def create_archive(
 
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    (create_flags, create_positional_arguments, patterns_file) = make_base_create_command(
+    (create_flags, create_positional_arguments, _) = make_base_create_command(
         dry_run,
         repository_path,
         config,
@@ -345,7 +353,8 @@ def create_archive(
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
-    elif output_log_level is None:
+
+    if output_log_level is None:
         return execute_command_and_capture_output(
             create_flags + create_positional_arguments,
             working_directory=working_directory,
@@ -353,13 +362,15 @@ def create_archive(
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
-    else:
-        execute_command(
-            create_flags + create_positional_arguments,
-            output_log_level,
-            output_file,
-            working_directory=working_directory,
-            environment=environment.make_environment(config),
-            borg_local_path=local_path,
-            borg_exit_codes=borg_exit_codes,
-        )
+
+    execute_command(
+        create_flags + create_positional_arguments,
+        output_log_level,
+        output_file,
+        working_directory=working_directory,
+        environment=environment.make_environment(config),
+        borg_local_path=local_path,
+        borg_exit_codes=borg_exit_codes,
+    )
+
+    return None

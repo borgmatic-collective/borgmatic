@@ -47,7 +47,8 @@ def collect_patterns(config):
         return (
             tuple(
                 borgmatic.borg.pattern.Pattern(
-                    source_directory, source=borgmatic.borg.pattern.Pattern_source.CONFIG
+                    source_directory,
+                    source=borgmatic.borg.pattern.Pattern_source.CONFIG,
                 )
                 for source_directory in config.get('source_directories', ())
             )
@@ -67,7 +68,7 @@ def collect_patterns(config):
             + tuple(
                 parse_pattern(pattern_line.strip())
                 for filename in config.get('patterns_from', ())
-                for pattern_line in open(filename).readlines()
+                for pattern_line in open(filename, encoding='utf-8').readlines()
                 if not pattern_line.lstrip().startswith('#')
                 if pattern_line.strip()
             )
@@ -77,7 +78,7 @@ def collect_patterns(config):
                     borgmatic.borg.pattern.Pattern_style.FNMATCH,
                 )
                 for filename in config.get('exclude_from', ())
-                for exclude_line in open(filename).readlines()
+                for exclude_line in open(filename, encoding='utf-8').readlines()
                 if not exclude_line.lstrip().startswith('#')
                 if exclude_line.strip()
             )
@@ -112,9 +113,8 @@ def expand_directory(directory, working_directory):
             glob_path
             # If these are equal, that means we didn't add any working directory prefix above.
             if normalized_directory == expanded_directory
-            # Remove the working directory prefix that we added above in order to make glob() work.
-            # We can't use os.path.relpath() here because it collapses any use of Borg's slashdot
-            # hack.
+            # Remove the working directory prefix added above in order to make glob() work. We
+            # can't use os.path.relpath() here because it collapses any use of Borg's slashdot hack.
             else glob_path.removeprefix(working_directory_prefix)
         )
         for glob_path in glob_paths
@@ -161,7 +161,7 @@ def expand_patterns(patterns, working_directory=None, skip_paths=None):
                 )
             )
             for pattern in patterns
-        )
+        ),
     )
 
 
@@ -180,8 +180,10 @@ def get_existent_path_or_parent(path):
     try:
         return next(
             candidate_path
-            for candidate_path in (path,)
-            + tuple(str(parent) for parent in pathlib.PurePath(path).parents)
+            for candidate_path in (
+                path,
+                *tuple(str(parent) for parent in pathlib.PurePath(path).parents),
+            )
             if os.path.exists(candidate_path)
         )
     except StopIteration:
@@ -219,22 +221,22 @@ def device_map_patterns(patterns, working_directory=None):
         for pattern in patterns
         for existent_path in (
             get_existent_path_or_parent(
-                os.path.join(working_directory or '', pattern.path.lstrip('^'))
+                os.path.join(working_directory or '', pattern.path.lstrip('^')),
             ),
         )
     )
 
 
-def deduplicate_patterns(patterns):
+def deduplicate_patterns(patterns, config):
     '''
-    Given a sequence of borgmatic.borg.pattern.Pattern instances, return them with all duplicate
-    root child patterns removed. For instance, if two root patterns are given with paths "/foo" and
-    "/foo/bar", return just the one with "/foo". Non-root patterns are passed through without
-    modification.
+    Given a sequence of borgmatic.borg.pattern.Pattern instances and a configuration dict, return
+    them with all duplicate root child patterns removed. For instance, if two root patterns are
+    given with paths "/foo" and "/foo/bar", return just the one with "/foo". Non-root patterns are
+    passed through without modification.
 
-    The one exception to deduplication is two paths are on different filesystems (devices). In that
-    case, they won't get deduplicated, in case they both need to be passed to Borg (e.g. the
-    one_file_system option is true).
+    The one exception to deduplication is if two paths are on different filesystems (devices) and
+    "one_file_system" is True in the given configuration. In that case, the paths won't get
+    deduplicated, because Borg won't cross filesystem boundaries when "one_file_system" is True.
 
     The idea is that if Borg is given a root parent pattern, then it doesn't also need to be given
     child patterns, because it will naturally spider the contents of the parent pattern's path. And
@@ -252,7 +254,8 @@ def deduplicate_patterns(patterns):
         parents = pathlib.PurePath(pattern.path).parents
 
         # If another directory in the given list is a parent of current directory (even n levels up)
-        # and both are on the same filesystem, then the current directory is a duplicate.
+        # and both are on the same filesystem (or one_file_system is not set), then the current
+        # directory is a duplicate.
         for other_pattern in patterns:
             if other_pattern.type != borgmatic.borg.pattern.Pattern_type.ROOT:
                 continue
@@ -260,7 +263,10 @@ def deduplicate_patterns(patterns):
             if any(
                 pathlib.PurePath(other_pattern.path) == parent
                 and pattern.device is not None
-                and other_pattern.device == pattern.device
+                and (
+                    other_pattern.device == pattern.device
+                    or config.get('one_file_system') is not True
+                )
                 for parent in parents
             ):
                 break
@@ -270,12 +276,11 @@ def deduplicate_patterns(patterns):
     return tuple(deduplicated.keys())
 
 
-def process_patterns(patterns, working_directory, skip_expand_paths=None):
+def process_patterns(patterns, config, working_directory, skip_expand_paths=None):
     '''
-    Given a sequence of Borg patterns and a configured working directory, expand and deduplicate any
-    "root" patterns, returning the resulting root and non-root patterns as a list.
-
-    If any paths are given to skip, don't expand them.
+    Given a sequence of Borg patterns, a configuration dict, a configured working directory, and a
+    sequence of paths to skip path expansion for, expand and deduplicate any "root" patterns,
+    returning the resulting root and non-root patterns as a list.
     '''
     skip_paths = set(skip_expand_paths or ())
 
@@ -286,7 +291,8 @@ def process_patterns(patterns, working_directory, skip_expand_paths=None):
                     patterns,
                     working_directory=working_directory,
                     skip_paths=skip_paths,
-                )
-            )
-        )
+                ),
+            ),
+            config,
+        ),
     )

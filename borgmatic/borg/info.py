@@ -55,7 +55,8 @@ def make_info_command(
             )
         )
         + flags.make_flags_from_arguments(
-            info_arguments, excludes=('repository', 'archive', 'prefix', 'match_archives')
+            info_arguments,
+            excludes=('repository', 'archive', 'prefix', 'match_archives'),
         )
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
@@ -119,3 +120,5 @@ def display_archives_info(
         borg_local_path=local_path,
         borg_exit_codes=borg_exit_codes,
     )
+
+    return None

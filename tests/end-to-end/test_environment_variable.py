@@ -42,7 +42,7 @@ def test_borgmatic_command():
     original_working_directory = os.getcwd()
     os.mkdir(extract_path)
     os.chdir(extract_path)
-    environment = dict(os.environ, **{'PASSPHRASE': 'test'})
+    environment = dict(os.environ, PASSPHRASE='test')
 
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')

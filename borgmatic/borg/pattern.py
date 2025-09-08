@@ -4,8 +4,6 @@ import logging
 import os
 import tempfile
 
-import borgmatic.borg.pattern
-
 logger = logging.getLogger(__name__)
 
 
@@ -59,9 +57,9 @@ Pattern = collections.namedtuple(
 
 def write_patterns_file(patterns, borgmatic_runtime_directory, patterns_file=None):
     '''
-    Given a sequence of patterns as borgmatic.borg.pattern.Pattern instances, write them to a named
-    temporary file in the given borgmatic runtime directory and return the file object so it can
-    continue to exist on disk as long as the caller needs it.
+    Given a sequence of patterns as Pattern instances, write them to a named temporary file in the
+    given borgmatic runtime directory and return the file object so it can continue to exist on disk
+    as long as the caller needs it.
 
     If an optional open pattern file is given, append to it instead of making a new temporary file.
     Return None if no patterns are provided.
@@ -70,7 +68,9 @@ def write_patterns_file(patterns, borgmatic_runtime_directory, patterns_file=Non
         return None
 
     if patterns_file is None:
-        patterns_file = tempfile.NamedTemporaryFile('w', dir=borgmatic_runtime_directory)
+        patterns_file = tempfile.NamedTemporaryFile(
+            'w', dir=borgmatic_runtime_directory, encoding='utf-8'
+        )
         operation_name = 'Writing'
     else:
         patterns_file.write('\n')
@@ -90,17 +90,17 @@ def write_patterns_file(patterns, borgmatic_runtime_directory, patterns_file=Non
 
 def check_all_root_patterns_exist(patterns):
     '''
-    Given a sequence of borgmatic.borg.pattern.Pattern instances, check that all root pattern
-    paths exist. If any don't, raise an exception.
+    Given a sequence of Pattern instances, check that all root pattern paths exist. If any don't,
+    raise an exception.
     '''
     missing_paths = [
         pattern.path
         for pattern in patterns
-        if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
+        if pattern.type == Pattern_type.ROOT
         if not os.path.exists(pattern.path)
     ]
 
     if missing_paths:
         raise ValueError(
-            f"Source directories or root pattern paths do not exist: {', '.join(missing_paths)}"
+            f"Source directories or root pattern paths do not exist: {', '.join(missing_paths)}",
         )

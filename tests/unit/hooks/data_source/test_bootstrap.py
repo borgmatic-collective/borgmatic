@@ -14,7 +14,9 @@ def test_dump_data_sources_creates_manifest_file():
         __exit__=lambda *args: None,
     )
     flexmock(sys.modules['builtins']).should_receive('open').with_args(
-        '/run/borgmatic/bootstrap/manifest.json', 'w'
+        '/run/borgmatic/bootstrap/manifest.json',
+        'w',
+        encoding='utf-8',
     ).and_return(manifest_file)
     flexmock(module.json).should_receive('dump').with_args(
         {'borgmatic_version': '1.0.0', 'config_paths': ('test.yaml',)},
@@ -62,11 +64,11 @@ def test_dump_data_sources_with_dry_run_does_not_create_manifest_file():
 
 def test_remove_data_source_dumps_deletes_manifest_and_parent_directory():
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(lambda path: [path])
     flexmock(module.os).should_receive('remove').with_args(
-        '/run/borgmatic/bootstrap/manifest.json'
+        '/run/borgmatic/bootstrap/manifest.json',
     ).once()
     flexmock(module.os).should_receive('rmdir').with_args('/run/borgmatic/bootstrap').once()
 
@@ -80,7 +82,7 @@ def test_remove_data_source_dumps_deletes_manifest_and_parent_directory():
 
 def test_remove_data_source_dumps_with_dry_run_bails():
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(lambda path: [path])
     flexmock(module.os).should_receive('remove').never()
@@ -96,11 +98,11 @@ def test_remove_data_source_dumps_with_dry_run_bails():
 
 def test_remove_data_source_dumps_swallows_manifest_file_not_found_error():
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(lambda path: [path])
     flexmock(module.os).should_receive('remove').with_args(
-        '/run/borgmatic/bootstrap/manifest.json'
+        '/run/borgmatic/bootstrap/manifest.json',
     ).and_raise(FileNotFoundError).once()
     flexmock(module.os).should_receive('rmdir').with_args('/run/borgmatic/bootstrap').once()
 
@@ -114,14 +116,14 @@ def test_remove_data_source_dumps_swallows_manifest_file_not_found_error():
 
 def test_remove_data_source_dumps_swallows_manifest_parent_directory_not_found_error():
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(lambda path: [path])
     flexmock(module.os).should_receive('remove').with_args(
-        '/run/borgmatic/bootstrap/manifest.json'
+        '/run/borgmatic/bootstrap/manifest.json',
     ).once()
     flexmock(module.os).should_receive('rmdir').with_args('/run/borgmatic/bootstrap').and_raise(
-        FileNotFoundError
+        FileNotFoundError,
     ).once()
 
     module.remove_data_source_dumps(

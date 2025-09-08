@@ -13,13 +13,15 @@ def test_load_credential_with_invalid_credential_parameters_raises(credential_pa
 
     with pytest.raises(ValueError):
         module.load_credential(
-            hook_config={}, config={}, credential_parameters=credential_parameters
+            hook_config={},
+            config={},
+            credential_parameters=credential_parameters,
         )
 
 
 def test_load_credential_without_credentials_directory_raises():
     flexmock(module.os.environ).should_receive('get').with_args('CREDENTIALS_DIRECTORY').and_return(
-        None
+        None,
     )
 
     with pytest.raises(ValueError):
@@ -28,23 +30,27 @@ def test_load_credential_without_credentials_directory_raises():
 
 def test_load_credential_with_invalid_credential_name_raises():
     flexmock(module.os.environ).should_receive('get').with_args('CREDENTIALS_DIRECTORY').and_return(
-        '/var'
+        '/var',
     )
 
     with pytest.raises(ValueError):
         module.load_credential(
-            hook_config={}, config={}, credential_parameters=('../../my!@#$credential',)
+            hook_config={},
+            config={},
+            credential_parameters=('../../my!@#$credential',),
         )
 
 
 def test_load_credential_reads_named_credential_from_file():
     flexmock(module.os.environ).should_receive('get').with_args('CREDENTIALS_DIRECTORY').and_return(
-        '/var'
+        '/var',
     )
     credential_stream = io.StringIO('password')
     credential_stream.name = '/var/borgmatic.pw'
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('/var/borgmatic.pw').and_return(credential_stream)
+    builtins.should_receive('open').with_args('/var/borgmatic.pw', encoding='utf-8').and_return(
+        credential_stream
+    )
 
     assert (
         module.load_credential(hook_config={}, config={}, credential_parameters=('borgmatic.pw',))
@@ -54,10 +60,12 @@ def test_load_credential_reads_named_credential_from_file():
 
 def test_load_credential_with_file_not_found_error_raises():
     flexmock(module.os.environ).should_receive('get').with_args('CREDENTIALS_DIRECTORY').and_return(
-        '/var'
+        '/var',
     )
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('/var/mycredential').and_raise(FileNotFoundError)
+    builtins.should_receive('open').with_args('/var/mycredential', encoding='utf-8').and_raise(
+        FileNotFoundError
+    )
 
     with pytest.raises(ValueError):
         module.load_credential(hook_config={}, config={}, credential_parameters=('mycredential',))

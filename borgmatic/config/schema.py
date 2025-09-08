@@ -14,8 +14,8 @@ def get_properties(schema):
             item
             for item in itertools.chain(
                 *itertools.zip_longest(
-                    *[sub_schema['properties'].items() for sub_schema in schema['oneOf']]
-                )
+                    *[sub_schema['properties'].items() for sub_schema in schema['oneOf']],
+                ),
             )
             if item is not None
         )
@@ -61,12 +61,6 @@ def compare_types(schema_type, target_types, match=any):
     list must be in the target types.
     '''
     if isinstance(schema_type, list):
-        if match(element_schema_type in target_types for element_schema_type in schema_type):
-            return True
+        return match(element_schema_type in target_types for element_schema_type in schema_type)
 
-        return False
-
-    if schema_type in target_types:
-        return True
-
-    return False
+    return schema_type in target_types

@@ -60,7 +60,7 @@ def get_subactions_for_actions(action_parsers):
         action: tuple(
             subaction_name
             for group_action in action_parser._subparsers._group_actions
-            for subaction_name in group_action.choices.keys()
+            for subaction_name in group_action.choices
         )
         for action, action_parser in action_parsers.items()
         if action_parser._subparsers
@@ -77,21 +77,25 @@ def omit_values_colliding_with_action_names(unparsed_arguments, parsed_arguments
     '''
     remaining_arguments = list(unparsed_arguments)
 
-    for action_name, parsed in parsed_arguments.items():
+    for parsed in parsed_arguments.values():
         for value in vars(parsed).values():
             if isinstance(value, str):
-                if value in ACTION_ALIASES.keys() and value in remaining_arguments:
+                if value in ACTION_ALIASES and value in remaining_arguments:
                     remaining_arguments.remove(value)
             elif isinstance(value, list):
                 for item in value:
-                    if item in ACTION_ALIASES.keys() and item in remaining_arguments:
+                    if item in ACTION_ALIASES and item in remaining_arguments:
                         remaining_arguments.remove(item)
 
     return tuple(remaining_arguments)
 
 
 def parse_and_record_action_arguments(
-    unparsed_arguments, parsed_arguments, action_parser, action_name, canonical_name=None
+    unparsed_arguments,
+    parsed_arguments,
+    action_parser,
+    action_name,
+    canonical_name=None,
 ):
     '''
     Given unparsed arguments as a sequence of strings, parsed arguments as a dict from action name
@@ -102,7 +106,8 @@ def parse_and_record_action_arguments(
     given action doesn't apply to the given unparsed arguments.
     '''
     filtered_arguments = omit_values_colliding_with_action_names(
-        unparsed_arguments, parsed_arguments
+        unparsed_arguments,
+        parsed_arguments,
     )
 
     if action_name not in filtered_arguments:
@@ -186,12 +191,12 @@ def get_unparsable_arguments(remaining_action_arguments):
         itertools.chain.from_iterable(
             argument_group
             for argument_group in dict.fromkeys(
-                itertools.chain.from_iterable(grouped_action_arguments)
-            ).keys()
+                itertools.chain.from_iterable(grouped_action_arguments),
+            )
             if all(
                 argument_group in action_arguments for action_arguments in grouped_action_arguments
             )
-        )
+        ),
     )
 
 
@@ -244,7 +249,7 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
                             subaction_name,
                         )
                         if argument != action_name
-                    )
+                    ),
                 )
 
                 if subaction_name in arguments:
@@ -256,14 +261,18 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
                     sys.exit(0)
                 else:
                     raise ValueError(
-                        f"Missing sub-action after {action_name} action. Expected one of: {', '.join(get_subactions_for_actions(action_parsers)[action_name])}"
+                        f"Missing sub-action after {action_name} action. Expected one of: {', '.join(get_subactions_for_actions(action_parsers)[action_name])}",
                     )
         # Otherwise, parse with the main action parser.
         else:
             remaining_action_arguments.append(
                 parse_and_record_action_arguments(
-                    unparsed_arguments, arguments, action_parser, action_name, canonical_name
-                )
+                    unparsed_arguments,
+                    arguments,
+                    action_parser,
+                    action_name,
+                    canonical_name,
+                ),
             )
 
     # If no actions were explicitly requested, assume defaults.
@@ -272,11 +281,11 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
             default_action_parser = action_parsers[default_action_name]
             remaining_action_arguments.append(
                 parse_and_record_action_arguments(
-                    tuple(unparsed_arguments) + (default_action_name,),
+                    (*unparsed_arguments, default_action_name),
                     arguments,
                     default_action_parser,
                     default_action_name,
-                )
+                ),
             )
 
     arguments['global'], remaining = global_parser.parse_known_args(unparsed_arguments)
@@ -304,10 +313,10 @@ def make_argument_description(schema, flag_name):
 
     if '[0]' in flag_name:
         pieces.append(
-            ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
+            ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).',
         )
 
-    if example and schema_type in ('array', 'object'):
+    if example and schema_type in ('array', 'object'):  # noqa: PLR6201
         example_buffer = io.StringIO()
         yaml = ruamel.yaml.YAML(typ='safe')
         yaml.default_flow_style = True
@@ -387,7 +396,7 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
         if not pattern.match(unparsed_flag_name) or unparsed_flag_name == existing_flag_name:
             continue
 
-        if action_registry_name in ('store_true', 'store_false'):
+        if action_registry_name in {'store_true', 'store_false'}:
             arguments_group.add_argument(
                 unparsed_flag_name,
                 action=action_registry_name,
@@ -408,7 +417,7 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
             )
 
 
-def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names=None):
+def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names=None):  # noqa: PLR0912
     '''
     Given an argparse._ArgumentGroup instance, a configuration schema dict, and a sequence of
     unparsed argument strings, convert the entire schema into corresponding command-line flags and
@@ -466,7 +475,10 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
         if properties:
             for name, child in properties.items():
                 add_arguments_from_schema(
-                    arguments_group, child, unparsed_arguments, names + (name,)
+                    arguments_group,
+                    child,
+                    unparsed_arguments,
+                    (*names, name),
                 )
 
             return
@@ -483,12 +495,15 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
                     arguments_group,
                     child,
                     unparsed_arguments,
-                    names[:-1] + (f'{names[-1]}[0]',) + (name,),
+                    (*names[:-1], f'{names[-1]}[0]', name),
                 )
         # If there aren't any children, then this is an array of scalars. Recurse accordingly.
         else:
             add_arguments_from_schema(
-                arguments_group, items, unparsed_arguments, names[:-1] + (f'{names[-1]}[0]',)
+                arguments_group,
+                items,
+                unparsed_arguments,
+                (*names[:-1], f'{names[-1]}[0]'),
             )
 
     flag_name = '.'.join(names).replace('_', '-')
@@ -515,9 +530,9 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
         )
 
         if names[-1].startswith('no_'):
-            no_flag_name = '.'.join(names[:-1] + (names[-1][len('no_') :],)).replace('_', '-')
+            no_flag_name = '.'.join((*names[:-1], names[-1][len('no_') :])).replace('_', '-')
         else:
-            no_flag_name = '.'.join(names[:-1] + ('no-' + names[-1],)).replace('_', '-')
+            no_flag_name = '.'.join((*names[:-1], 'no-' + names[-1])).replace('_', '-')
 
         arguments_group.add_argument(
             f'--{no_flag_name}',
@@ -545,7 +560,7 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
     add_array_element_arguments(arguments_group, unparsed_arguments, flag_name)
 
 
-def make_parsers(schema, unparsed_arguments):
+def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     '''
     Given a configuration schema dict and unparsed arguments as a sequence of strings, build a
     global arguments parser, individual action parsers, and a combined parser containing both.
@@ -670,7 +685,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Create any missing parent directories of the repository directory [Borg 1.x only]',
     )
     repo_create_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     transfer_parser = action_parsers.add_parser(
@@ -712,7 +730,9 @@ def make_parsers(schema, unparsed_arguments):
         help='Only transfer archives with names, hashes, or series matching this pattern',
     )
     transfer_group.add_argument(
-        '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
+        '--sort-by',
+        metavar='KEYS',
+        help='Comma-separated list of sorting keys',
     )
     transfer_group.add_argument(
         '--first',
@@ -720,7 +740,9 @@ def make_parsers(schema, unparsed_arguments):
         help='Only transfer first N archives after other filters are applied',
     )
     transfer_group.add_argument(
-        '--last', metavar='N', help='Only transfer last N archives after other filters are applied'
+        '--last',
+        metavar='N',
+        help='Only transfer last N archives after other filters are applied',
     )
     transfer_group.add_argument(
         '--oldest',
@@ -743,7 +765,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Transfer archives that are newer than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]',
     )
     transfer_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     prune_parser = action_parsers.add_parser(
@@ -833,7 +858,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Minimum saved space percentage threshold for compacting a segment, defaults to 10',
     )
     compact_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     create_parser = action_parsers.add_parser(
@@ -870,7 +898,11 @@ def make_parsers(schema, unparsed_arguments):
         help='Show per-file details',
     )
     create_group.add_argument(
-        '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
+        '--json',
+        dest='json',
+        default=False,
+        action='store_true',
+        help='Output results as JSON',
     )
     create_group.add_argument(
         '--comment',
@@ -996,13 +1028,19 @@ def make_parsers(schema, unparsed_arguments):
         help='Only delete archives with names, hashes, or series matching this pattern',
     )
     delete_group.add_argument(
-        '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
+        '--sort-by',
+        metavar='KEYS',
+        help='Comma-separated list of sorting keys',
     )
     delete_group.add_argument(
-        '--first', metavar='N', help='Delete first N archives after other filters are applied'
+        '--first',
+        metavar='N',
+        help='Delete first N archives after other filters are applied',
     )
     delete_group.add_argument(
-        '--last', metavar='N', help='Delete last N archives after other filters are applied'
+        '--last',
+        metavar='N',
+        help='Delete last N archives after other filters are applied',
     )
     delete_group.add_argument(
         '--oldest',
@@ -1039,7 +1077,9 @@ def make_parsers(schema, unparsed_arguments):
         help='Path of repository to extract, defaults to the configured repository if there is only one, quoted globs supported',
     )
     extract_group.add_argument(
-        '--archive', help='Name or hash of a single archive to extract (or "latest")', required=True
+        '--archive',
+        help='Name or hash of a single archive to extract (or "latest")',
+        required=True,
     )
     extract_group.add_argument(
         '--path',
@@ -1068,7 +1108,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Display progress for each file as it is extracted',
     )
     extract_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     config_parser = action_parsers.add_parser(
@@ -1093,7 +1136,7 @@ def make_parsers(schema, unparsed_arguments):
         add_help=False,
     )
     config_bootstrap_group = config_bootstrap_parser.add_argument_group(
-        'config bootstrap arguments'
+        'config bootstrap arguments',
     )
     config_bootstrap_group.add_argument(
         '--repository',
@@ -1148,7 +1191,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Command to use instead of "ssh"',
     )
     config_bootstrap_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     config_generate_parser = config_parsers.add_parser(
@@ -1178,7 +1224,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Whether to overwrite any existing destination file, defaults to false',
     )
     config_generate_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     config_validate_parser = config_parsers.add_parser(
@@ -1195,7 +1244,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Show the validated configuration after all include merging has occurred',
     )
     config_validate_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     export_tar_parser = action_parsers.add_parser(
@@ -1211,7 +1263,9 @@ def make_parsers(schema, unparsed_arguments):
         help='Path of repository to export from, defaults to the configured repository if there is only one, quoted globs supported',
     )
     export_tar_group.add_argument(
-        '--archive', help='Name or hash of a single archive to export (or "latest")', required=True
+        '--archive',
+        help='Name or hash of a single archive to export (or "latest")',
+        required=True,
     )
     export_tar_group.add_argument(
         '--path',
@@ -1228,7 +1282,8 @@ def make_parsers(schema, unparsed_arguments):
         required=True,
     )
     export_tar_group.add_argument(
-        '--tar-filter', help='Name of filter program to pipe data through'
+        '--tar-filter',
+        help='Name of filter program to pipe data through',
     )
     export_tar_group.add_argument(
         '--list',
@@ -1246,7 +1301,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Number of leading path components to remove from each exported path. Skip paths with fewer elements',
     )
     export_tar_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     mount_parser = action_parsers.add_parser(
@@ -1262,7 +1320,8 @@ def make_parsers(schema, unparsed_arguments):
         help='Path of repository to use, defaults to the configured repository if there is only one, quoted globs supported',
     )
     mount_group.add_argument(
-        '--archive', help='Name or hash of a single archive to mount (or "latest")'
+        '--archive',
+        help='Name or hash of a single archive to mount (or "latest")',
     )
     mount_group.add_argument(
         '--mount-point',
@@ -1291,7 +1350,9 @@ def make_parsers(schema, unparsed_arguments):
         help='Mount first N archives after other filters are applied',
     )
     mount_group.add_argument(
-        '--last', metavar='N', help='Mount last N archives after other filters are applied'
+        '--last',
+        metavar='N',
+        help='Mount last N archives after other filters are applied',
     )
     mount_group.add_argument(
         '--oldest',
@@ -1368,7 +1429,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Do not delete the local security info when deleting a repository',
     )
     repo_delete_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     restore_parser = action_parsers.add_parser(
@@ -1437,7 +1501,10 @@ def make_parsers(schema, unparsed_arguments):
         help='The name of the data source hook for the dump to restore, only necessary if you need to disambiguate dumps',
     )
     restore_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     repo_list_parser = action_parsers.add_parser(
@@ -1453,14 +1520,22 @@ def make_parsers(schema, unparsed_arguments):
         help='Path of repository to list, defaults to the configured repositories, quoted globs supported',
     )
     repo_list_group.add_argument(
-        '--short', default=False, action='store_true', help='Output only archive names'
+        '--short',
+        default=False,
+        action='store_true',
+        help='Output only archive names',
     )
     repo_list_group.add_argument('--format', help='Format for archive listing')
     repo_list_group.add_argument(
-        '--json', default=False, action='store_true', help='Output results as JSON'
+        '--json',
+        default=False,
+        action='store_true',
+        help='Output results as JSON',
     )
     repo_list_group.add_argument(
-        '-P', '--prefix', help='Deprecated. Only list archive names starting with this prefix'
+        '-P',
+        '--prefix',
+        help='Deprecated. Only list archive names starting with this prefix',
     )
     repo_list_group.add_argument(
         '-a',
@@ -1470,13 +1545,19 @@ def make_parsers(schema, unparsed_arguments):
         help='Only list archive names, hashes, or series matching this pattern',
     )
     repo_list_group.add_argument(
-        '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
+        '--sort-by',
+        metavar='KEYS',
+        help='Comma-separated list of sorting keys',
     )
     repo_list_group.add_argument(
-        '--first', metavar='N', help='List first N archives after other filters are applied'
+        '--first',
+        metavar='N',
+        help='List first N archives after other filters are applied',
     )
     repo_list_group.add_argument(
-        '--last', metavar='N', help='List last N archives after other filters are applied'
+        '--last',
+        metavar='N',
+        help='List last N archives after other filters are applied',
     )
     repo_list_group.add_argument(
         '--oldest',
@@ -1505,7 +1586,10 @@ def make_parsers(schema, unparsed_arguments):
         help="List only deleted archives that haven't yet been compacted [Borg 2.x+ only]",
     )
     repo_list_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     list_parser = action_parsers.add_parser(
@@ -1521,7 +1605,8 @@ def make_parsers(schema, unparsed_arguments):
         help='Path of repository containing archive to list, defaults to the configured repositories, quoted globs supported',
     )
     list_group.add_argument(
-        '--archive', help='Name or hash of a single archive to list (or "latest")'
+        '--archive',
+        help='Name or hash of a single archive to list (or "latest")',
     )
     list_group.add_argument(
         '--path',
@@ -1538,14 +1623,22 @@ def make_parsers(schema, unparsed_arguments):
         help='Partial path or pattern to search for and list across multiple archives, can specify flag multiple times',
     )
     list_group.add_argument(
-        '--short', default=False, action='store_true', help='Output only path names'
+        '--short',
+        default=False,
+        action='store_true',
+        help='Output only path names',
     )
     list_group.add_argument('--format', help='Format for file listing')
     list_group.add_argument(
-        '--json', default=False, action='store_true', help='Output results as JSON'
+        '--json',
+        default=False,
+        action='store_true',
+        help='Output results as JSON',
     )
     list_group.add_argument(
-        '-P', '--prefix', help='Deprecated. Only list archive names starting with this prefix'
+        '-P',
+        '--prefix',
+        help='Deprecated. Only list archive names starting with this prefix',
     )
     list_group.add_argument(
         '-a',
@@ -1555,19 +1648,30 @@ def make_parsers(schema, unparsed_arguments):
         help='Only list archive names matching this pattern',
     )
     list_group.add_argument(
-        '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
+        '--sort-by',
+        metavar='KEYS',
+        help='Comma-separated list of sorting keys',
     )
     list_group.add_argument(
-        '--first', metavar='N', help='List first N archives after other filters are applied'
+        '--first',
+        metavar='N',
+        help='List first N archives after other filters are applied',
     )
     list_group.add_argument(
-        '--last', metavar='N', help='List last N archives after other filters are applied'
+        '--last',
+        metavar='N',
+        help='List last N archives after other filters are applied',
     )
     list_group.add_argument(
-        '-e', '--exclude', metavar='PATTERN', help='Exclude paths matching the pattern'
+        '-e',
+        '--exclude',
+        metavar='PATTERN',
+        help='Exclude paths matching the pattern',
     )
     list_group.add_argument(
-        '--exclude-from', metavar='FILENAME', help='Exclude paths from exclude file, one per line'
+        '--exclude-from',
+        metavar='FILENAME',
+        help='Exclude paths from exclude file, one per line',
     )
     list_group.add_argument('--pattern', help='Include or exclude paths matching a pattern')
     list_group.add_argument(
@@ -1590,10 +1694,17 @@ def make_parsers(schema, unparsed_arguments):
         help='Path of repository to show info for, defaults to the configured repository if there is only one, quoted globs supported',
     )
     repo_info_group.add_argument(
-        '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
+        '--json',
+        dest='json',
+        default=False,
+        action='store_true',
+        help='Output results as JSON',
     )
     repo_info_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     info_parser = action_parsers.add_parser(
@@ -1609,10 +1720,15 @@ def make_parsers(schema, unparsed_arguments):
         help='Path of repository containing archive to show info for, defaults to the configured repository if there is only one, quoted globs supported',
     )
     info_group.add_argument(
-        '--archive', help='Archive name, hash, or series to show info for (or "latest")'
+        '--archive',
+        help='Archive name, hash, or series to show info for (or "latest")',
     )
     info_group.add_argument(
-        '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
+        '--json',
+        dest='json',
+        default=False,
+        action='store_true',
+        help='Output results as JSON',
     )
     info_group.add_argument(
         '-P',
@@ -1627,7 +1743,9 @@ def make_parsers(schema, unparsed_arguments):
         help='Only show info for archive names, hashes, or series matching this pattern',
     )
     info_group.add_argument(
-        '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
+        '--sort-by',
+        metavar='KEYS',
+        help='Comma-separated list of sorting keys',
     )
     info_group.add_argument(
         '--first',
@@ -1635,7 +1753,9 @@ def make_parsers(schema, unparsed_arguments):
         help='Show info for first N archives after other filters are applied',
     )
     info_group.add_argument(
-        '--last', metavar='N', help='Show info for last N archives after other filters are applied'
+        '--last',
+        metavar='N',
+        help='Show info for last N archives after other filters are applied',
     )
     info_group.add_argument(
         '--oldest',
@@ -1672,7 +1792,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Path of repository to break the lock for, defaults to the configured repository if there is only one, quoted globs supported',
     )
     break_lock_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     key_parser = action_parsers.add_parser(
@@ -1717,7 +1840,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Path to export the key to, defaults to stdout (but be careful about dirtying the output with --verbosity)',
     )
     key_export_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     key_import_parser = key_parsers.add_parser(
@@ -1742,7 +1868,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Path to import the key from backup, defaults to stdin',
     )
     key_import_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     key_change_passphrase_parser = key_parsers.add_parser(
@@ -1752,14 +1881,17 @@ def make_parsers(schema, unparsed_arguments):
         add_help=False,
     )
     key_change_passphrase_group = key_change_passphrase_parser.add_argument_group(
-        'key change-passphrase arguments'
+        'key change-passphrase arguments',
     )
     key_change_passphrase_group.add_argument(
         '--repository',
         help='Path of repository to change the passphrase for, defaults to the configured repository if there is only one, quoted globs supported',
     )
     key_change_passphrase_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     recreate_parser = action_parsers.add_parser(
@@ -1809,7 +1941,10 @@ def make_parsers(schema, unparsed_arguments):
         help='Only consider archive names, hashes, or series matching this pattern [Borg 2.x+ only]',
     )
     recreate_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
     )
 
     borg_parser = action_parsers.add_parser(
@@ -1825,7 +1960,8 @@ def make_parsers(schema, unparsed_arguments):
         help='Path of repository to pass to Borg, defaults to the configured repositories, quoted globs supported',
     )
     borg_group.add_argument(
-        '--archive', help='Archive name, hash, or series to pass to Borg (or "latest")'
+        '--archive',
+        help='Archive name, hash, or series to pass to Borg (or "latest")',
     )
     borg_group.add_argument(
         '--',
@@ -1839,6 +1975,9 @@ def make_parsers(schema, unparsed_arguments):
     return global_parser, action_parsers, global_plus_action_parser
 
 
+HIGHLANDER_ACTION_ARGUMENTS_COUNT = 2  # 1 for "global" + 1 for the action
+
+
 def parse_arguments(schema, *unparsed_arguments):
     '''
     Given a configuration schema dict and the command-line arguments with which this script was
@@ -1849,21 +1988,22 @@ def parse_arguments(schema, *unparsed_arguments):
     Raise SystemExit with an error code of 0 if "--help" was requested.
     '''
     global_parser, action_parsers, global_plus_action_parser = make_parsers(
-        schema, unparsed_arguments
+        schema,
+        unparsed_arguments,
     )
     arguments, remaining_action_arguments = parse_arguments_for_actions(
-        unparsed_arguments, action_parsers.choices, global_parser
+        unparsed_arguments,
+        action_parsers.choices,
+        global_parser,
     )
 
     if not arguments['global'].config_paths:
         arguments['global'].config_paths = collect.get_default_config_paths(expand_home=True)
 
     for action_name in ('bootstrap', 'generate', 'validate'):
-        if (
-            action_name in arguments.keys() and len(arguments.keys()) > 2
-        ):  # 2 = 1 for 'global' + 1 for the action
+        if action_name in arguments and len(arguments) > HIGHLANDER_ACTION_ARGUMENTS_COUNT:
             raise ValueError(
-                f'The {action_name} action cannot be combined with other actions. Please run it separately.'
+                f'The {action_name} action cannot be combined with other actions. Please run it separately.',
             )
 
     unknown_arguments = get_unparsable_arguments(remaining_action_arguments)
@@ -1875,11 +2015,11 @@ def parse_arguments(schema, *unparsed_arguments):
 
         global_plus_action_parser.print_usage()
         raise ValueError(
-            f"Unrecognized argument{'s' if len(unknown_arguments) > 1 else ''}: {' '.join(unknown_arguments)}"
+            f"Unrecognized argument{'s' if len(unknown_arguments) > 1 else ''}: {' '.join(unknown_arguments)}",
         )
 
     if (
-        ('list' in arguments and 'repo-info' in arguments and arguments['list'].json)
+        ('list' in arguments and 'repo-info' in arguments and arguments['list'].json)  # noqa: PLR0916
         or ('list' in arguments and 'info' in arguments and arguments['list'].json)
         or ('repo-info' in arguments and 'info' in arguments and arguments['repo-info'].json)
     ):
@@ -1887,23 +2027,23 @@ def parse_arguments(schema, *unparsed_arguments):
 
     if 'list' in arguments and (arguments['list'].prefix and arguments['list'].match_archives):
         raise ValueError(
-            'With the list action, only one of --prefix or --match-archives flags can be used.'
+            'With the list action, only one of --prefix or --match-archives flags can be used.',
         )
 
     if 'repo-list' in arguments and (
         arguments['repo-list'].prefix and arguments['repo-list'].match_archives
     ):
         raise ValueError(
-            'With the repo-list action, only one of --prefix or --match-archives flags can be used.'
+            'With the repo-list action, only one of --prefix or --match-archives flags can be used.',
         )
 
-    if 'info' in arguments and (
+    if 'info' in arguments and (  # noqa: PLR0916
         (arguments['info'].archive and arguments['info'].prefix)
         or (arguments['info'].archive and arguments['info'].match_archives)
         or (arguments['info'].prefix and arguments['info'].match_archives)
     ):
         raise ValueError(
-            'With the info action, only one of --archive, --prefix, or --match-archives flags can be used.'
+            'With the info action, only one of --archive, --prefix, or --match-archives flags can be used.',
         )
 
     if 'borg' in arguments and arguments['global'].dry_run:

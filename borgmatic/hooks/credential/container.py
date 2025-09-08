@@ -34,7 +34,8 @@ def load_credential(hook_config, config, credential_parameters):
                 config.get('working_directory', ''),
                 (hook_config or {}).get('secrets_directory', DEFAULT_SECRETS_DIRECTORY),
                 secret_name,
-            )
+            ),
+            encoding='utf-8',
         ) as secret_file:
             return secret_file.read().rstrip(os.linesep)
     except (FileNotFoundError, OSError) as error:

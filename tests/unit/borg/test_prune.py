@@ -8,7 +8,10 @@ from ..test_verbosity import insert_logging_mock
 
 
 def insert_execute_command_mock(
-    prune_command, output_log_level, working_directory=None, borg_exit_codes=None
+    prune_command,
+    output_log_level,
+    working_directory=None,
+    borg_exit_codes=None,
 ):
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
@@ -37,7 +40,9 @@ def test_make_prune_flags_returns_flags_from_config():
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     result = module.make_prune_flags(
-        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+        config,
+        flexmock(match_archives=None),
+        local_borg_version='1.2.3',
     )
 
     assert result == BASE_PRUNE_FLAGS
@@ -52,7 +57,9 @@ def test_make_prune_flags_with_keep_13weekly_and_keep_3monthly():
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     result = module.make_prune_flags(
-        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+        config,
+        flexmock(match_archives=None),
+        local_borg_version='1.2.3',
     )
 
     expected = (
@@ -68,20 +75,22 @@ def test_make_prune_flags_with_keep_13weekly_and_keep_3monthly():
 def test_make_prune_flags_accepts_prefix_with_placeholders():
     config = {
         'keep_daily': 1,
-        'prefix': 'Documents_{hostname}-{now}',  # noqa: FS003
+        'prefix': 'Documents_{hostname}-{now}',
     }
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     result = module.make_prune_flags(
-        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+        config,
+        flexmock(match_archives=None),
+        local_borg_version='1.2.3',
     )
 
     expected = (
         '--keep-daily',
         '1',
         '--match-archives',
-        'sh:Documents_{hostname}-{now}*',  # noqa: FS003
+        'sh:Documents_{hostname}-{now}*',
     )
 
     assert result == expected
@@ -90,20 +99,22 @@ def test_make_prune_flags_accepts_prefix_with_placeholders():
 def test_make_prune_flags_with_prefix_without_borg_features_uses_glob_archives():
     config = {
         'keep_daily': 1,
-        'prefix': 'Documents_{hostname}-{now}',  # noqa: FS003
+        'prefix': 'Documents_{hostname}-{now}',
     }
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     result = module.make_prune_flags(
-        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+        config,
+        flexmock(match_archives=None),
+        local_borg_version='1.2.3',
     )
 
     expected = (
         '--keep-daily',
         '1',
         '--glob-archives',
-        'Documents_{hostname}-{now}*',  # noqa: FS003
+        'Documents_{hostname}-{now}*',
     )
 
     assert result == expected
@@ -111,7 +122,7 @@ def test_make_prune_flags_with_prefix_without_borg_features_uses_glob_archives()
 
 def test_make_prune_flags_prefers_prefix_to_archive_name_format():
     config = {
-        'archive_name_format': 'bar-{now}',  # noqa: FS003
+        'archive_name_format': 'bar-{now}',
         'keep_daily': 1,
         'prefix': 'bar-',
     }
@@ -119,14 +130,16 @@ def test_make_prune_flags_prefers_prefix_to_archive_name_format():
     flexmock(module.flags).should_receive('make_match_archives_flags').never()
 
     result = module.make_prune_flags(
-        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+        config,
+        flexmock(match_archives=None),
+        local_borg_version='1.2.3',
     )
 
     expected = (
         '--keep-daily',
         '1',
         '--match-archives',
-        'sh:bar-*',  # noqa: FS003
+        'sh:bar-*',
     )
 
     assert result == expected
@@ -134,24 +147,28 @@ def test_make_prune_flags_prefers_prefix_to_archive_name_format():
 
 def test_make_prune_flags_without_prefix_uses_archive_name_format_instead():
     config = {
-        'archive_name_format': 'bar-{now}',  # noqa: FS003
+        'archive_name_format': 'bar-{now}',
         'keep_daily': 1,
         'prefix': None,
     }
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, 'bar-{now}', '1.2.3'  # noqa: FS003
+        None,
+        'bar-{now}',
+        '1.2.3',
     ).and_return(('--match-archives', 'sh:bar-*')).once()
 
     result = module.make_prune_flags(
-        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+        config,
+        flexmock(match_archives=None),
+        local_borg_version='1.2.3',
     )
 
     expected = (
         '--keep-daily',
         '1',
         '--match-archives',
-        'sh:bar-*',  # noqa: FS003
+        'sh:bar-*',
     )
 
     assert result == expected
@@ -159,25 +176,29 @@ def test_make_prune_flags_without_prefix_uses_archive_name_format_instead():
 
 def test_make_prune_flags_without_prefix_uses_match_archives_option():
     config = {
-        'archive_name_format': 'bar-{now}',  # noqa: FS003
+        'archive_name_format': 'bar-{now}',
         'match_archives': 'foo*',
         'keep_daily': 1,
         'prefix': None,
     }
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        'foo*', 'bar-{now}', '1.2.3'  # noqa: FS003
+        'foo*',
+        'bar-{now}',
+        '1.2.3',
     ).and_return(('--match-archives', 'sh:bar-*')).once()
 
     result = module.make_prune_flags(
-        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+        config,
+        flexmock(match_archives=None),
+        local_borg_version='1.2.3',
     )
 
     expected = (
         '--keep-daily',
         '1',
         '--match-archives',
-        'sh:bar-*',  # noqa: FS003
+        'sh:bar-*',
     )
 
     assert result == expected
@@ -192,7 +213,9 @@ def test_make_prune_flags_ignores_keep_exclude_tags_in_config():
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     result = module.make_prune_flags(
-        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+        config,
+        flexmock(match_archives=None),
+        local_borg_version='1.2.3',
     )
 
     assert result == ('--keep-daily', '1')
@@ -207,9 +230,10 @@ def test_prune_archives_calls_borg_with_flags():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
-    insert_execute_command_mock(PRUNE_COMMAND + ('repo',), logging.INFO)
+    insert_execute_command_mock((*PRUNE_COMMAND, 'repo'), logging.INFO)
 
     prune_arguments = flexmock(statistics=False, list_details=False)
     module.prune_archives(
@@ -228,9 +252,10 @@ def test_prune_archives_with_log_info_calls_borg_with_info_flag():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
-    insert_execute_command_mock(PRUNE_COMMAND + ('--info', 'repo'), logging.INFO)
+    insert_execute_command_mock((*PRUNE_COMMAND, '--info', 'repo'), logging.INFO)
     insert_logging_mock(logging.INFO)
 
     prune_arguments = flexmock(statistics=False, list_details=False)
@@ -250,9 +275,10 @@ def test_prune_archives_with_log_debug_calls_borg_with_debug_flag():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
-    insert_execute_command_mock(PRUNE_COMMAND + ('--debug', '--show-rc', 'repo'), logging.INFO)
+    insert_execute_command_mock((*PRUNE_COMMAND, '--debug', '--show-rc', 'repo'), logging.INFO)
     insert_logging_mock(logging.DEBUG)
 
     prune_arguments = flexmock(statistics=False, list_details=False)
@@ -272,9 +298,10 @@ def test_prune_archives_with_dry_run_calls_borg_with_dry_run_flag():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
-    insert_execute_command_mock(PRUNE_COMMAND + ('--dry-run', 'repo'), logging.INFO)
+    insert_execute_command_mock((*PRUNE_COMMAND, '--dry-run', 'repo'), logging.INFO)
 
     prune_arguments = flexmock(statistics=False, list_details=False)
     module.prune_archives(
@@ -293,9 +320,10 @@ def test_prune_archives_with_local_path_calls_borg_via_local_path():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
-    insert_execute_command_mock(('borg1',) + PRUNE_COMMAND[1:] + ('repo',), logging.INFO)
+    insert_execute_command_mock(('borg1', *PRUNE_COMMAND[1:], 'repo'), logging.INFO)
 
     prune_arguments = flexmock(statistics=False, list_details=False)
     module.prune_archives(
@@ -315,11 +343,12 @@ def test_prune_archives_with_exit_codes_calls_borg_using_them():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
     borg_exit_codes = flexmock()
     insert_execute_command_mock(
-        ('borg',) + PRUNE_COMMAND[1:] + ('repo',),
+        ('borg', *PRUNE_COMMAND[1:], 'repo'),
         logging.INFO,
         borg_exit_codes=borg_exit_codes,
     )
@@ -341,9 +370,10 @@ def test_prune_archives_with_remote_path_calls_borg_with_remote_path_flags():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
-    insert_execute_command_mock(PRUNE_COMMAND + ('--remote-path', 'borg1', 'repo'), logging.INFO)
+    insert_execute_command_mock((*PRUNE_COMMAND, '--remote-path', 'borg1', 'repo'), logging.INFO)
 
     prune_arguments = flexmock(statistics=False, list_details=False)
     module.prune_archives(
@@ -363,9 +393,10 @@ def test_prune_archives_with_stats_config_calls_borg_with_stats_flag():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
-    insert_execute_command_mock(PRUNE_COMMAND + ('--stats', 'repo'), module.borgmatic.logger.ANSWER)
+    insert_execute_command_mock((*PRUNE_COMMAND, '--stats', 'repo'), module.borgmatic.logger.ANSWER)
 
     prune_arguments = flexmock(statistics=None, list_details=False)
     module.prune_archives(
@@ -384,9 +415,10 @@ def test_prune_archives_with_list_config_calls_borg_with_list_flag():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
-    insert_execute_command_mock(PRUNE_COMMAND + ('--list', 'repo'), module.borgmatic.logger.ANSWER)
+    insert_execute_command_mock((*PRUNE_COMMAND, '--list', 'repo'), module.borgmatic.logger.ANSWER)
 
     prune_arguments = flexmock(statistics=False, list_details=None)
     module.prune_archives(
@@ -406,9 +438,10 @@ def test_prune_archives_with_umask_calls_borg_with_umask_flags():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
-    insert_execute_command_mock(PRUNE_COMMAND + ('--umask', '077', 'repo'), logging.INFO)
+    insert_execute_command_mock((*PRUNE_COMMAND, '--umask', '077', 'repo'), logging.INFO)
 
     prune_arguments = flexmock(statistics=False, list_details=False)
     module.prune_archives(
@@ -427,9 +460,10 @@ def test_prune_archives_with_log_json_calls_borg_with_log_json_flag():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
-    insert_execute_command_mock(PRUNE_COMMAND + ('--log-json', 'repo'), logging.INFO)
+    insert_execute_command_mock((*PRUNE_COMMAND, '--log-json', 'repo'), logging.INFO)
 
     prune_arguments = flexmock(statistics=False, list_details=False)
     module.prune_archives(
@@ -449,9 +483,10 @@ def test_prune_archives_with_lock_wait_calls_borg_with_lock_wait_flags():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
-    insert_execute_command_mock(PRUNE_COMMAND + ('--lock-wait', '5', 'repo'), logging.INFO)
+    insert_execute_command_mock((*PRUNE_COMMAND, '--lock-wait', '5', 'repo'), logging.INFO)
 
     prune_arguments = flexmock(statistics=False, list_details=False)
     module.prune_archives(
@@ -470,10 +505,12 @@ def test_prune_archives_with_extra_borg_options_calls_borg_with_extra_options():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
     insert_execute_command_mock(
-        PRUNE_COMMAND + ('--extra', '--options', 'value with space', 'repo'), logging.INFO
+        (*PRUNE_COMMAND, '--extra', '--options', 'value with space', 'repo'),
+        logging.INFO,
     )
 
     prune_arguments = flexmock(statistics=False, list_details=False)
@@ -505,11 +542,12 @@ def test_prune_archives_with_date_based_matching_calls_borg_with_date_based_flag
             '1w',
             '--match-archives',
             None,
-        )
+        ),
     )
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
@@ -544,7 +582,12 @@ def test_prune_archives_with_date_based_matching_calls_borg_with_date_based_flag
     )
 
     prune_arguments = flexmock(
-        statistics=False, list_details=False, newer='1d', newest='1y', older='1m', oldest='1w'
+        statistics=False,
+        list_details=False,
+        newer='1d',
+        newest='1y',
+        older='1m',
+        oldest='1w',
     )
     module.prune_archives(
         dry_run=False,
@@ -562,10 +605,13 @@ def test_prune_archives_calls_borg_with_working_directory():
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '1.2.3',
     ).and_return(False)
     insert_execute_command_mock(
-        PRUNE_COMMAND + ('repo',), logging.INFO, working_directory='/working/dir'
+        (*PRUNE_COMMAND, 'repo'),
+        logging.INFO,
+        working_directory='/working/dir',
     )
 
     prune_arguments = flexmock(statistics=False, list_details=False)
@@ -585,9 +631,10 @@ def test_prune_archives_calls_borg_without_stats_when_feature_is_not_available()
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS, '2.0.0b10'
+        module.feature.Feature.NO_PRUNE_STATS,
+        '2.0.0b10',
     ).and_return(True)
-    insert_execute_command_mock(PRUNE_COMMAND + ('repo',), logging.ANSWER)
+    insert_execute_command_mock((*PRUNE_COMMAND, 'repo'), logging.ANSWER)
 
     prune_arguments = flexmock(statistics=True, list_details=False)
     module.prune_archives(

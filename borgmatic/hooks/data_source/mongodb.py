@@ -78,14 +78,15 @@ def dump_data_sources(
         else:
             dump.create_named_pipe_for_dump(dump_filename)
             processes.append(
-                execute_command(command, shell=True, run_to_completion=False)  # noqa: S604
+                execute_command(command, shell=True, run_to_completion=False),  # noqa: S604
             )
+
     if not dry_run:
         patterns.append(
             borgmatic.borg.pattern.Pattern(
                 os.path.join(borgmatic_runtime_directory, 'mongodb_databases'),
                 source=borgmatic.borg.pattern.Pattern_source.HOOK,
-            )
+            ),
         )
 
     return processes
@@ -103,7 +104,7 @@ def make_password_config_file(password):
     logger.debug('Writing MongoDB password to configuration file pipe')
 
     read_file_descriptor, write_file_descriptor = os.pipe()
-    os.write(write_file_descriptor, f'password: {password}'.encode('utf-8'))
+    os.write(write_file_descriptor, f'password: {password}'.encode())
     os.close(write_file_descriptor)
 
     # This plus subprocess.Popen(..., close_fds=False) in execute.py is necessary for the database
@@ -134,8 +135,9 @@ def build_dump_command(database, config, dump_filename, dump_format):
                 '--username',
                 shlex.quote(
                     borgmatic.hooks.credential.parse.resolve_credential(
-                        database['username'], config
-                    )
+                        database['username'],
+                        config,
+                    ),
                 ),
             )
             if 'username' in database
@@ -158,7 +160,10 @@ def build_dump_command(database, config, dump_filename, dump_format):
 
 
 def remove_data_source_dumps(
-    databases, config, borgmatic_runtime_directory, dry_run
+    databases,
+    config,
+    borgmatic_runtime_directory,
+    dry_run,
 ):  # pragma: no cover
     '''
     Remove all database dump files for this hook regardless of the given databases. Use the
@@ -169,7 +174,10 @@ def remove_data_source_dumps(
 
 
 def make_data_source_dump_patterns(
-    databases, config, borgmatic_runtime_directory, name=None
+    databases,
+    config,
+    borgmatic_runtime_directory,
+    name=None,
 ):  # pragma: no cover
     '''
     Given a sequence of configurations dicts, a configuration dict, the borgmatic runtime directory,
@@ -181,10 +189,14 @@ def make_data_source_dump_patterns(
     return (
         dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
         dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_runtime_directory), name, hostname='*'
+            make_dump_path(borgmatic_runtime_directory),
+            name,
+            hostname='*',
         ),
         dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_source_directory), name, hostname='*'
+            make_dump_path(borgmatic_source_directory),
+            name,
+            hostname='*',
         ),
     )
 
@@ -215,7 +227,11 @@ def restore_data_source_dump(
         data_source.get('hostname'),
     )
     restore_command = build_restore_command(
-        extract_process, data_source, config, dump_filename, connection_params
+        extract_process,
+        data_source,
+        config,
+        dump_filename,
+        connection_params,
     )
 
     logger.debug(f"Restoring MongoDB database {data_source['name']}{dry_run_label}")
@@ -237,7 +253,8 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
     Return the custom mongorestore_command from a single database configuration.
     '''
     hostname = connection_params['hostname'] or database.get(
-        'restore_hostname', database.get('hostname')
+        'restore_hostname',
+        database.get('hostname'),
     )
     port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
     username = borgmatic.hooks.credential.parse.resolve_credential(
@@ -255,28 +272,37 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
         config,
     )
 
-    command = list(
+    command = [
         shlex.quote(part)
         for part in shlex.split(database.get('mongorestore_command') or 'mongorestore')
-    )
+    ]
+
     if extract_process:
         command.append('--archive')
     else:
         command.extend(('--dir', dump_filename))
+
     if database['name'] != 'all':
         command.extend(('--drop',))
+
     if hostname:
         command.extend(('--host', hostname))
+
     if port:
         command.extend(('--port', str(port)))
+
     if username:
         command.extend(('--username', username))
+
     if password:
         command.extend(('--config', make_password_config_file(password)))
+
     if 'authentication_database' in database:
         command.extend(('--authenticationDatabase', database['authentication_database']))
+
     if 'restore_options' in database:
         command.extend(database['restore_options'].split(' '))
+
     if database.get('schemas'):
         for schema in database['schemas']:
             command.extend(('--nsInclude', schema))

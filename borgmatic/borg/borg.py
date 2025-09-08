@@ -39,9 +39,9 @@ def run_arbitrary_borg(
         borg_command = tuple(options[:command_options_start_index])
         command_options = tuple(options[command_options_start_index:])
 
-        if borg_command and borg_command[0] in borgmatic.commands.arguments.ACTION_ALIASES.keys():
+        if borg_command and borg_command[0] in borgmatic.commands.arguments.ACTION_ALIASES:
             logger.warning(
-                f"Borg's {borg_command[0]} subcommand is supported natively by borgmatic. Try this instead: borgmatic {borg_command[0]}"
+                f"Borg's {borg_command[0]} subcommand is supported natively by borgmatic. Try this instead: borgmatic {borg_command[0]}",
             )
     except IndexError:
         borg_command = ()
@@ -57,16 +57,14 @@ def run_arbitrary_borg(
         + command_options
     )
 
-    return execute_command(
+    return execute_command(  # noqa: S604
         tuple(shlex.quote(part) for part in full_command),
         output_file=DO_NOT_CAPTURE,
-        shell=True,  # noqa: S604
+        shell=True,
         environment=dict(
             (environment.make_environment(config) or {}),
-            **{
-                'BORG_REPO': repository_path,
-                'ARCHIVE': archive if archive else '',
-            },
+            BORG_REPO=repository_path,
+            ARCHIVE=archive if archive else '',
         ),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,

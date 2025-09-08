@@ -15,12 +15,15 @@ TIMEOUT_SECONDS = 10
 
 
 def initialize_monitor(
-    ping_url, config, config_filename, monitoring_log_level, dry_run
+    ping_url,
+    config,
+    config_filename,
+    monitoring_log_level,
+    dry_run,
 ):  # pragma: no cover
     '''
     No initialization is necessary for this monitor.
     '''
-    pass
 
 
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
@@ -46,7 +49,11 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
         try:
-            response = requests.get(ping_url, timeout=TIMEOUT_SECONDS)
+            response = requests.get(
+                ping_url,
+                timeout=TIMEOUT_SECONDS,
+                headers={'User-Agent': 'borgmatic'},
+            )
             if not response.ok:
                 response.raise_for_status()
         except requests.exceptions.RequestException as error:
@@ -57,4 +64,3 @@ def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  #
     '''
     No destruction is necessary for this monitor.
     '''
-    pass

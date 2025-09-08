@@ -8,9 +8,8 @@ eleventyNavigation:
 ## Source code
 
 To get set up to develop on borgmatic, first [`install
-pipx`](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation)
-to make managing your borgmatic environment easier without impacting other
-Python applications on your system.
+uv`](https://docs.astral.sh/uv/) to make managing your borgmatic environment
+easier without impacting other Python applications on your system.
 
 Then, clone borgmatic via HTTPS or SSH:
 
@@ -31,8 +30,8 @@ changes work:
 
 ```bash
 cd borgmatic
-pipx ensurepath
-pipx install --editable .
+uv tool update-shell
+uv tool install --editable .
 ```
 
 Or to work on the [Apprise
@@ -40,7 +39,7 @@ hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-ho
 change that last line to:
 
 ```bash
-pipx install --editable .[Apprise]
+uv tool install --editable .[Apprise]
 ```
 
 To get oriented with the borgmatic source code, have a look at the [source
@@ -50,38 +49,52 @@ code reference](https://torsion.org/borgmatic/docs/reference/source-code/).
 ## Automated tests
 
 Assuming you've cloned the borgmatic source code as described above and you're
-in the `borgmatic/` working copy, install tox, which is used for setting up
-testing environments. You can either install a system package of tox (likely
-called `tox` or `python-tox`) or you can install tox with pipx:
+in the `borgmatic/` working copy, install [tox](https://tox.wiki/) and
+[tox-uv](https://github.com/tox-dev/tox-uv) using uv, which are used for setting
+up testing environments:
 
 ```bash
-pipx install tox
+uv tool install tox --with tox-uv
 ```
 
-Finally, to actually run tests, run tox from inside the borgmatic
-sourcedirectory:
+Also install [Ruff](https://docs.astral.sh/ruff/), which borgmatic uses for code
+linting and formatting:
+
+```bash
+uv tool install ruff
+```
+
+Finally, to actually run tests, run tox from inside the borgmatic source
+directory:
 
 ```bash
 tox
 ```
 
-### Code formatting
-
-If when running tests, you get an error from the
-[Black](https://black.readthedocs.io/en/stable/) code formatter about files
-that would be reformatted, you can ask Black to format them for you via the
-following:
+That runs tests against all supported versions of Python, which takes a while.
+So if you'd only like to run tests against a single version of Python, e.g.
+Python 3.13:
 
 ```bash
-tox -e black
+tox -e py313
 ```
 
-And if you get a complaint from the
-[isort](https://github.com/timothycrosley/isort) Python import orderer, you
-can ask isort to order your imports for you:
+
+### Code style
+
+If when running tests, you get an error from Ruff's linter about files that
+don't meet linting requirements, you can ask Ruff to attempt to fix them for you
+via the following:
 
 ```bash
-tox -e isort
+tox -e lint-fix
+```
+
+And if you get an error from the Ruff's code formatter about files that would be
+reformatted, you can ask Ruff to format them for you:
+
+```bash
+tox -e format
 ```
 
 Similarly, if you get errors about spelling mistakes in source code, you can
@@ -89,7 +102,7 @@ ask [codespell](https://github.com/codespell-project/codespell) to correct
 them:
 
 ```bash
-tox -e codespell
+tox -e spell
 ```
 
 
@@ -116,7 +129,6 @@ you may need to run with `sudo`.
 
 #### Podman
 
-<span class="minilink minilink-addedin">New in version 1.7.12</span>
 borgmatic's end-to-end tests optionally support using
 [rootless](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
 [Podman](https://podman.io/) instead of Docker.
@@ -139,8 +151,9 @@ will automatically use your non-root Podman socket instead of a Docker socket.
 
 ## Code style
 
-Start with [PEP 8](https://www.python.org/dev/peps/pep-0008/). But then, apply
-the following deviations from it:
+When writing code for borgmatic, start with [PEP
+8](https://www.python.org/dev/peps/pep-0008/). But then, apply the following
+deviations from it:
 
  * For strings, prefer single quotes over double quotes.
  * Limit all lines to a maximum of 100 characters.
@@ -162,11 +175,8 @@ the following deviations from it:
  * Prefer functional code where it makes sense, e.g. when constructing a
    command (to subsequently execute imperatively).
 
-borgmatic uses the [Black](https://black.readthedocs.io/en/stable/) code
-formatter, the [Flake8](http://flake8.pycqa.org/en/latest/) code checker, and
-the [isort](https://github.com/timothycrosley/isort) import orderer, so
-certain code style requirements are enforced when running automated tests. See
-the Black, Flake8, and isort documentation for more information.
+Since borgmatic uses Ruff for code lining and formatting, many other code style
+requirements are also enforced when running automated tests.
 
 
 ## Continuous integration
@@ -179,6 +189,7 @@ which runs the test suite and updates
 [documentation](https://torsion.org/borgmatic/). These builds are also linked
 from the [commits for the main
 branch](https://projects.torsion.org/borgmatic-collective/borgmatic/commits/branch/main).
+
 
 ## Documentation development
 
@@ -207,7 +218,6 @@ additional documentation changes to take effect.
 
 #### Podman
 
-<span class="minilink minilink-addedin">New in version 1.7.12</span>
 borgmatic's developer build for documentation optionally supports using
 [rootless](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
 [Podman](https://podman.io/) instead of Docker.

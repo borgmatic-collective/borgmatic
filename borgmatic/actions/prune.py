@@ -22,7 +22,8 @@ def run_prune(
     Run the "prune" action for the given repository.
     '''
     if prune_arguments.repository and not borgmatic.config.validate.repositories_match(
-        repository, prune_arguments.repository
+        repository,
+        prune_arguments.repository,
     ):
         return
 
