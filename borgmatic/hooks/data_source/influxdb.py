@@ -75,7 +75,7 @@ def dump_data_sources(
         )
 
         dump.create_parent_directory_for_dump(dump_filename)
-        execute_command(command, shell=True)
+        execute_command(command, shell=True)  # noqa: S604
 
     if not dry_run:
         patterns.append(
