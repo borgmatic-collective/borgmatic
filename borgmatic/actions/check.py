@@ -11,12 +11,14 @@ import shlex
 import shutil
 import textwrap
 
+import borgmatic.actions.config.bootstrap
 import borgmatic.actions.pattern
 import borgmatic.borg.check
 import borgmatic.borg.create
 import borgmatic.borg.environment
 import borgmatic.borg.extract
 import borgmatic.borg.list
+import borgmatic.borg.pattern
 import borgmatic.borg.repo_list
 import borgmatic.borg.state
 import borgmatic.config.paths
@@ -358,11 +360,15 @@ def collect_spot_check_source_paths(
     local_path,
     remote_path,
     borgmatic_runtime_directory,
+    bootstrap_config_paths,
 ):
     '''
     Given a repository configuration dict, a configuration dict, the local Borg version, global
-    arguments as an argparse.Namespace instance, the local Borg path, and the remote Borg path,
-    collect the source paths that Borg would use in an actual create (but only include files).
+    arguments as an argparse.Namespace instance, the local Borg path, the remote Borg path, and the
+    bootstrap configuration paths as read from an archive's manifest, collect the source paths that
+    Borg would use in an actual create (but only include files). As part of this, include the
+    bootstrap configuration paths, so that any configuration files included in the archive to
+    support bootstrapping are also spot checked.
     '''
     stream_processes = any(
         borgmatic.hooks.dispatch.call_hooks(
@@ -382,7 +388,14 @@ def collect_spot_check_source_paths(
             list_details=True,
         ),
         patterns=borgmatic.actions.pattern.process_patterns(
-            borgmatic.actions.pattern.collect_patterns(config),
+            borgmatic.actions.pattern.collect_patterns(config)
+            + tuple(
+                borgmatic.borg.pattern.Pattern(
+                    config_path,
+                    source=borgmatic.borg.pattern.Pattern_source.INTERNAL,
+                )
+                for config_path in bootstrap_config_paths
+            ),
             config,
             working_directory,
         ),
@@ -609,17 +622,6 @@ def spot_check(
             'The data_tolerance_percentage must be less than or equal to the data_sample_percentage',
         )
 
-    source_paths = collect_spot_check_source_paths(
-        repository,
-        config,
-        local_borg_version,
-        global_arguments,
-        local_path,
-        remote_path,
-        borgmatic_runtime_directory,
-    )
-    logger.debug(f'{len(source_paths)} total source paths for spot check')
-
     archive = borgmatic.borg.repo_list.resolve_archive_name(
         repository['path'],
         'latest',
@@ -630,6 +632,27 @@ def spot_check(
         remote_path,
     )
     logger.debug(f'Using archive {archive} for spot check')
+
+    bootstrap_config_paths = borgmatic.actions.config.bootstrap.load_config_paths_from_archive(
+        repository['path'],
+        archive,
+        config,
+        local_borg_version,
+        global_arguments,
+        borgmatic_runtime_directory,
+    )
+
+    source_paths = collect_spot_check_source_paths(
+        repository,
+        config,
+        local_borg_version,
+        global_arguments,
+        local_path,
+        remote_path,
+        borgmatic_runtime_directory,
+        bootstrap_config_paths,
+    )
+    logger.debug(f'{len(source_paths)} total source paths for spot check')
 
     archive_paths = collect_spot_check_archive_paths(
         repository,
