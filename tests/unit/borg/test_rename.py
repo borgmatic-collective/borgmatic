@@ -11,10 +11,10 @@ def test_rename_archive_calls_borg_rename():
     # Note: make_rename_command is tested as integration test.
     flexmock(module).should_receive('make_rename_command').and_return(('borg', 'fake-command'))
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
-        environment
+        environment,
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
-        '/working/dir'
+        '/working/dir',
     )
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
         ('borg', 'fake-command'),

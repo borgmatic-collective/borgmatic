@@ -21,7 +21,7 @@ def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/run/borgmatic/database'
+        '/run/borgmatic/database',
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
@@ -49,12 +49,12 @@ def test_dump_data_sources_dumps_each_database():
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/run/borgmatic/database'
+        '/run/borgmatic/database',
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
     flexmock(module).should_receive('execute_command').and_return(processes[0]).and_return(
-        processes[1]
+        processes[1],
     )
 
     assert (
@@ -78,7 +78,7 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/run/borgmatic/database'
+        '/run/borgmatic/database',
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -119,7 +119,7 @@ def test_dump_data_sources_runs_non_default_sqlite_with_path_injection_attack_ge
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/run/borgmatic/database'
+        '/run/borgmatic/database',
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -158,7 +158,7 @@ def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/run/borgmatic'
+        '/run/borgmatic',
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -185,10 +185,10 @@ def test_dump_data_sources_with_name_all_warns_and_dumps_all_databases():
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.logger).should_receive(
-        'warning'
+        'warning',
     ).twice()  # once for the name=all, once for the non-existent path
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/run/borgmatic/database'
+        '/run/borgmatic/database',
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -212,7 +212,7 @@ def test_dump_data_sources_does_not_dump_if_dry_run():
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/run/borgmatic'
+        '/run/borgmatic',
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
@@ -295,7 +295,11 @@ def test_restore_data_source_dump_runs_non_default_sqlite_restores_database():
 
 def test_restore_data_source_dump_with_connection_params_uses_connection_params_for_restore():
     hook_config = [
-        {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
+        {
+            'path': '/path/to/database',
+            'name': 'database',
+            'restore_path': 'config/path/to/database',
+        },
     ]
     extract_process = flexmock(stdout=flexmock())
 
@@ -324,7 +328,11 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
 
 def test_restore_data_source_dump_runs_non_default_sqlite_with_connection_params_uses_connection_params_for_restore():
     hook_config = [
-        {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
+        {
+            'path': '/path/to/database',
+            'name': 'database',
+            'restore_path': 'config/path/to/database',
+        },
     ]
     extract_process = flexmock(stdout=flexmock())
 
@@ -356,7 +364,11 @@ def test_restore_data_source_dump_runs_non_default_sqlite_with_connection_params
 
 def test_restore_data_source_dump_without_connection_params_uses_restore_params_in_config_for_restore():
     hook_config = [
-        {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
+        {
+            'path': '/path/to/database',
+            'name': 'database',
+            'restore_path': 'config/path/to/database',
+        },
     ]
     extract_process = flexmock(stdout=flexmock())
 
@@ -390,7 +402,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_without_connection_par
             'name': 'database',
             'sqlite_restore_command': 'custom_sqlite',
             'restore_path': 'config/path/to/database',
-        }
+        },
     ]
     extract_process = flexmock(stdout=flexmock())
 

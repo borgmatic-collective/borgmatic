@@ -90,7 +90,9 @@ from borgmatic.config import normalize as module
     ),
 )
 def test_normalize_sections_moves_section_options_to_global_scope(
-    config, expected_config, produces_logs
+    config,
+    expected_config,
+    produces_logs,
 ):
     logs = module.normalize_sections('test.yaml', config)
 
@@ -132,7 +134,7 @@ def test_normalize_sections_with_only_scalar_raises():
                 'commands': [
                     {'before': 'repository', 'run': ['foo', 'bar']},
                     {'after': 'repository', 'run': ['baz']},
-                ]
+                ],
             },
             True,
         ),
@@ -142,7 +144,7 @@ def test_normalize_sections_with_only_scalar_raises():
                 'commands': [
                     {'before': 'action', 'when': ['create'], 'run': ['foo', 'bar']},
                     {'after': 'action', 'when': ['create'], 'run': ['baz']},
-                ]
+                ],
             },
             True,
         ),
@@ -152,7 +154,7 @@ def test_normalize_sections_with_only_scalar_raises():
                 'commands': [
                     {'before': 'action', 'when': ['prune'], 'run': ['foo', 'bar']},
                     {'after': 'action', 'when': ['prune'], 'run': ['baz']},
-                ]
+                ],
             },
             True,
         ),
@@ -162,7 +164,7 @@ def test_normalize_sections_with_only_scalar_raises():
                 'commands': [
                     {'before': 'action', 'when': ['compact'], 'run': ['foo', 'bar']},
                     {'after': 'action', 'when': ['compact'], 'run': ['baz']},
-                ]
+                ],
             },
             True,
         ),
@@ -172,7 +174,7 @@ def test_normalize_sections_with_only_scalar_raises():
                 'commands': [
                     {'before': 'action', 'when': ['check'], 'run': ['foo', 'bar']},
                     {'after': 'action', 'when': ['check'], 'run': ['baz']},
-                ]
+                ],
             },
             True,
         ),
@@ -182,7 +184,7 @@ def test_normalize_sections_with_only_scalar_raises():
                 'commands': [
                     {'before': 'action', 'when': ['extract'], 'run': ['foo', 'bar']},
                     {'after': 'action', 'when': ['extract'], 'run': ['baz']},
-                ]
+                ],
             },
             True,
         ),
@@ -195,7 +197,7 @@ def test_normalize_sections_with_only_scalar_raises():
                         'when': ['create', 'prune', 'compact', 'check'],
                         'run': ['foo', 'bar'],
                     },
-                ]
+                ],
             },
             True,
         ),
@@ -205,7 +207,7 @@ def test_normalize_sections_with_only_scalar_raises():
                 'commands': [
                     {'before': 'everything', 'when': ['create'], 'run': ['foo', 'bar']},
                     {'after': 'everything', 'when': ['create'], 'run': ['baz']},
-                ]
+                ],
             },
             True,
         ),
@@ -217,7 +219,9 @@ def test_normalize_sections_with_only_scalar_raises():
     ),
 )
 def test_normalize_commands_moves_individual_command_hooks_to_unified_commands(
-    config, expected_config, produces_logs
+    config,
+    expected_config,
+    produces_logs,
 ):
     flexmock(module).should_receive('make_command_hook_deprecation_log').and_return(flexmock())
 
@@ -382,7 +386,9 @@ def test_normalize_commands_moves_individual_command_hooks_to_unified_commands(
     ),
 )
 def test_normalize_applies_hard_coded_normalization_to_config(
-    config, expected_config, produces_logs
+    config,
+    expected_config,
+    produces_logs,
 ):
     flexmock(module).should_receive('normalize_sections').and_return([])
     flexmock(module).should_receive('normalize_commands').and_return([])

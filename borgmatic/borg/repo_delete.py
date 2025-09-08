@@ -9,6 +9,9 @@ import borgmatic.execute
 logger = logging.getLogger(__name__)
 
 
+FORCE_HARDER_FLAG_COUNT = 2
+
+
 def make_repo_delete_command(
     repository,
     config,
@@ -28,7 +31,8 @@ def make_repo_delete_command(
         + (
             ('repo-delete',)
             if borgmatic.borg.feature.available(
-                borgmatic.borg.feature.Feature.REPO_DELETE, local_borg_version
+                borgmatic.borg.feature.Feature.REPO_DELETE,
+                local_borg_version,
             )
             else ('delete',)
         )
@@ -41,12 +45,16 @@ def make_repo_delete_command(
         + borgmatic.borg.flags.make_flags('lock-wait', config.get('lock_wait'))
         + borgmatic.borg.flags.make_flags('list', config.get('list_details'))
         + (
-            (('--force',) + (('--force',) if repo_delete_arguments.force >= 2 else ()))
+            (
+                ('--force',)
+                + (('--force',) if repo_delete_arguments.force >= FORCE_HARDER_FLAG_COUNT else ())
+            )
             if repo_delete_arguments.force
             else ()
         )
         + borgmatic.borg.flags.make_flags_from_arguments(
-            repo_delete_arguments, excludes=('list_details', 'force', 'repository')
+            repo_delete_arguments,
+            excludes=('list_details', 'force', 'repository'),
         )
         + borgmatic.borg.flags.make_repository_flags(repository['path'], local_borg_version)
     )

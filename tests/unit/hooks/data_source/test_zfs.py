@@ -9,12 +9,12 @@ from borgmatic.hooks.data_source import zfs as module
 
 def test_get_datasets_to_backup_filters_datasets_by_patterns():
     flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
+        'execute_command_and_capture_output',
     ).and_return(
         'dataset\t/dataset\ton\t-\nother\t/other\ton\t-',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).with_args('/dataset', object).and_return(
         (
             Pattern(
@@ -22,10 +22,10 @@ def test_get_datasets_to_backup_filters_datasets_by_patterns():
                 Pattern_type.ROOT,
                 source=Pattern_source.CONFIG,
             ),
-        )
+        ),
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).with_args('/other', object).and_return(())
 
     assert module.get_datasets_to_backup(
@@ -64,12 +64,12 @@ def test_get_datasets_to_backup_filters_datasets_by_patterns():
 
 def test_get_datasets_to_backup_skips_non_root_patterns():
     flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
+        'execute_command_and_capture_output',
     ).and_return(
         'dataset\t/dataset\ton\t-\nother\t/other\ton\t-',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).with_args('/dataset', object).and_return(
         (
             Pattern(
@@ -77,10 +77,10 @@ def test_get_datasets_to_backup_skips_non_root_patterns():
                 Pattern_type.EXCLUDE,
                 source=Pattern_source.CONFIG,
             ),
-        )
+        ),
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).with_args('/other', object).and_return(())
 
     assert (
@@ -110,12 +110,12 @@ def test_get_datasets_to_backup_skips_non_root_patterns():
 
 def test_get_datasets_to_backup_skips_non_config_patterns():
     flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
+        'execute_command_and_capture_output',
     ).and_return(
         'dataset\t/dataset\ton\t-\nother\t/other\ton\t-',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).with_args('/dataset', object).and_return(
         (
             Pattern(
@@ -123,10 +123,10 @@ def test_get_datasets_to_backup_skips_non_config_patterns():
                 Pattern_type.ROOT,
                 source=Pattern_source.HOOK,
             ),
-        )
+        ),
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).with_args('/other', object).and_return(())
 
     assert (
@@ -156,15 +156,15 @@ def test_get_datasets_to_backup_skips_non_config_patterns():
 
 def test_get_datasets_to_backup_filters_datasets_by_user_property():
     flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
+        'execute_command_and_capture_output',
     ).and_return(
         'dataset\t/dataset\ton\tauto\nother\t/other\ton\t-',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).with_args('/dataset', object).and_return(())
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).with_args('/other', object).and_return(())
 
     assert module.get_datasets_to_backup(
@@ -182,15 +182,15 @@ def test_get_datasets_to_backup_filters_datasets_by_user_property():
 
 def test_get_datasets_to_backup_filters_datasets_by_canmount_property():
     flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
+        'execute_command_and_capture_output',
     ).and_return(
         'dataset\t/dataset\toff\t-\nother\t/other\ton\t-',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).with_args('/dataset', object).and_return((Pattern('/dataset'),))
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).with_args('/other', object).and_return(())
 
     assert (
@@ -208,12 +208,12 @@ def test_get_datasets_to_backup_filters_datasets_by_canmount_property():
 
 def test_get_datasets_to_backup_with_invalid_list_output_raises():
     flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
+        'execute_command_and_capture_output',
     ).and_return(
         'dataset',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).never()
 
     with pytest.raises(ValueError, match='zfs'):
@@ -222,12 +222,12 @@ def test_get_datasets_to_backup_with_invalid_list_output_raises():
 
 def test_get_all_dataset_mount_points_omits_none():
     flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
+        'execute_command_and_capture_output',
     ).and_return(
         '/dataset\nnone\n/other',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).and_return((Pattern('/dataset'),))
 
     assert module.get_all_dataset_mount_points('zfs') == (
@@ -238,12 +238,12 @@ def test_get_all_dataset_mount_points_omits_none():
 
 def test_get_all_dataset_mount_points_omits_duplicates():
     flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
+        'execute_command_and_capture_output',
     ).and_return(
         '/dataset\n/other\n/dataset\n/other',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_patterns'
+        'get_contained_patterns',
     ).and_return((Pattern('/dataset'),))
 
     assert module.get_all_dataset_mount_points('zfs') == (
@@ -281,15 +281,18 @@ def test_get_all_dataset_mount_points_omits_duplicates():
     ),
 )
 def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_path(
-    pattern, expected_pattern
+    pattern,
+    expected_pattern,
 ):
     flexmock(module.hashlib).should_receive('shake_256').and_return(
-        flexmock(hexdigest=lambda length: 'b33f')
+        flexmock(hexdigest=lambda length: 'b33f'),
     )
 
     assert (
         module.make_borg_snapshot_pattern(
-            pattern, flexmock(mount_point='/something'), '/run/borgmatic'
+            pattern,
+            flexmock(mount_point='/something'),
+            '/run/borgmatic',
         )
         == expected_pattern
     )
@@ -309,7 +312,7 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
         full_snapshot_name,
     ).once()
     flexmock(module.hashlib).should_receive('shake_256').and_return(
-        flexmock(hexdigest=lambda length: 'b33f')
+        flexmock(hexdigest=lambda length: 'b33f'),
     )
     snapshot_mount_path = '/run/borgmatic/zfs_snapshots/b33f/./mnt/dataset'
     flexmock(module).should_receive('mount_snapshot').with_args(
@@ -318,7 +321,9 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
         module.os.path.normpath(snapshot_mount_path),
     ).once()
     flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
-        Pattern('/mnt/dataset/subdir'), dataset, '/run/borgmatic'
+        Pattern('/mnt/dataset/subdir'),
+        dataset,
+        '/run/borgmatic',
     ).and_return(Pattern('/run/borgmatic/zfs_snapshots/b33f/./mnt/dataset/subdir'))
     patterns = [Pattern('/mnt/dataset/subdir')]
 
@@ -373,7 +378,7 @@ def test_dump_data_sources_uses_custom_commands():
         full_snapshot_name,
     ).once()
     flexmock(module.hashlib).should_receive('shake_256').and_return(
-        flexmock(hexdigest=lambda length: 'b33f')
+        flexmock(hexdigest=lambda length: 'b33f'),
     )
     snapshot_mount_path = '/run/borgmatic/zfs_snapshots/b33f/./mnt/dataset'
     flexmock(module).should_receive('mount_snapshot').with_args(
@@ -382,7 +387,9 @@ def test_dump_data_sources_uses_custom_commands():
         module.os.path.normpath(snapshot_mount_path),
     ).once()
     flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
-        Pattern('/mnt/dataset/subdir'), dataset, '/run/borgmatic'
+        Pattern('/mnt/dataset/subdir'),
+        dataset,
+        '/run/borgmatic',
     ).and_return(Pattern('/run/borgmatic/zfs_snapshots/b33f/./mnt/dataset/subdir'))
     patterns = [Pattern('/mnt/dataset/subdir')]
     hook_config = {
@@ -410,7 +417,7 @@ def test_dump_data_sources_uses_custom_commands():
 
 def test_dump_data_sources_with_dry_run_skips_commands_and_does_not_touch_patterns():
     flexmock(module).should_receive('get_datasets_to_backup').and_return(
-        (flexmock(name='dataset', mount_point='/mnt/dataset'),)
+        (flexmock(name='dataset', mount_point='/mnt/dataset'),),
     )
     flexmock(module.os).should_receive('getpid').and_return(1234)
     flexmock(module).should_receive('snapshot_dataset').never()
@@ -446,7 +453,7 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
         full_snapshot_name,
     ).once()
     flexmock(module.hashlib).should_receive('shake_256').and_return(
-        flexmock(hexdigest=lambda length: 'b33f')
+        flexmock(hexdigest=lambda length: 'b33f'),
     )
     snapshot_mount_path = '/run/borgmatic/zfs_snapshots/b33f/./mnt/dataset'
     flexmock(module).should_receive('mount_snapshot').with_args(
@@ -455,7 +462,9 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
         module.os.path.normpath(snapshot_mount_path),
     ).once()
     flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
-        Pattern('/mnt/dataset/subdir'), dataset, '/run/borgmatic'
+        Pattern('/mnt/dataset/subdir'),
+        dataset,
+        '/run/borgmatic',
     ).and_return(Pattern('/run/borgmatic/zfs_snapshots/b33f/./mnt/dataset/subdir'))
     patterns = [Pattern('/hmm')]
 
@@ -476,7 +485,7 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
 
 def test_get_all_snapshots_parses_list_output():
     flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
+        'execute_command_and_capture_output',
     ).and_return(
         'dataset1@borgmatic-1234\ndataset2@borgmatic-4567',
     )
@@ -487,22 +496,24 @@ def test_get_all_snapshots_parses_list_output():
 def test_remove_data_source_dumps_unmounts_and_destroys_snapshots():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(
-        lambda path: [path.replace('*', 'b33f')]
+        lambda path: [path.replace('*', 'b33f')],
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
     flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
-        'umount', '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
+        'umount',
+        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset',
     ).once()
     flexmock(module).should_receive('get_all_snapshots').and_return(
-        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid')
+        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid'),
     )
     flexmock(module).should_receive('destroy_snapshot').with_args(
-        'zfs', 'dataset@borgmatic-1234'
+        'zfs',
+        'dataset@borgmatic-1234',
     ).once()
 
     module.remove_data_source_dumps(
@@ -516,22 +527,24 @@ def test_remove_data_source_dumps_unmounts_and_destroys_snapshots():
 def test_remove_data_source_dumps_use_custom_commands():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(
-        lambda path: [path.replace('*', 'b33f')]
+        lambda path: [path.replace('*', 'b33f')],
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
     flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
-        '/usr/local/bin/umount', '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
+        '/usr/local/bin/umount',
+        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset',
     ).once()
     flexmock(module).should_receive('get_all_snapshots').and_return(
-        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid')
+        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid'),
     )
     flexmock(module).should_receive('destroy_snapshot').with_args(
-        '/usr/local/bin/zfs', 'dataset@borgmatic-1234'
+        '/usr/local/bin/zfs',
+        'dataset@borgmatic-1234',
     ).once()
     hook_config = {'zfs_command': '/usr/local/bin/zfs', 'umount_command': '/usr/local/bin/umount'}
 
@@ -546,7 +559,7 @@ def test_remove_data_source_dumps_use_custom_commands():
 def test_remove_data_source_dumps_bails_for_missing_hook_configuration():
     flexmock(module).should_receive('get_all_dataset_mount_points').never()
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).never()
 
     module.remove_data_source_dumps(
@@ -560,7 +573,7 @@ def test_remove_data_source_dumps_bails_for_missing_hook_configuration():
 def test_remove_data_source_dumps_bails_for_missing_zfs_command():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_raise(FileNotFoundError)
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).never()
     hook_config = {'zfs_command': 'wtf'}
 
@@ -574,10 +587,10 @@ def test_remove_data_source_dumps_bails_for_missing_zfs_command():
 
 def test_remove_data_source_dumps_bails_for_zfs_command_error():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_raise(
-        module.subprocess.CalledProcessError(1, 'wtf')
+        module.subprocess.CalledProcessError(1, 'wtf'),
     )
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).never()
     hook_config = {'zfs_command': 'wtf'}
 
@@ -592,16 +605,17 @@ def test_remove_data_source_dumps_bails_for_zfs_command_error():
 def test_remove_data_source_dumps_bails_for_missing_umount_command():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(
-        lambda path: [path.replace('*', 'b33f')]
+        lambda path: [path.replace('*', 'b33f')],
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
     flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
-        '/usr/local/bin/umount', '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
+        '/usr/local/bin/umount',
+        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset',
     ).and_raise(FileNotFoundError)
     flexmock(module).should_receive('get_all_snapshots').never()
     flexmock(module).should_receive('destroy_snapshot').never()
@@ -618,22 +632,24 @@ def test_remove_data_source_dumps_bails_for_missing_umount_command():
 def test_remove_data_source_dumps_swallows_umount_command_error():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(
-        lambda path: [path.replace('*', 'b33f')]
+        lambda path: [path.replace('*', 'b33f')],
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
     flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
-        '/usr/local/bin/umount', '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
+        '/usr/local/bin/umount',
+        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset',
     ).and_raise(module.subprocess.CalledProcessError(1, 'wtf'))
     flexmock(module).should_receive('get_all_snapshots').and_return(
-        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid')
+        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid'),
     )
     flexmock(module).should_receive('destroy_snapshot').with_args(
-        '/usr/local/bin/zfs', 'dataset@borgmatic-1234'
+        '/usr/local/bin/zfs',
+        'dataset@borgmatic-1234',
     ).once()
     hook_config = {'zfs_command': '/usr/local/bin/zfs', 'umount_command': '/usr/local/bin/umount'}
 
@@ -648,19 +664,20 @@ def test_remove_data_source_dumps_swallows_umount_command_error():
 def test_remove_data_source_dumps_skips_unmount_snapshot_directories_that_are_not_actually_directories():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(
-        lambda path: [path.replace('*', 'b33f')]
+        lambda path: [path.replace('*', 'b33f')],
     )
     flexmock(module.os.path).should_receive('isdir').and_return(False)
     flexmock(module.shutil).should_receive('rmtree').never()
     flexmock(module).should_receive('unmount_snapshot').never()
     flexmock(module).should_receive('get_all_snapshots').and_return(
-        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid')
+        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid'),
     )
     flexmock(module).should_receive('destroy_snapshot').with_args(
-        'zfs', 'dataset@borgmatic-1234'
+        'zfs',
+        'dataset@borgmatic-1234',
     ).once()
 
     module.remove_data_source_dumps(
@@ -674,25 +691,26 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_directories_that_are_no
 def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_that_are_not_actually_directories():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(
-        lambda path: [path.replace('*', 'b33f')]
+        lambda path: [path.replace('*', 'b33f')],
     )
     flexmock(module.os.path).should_receive('isdir').with_args(
-        '/run/borgmatic/zfs_snapshots/b33f'
+        '/run/borgmatic/zfs_snapshots/b33f',
     ).and_return(True)
     flexmock(module.os.path).should_receive('isdir').with_args(
-        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
+        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset',
     ).and_return(False)
     flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').never()
     flexmock(module).should_receive('get_all_snapshots').and_return(
-        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid')
+        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid'),
     )
     flexmock(module).should_receive('destroy_snapshot').with_args(
-        'zfs', 'dataset@borgmatic-1234'
+        'zfs',
+        'dataset@borgmatic-1234',
     ).once()
 
     module.remove_data_source_dumps(
@@ -706,27 +724,28 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_that_are_no
 def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_that_are_empty():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(
-        lambda path: [path.replace('*', 'b33f')]
+        lambda path: [path.replace('*', 'b33f')],
     )
     flexmock(module.os.path).should_receive('isdir').with_args(
-        '/run/borgmatic/zfs_snapshots/b33f'
+        '/run/borgmatic/zfs_snapshots/b33f',
     ).and_return(True)
     flexmock(module.os.path).should_receive('isdir').with_args(
-        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
+        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset',
     ).and_return(True)
     flexmock(module.os).should_receive('listdir').with_args(
-        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
+        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset',
     ).and_return([])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').never()
     flexmock(module).should_receive('get_all_snapshots').and_return(
-        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid')
+        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid'),
     )
     flexmock(module).should_receive('destroy_snapshot').with_args(
-        'zfs', 'dataset@borgmatic-1234'
+        'zfs',
+        'dataset@borgmatic-1234',
     ).once()
 
     module.remove_data_source_dumps(
@@ -740,25 +759,26 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_that_are_em
 def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_after_rmtree_succeeds():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(
-        lambda path: [path.replace('*', 'b33f')]
+        lambda path: [path.replace('*', 'b33f')],
     )
     flexmock(module.os.path).should_receive('isdir').with_args(
-        '/run/borgmatic/zfs_snapshots/b33f'
+        '/run/borgmatic/zfs_snapshots/b33f',
     ).and_return(True)
     flexmock(module.os.path).should_receive('isdir').with_args(
-        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
+        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset',
     ).and_return(True).and_return(False)
     flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').never()
     flexmock(module).should_receive('get_all_snapshots').and_return(
-        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid')
+        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid'),
     )
     flexmock(module).should_receive('destroy_snapshot').with_args(
-        'zfs', 'dataset@borgmatic-1234'
+        'zfs',
+        'dataset@borgmatic-1234',
     ).once()
 
     module.remove_data_source_dumps(
@@ -772,17 +792,17 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_after_rmtre
 def test_remove_data_source_dumps_with_dry_run_skips_unmount_and_destroy():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
-        'replace_temporary_subdirectory_with_glob'
+        'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(
-        lambda path: [path.replace('*', 'b33f')]
+        lambda path: [path.replace('*', 'b33f')],
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
     flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree').never()
     flexmock(module).should_receive('unmount_snapshot').never()
     flexmock(module).should_receive('get_all_snapshots').and_return(
-        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid')
+        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid'),
     )
     flexmock(module).should_receive('destroy_snapshot').never()
 

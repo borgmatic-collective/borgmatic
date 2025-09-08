@@ -65,13 +65,17 @@ class Loki_log_buffer:
             # Skip as there are not logs to send yet
             return
 
-        request_body = self.to_request()
         self.root['streams'][0]['values'] = []
-        request_header = {'Content-Type': 'application/json'}
 
         try:
             result = requests.post(
-                self.url, headers=request_header, data=request_body, timeout=TIMEOUT_SECONDS
+                self.url,
+                data=self.to_request(),
+                timeout=TIMEOUT_SECONDS,
+                headers={
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'borgmatic',
+                },
             )
             result.raise_for_status()
         except requests.RequestException:
@@ -140,9 +144,8 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     Add an entry to the loki logger with the current state.
     '''
     for handler in tuple(logging.getLogger().handlers):
-        if isinstance(handler, Loki_log_handler):
-            if state in MONITOR_STATE_TO_LOKI.keys():
-                handler.raw(f'{MONITOR_STATE_TO_LOKI[state]} backup')
+        if isinstance(handler, Loki_log_handler) and state in MONITOR_STATE_TO_LOKI:
+            handler.raw(f'{MONITOR_STATE_TO_LOKI[state]} backup')
 
 
 def destroy_monitor(hook_config, config, monitoring_log_level, dry_run):

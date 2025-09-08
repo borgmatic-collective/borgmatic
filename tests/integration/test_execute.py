@@ -15,12 +15,14 @@ def test_log_outputs_logs_each_line_separately():
 
     hi_process = subprocess.Popen(['echo', 'hi'], stdout=subprocess.PIPE)
     flexmock(module).should_receive('output_buffer_for_process').with_args(
-        hi_process, ()
+        hi_process,
+        (),
     ).and_return(hi_process.stdout)
 
     there_process = subprocess.Popen(['echo', 'there'], stdout=subprocess.PIPE)
     flexmock(module).should_receive('output_buffer_for_process').with_args(
-        there_process, ()
+        there_process,
+        (),
     ).and_return(there_process.stdout)
 
     module.log_outputs(
@@ -39,12 +41,14 @@ def test_log_outputs_skips_logs_for_process_with_none_stdout():
 
     hi_process = subprocess.Popen(['echo', 'hi'], stdout=None)
     flexmock(module).should_receive('output_buffer_for_process').with_args(
-        hi_process, ()
+        hi_process,
+        (),
     ).and_return(hi_process.stdout)
 
     there_process = subprocess.Popen(['echo', 'there'], stdout=subprocess.PIPE)
     flexmock(module).should_receive('output_buffer_for_process').with_args(
-        there_process, ()
+        there_process,
+        (),
     ).and_return(there_process.stdout)
 
     module.log_outputs(
@@ -62,12 +66,14 @@ def test_log_outputs_returns_output_without_logging_for_output_log_level_none():
 
     hi_process = subprocess.Popen(['echo', 'hi'], stdout=subprocess.PIPE)
     flexmock(module).should_receive('output_buffer_for_process').with_args(
-        hi_process, ()
+        hi_process,
+        (),
     ).and_return(hi_process.stdout)
 
     there_process = subprocess.Popen(['echo', 'there'], stdout=subprocess.PIPE)
     flexmock(module).should_receive('output_buffer_for_process').with_args(
-        there_process, ()
+        there_process,
+        (),
     ).and_return(there_process.stdout)
 
     captured_outputs = module.log_outputs(
@@ -111,7 +117,9 @@ def test_log_outputs_logs_multiline_error_output():
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
     process = subprocess.Popen(
-        ['python', '-c', 'foopydoo'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        ['python', '-c', 'foopydoo'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
     )
     flexmock(module).should_receive('output_buffer_for_process').and_return(process.stdout)
     flexmock(module.logger).should_call('log').at_least().times(3)
@@ -165,7 +173,9 @@ def test_log_outputs_kills_other_processes_and_raises_when_one_errors():
         None,
     ).and_return(module.Exit_status.ERROR)
     other_process = subprocess.Popen(
-        ['sleep', '2'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        ['sleep', '2'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
     )
     flexmock(module).should_receive('interpret_exit_code').with_args(
         ['sleep', '2'],
@@ -174,10 +184,11 @@ def test_log_outputs_kills_other_processes_and_raises_when_one_errors():
         None,
     ).and_return(module.Exit_status.SUCCESS)
     flexmock(module).should_receive('output_buffer_for_process').with_args(process, ()).and_return(
-        process.stdout
+        process.stdout,
     )
     flexmock(module).should_receive('output_buffer_for_process').with_args(
-        other_process, ()
+        other_process,
+        (),
     ).and_return(other_process.stdout)
     flexmock(other_process).should_receive('kill').once()
 
@@ -212,7 +223,9 @@ def test_log_outputs_kills_other_processes_and_returns_when_one_exits_with_warni
         None,
     ).and_return(module.Exit_status.WARNING)
     other_process = subprocess.Popen(
-        ['sleep', '2'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        ['sleep', '2'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
     )
     flexmock(module).should_receive('interpret_exit_code').with_args(
         ['sleep', '2'],
@@ -221,10 +234,11 @@ def test_log_outputs_kills_other_processes_and_returns_when_one_exits_with_warni
         None,
     ).and_return(module.Exit_status.SUCCESS)
     flexmock(module).should_receive('output_buffer_for_process').with_args(process, ()).and_return(
-        process.stdout
+        process.stdout,
     )
     flexmock(module).should_receive('output_buffer_for_process').with_args(
-        other_process, ()
+        other_process,
+        (),
     ).and_return(other_process.stdout)
     flexmock(other_process).should_receive('kill').once()
 
@@ -257,13 +271,18 @@ def test_log_outputs_vents_other_processes_when_one_exits():
         stderr=subprocess.PIPE,
     )
     other_process = subprocess.Popen(
-        ['true'], stdin=process.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        ['true'],
+        stdin=process.stdout,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
     )
     flexmock(module).should_receive('output_buffer_for_process').with_args(
-        process, (process.stdout,)
+        process,
+        (process.stdout,),
     ).and_return(process.stderr)
     flexmock(module).should_receive('output_buffer_for_process').with_args(
-        other_process, (process.stdout,)
+        other_process,
+        (process.stdout,),
     ).and_return(other_process.stdout)
     flexmock(process.stdout).should_call('readline').at_least().once()
 
@@ -290,13 +309,18 @@ def test_log_outputs_does_not_error_when_one_process_exits():
         stderr=None,
     )
     other_process = subprocess.Popen(
-        ['true'], stdin=process.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        ['true'],
+        stdin=process.stdout,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
     )
     flexmock(module).should_receive('output_buffer_for_process').with_args(
-        process, (process.stdout,)
+        process,
+        (process.stdout,),
     ).and_return(process.stderr)
     flexmock(module).should_receive('output_buffer_for_process').with_args(
-        other_process, (process.stdout,)
+        other_process,
+        (process.stdout,),
     ).and_return(other_process.stdout)
 
     module.log_outputs(

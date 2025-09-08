@@ -15,7 +15,7 @@ def generate_configuration(config_path, repository_path):
         open(config_path)
         .read()
         .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
-        .replace('- ssh://user@backupserver/./{fqdn}', '')  # noqa: FS003
+        .replace('- ssh://user@backupserver/./{fqdn}', '')
         .replace('- /var/local/backups/local.borg', '')
         .replace('- /home/user/path with spaces', '')
         .replace('- /home', f'- {config_path}')
@@ -39,15 +39,15 @@ def test_override_gets_normalized():
         generate_configuration(config_path, repository_path)
 
         subprocess.check_call(
-            f'borgmatic -v 2 --config {config_path} repo-create --encryption repokey'.split(' ')
+            f'borgmatic -v 2 --config {config_path} repo-create --encryption repokey'.split(' '),
         )
 
         # Run borgmatic with an override structured for an outdated config file format. If
         # normalization is working, it should get normalized and shouldn't error.
         subprocess.check_call(
             f'borgmatic create --config {config_path} --override hooks.healthchecks=http://localhost:8888/someuuid'.split(
-                ' '
-            )
+                ' ',
+            ),
         )
     finally:
         os.chdir(original_working_directory)

@@ -31,7 +31,7 @@ def probe_and_include_file(filename, include_directories, config_paths):
             return load_configuration(candidate_filename, config_paths)
 
     raise FileNotFoundError(
-        f'Could not find include {filename} at {" or ".join(candidate_filenames)}'
+        f'Could not find include {filename} at {" or ".join(candidate_filenames)}',
     )
 
 
@@ -69,7 +69,7 @@ def include_configuration(loader, filename_node, include_directory, config_paths
         ]
 
     raise ValueError(
-        'The value given for the !include tag is invalid; use a single filename or a list of filenames instead'
+        'The value given for the !include tag is invalid; use a single filename or a list of filenames instead',
     )
 
 
@@ -85,7 +85,7 @@ def raise_retain_node_error(loader, node):
     '''
     if isinstance(node, (ruamel.yaml.nodes.MappingNode, ruamel.yaml.nodes.SequenceNode)):
         raise ValueError(
-            'The !retain tag may only be used within a configuration file containing a merged !include tag.'
+            'The !retain tag may only be used within a configuration file containing a merged !include tag.',
         )
 
     raise ValueError('The !retain tag may only be used on a mapping or list.')
@@ -100,7 +100,7 @@ def raise_omit_node_error(loader, node):
     tags are handled by deep_merge_nodes() below.
     '''
     raise ValueError(
-        'The !omit tag may only be used on a scalar (e.g., string) or list element within a configuration file containing a merged !include tag.'
+        'The !omit tag may only be used on a scalar (e.g., string) or list element within a configuration file containing a merged !include tag.',
     )
 
 
@@ -111,9 +111,13 @@ class Include_constructor(ruamel.yaml.SafeConstructor):
     '''
 
     def __init__(
-        self, preserve_quotes=None, loader=None, include_directory=None, config_paths=None
+        self,
+        preserve_quotes=None,
+        loader=None,
+        include_directory=None,
+        config_paths=None,
     ):
-        super(Include_constructor, self).__init__(preserve_quotes, loader)
+        super().__init__(preserve_quotes, loader)
         self.add_constructor(
             '!include',
             functools.partial(
@@ -147,7 +151,7 @@ class Include_constructor(ruamel.yaml.SafeConstructor):
         representer = ruamel.yaml.representer.SafeRepresenter()
 
         for index, (key_node, value_node) in enumerate(node.value):
-            if key_node.tag == u'tag:yaml.org,2002:merge' and value_node.tag == '!include':
+            if key_node.tag == 'tag:yaml.org,2002:merge' and value_node.tag == '!include':
                 # Replace the merge include with a sequence of included configuration nodes ready
                 # for merging. The construct_object() call here triggers include_configuration()
                 # among other constructors.
@@ -157,7 +161,7 @@ class Include_constructor(ruamel.yaml.SafeConstructor):
                 )
 
         # This super().flatten_mapping() call actually performs "<<" merges.
-        super(Include_constructor, self).flatten_mapping(node)
+        super().flatten_mapping(node)
 
         node.value = deep_merge_nodes(node.value)
 
@@ -179,7 +183,7 @@ def load_configuration(filename, config_paths=None):
     # because yaml.Constructor has to be an actual class.)
     class Include_constructor_with_extras(Include_constructor):
         def __init__(self, preserve_quotes=None, loader=None):
-            super(Include_constructor_with_extras, self).__init__(
+            super().__init__(
                 preserve_quotes,
                 loader,
                 include_directory=os.path.dirname(filename),
@@ -190,7 +194,7 @@ def load_configuration(filename, config_paths=None):
     yaml.Constructor = Include_constructor_with_extras
     config_paths.add(filename)
 
-    with open(filename) as file:
+    with open(filename, encoding='utf-8') as file:
         return yaml.load(file.read())
 
 
@@ -318,17 +322,18 @@ def deep_merge_nodes(nodes):
 
     # Bucket the nodes by their keys. Then merge all of the values sharing the same key.
     for key_name, grouped_nodes in itertools.groupby(
-        sorted(nodes, key=get_node_key_name), get_node_key_name
+        sorted(nodes, key=get_node_key_name),
+        get_node_key_name,
     ):
-        grouped_nodes = list(grouped_nodes)
+        grouped_nodes = list(grouped_nodes)  # noqa: PLW2901
 
         # The merged node inherits its attributes from the final node in the group.
         (last_node_key, last_node_value) = grouped_nodes[-1]
-        value_types = set(type(value) for (_, value) in grouped_nodes)
+        value_types = {type(value) for (_, value) in grouped_nodes}
 
         if len(value_types) > 1:
             raise ValueError(
-                f'Incompatible types found when trying to merge "{key_name}:" values across configuration files: {", ".join(value_type.id for value_type in value_types)}'
+                f'Incompatible types found when trying to merge "{key_name}:" values across configuration files: {", ".join(value_type.id for value_type in value_types)}',
             )
 
         # If we're dealing with MappingNodes, recurse and merge its values as well.
@@ -351,7 +356,7 @@ def deep_merge_nodes(nodes):
                             comment=last_node_value.comment,
                             anchor=last_node_value.anchor,
                         ),
-                    )
+                    ),
                 )
 
             continue
@@ -374,7 +379,7 @@ def deep_merge_nodes(nodes):
                             comment=last_node_value.comment,
                             anchor=last_node_value.anchor,
                         ),
-                    )
+                    ),
                 )
 
             continue

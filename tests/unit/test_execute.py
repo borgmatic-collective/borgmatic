@@ -44,7 +44,11 @@ from borgmatic import execute as module
     ),
 )
 def test_interpret_exit_code_respects_exit_code_and_borg_local_path(
-    command, exit_code, borg_local_path, borg_exit_codes, expected_result
+    command,
+    exit_code,
+    borg_local_path,
+    borg_exit_codes,
+    expected_result,
 ):
     assert (
         module.interpret_exit_code(command, exit_code, borg_local_path, borg_exit_codes)
@@ -87,22 +91,28 @@ def test_append_last_lines_under_max_line_count_appends():
     flexmock(module.logger).should_receive('log').once()
 
     module.append_last_lines(
-        last_lines, captured_output=flexmock(), line='line', output_log_level=flexmock()
+        last_lines,
+        captured_output=flexmock(),
+        line='line',
+        output_log_level=flexmock(),
     )
 
     assert last_lines == ['last', 'line']
 
 
 def test_append_last_lines_over_max_line_count_trims_and_appends():
-    original_last_lines = [str(number) for number in range(0, module.ERROR_OUTPUT_MAX_LINE_COUNT)]
+    original_last_lines = [str(number) for number in range(module.ERROR_OUTPUT_MAX_LINE_COUNT)]
     last_lines = list(original_last_lines)
     flexmock(module.logger).should_receive('log').once()
 
     module.append_last_lines(
-        last_lines, captured_output=flexmock(), line='line', output_log_level=flexmock()
+        last_lines,
+        captured_output=flexmock(),
+        line='line',
+        output_log_level=flexmock(),
     )
 
-    assert last_lines == original_last_lines[1:] + ['line']
+    assert last_lines == [*original_last_lines[1:], 'line']
 
 
 def test_append_last_lines_with_output_log_level_none_appends_captured_output():
@@ -111,7 +121,10 @@ def test_append_last_lines_with_output_log_level_none_appends_captured_output():
     flexmock(module.logger).should_receive('log').never()
 
     module.append_last_lines(
-        last_lines, captured_output=captured_output, line='line', output_log_level=None
+        last_lines,
+        captured_output=captured_output,
+        line='line',
+        output_log_level=None,
     )
 
     assert captured_output == ['captured', 'line']
@@ -172,7 +185,11 @@ def test_mask_command_secrets_passes_through_other_commands():
     ),
 )
 def test_log_command_logs_command_constructed_from_arguments(
-    full_command, input_file, output_file, environment, expected_result
+    full_command,
+    input_file,
+    output_file,
+    environment,
+    expected_result,
 ):
     flexmock(module).should_receive('mask_command_secrets').replace_with(lambda command: command)
     flexmock(module.logger).should_receive('debug').with_args(expected_result).once()
@@ -403,7 +420,7 @@ def test_execute_command_and_capture_output_returns_output_when_process_error_is
         close_fds=False,
     ).and_raise(subprocess.CalledProcessError(1, full_command, err_output)).once()
     flexmock(module).should_receive('interpret_exit_code').and_return(
-        module.Exit_status.SUCCESS
+        module.Exit_status.SUCCESS,
     ).once()
 
     output = module.execute_command_and_capture_output(full_command)
@@ -425,7 +442,7 @@ def test_execute_command_and_capture_output_raises_when_command_errors():
         close_fds=False,
     ).and_raise(subprocess.CalledProcessError(2, full_command, expected_output)).once()
     flexmock(module).should_receive('interpret_exit_code').and_return(
-        module.Exit_status.ERROR
+        module.Exit_status.ERROR,
     ).once()
 
     with pytest.raises(subprocess.CalledProcessError):
@@ -466,7 +483,9 @@ def test_execute_command_and_capture_output_returns_output_with_environment():
     ).and_return(flexmock(decode=lambda: expected_output)).once()
 
     output = module.execute_command_and_capture_output(
-        full_command, shell=False, environment={'a': 'b'}
+        full_command,
+        shell=False,
+        environment={'a': 'b'},
     )
 
     assert output == expected_output
@@ -487,7 +506,9 @@ def test_execute_command_and_capture_output_returns_output_with_working_director
     ).and_return(flexmock(decode=lambda: expected_output)).once()
 
     output = module.execute_command_and_capture_output(
-        full_command, shell=False, working_directory='/working'
+        full_command,
+        shell=False,
+        working_directory='/working',
     )
 
     assert output == expected_output
@@ -580,7 +601,9 @@ def test_execute_command_with_processes_calls_full_command_without_capturing_out
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command_with_processes(
-        full_command, processes, output_file=module.DO_NOT_CAPTURE
+        full_command,
+        processes,
+        output_file=module.DO_NOT_CAPTURE,
     )
 
     assert output is None
@@ -671,7 +694,9 @@ def test_execute_command_with_processes_calls_full_command_with_working_director
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command_with_processes(
-        full_command, processes, working_directory='/working'
+        full_command,
+        processes,
+        working_directory='/working',
     )
 
     assert output is None

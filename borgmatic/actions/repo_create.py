@@ -19,7 +19,8 @@ def run_repo_create(
     Run the "repo-create" action for the given repository.
     '''
     if repo_create_arguments.repository and not borgmatic.config.validate.repositories_match(
-        repository, repo_create_arguments.repository
+        repository,
+        repo_create_arguments.repository,
     ):
         return
 
@@ -29,7 +30,7 @@ def run_repo_create(
 
     if not encryption_mode:
         raise ValueError(
-            'With the repo-create action, either the --encryption flag or the repository encryption option is required.'
+            'With the repo-create action, either the --encryption flag or the repository encryption option is required.',
         )
 
     borgmatic.borg.repo_create.create_repository(

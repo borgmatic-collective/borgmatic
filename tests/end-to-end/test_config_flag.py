@@ -16,7 +16,7 @@ def generate_configuration(config_path):
     config = (
         open(config_path)
         .read()
-        .replace('- ssh://user@backupserver/./{fqdn}', '')  # noqa: FS003
+        .replace('- ssh://user@backupserver/./{fqdn}', '')
         .replace('- /var/local/backups/local.borg', '')
         .replace('- /home/user/path with spaces', '')
         .replace('- /home', f'- {config_path}')
@@ -41,14 +41,14 @@ def test_config_flags_do_not_error():
 
         subprocess.check_call(
             shlex.split(
-                f'borgmatic -v 2 --config {config_path} --repositories "[{{path: {repository_path}, label: repo}}]" repo-create --encryption repokey'
-            )
+                f'borgmatic -v 2 --config {config_path} --repositories "[{{path: {repository_path}, label: repo}}]" repo-create --encryption repokey',
+            ),
         )
 
         subprocess.check_call(
             shlex.split(
-                f'borgmatic create --config {config_path} --repositories[0].path "{repository_path}"'
-            )
+                f'borgmatic create --config {config_path} --repositories[0].path "{repository_path}"',
+            ),
         )
     finally:
         os.chdir(original_working_directory)

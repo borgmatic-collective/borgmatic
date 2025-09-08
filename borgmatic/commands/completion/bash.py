@@ -23,7 +23,7 @@ def bash_completion():
     borgmatic's command-line argument parsers.
     '''
     (
-        unused_global_parser,
+        _,
         action_parsers,
         global_plus_action_parser,
     ) = borgmatic.commands.arguments.make_parsers(
@@ -33,6 +33,7 @@ def bash_completion():
     global_flags = parser_flags(global_plus_action_parser)
 
     # Avert your eyes.
+    # fmt: off
     return '\n'.join(
         (
             'check_version() {',
@@ -47,24 +48,22 @@ def bash_completion():
             '    fi',
             '}',
             'complete_borgmatic() {',
-        )
-        + tuple(
+            *tuple(
             '''    if [[ " ${COMP_WORDS[*]} " =~ " %s " ]]; then
         COMPREPLY=($(compgen -W "%s %s %s" -- "${COMP_WORDS[COMP_CWORD]}"))
         return 0
-    fi'''
+    fi'''  # noqa: UP031
             % (
                 action,
                 parser_flags(action_parser),
                 ' '.join(
-                    borgmatic.commands.completion.actions.available_actions(action_parsers, action)
+                    borgmatic.commands.completion.actions.available_actions(action_parsers, action),
                 ),
                 global_flags,
             )
             for action, action_parser in reversed(action_parsers.choices.items())
-        )
-        + (
-            '    COMPREPLY=($(compgen -W "%s %s" -- "${COMP_WORDS[COMP_CWORD]}"))'  # noqa: FS003
+        ),
+            '    COMPREPLY=($(compgen -W "%s %s" -- "${COMP_WORDS[COMP_CWORD]}"))'  # noqa: UP031
             % (
                 ' '.join(borgmatic.commands.completion.actions.available_actions(action_parsers)),
                 global_flags,
@@ -72,5 +71,5 @@ def bash_completion():
             '    (check_version &)',
             '}',
             '\ncomplete -o bashdefault -o default -F complete_borgmatic borgmatic',
-        )
+        ),
     )

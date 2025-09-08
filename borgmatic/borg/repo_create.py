@@ -49,13 +49,13 @@ def create_repository(
                 global_arguments,
                 local_path,
                 remote_path,
-            )
+            ),
         )
         repository_encryption_mode = info_data.get('encryption', {}).get('mode')
 
         if repository_encryption_mode != encryption_mode:
             raise ValueError(
-                f'Requested encryption mode "{encryption_mode}" does not match existing repository encryption mode "{repository_encryption_mode}"'
+                f'Requested encryption mode "{encryption_mode}" does not match existing repository encryption mode "{repository_encryption_mode}"',
             )
 
         logger.info('Repository already exists. Skipping creation.')
@@ -92,7 +92,7 @@ def create_repository(
     )
 
     if dry_run:
-        logging.info('Skipping repository creation (dry run)')
+        logger.info('Skipping repository creation (dry run)')
         return
 
     # Do not capture output here, so as to support interactive prompts.

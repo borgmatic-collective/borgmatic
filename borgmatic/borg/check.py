@@ -42,11 +42,12 @@ def make_archive_filter_flags(local_borg_version, config, checks, check_argument
 
     if check_last:
         logger.warning(
-            'Ignoring check_last option, as "archives" or "data" are not in consistency checks'
+            'Ignoring check_last option, as "archives" or "data" are not in consistency checks',
         )
+
     if prefix:
         logger.warning(
-            'Ignoring consistency prefix option, as "archives" or "data" are not in consistency checks'
+            'Ignoring consistency prefix option, as "archives" or "data" are not in consistency checks',
         )
 
     return ()
@@ -76,13 +77,18 @@ def make_check_name_flags(checks, archive_filter_flags):
         return common_flags
 
     return (
-        tuple(f'--{check}-only' for check in checks if check in ('repository', 'archives'))
+        tuple(f'--{check}-only' for check in checks if check in {'repository', 'archives'})
         + common_flags
     )
 
 
 def get_repository_id(
-    repository_path, config, local_borg_version, global_arguments, local_path, remote_path
+    repository_path,
+    config,
+    local_borg_version,
+    global_arguments,
+    local_path,
+    remote_path,
 ):
     '''
     Given a local or remote repository path, a configuration dict, the local Borg version, global
@@ -100,7 +106,7 @@ def get_repository_id(
                 global_arguments,
                 local_path,
                 remote_path,
-            )
+            ),
         )['repository']['id']
     except (json.JSONDecodeError, KeyError):
         raise ValueError(f'Cannot determine Borg repository ID for {repository_path}')
@@ -127,8 +133,10 @@ def check_archives(
     extra_borg_options = config.get('extra_borg_options', {}).get('check', '')
 
     verbosity_flags = ()
+
     if logger.isEnabledFor(logging.INFO):
         verbosity_flags = ('--info',)
+
     if logger.isEnabledFor(logging.DEBUG):
         verbosity_flags = ('--debug', '--show-rc')
 

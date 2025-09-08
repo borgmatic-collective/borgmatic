@@ -19,7 +19,8 @@ def run_import_key(
     Run the "key import" action for the given repository.
     '''
     if import_arguments.repository is None or borgmatic.config.validate.repositories_match(
-        repository, import_arguments.repository
+        repository,
+        import_arguments.repository,
     ):
         logger.info('Importing repository key')
         borgmatic.borg.import_key.import_key(

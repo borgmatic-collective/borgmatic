@@ -120,5 +120,8 @@ def resolve_credential(value, config):
         raise ValueError(f'Cannot load credential with invalid syntax "{value}"')
 
     return borgmatic.hooks.dispatch.call_hook(
-        'load_credential', config, hook_name, tuple(credential_parameters)
+        'load_credential',
+        config,
+        hook_name,
+        tuple(credential_parameters),
     )

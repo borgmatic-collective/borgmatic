@@ -21,9 +21,9 @@ def test_get_subaction_parsers_with_subactions_returns_one_entry_per_subaction()
                 _group_actions=(
                     flexmock(choices={'foo': foo_parser, 'bar': bar_parser}),
                     flexmock(choices={'baz': baz_parser}),
-                )
-            )
-        )
+                ),
+            ),
+        ),
     ) == {'foo': foo_parser, 'bar': bar_parser, 'baz': baz_parser}
 
 
@@ -39,13 +39,13 @@ def test_get_subactions_for_actions_with_subactions_returns_one_entry_per_action
                     _group_actions=(
                         flexmock(choices={'foo': flexmock(), 'bar': flexmock()}),
                         flexmock(choices={'baz': flexmock()}),
-                    )
-                )
+                    ),
+                ),
             ),
             'other': flexmock(
-                _subparsers=flexmock(_group_actions=(flexmock(choices={'quux': flexmock()}),))
+                _subparsers=flexmock(_group_actions=(flexmock(choices={'quux': flexmock()}),)),
             ),
-        }
+        },
     ) == {'action': ('foo', 'bar', 'baz'), 'other': ('quux',)}
 
 
@@ -66,12 +66,15 @@ def test_omit_values_colliding_twice_with_action_names_drops_action_names_that_h
 def test_parse_and_record_action_arguments_without_action_name_leaves_arguments_untouched():
     unparsed_arguments = ('--foo', '--bar')
     flexmock(module).should_receive('omit_values_colliding_with_action_names').and_return(
-        unparsed_arguments
+        unparsed_arguments,
     )
 
     assert (
         module.parse_and_record_action_arguments(
-            unparsed_arguments, flexmock(), flexmock(), 'action'
+            unparsed_arguments,
+            flexmock(),
+            flexmock(),
+            'action',
         )
         == unparsed_arguments
     )
@@ -83,15 +86,19 @@ def test_parse_and_record_action_arguments_updates_parsed_arguments_and_returns_
     parsed_arguments = {'other': other_parsed_arguments}
     action_parsed_arguments = flexmock()
     flexmock(module).should_receive('omit_values_colliding_with_action_names').and_return(
-        unparsed_arguments
+        unparsed_arguments,
     )
     action_parser = flexmock()
     flexmock(action_parser).should_receive('parse_known_args').and_return(
-        action_parsed_arguments, ('action', '--verbosity', '1')
+        action_parsed_arguments,
+        ('action', '--verbosity', '1'),
     )
 
     assert module.parse_and_record_action_arguments(
-        unparsed_arguments, parsed_arguments, action_parser, 'action'
+        unparsed_arguments,
+        parsed_arguments,
+        action_parser,
+        'action',
     ) == ('--verbosity', '1')
     assert parsed_arguments == {'other': other_parsed_arguments, 'action': action_parsed_arguments}
 
@@ -102,15 +109,20 @@ def test_parse_and_record_action_arguments_with_alias_updates_canonical_parsed_a
     parsed_arguments = {'other': other_parsed_arguments}
     action_parsed_arguments = flexmock()
     flexmock(module).should_receive('omit_values_colliding_with_action_names').and_return(
-        unparsed_arguments
+        unparsed_arguments,
     )
     action_parser = flexmock()
     flexmock(action_parser).should_receive('parse_known_args').and_return(
-        action_parsed_arguments, ('action', '--verbosity', '1')
+        action_parsed_arguments,
+        ('action', '--verbosity', '1'),
     )
 
     assert module.parse_and_record_action_arguments(
-        unparsed_arguments, parsed_arguments, action_parser, 'action', canonical_name='doit'
+        unparsed_arguments,
+        parsed_arguments,
+        action_parser,
+        'action',
+        canonical_name='doit',
     ) == ('--verbosity', '1')
     assert parsed_arguments == {'other': other_parsed_arguments, 'doit': action_parsed_arguments}
 
@@ -120,11 +132,12 @@ def test_parse_and_record_action_arguments_with_borg_action_consumes_arguments_a
     parsed_arguments = {}
     borg_parsed_arguments = flexmock(options=flexmock())
     flexmock(module).should_receive('omit_values_colliding_with_action_names').and_return(
-        unparsed_arguments
+        unparsed_arguments,
     )
     borg_parser = flexmock()
     flexmock(borg_parser).should_receive('parse_known_args').and_return(
-        borg_parsed_arguments, ('--verbosity', '1', 'borg', 'list')
+        borg_parsed_arguments,
+        ('--verbosity', '1', 'borg', 'list'),
     )
 
     assert module.parse_and_record_action_arguments(
@@ -299,11 +312,13 @@ def test_group_arguments_with_values_returns_flags_with_corresponding_values(arg
     ],
 )
 def test_get_unparsable_arguments_returns_remaining_arguments_that_no_action_can_parse(
-    arguments, grouped_arguments, expected
+    arguments,
+    grouped_arguments,
+    expected,
 ):
     for action_arguments, grouped_action_arguments in zip(arguments, grouped_arguments):
         flexmock(module).should_receive('group_arguments_with_values').with_args(
-            action_arguments
+            action_arguments,
         ).and_return(grouped_action_arguments)
 
     assert module.get_unparsable_arguments(arguments) == expected
@@ -315,9 +330,9 @@ def test_parse_arguments_for_actions_consumes_action_arguments_after_action_name
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: action_namespace}
+            {action: action_namespace},
         )
-        or remaining
+        or remaining,
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {'action': flexmock(), 'other': flexmock()}
@@ -326,7 +341,9 @@ def test_parse_arguments_for_actions_consumes_action_arguments_after_action_name
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
     arguments, remaining_action_arguments = module.parse_arguments_for_actions(
-        ('action', '--foo', 'true'), action_parsers, global_parser
+        ('action', '--foo', 'true'),
+        action_parsers,
+        global_parser,
     )
 
     assert arguments == {'global': global_namespace, 'action': action_namespace}
@@ -339,9 +356,9 @@ def test_parse_arguments_for_actions_consumes_action_arguments_with_alias():
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {canonical or action: action_namespace}
+            {canonical or action: action_namespace},
         )
-        or remaining
+        or remaining,
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -356,7 +373,9 @@ def test_parse_arguments_for_actions_consumes_action_arguments_with_alias():
     flexmock(module).ACTION_ALIASES = {'action': ['-a'], 'other': ['-o']}
 
     arguments, remaining_action_arguments = module.parse_arguments_for_actions(
-        ('-a', '--foo', 'true'), action_parsers, global_parser
+        ('-a', '--foo', 'true'),
+        action_parsers,
+        global_parser,
     )
 
     assert arguments == {'global': global_namespace, 'action': action_namespace}
@@ -369,9 +388,9 @@ def test_parse_arguments_for_actions_consumes_multiple_action_arguments():
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: action_namespace if action == 'action' else other_namespace}
+            {action: action_namespace if action == 'action' else other_namespace},
         )
-        or ()
+        or (),
     ).and_return(('other', '--bar', '3')).and_return('action', '--foo', 'true')
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -383,7 +402,9 @@ def test_parse_arguments_for_actions_consumes_multiple_action_arguments():
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
     arguments, remaining_action_arguments = module.parse_arguments_for_actions(
-        ('action', '--foo', 'true', 'other', '--bar', '3'), action_parsers, global_parser
+        ('action', '--foo', 'true', 'other', '--bar', '3'),
+        action_parsers,
+        global_parser,
     )
 
     assert arguments == {
@@ -400,9 +421,9 @@ def test_parse_arguments_for_actions_respects_command_line_action_ordering():
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: other_namespace if action == 'other' else action_namespace}
+            {action: other_namespace if action == 'other' else action_namespace},
         )
-        or ()
+        or (),
     ).and_return(('action',)).and_return(('other', '--foo', 'true'))
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -414,11 +435,13 @@ def test_parse_arguments_for_actions_respects_command_line_action_ordering():
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
     arguments, remaining_action_arguments = module.parse_arguments_for_actions(
-        ('other', '--foo', 'true', 'action'), action_parsers, global_parser
+        ('other', '--foo', 'true', 'action'),
+        action_parsers,
+        global_parser,
     )
 
     assert arguments == collections.OrderedDict(
-        [('other', other_namespace), ('action', action_namespace), ('global', global_namespace)]
+        [('other', other_namespace), ('action', action_namespace), ('global', global_namespace)],
     )
     assert remaining_action_arguments == ((), (), ())
 
@@ -436,9 +459,9 @@ def test_parse_arguments_for_actions_applies_default_action_parsers():
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: namespaces.get(action)}
+            {action: namespaces.get(action)},
         )
-        or ()
+        or (),
     ).and_return(())
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -452,7 +475,9 @@ def test_parse_arguments_for_actions_applies_default_action_parsers():
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
     arguments, remaining_action_arguments = module.parse_arguments_for_actions(
-        ('--progress'), action_parsers, global_parser
+        ('--progress'),
+        action_parsers,
+        global_parser,
     )
 
     assert arguments == namespaces
@@ -464,9 +489,9 @@ def test_parse_arguments_for_actions_consumes_global_arguments():
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: action_namespace}
+            {action: action_namespace},
         )
-        or ('--verbosity', 'lots')
+        or ('--verbosity', 'lots'),
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -478,7 +503,9 @@ def test_parse_arguments_for_actions_consumes_global_arguments():
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
     arguments, remaining_action_arguments = module.parse_arguments_for_actions(
-        ('action', '--verbosity', 'lots'), action_parsers, global_parser
+        ('action', '--verbosity', 'lots'),
+        action_parsers,
+        global_parser,
     )
 
     assert arguments == {'global': global_namespace, 'action': action_namespace}
@@ -490,9 +517,9 @@ def test_parse_arguments_for_actions_passes_through_unknown_arguments_before_act
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: action_namespace}
+            {action: action_namespace},
         )
-        or ('--wtf', 'yes')
+        or ('--wtf', 'yes'),
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -504,7 +531,9 @@ def test_parse_arguments_for_actions_passes_through_unknown_arguments_before_act
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
     arguments, remaining_action_arguments = module.parse_arguments_for_actions(
-        ('--wtf', 'yes', 'action'), action_parsers, global_parser
+        ('--wtf', 'yes', 'action'),
+        action_parsers,
+        global_parser,
     )
 
     assert arguments == {'global': global_namespace, 'action': action_namespace}
@@ -516,9 +545,9 @@ def test_parse_arguments_for_actions_passes_through_unknown_arguments_after_acti
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: action_namespace}
+            {action: action_namespace},
         )
-        or ('--wtf', 'yes')
+        or ('--wtf', 'yes'),
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -530,7 +559,9 @@ def test_parse_arguments_for_actions_passes_through_unknown_arguments_after_acti
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
     arguments, remaining_action_arguments = module.parse_arguments_for_actions(
-        ('action', '--wtf', 'yes'), action_parsers, global_parser
+        ('action', '--wtf', 'yes'),
+        action_parsers,
+        global_parser,
     )
 
     assert arguments == {'global': global_namespace, 'action': action_namespace}
@@ -542,9 +573,9 @@ def test_parse_arguments_for_actions_with_borg_action_skips_other_action_parsers
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: action_namespace}
+            {action: action_namespace},
         )
-        or ()
+        or (),
     ).and_return(())
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -556,7 +587,9 @@ def test_parse_arguments_for_actions_with_borg_action_skips_other_action_parsers
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
     arguments, remaining_action_arguments = module.parse_arguments_for_actions(
-        ('borg', 'list'), action_parsers, global_parser
+        ('borg', 'list'),
+        action_parsers,
+        global_parser,
     )
 
     assert arguments == {'global': global_namespace, 'borg': action_namespace}
@@ -567,7 +600,7 @@ def test_parse_arguments_for_actions_raises_error_when_no_action_is_specified():
     flexmock(module).should_receive('get_subaction_parsers').and_return({'bootstrap': [flexmock()]})
     flexmock(module).should_receive('parse_and_record_action_arguments').and_return(flexmock())
     flexmock(module).should_receive('get_subactions_for_actions').and_return(
-        {'config': ['bootstrap']}
+        {'config': ['bootstrap']},
     )
     action_parsers = {'config': flexmock()}
     global_parser = flexmock()
@@ -955,17 +988,19 @@ def test_add_arguments_from_schema_with_non_dict_schema_bails():
     arguments_group.should_receive('add_argument').never()
 
     module.add_arguments_from_schema(
-        arguments_group=arguments_group, schema='foo', unparsed_arguments=()
+        arguments_group=arguments_group,
+        schema='foo',
+        unparsed_arguments=(),
     )
 
 
 def test_add_arguments_from_schema_with_nested_object_adds_flag_for_each_option():
     arguments_group = flexmock()
     flexmock(module).should_receive('make_argument_description').and_return('help 1').and_return(
-        'help 2'
+        'help 2',
     )
     flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(
-        int
+        int,
     ).and_return(str)
     arguments_group.should_receive('add_argument').with_args(
         '--foo.bar',
@@ -992,7 +1027,7 @@ def test_add_arguments_from_schema_with_nested_object_adds_flag_for_each_option(
                         'bar': {'type': 'integer'},
                         'baz': {'type': 'str'},
                     },
-                }
+                },
             },
         },
         unparsed_arguments=(),
@@ -1021,7 +1056,7 @@ def test_add_arguments_from_schema_uses_first_non_null_type_from_multi_type_obje
                     'properties': {
                         'bar': {'type': 'integer'},
                     },
-                }
+                },
             },
         },
         unparsed_arguments=(),
@@ -1046,7 +1081,7 @@ def test_add_arguments_from_schema_with_empty_multi_type_raises():
                         'properties': {
                             'bar': {'type': 'integer'},
                         },
-                    }
+                    },
                 },
             },
             unparsed_arguments=(),
@@ -1072,7 +1107,7 @@ def test_add_arguments_from_schema_with_propertyless_option_adds_flag():
             'properties': {
                 'foo': {
                     'type': 'object',
-                }
+                },
             },
         },
         unparsed_arguments=(),
@@ -1083,10 +1118,14 @@ def test_add_arguments_from_schema_with_array_of_scalars_adds_multiple_flags():
     arguments_group = flexmock()
     flexmock(module).should_receive('make_argument_description').and_return('help')
     flexmock(module.borgmatic.config.schema).should_receive('parse_type').with_args(
-        'integer', object=str, array=str
+        'integer',
+        object=str,
+        array=str,
     ).and_return(int)
     flexmock(module.borgmatic.config.schema).should_receive('parse_type').with_args(
-        'array', object=str, array=str
+        'array',
+        object=str,
+        array=str,
     ).and_return(str)
     arguments_group.should_receive('add_argument').with_args(
         '--foo[0]',
@@ -1112,7 +1151,7 @@ def test_add_arguments_from_schema_with_array_of_scalars_adds_multiple_flags():
                     'items': {
                         'type': 'integer',
                     },
-                }
+                },
             },
         },
         unparsed_arguments=(),
@@ -1122,10 +1161,10 @@ def test_add_arguments_from_schema_with_array_of_scalars_adds_multiple_flags():
 def test_add_arguments_from_schema_with_array_of_objects_adds_multiple_flags():
     arguments_group = flexmock()
     flexmock(module).should_receive('make_argument_description').and_return('help 1').and_return(
-        'help 2'
+        'help 2',
     )
     flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(
-        int
+        int,
     ).and_return(str)
     arguments_group.should_receive('add_argument').with_args(
         '--foo[0].bar',
@@ -1158,10 +1197,10 @@ def test_add_arguments_from_schema_with_array_of_objects_adds_multiple_flags():
                         'properties': {
                             'bar': {
                                 'type': 'integer',
-                            }
+                            },
                         },
                     },
-                }
+                },
             },
         },
         unparsed_arguments=(),
@@ -1194,7 +1233,7 @@ def test_add_arguments_from_schema_with_boolean_adds_two_valueless_flags():
             'properties': {
                 'foo': {
                     'type': 'boolean',
-                }
+                },
             },
         },
         unparsed_arguments=(),
@@ -1227,7 +1266,7 @@ def test_add_arguments_from_schema_with_nested_boolean_adds_two_valueless_flags(
             'properties': {
                 'baz_quux': {
                     'type': 'boolean',
-                }
+                },
             },
         },
         unparsed_arguments=(),
@@ -1261,7 +1300,7 @@ def test_add_arguments_from_schema_with_boolean_with_name_prefixed_with_no_adds_
             'properties': {
                 'no_foo': {
                     'type': 'boolean',
-                }
+                },
             },
         },
         unparsed_arguments=(),

@@ -19,7 +19,8 @@ def run_export_key(
     Run the "key export" action for the given repository.
     '''
     if export_arguments.repository is None or borgmatic.config.validate.repositories_match(
-        repository, export_arguments.repository
+        repository,
+        export_arguments.repository,
     ):
         logger.info('Exporting repository key')
         borgmatic.borg.export_key.export_key(

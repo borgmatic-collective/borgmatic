@@ -213,14 +213,14 @@ postgresql_databases:
 
 def get_connection_params(database, use_restore_options=False):
     hostname = (database.get('restore_hostname') if use_restore_options else None) or database.get(
-        'hostname'
+        'hostname',
     )
     port = (database.get('restore_port') if use_restore_options else None) or database.get('port')
     username = (database.get('restore_username') if use_restore_options else None) or database.get(
-        'username'
+        'username',
     )
     password = (database.get('restore_password') if use_restore_options else None) or database.get(
-        'password'
+        'password',
     )
 
     return (hostname, port, username, password)
@@ -228,7 +228,8 @@ def get_connection_params(database, use_restore_options=False):
 
 def run_postgresql_command(command, config, use_restore_options=False):
     (hostname, port, username, password) = get_connection_params(
-        config['postgresql_databases'][0], use_restore_options
+        config['postgresql_databases'][0],
+        use_restore_options,
     )
 
     subprocess.check_call(
@@ -246,7 +247,8 @@ def run_postgresql_command(command, config, use_restore_options=False):
 
 def run_mariadb_command(command, config, use_restore_options=False, binary_name='mariadb'):
     (hostname, port, username, password) = get_connection_params(
-        config[f'{binary_name}_databases'][0], use_restore_options
+        config[f'{binary_name}_databases'][0],
+        use_restore_options,
     )
 
     subprocess.check_call(
@@ -264,7 +266,8 @@ def run_mariadb_command(command, config, use_restore_options=False, binary_name=
 
 def get_mongodb_database_client(config, use_restore_options=False):
     (hostname, port, username, password) = get_connection_params(
-        config['mongodb_databases'][0], use_restore_options
+        config['mongodb_databases'][0],
+        use_restore_options,
     )
 
     return pymongo.MongoClient(f'mongodb://{username}:{password}@{hostname}:{port or 27017}').test
@@ -295,12 +298,16 @@ def create_test_tables(config, use_restore_options=False):
 
     if 'postgresql_databases' in config:
         run_postgresql_command(command.format(id=1), config, use_restore_options)
+
     if 'mariadb_databases' in config:
         run_mariadb_command(command.format(id=2), config, use_restore_options)
+
     if 'mysql_databases' in config:
         run_mariadb_command(command.format(id=3), config, use_restore_options, binary_name='mysql')
+
     if 'mongodb_databases' in config:
         get_mongodb_database_client(config, use_restore_options)['test4'].insert_one({'thing': 1})
+
     if 'sqlite_databases' in config:
         run_sqlite_command(command.format(id=5), config, use_restore_options)
 
@@ -313,12 +320,16 @@ def drop_test_tables(config, use_restore_options=False):
 
     if 'postgresql_databases' in config:
         run_postgresql_command(command.format(id=1), config, use_restore_options)
+
     if 'mariadb_databases' in config:
         run_mariadb_command(command.format(id=2), config, use_restore_options)
+
     if 'mysql_databases' in config:
         run_mariadb_command(command.format(id=3), config, use_restore_options, binary_name='mysql')
+
     if 'mongodb_databases' in config:
         get_mongodb_database_client(config, use_restore_options)['test4'].drop()
+
     if 'sqlite_databases' in config:
         run_sqlite_command(command.format(id=5), config, use_restore_options)
 
@@ -334,17 +345,21 @@ def select_test_tables(config, use_restore_options=False):
 
     if 'postgresql_databases' in config:
         run_postgresql_command(command.format(id=1), config, use_restore_options)
+
     if 'mariadb_databases' in config:
         run_mariadb_command(command.format(id=2), config, use_restore_options)
+
     if 'mysql_databases' in config:
         run_mariadb_command(command.format(id=3), config, use_restore_options, binary_name='mysql')
+
     if 'mongodb_databases' in config:
         assert (
             get_mongodb_database_client(config, use_restore_options)['test4'].count_documents(
-                filter={}
+                filter={},
             )
             > 0
         )
+
     if 'sqlite_databases' in config:
         run_sqlite_command(command.format(id=5), config, use_restore_options)
 
@@ -362,7 +377,10 @@ def test_database_dump_and_restore():
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         config = write_configuration(
-            temporary_directory, config_path, repository_path, temporary_directory
+            temporary_directory,
+            config_path,
+            repository_path,
+            temporary_directory,
         )
         create_test_tables(config)
         select_test_tables(config)
@@ -377,7 +395,7 @@ def test_database_dump_and_restore():
                 'repo-create',
                 '--encryption',
                 'repokey',
-            ]
+            ],
         )
 
         # Run borgmatic to generate a backup archive including database dumps.
@@ -385,7 +403,7 @@ def test_database_dump_and_restore():
 
         # Get the created archive name.
         output = subprocess.check_output(
-            ['borgmatic', '--config', config_path, 'list', '--json']
+            ['borgmatic', '--config', config_path, 'list', '--json'],
         ).decode(sys.stdout.encoding)
         parsed_output = json.loads(output)
 
@@ -396,7 +414,7 @@ def test_database_dump_and_restore():
         # Restore the databases from the archive.
         drop_test_tables(config)
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'restore', '--archive', archive_name]
+            ['borgmatic', '-v', '2', '--config', config_path, 'restore', '--archive', archive_name],
         )
 
         # Ensure the test tables have actually been restored.
@@ -417,7 +435,10 @@ def test_database_dump_and_restore_with_restore_cli_flags():
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         config = write_simple_custom_restore_configuration(
-            temporary_directory, config_path, repository_path, temporary_directory
+            temporary_directory,
+            config_path,
+            repository_path,
+            temporary_directory,
         )
         create_test_tables(config)
         select_test_tables(config)
@@ -432,7 +453,7 @@ def test_database_dump_and_restore_with_restore_cli_flags():
                 'repo-create',
                 '--encryption',
                 'repokey',
-            ]
+            ],
         )
 
         # Run borgmatic to generate a backup archive including a database dump.
@@ -440,7 +461,7 @@ def test_database_dump_and_restore_with_restore_cli_flags():
 
         # Get the created archive name.
         output = subprocess.check_output(
-            ['borgmatic', '--config', config_path, 'list', '--json']
+            ['borgmatic', '--config', config_path, 'list', '--json'],
         ).decode(sys.stdout.encoding)
         parsed_output = json.loads(output)
 
@@ -466,7 +487,7 @@ def test_database_dump_and_restore_with_restore_cli_flags():
                 '5433',
                 '--password',
                 'test2',
-            ]
+            ],
         )
 
         # Ensure the test tables have actually been restored. But first modify the config to contain
@@ -495,7 +516,10 @@ def test_database_dump_and_restore_with_restore_configuration_options():
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         config = write_custom_restore_configuration(
-            temporary_directory, config_path, repository_path, temporary_directory
+            temporary_directory,
+            config_path,
+            repository_path,
+            temporary_directory,
         )
         create_test_tables(config)
         select_test_tables(config)
@@ -510,7 +534,7 @@ def test_database_dump_and_restore_with_restore_configuration_options():
                 'repo-create',
                 '--encryption',
                 'repokey',
-            ]
+            ],
         )
 
         # Run borgmatic to generate a backup archive including a database dump.
@@ -518,7 +542,7 @@ def test_database_dump_and_restore_with_restore_configuration_options():
 
         # Get the created archive name.
         output = subprocess.check_output(
-            ['borgmatic', '--config', config_path, 'list', '--json']
+            ['borgmatic', '--config', config_path, 'list', '--json'],
         ).decode(sys.stdout.encoding)
         parsed_output = json.loads(output)
 
@@ -529,7 +553,7 @@ def test_database_dump_and_restore_with_restore_configuration_options():
         # Restore the database from the archive.
         drop_test_tables(config)
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'restore', '--archive', archive_name]
+            ['borgmatic', '-v', '2', '--config', config_path, 'restore', '--archive', archive_name],
         )
 
         # Ensure the test tables have actually been restored.
@@ -571,7 +595,7 @@ def test_database_dump_and_restore_with_directory_format():
                 'repo-create',
                 '--encryption',
                 'repokey',
-            ]
+            ],
         )
 
         # Run borgmatic to generate a backup archive including a database dump.
@@ -580,7 +604,7 @@ def test_database_dump_and_restore_with_directory_format():
         # Restore the database from the archive.
         drop_test_tables(config)
         subprocess.check_call(
-            ['borgmatic', '--config', config_path, 'restore', '--archive', 'latest']
+            ['borgmatic', '--config', config_path, 'restore', '--archive', 'latest'],
         )
 
         # Ensure the test tables have actually been restored.
@@ -612,7 +636,7 @@ def test_database_dump_with_error_causes_borgmatic_to_exit():
                 'repo-create',
                 '--encryption',
                 'repokey',
-            ]
+            ],
         )
 
         # Run borgmatic with a config override such that the database dump fails.
@@ -626,8 +650,8 @@ def test_database_dump_with_error_causes_borgmatic_to_exit():
                     '-v',
                     '2',
                     '--override',
-                    "hooks.postgresql_databases=[{'name': 'nope'}]",  # noqa: FS003
-                ]
+                    "hooks.postgresql_databases=[{'name': 'nope'}]",
+                ],
             )
     finally:
         os.chdir(original_working_directory)

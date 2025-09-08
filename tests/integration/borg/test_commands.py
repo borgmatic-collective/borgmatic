@@ -28,12 +28,14 @@ def assert_command_does_not_duplicate_flags(command, *args, **kwargs):
         else:
             flag_counts[flag_name] = 1
 
-    assert flag_counts == {
-        flag_name: 1 for flag_name in flag_counts
-    }, f"Duplicate flags found in: {' '.join(command)}"
+    assert flag_counts == dict.fromkeys(flag_counts, 1), (
+        f"Duplicate flags found in: {' '.join(command)}"
+    )
 
     if '--json' in command:
         return '{}'
+
+    return None
 
 
 def fuzz_argument(arguments, argument_name):
@@ -53,10 +55,13 @@ def fuzz_argument(arguments, argument_name):
 
 def test_transfer_archives_command_does_not_duplicate_flags_or_raise():
     arguments = borgmatic.commands.arguments.parse_arguments(
-        {}, 'transfer', '--source-repository', 'foo'
+        {},
+        'transfer',
+        '--source-repository',
+        'foo',
     )['transfer']
     flexmock(borgmatic.borg.transfer).should_receive('execute_command').replace_with(
-        assert_command_does_not_duplicate_flags
+        assert_command_does_not_duplicate_flags,
     )
 
     for argument_name in dir(arguments):
@@ -76,7 +81,7 @@ def test_transfer_archives_command_does_not_duplicate_flags_or_raise():
 def test_prune_archives_command_does_not_duplicate_flags_or_raise():
     arguments = borgmatic.commands.arguments.parse_arguments({}, 'prune')['prune']
     flexmock(borgmatic.borg.prune).should_receive('execute_command').replace_with(
-        assert_command_does_not_duplicate_flags
+        assert_command_does_not_duplicate_flags,
     )
 
     for argument_name in dir(arguments):
@@ -98,7 +103,7 @@ def test_mount_archive_command_does_not_duplicate_flags_or_raise():
         'mount'
     ]
     flexmock(borgmatic.borg.mount).should_receive('execute_command').replace_with(
-        assert_command_does_not_duplicate_flags
+        assert_command_does_not_duplicate_flags,
     )
 
     for argument_name in dir(arguments):
@@ -154,10 +159,10 @@ def test_make_repo_list_command_does_not_duplicate_flags_or_raise():
 def test_display_archives_info_command_does_not_duplicate_flags_or_raise():
     arguments = borgmatic.commands.arguments.parse_arguments({}, 'info')['info']
     flexmock(borgmatic.borg.info).should_receive('execute_command_and_capture_output').replace_with(
-        assert_command_does_not_duplicate_flags
+        assert_command_does_not_duplicate_flags,
     )
     flexmock(borgmatic.borg.info).should_receive('execute_command').replace_with(
-        assert_command_does_not_duplicate_flags
+        assert_command_does_not_duplicate_flags,
     )
 
     for argument_name in dir(arguments):

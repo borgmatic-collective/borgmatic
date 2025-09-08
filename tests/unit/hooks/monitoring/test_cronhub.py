@@ -6,7 +6,9 @@ from borgmatic.hooks.monitoring import cronhub as module
 def test_ping_monitor_rewrites_ping_url_for_start_state():
     hook_config = {'ping_url': 'https://example.com/start/abcdef'}
     flexmock(module.requests).should_receive('get').with_args(
-        'https://example.com/start/abcdef', timeout=int
+        'https://example.com/start/abcdef',
+        timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -22,7 +24,9 @@ def test_ping_monitor_rewrites_ping_url_for_start_state():
 def test_ping_monitor_rewrites_ping_url_and_state_for_start_state():
     hook_config = {'ping_url': 'https://example.com/ping/abcdef'}
     flexmock(module.requests).should_receive('get').with_args(
-        'https://example.com/start/abcdef', timeout=int
+        'https://example.com/start/abcdef',
+        timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -38,7 +42,9 @@ def test_ping_monitor_rewrites_ping_url_and_state_for_start_state():
 def test_ping_monitor_rewrites_ping_url_for_finish_state():
     hook_config = {'ping_url': 'https://example.com/start/abcdef'}
     flexmock(module.requests).should_receive('get').with_args(
-        'https://example.com/finish/abcdef', timeout=int
+        'https://example.com/finish/abcdef',
+        timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -54,7 +60,9 @@ def test_ping_monitor_rewrites_ping_url_for_finish_state():
 def test_ping_monitor_rewrites_ping_url_for_fail_state():
     hook_config = {'ping_url': 'https://example.com/start/abcdef'}
     flexmock(module.requests).should_receive('get').with_args(
-        'https://example.com/fail/abcdef', timeout=int
+        'https://example.com/fail/abcdef',
+        timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -84,7 +92,7 @@ def test_ping_monitor_dry_run_does_not_hit_ping_url():
 def test_ping_monitor_with_connection_error_logs_warning():
     hook_config = {'ping_url': 'https://example.com/start/abcdef'}
     flexmock(module.requests).should_receive('get').and_raise(
-        module.requests.exceptions.ConnectionError
+        module.requests.exceptions.ConnectionError,
     )
     flexmock(module.logger).should_receive('warning').once()
 
@@ -102,10 +110,12 @@ def test_ping_monitor_with_other_error_logs_warning():
     hook_config = {'ping_url': 'https://example.com/start/abcdef'}
     response = flexmock(ok=False)
     response.should_receive('raise_for_status').and_raise(
-        module.requests.exceptions.RequestException
+        module.requests.exceptions.RequestException,
     )
     flexmock(module.requests).should_receive('get').with_args(
-        'https://example.com/start/abcdef', timeout=int
+        'https://example.com/start/abcdef',
+        timeout=int,
+        headers={'User-Agent': 'borgmatic'},
     ).and_return(response)
     flexmock(module.logger).should_receive('warning').once()
 

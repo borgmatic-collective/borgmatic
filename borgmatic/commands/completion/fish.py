@@ -11,10 +11,10 @@ def has_file_options(action: Action):
     '''
     Given an argparse.Action instance, return True if it takes a file argument.
     '''
-    return action.metavar in (
+    return action.metavar in {
         'FILENAME',
         'PATH',
-    ) or action.dest in ('config_paths',)
+    } or action.dest in {'config_paths'}
 
 
 def has_choice_options(action: Action):
@@ -36,11 +36,11 @@ def has_unknown_required_param_options(action: Action):
     return (
         action.required is True
         or action.nargs
-        in (
+        in {
             '+',
             '*',
-        )
-        or action.metavar in ('PATTERN', 'KEYS', 'N')
+        }
+        or action.metavar in {'PATTERN', 'KEYS', 'N'}
         or (action.type is not None and action.default is None)
     )
 
@@ -77,7 +77,7 @@ def exact_options_completion(action: Action):
         return f'''\ncomplete -c borgmatic -x -n "__borgmatic_current_arg {args}"'''
 
     raise ValueError(
-        f'Unexpected action: {action} passes has_exact_options but has no choices produced'
+        f'Unexpected action: {action} passes has_exact_options but has no choices produced',
     )
 
 
@@ -96,7 +96,7 @@ def fish_completion():
     borgmatic's command-line argument parsers.
     '''
     (
-        unused_global_parser,
+        _,
         action_parsers,
         global_plus_action_parser,
     ) = borgmatic.commands.arguments.make_parsers(
@@ -104,7 +104,7 @@ def fish_completion():
         unparsed_arguments=(),
     )
 
-    all_action_parsers = ' '.join(action for action in action_parsers.choices.keys())
+    all_action_parsers = ' '.join(action for action in action_parsers.choices)
 
     exact_option_args = tuple(
         ' '.join(action.option_strings)
@@ -119,8 +119,9 @@ def fish_completion():
     )
 
     # Avert your eyes.
-    return '\n'.join(
-        dedent_strip_as_tuple(
+    # fmt: off
+    return '\n'.join((
+        *dedent_strip_as_tuple(
             f'''
             function __borgmatic_check_version
                 set -fx this_filename (status current-filename)
@@ -157,27 +158,27 @@ def fish_completion():
 
             set --local action_parser_condition "not __fish_seen_subcommand_from {all_action_parsers}"
             set --local exact_option_condition "not __borgmatic_current_arg {' '.join(exact_option_args)}"
-            '''
-        )
-        + ('\n# action_parser completions',)
-        + tuple(
+            ''',
+        ),
+        '\n# action_parser completions',
+        *tuple(
             f'''complete -c borgmatic -f -n "$action_parser_condition" -n "$exact_option_condition" -a '{action_name}' -d {shlex.quote(action_parser.description)}'''
             for action_name, action_parser in action_parsers.choices.items()
-        )
-        + ('\n# global flags',)
-        + tuple(
+        ),
+        '\n# global flags',
+        *tuple(
             # -n is checked in order, so put faster / more likely to be true checks first
             f'''complete -c borgmatic -f -n "$exact_option_condition" -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)}{exact_options_completion(action)}'''
             for action in global_plus_action_parser._actions
             # ignore the noargs action, as this is an impossible completion for fish
             if len(action.option_strings) > 0
             if 'Deprecated' not in action.help
-        )
-        + ('\n# action_parser flags',)
-        + tuple(
+        ),
+        '\n# action_parser flags',
+        *tuple(
             f'''complete -c borgmatic -f -n "$exact_option_condition" -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} -n "__fish_seen_subcommand_from {action_name}"{exact_options_completion(action)}'''
             for action_name, action_parser in action_parsers.choices.items()
             for action in action_parser._actions
             if 'Deprecated' not in (action.help or ())
-        )
-    )
+        ),
+    ))

@@ -86,7 +86,7 @@ def call_hooks(function_name, config, hook_type, *args, **kwargs):
     return {
         hook_name: call_hook(function_name, config, hook_name, *args, **kwargs)
         for hook_name in get_submodule_names(
-            importlib.import_module(f'borgmatic.hooks.{hook_type.value}')
+            importlib.import_module(f'borgmatic.hooks.{hook_type.value}'),
         )
         if hook_name in config or f'{hook_name}_databases' in config
     }
@@ -105,6 +105,6 @@ def call_hooks_even_if_unconfigured(function_name, config, hook_type, *args, **k
     return {
         hook_name: call_hook(function_name, config, hook_name, *args, **kwargs)
         for hook_name in get_submodule_names(
-            importlib.import_module(f'borgmatic.hooks.{hook_type.value}')
+            importlib.import_module(f'borgmatic.hooks.{hook_type.value}'),
         )
     }
