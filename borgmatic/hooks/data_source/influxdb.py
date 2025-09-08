@@ -25,7 +25,7 @@ def use_streaming(databases, config):
     '''
     Return whether dump streaming is used for this hook. (Spoiler: It isn't.)
     '''
-    return True
+    return False
 
 
 def dump_data_sources(
@@ -54,18 +54,16 @@ def dump_data_sources(
     processes = []
 
     for database in databases:
-        name = 'all'
-        # name = database['name']
 
         dump_filename = dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
-            name,
+            database.get('name'),
             database.get('hostname'),
             database.get('port'),
         )
 
         logger.debug(
-            f'Dumping InfluxDB database {name} to {dump_filename}{dry_run_label}',
+            f'Dumping InfluxDB database to {dump_filename}{dry_run_label}',
         )
 
         command = build_dump_command(database, dump_filename)
@@ -76,8 +74,8 @@ def dump_data_sources(
             f'Command: {command}',
         )
 
-        dump.create_named_pipe_for_dump(dump_filename)
-        execute_command(command, run_to_completion=False)
+        dump.create_parent_directory_for_dump(dump_filename)
+        execute_command(command, shell=True)
 
     if not dry_run:
         patterns.append(
@@ -94,7 +92,7 @@ def build_dump_command(database, dump_filename):
     '''
     Return the backup command.
     '''
-    host = database.get('hostname')
+    host = database.get('hostname', '127.0.0.1')
     port = database.get('port') or get_default_port(None, None)  # Use default port if not specified
 
     if host:
@@ -170,10 +168,15 @@ def make_data_source_dump_patterns(
     borgmatic runtime directory, and a database name to match, return the corresponding glob
     patterns to match the database dump in an archive.
     '''
+    borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
+
     return (
         dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory), name, hostname='*'
+        ),
+        dump.make_data_source_dump_filename(
+            make_dump_path(borgmatic_source_directory), name, hostname='*'
         ),
     )
 
@@ -198,9 +201,13 @@ def restore_data_source_dump(
     extract stream.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
+
+    # name = data_source.get('organization_id',data_source.get('organization_name','all'))
+    # name = ''
+
     dump_filename = dump.make_data_source_dump_filename(
         make_dump_path(borgmatic_runtime_directory),
-        data_source['name'],
+        data_source.get('name'),
         data_source.get('hostname'),
         data_source.get('port'),
     )
@@ -209,7 +216,7 @@ def restore_data_source_dump(
         extract_process, data_source, dump_filename, connection_params
     )
 
-    logger.debug(f"Restoring InfluxDB database {data_source['name']}{dry_run_label}")
+    logger.debug(f"Restoring InfluxDB database {data_source.get('name')}{dry_run_label}")
     if dry_run:
         return
 
@@ -227,14 +234,17 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     '''
     Return the restore command.
     '''
-    hostname = connection_params['hostname'] or database.get('hostname')
-    port = connection_params['port'] or database.get('port')
-    # Add protocol prefix based on tls setting
-    protocol = 'https://' if database.get('tls', True) else 'http://'
-    # Format as protocol://hostname:port
-    host = f'{protocol}{hostname}:{port}'
 
-    token = connection_params['token'] or database.get('token')
+    host = database.get('hostname', '127.0.0.1')
+    port = database.get('port') or get_default_port(None, None)  # Use default port if not specified
+
+    if host:
+        # Add protocol prefix based on tls setting
+        protocol = 'https://' if database.get('tls', True) else 'http://'
+        # Format as protocol://hostname:port
+        host = f'{protocol}{host}:{port}'
+
+    token = database.get('token')
     organization_id = database.get('organization_id')
     organization_name = database.get('organization_name')
     bucket_name = database.get('bucket_name')

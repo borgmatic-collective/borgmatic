@@ -1314,6 +1314,18 @@ properties:
                 - token
             additionalProperties: false
             properties:
+                name:
+                    type: string
+                    enum: ['all']
+                    description: |
+                        Database name (required to be 'all').
+                    example: all
+                format:
+                    type: string
+                    enum: ['directory']
+                    description: |
+                        Database dump output format (required to be 'directory').
+                    example: directory
                 influx_command:
                     type: string
                     description: |
