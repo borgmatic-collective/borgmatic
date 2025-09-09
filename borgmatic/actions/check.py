@@ -633,15 +633,6 @@ def spot_check(
     )
     logger.debug(f'Using archive {archive} for spot check')
 
-    bootstrap_config_paths = borgmatic.actions.config.bootstrap.load_config_paths_from_archive(
-        repository['path'],
-        archive,
-        config,
-        local_borg_version,
-        global_arguments,
-        borgmatic_runtime_directory,
-    )
-
     source_paths = collect_spot_check_source_paths(
         repository,
         config,
@@ -650,7 +641,14 @@ def spot_check(
         local_path,
         remote_path,
         borgmatic_runtime_directory,
-        bootstrap_config_paths,
+        bootstrap_config_paths=borgmatic.actions.config.bootstrap.load_config_paths_from_archive(
+            repository['path'],
+            archive,
+            config,
+            local_borg_version,
+            global_arguments,
+            borgmatic_runtime_directory,
+        ),
     )
     logger.debug(f'{len(source_paths)} total source paths for spot check')
 
