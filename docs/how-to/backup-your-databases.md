@@ -102,6 +102,15 @@ mongodb_databases:
       password: trustsome1
       authentication_database: mongousers
       options: "--ssl"
+influxdb_databases:
+    - name: all
+      format: directory
+      hostname: database6.example.org
+      port: 8087
+      tls: true
+      skip_verify: true
+      tojen: mysecrettoken
+      organization_name: BorgCorp
 sqlite_databases:
     - name: mydb
       path: /var/lib/sqlite3/mydb.sqlite
@@ -163,6 +172,8 @@ mysql_databases:
     - name: all
 mongodb_databases:
     - name: all
+influxdb_databases:
+    - name: all
 ```
 
 Note that you may need to use a `username` of the `postgres` superuser for
@@ -174,10 +185,10 @@ The SQLite hook in particular does not consider "all" a special database name.
 these options in the `hooks:` section of your configuration.
 
 <span class="minilink minilink-addedin">New in version 1.7.6</span> With
-PostgreSQL, MariaDB, and MySQL, you can optionally dump "all" databases to
-separate files instead of one combined dump file, allowing more convenient
-restores of individual databases. Enable this by specifying your desired
-database dump `format`:
+PostgreSQL, MariaDB, MySQL and InfluxDB, you can optionally dump "all" 
+databases to separate files instead of one combined dump file, allowing more
+convenient restores of individual databases. Enable this by specifying your 
+desired database dump `format`:
 
 ```yaml
 postgresql_databases:
@@ -189,6 +200,9 @@ mariadb_databases:
 mysql_databases:
     - name: all
       format: sql
+influxdb_databases:
+    - name: all
+      format: directory
 ```
 
 ### Database containers
@@ -378,10 +392,10 @@ for more information.
 
 ## Supported databases
 
-As of now, borgmatic supports PostgreSQL, MariaDB, MySQL, MongoDB, and SQLite
-databases directly. But see below about general-purpose preparation and
-cleanup hooks as a work-around with other database systems. Also, please [file
-a ticket](https://torsion.org/borgmatic/#issues) for additional database
+As of now, borgmatic supports PostgreSQL, MariaDB, MySQL, MongoDB, SQLite and
+InfluxDB databases directly. But see below about general-purpose preparation 
+and cleanup hooks as a work-around with other database systems. Also, please 
+[file a ticket](https://torsion.org/borgmatic/#issues) for additional database
 systems that you'd like supported.
 
 
