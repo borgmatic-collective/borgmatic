@@ -201,9 +201,6 @@ def restore_data_source_dump(
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
 
-    # name = data_source.get('organization_id',data_source.get('organization_name','all'))
-    # name = ''
-
     dump_filename = dump.make_data_source_dump_filename(
         make_dump_path(borgmatic_runtime_directory),
         data_source.get('name'),
