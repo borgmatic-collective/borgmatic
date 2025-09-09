@@ -91,7 +91,7 @@ def build_dump_command(database, dump_filename):
     '''
     Return the backup command.
     '''
-    host = database.get('hostname', '127.0.0.1')
+    host = database.get('hostname', 'localhost')
     port = database.get('port') or get_default_port(None, None)  # Use default port if not specified
 
     if host:
@@ -100,7 +100,7 @@ def build_dump_command(database, dump_filename):
         # Format as protocol://hostname:port
         host = f'{protocol}{host}:{port}'
 
-    token = database.get('token')
+    token = database.get('password')
     skip_verify = database.get('skip_verify')
     http_debug = database.get('http_debug')
     influx_command = tuple(
@@ -130,7 +130,7 @@ def build_dump_command(database, dump_filename):
         )
         + (
             ('--org', shlex.quote(str(database['organization_name'])))
-            if 'organization_name' in database
+            if 'organization_name' in database and 'organization_id' not in database
             else ()
         )
         + (
@@ -140,7 +140,7 @@ def build_dump_command(database, dump_filename):
         )
         + (
             ('--bucket', shlex.quote(str(database['bucket_name'])))
-            if 'bucket_name' in database
+            if 'bucket_name' in database and 'bucket_id' not in database
             else ()
         )
         + (dump_filename,)
@@ -230,7 +230,7 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     Return the restore command.
     '''
 
-    host = database.get('hostname', '127.0.0.1')
+    host = database.get('hostname', 'localhost')
     port = database.get('port') or get_default_port(None, None)  # Use default port if not specified
 
     if host:
@@ -239,9 +239,10 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
         # Format as protocol://hostname:port
         host = f'{protocol}{host}:{port}'
 
-    token = database.get('token')
+    token = database.get('password')
     organization_id = database.get('organization_id')
     organization_name = database.get('organization_name')
+    bucket_id = database.get('bucket_id')
     bucket_name = database.get('bucket_name')
     restore_bucket = database.get('restore_bucket')
     restore_organization = database.get('restore_organization')
@@ -249,7 +250,7 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     active_configuration = database.get('active_configuration')
     skip_verify = database.get('skip_verify')
     http_debug = database.get('http_debug')
-    full = database.get('full')
+    full = database.get('full_replace')
     influx_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('influx_command') or 'influx')
     )
@@ -260,9 +261,9 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
         + (('--host', host) if host else ())
         + (('--token', token) if token else ())
         + (('--org-id', str(organization_id)) if organization_id else ())
-        + (('--org', organization_name) if organization_name else ())
-        + (('--bucket-id', str(database['bucket_id'])) if 'bucket_id' in database else ())
-        + (('--bucket', bucket_name) if bucket_name else ())
+        + (('--org', organization_name) if organization_name and not organization_id else ())
+        + (('--bucket-id', str(bucket_id)) if bucket_id else ())
+        + (('--bucket', bucket_name) if bucket_name and not bucket_id else ())
         + (('--new-bucket', restore_bucket) if restore_bucket else ())
         + (('--new-org', restore_organization) if restore_organization else ())
         + (('--configs-path', configurations_path) if configurations_path else ())

@@ -24,7 +24,7 @@ def test_build_dump_command_creates_correct_command():
         'hostname': 'myexample.com',
         'port': 8086,
         'tls': True,
-        'token': 'testtoken',
+        'password': 'testtoken',
         'skip_verify': True,
         'http_debug': False,
         'organization_id': 'ccf6258c1e195e27',
@@ -53,7 +53,7 @@ def test_build_dump_command_with_http_debug_flag():
     database = {
         'hostname': 'myexample.com',
         'port': 8086,
-        'token': 'testtoken',
+        'password': 'testtoken',
         'http_debug': True,
         'organization_id': 'ccf6258c1e195e27',
     }
@@ -79,7 +79,7 @@ def test_build_dump_command_with_http_disabled():
         'hostname': 'myexample.com',
         'port': 8086,
         'tls': False,  # HTTP instead of HTTPS
-        'token': 'testtoken',
+        'password': 'testtoken',
         'organization_id': 'ccf6258c1e195e27',
     }
     dump_filename = '/tmp/dumpfile'
@@ -102,7 +102,7 @@ def test_build_dump_command_with_configurations():
     database = {
         'hostname': 'myexample.com',
         'port': 8086,
-        'token': 'testtoken',
+        'password': 'testtoken',
         'configurations_path': '/etc/influxdb/configs',
         'active_configuration': 'default',
     }
@@ -128,7 +128,7 @@ def test_build_dump_command_with_organization_name():
     database = {
         'hostname': 'myexample.com',
         'port': 8086,
-        'token': 'testtoken',
+        'password': 'testtoken',
         'organization_name': 'my-org',
     }
     dump_filename = '/tmp/dumpfile'
@@ -147,12 +147,60 @@ def test_build_dump_command_with_organization_name():
     )
 
 
+def test_build_dump_command_with_organization_id_and_name_precedence():
+    database = {
+        'hostname': 'myexample.com',
+        'port': 8086,
+        'password': 'testtoken',
+        'organization_id': 'org123',
+        'organization_name': 'my-org',  # This should be ignored when organization_id is present
+    }
+    dump_filename = '/tmp/dumpfile'
+    command = module.build_dump_command(database, dump_filename)
+
+    assert command == (
+        'influx',
+        'backup',
+        '--host',
+        'https://myexample.com:8086',
+        '--token',
+        'testtoken',
+        '--org-id',
+        'org123',
+        '/tmp/dumpfile',
+    )
+
+
 def test_build_dump_command_with_bucket_id():
     database = {
         'hostname': 'myexample.com',
         'port': 8086,
-        'token': 'testtoken',
+        'password': 'testtoken',
         'bucket_id': 'abc123',
+    }
+    dump_filename = '/tmp/dumpfile'
+    command = module.build_dump_command(database, dump_filename)
+
+    assert command == (
+        'influx',
+        'backup',
+        '--host',
+        'https://myexample.com:8086',
+        '--token',
+        'testtoken',
+        '--bucket-id',
+        'abc123',
+        '/tmp/dumpfile',
+    )
+
+
+def test_build_dump_command_with_bucket_id_and_name_precedence():
+    database = {
+        'hostname': 'myexample.com',
+        'port': 8086,
+        'password': 'testtoken',
+        'bucket_id': 'abc123',
+        'bucket_name': 'my-bucket',  # This should be ignored when bucket_id is present
     }
     dump_filename = '/tmp/dumpfile'
     command = module.build_dump_command(database, dump_filename)
@@ -174,7 +222,7 @@ def test_build_dump_command_with_custom_influx_command():
     database = {
         'hostname': 'myexample.com',
         'port': 8086,
-        'token': 'testtoken',
+        'password': 'testtoken',
         'influx_command': '/usr/local/bin/influx2',
     }
     dump_filename = '/tmp/dumpfile'
@@ -192,13 +240,13 @@ def test_build_dump_command_with_custom_influx_command():
 
 
 def test_dump_data_sources_creates_named_pipe_and_executes_command():
-    # Using proper InfluxDB parameters
+    # Using proper InfluxDB parameters with default hostname (localhost)
     databases = [
         {
             'name': 'influx-backup',
-            'hostname': 'localhost',
+            # hostname defaults to 'localhost'
             'port': 8086,
-            'token': 'mytoken',
+            'password': 'mytoken',
             'organization_id': 'org123',
         }
     ]
@@ -245,7 +293,7 @@ def test_dump_data_sources_creates_named_pipe_and_executes_command():
 
 
 def test_dump_data_sources_with_dry_run_skips_command_execution():
-    databases = [{'name': 'influx-backup', 'hostname': 'localhost', 'token': 'mytoken'}]
+    databases = [{'name': 'influx-backup', 'hostname': 'localhost', 'password': 'mytoken'}]
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
         '/tmp/dumpfile'
     )
@@ -270,16 +318,14 @@ def test_restore_data_source_dump_executes_restore_command():
         'name': 'influx-backup',
         'hostname': 'localhost',
         'port': '8086',  # Changed to string to avoid TypeError
-        'token': 'mytoken',
+        'password': 'mytoken',
         'organization_id': 'org123',
         'bucket_name': 'mybucket',
     }
     connection_params = {
         'hostname': 'localhost',
         'port': '8086',  # Changed to string to avoid TypeError
-        'token': 'mytoken',
-        'username': None,
-        'password': None,
+        'password': 'mytoken',
     }
     extract_process = flexmock(stdout=flexmock())
 
@@ -312,12 +358,10 @@ def test_restore_data_source_dump_executes_restore_command():
 
 
 def test_restore_data_source_dump_with_dry_run_skips_command_execution():
-    data_source = {'name': 'influx-backup', 'hostname': 'localhost', 'token': 'mytoken'}
+    data_source = {'name': 'influx-backup', 'hostname': 'localhost', 'password': 'mytoken'}
     connection_params = {
         'hostname': None,
         'port': None,
-        'token': None,
-        'username': None,
         'password': None,
     }
     extract_process = flexmock(stdout=flexmock())
@@ -345,16 +389,14 @@ def test_restore_data_source_dump_with_dry_run_skips_command_execution():
 def test_build_restore_command_with_basic_parameters():
     database = {
         'name': 'influx-backup',
-        'hostname': 'localhost',
+        # hostname defaults to 'localhost'
         'port': '8086',  # Changed to string to avoid TypeError
-        'token': 'mytoken',
+        'password': 'mytoken',
     }
     connection_params = {
         'hostname': None,
         'port': None,
         'token': None,
-        'username': None,
-        'password': None,
     }
     dump_filename = '/tmp/dumpfile'
     extract_process = flexmock()
@@ -379,14 +421,11 @@ def test_build_restore_command_with_connection_params():
         'name': 'influx-backup',
         'hostname': 'localhost',
         'port': '8086',  # Changed to string to avoid TypeError
-        'token': 'mytoken',
+        'password': 'mytoken',
     }
     connection_params = {
         'hostname': 'restorehost',
         'port': '9999',  # Changed to string to avoid TypeError
-        'token': 'restoretoken',
-        'username': None,
-        'password': None,
     }
     dump_filename = '/tmp/dumpfile'
     extract_process = flexmock()
@@ -412,15 +451,47 @@ def test_build_restore_command_with_organization_parameters():
         'name': 'influx-backup',
         'hostname': 'localhost',
         'port': '8086',  # Changed to string to avoid TypeError
-        'token': 'mytoken',
+        'password': 'mytoken',
         'organization_id': 'org123',
         'organization_name': 'my-org',
     }
     connection_params = {
         'hostname': None,
         'port': None,
-        'token': None,
-        'username': None,
+        'password': None,
+    }
+    dump_filename = '/tmp/dumpfile'
+    extract_process = flexmock()
+
+    command = module.build_restore_command(
+        extract_process, database, dump_filename, connection_params
+    )
+
+    # With both organization_id and organization_name, only organization_id should be used
+    assert command == (
+        'influx',
+        'restore',
+        '--host',
+        'https://localhost:8086',
+        '--token',
+        'mytoken',
+        '--org-id',
+        'org123',
+        '/tmp/dumpfile',
+    )
+
+
+def test_build_restore_command_with_organization_name_only():
+    database = {
+        'name': 'influx-backup',
+        'hostname': 'localhost',
+        'port': '8086',
+        'password': 'mytoken',
+        'organization_name': 'my-org',
+    }
+    connection_params = {
+        'hostname': None,
+        'port': None,
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
@@ -437,8 +508,6 @@ def test_build_restore_command_with_organization_parameters():
         'https://localhost:8086',
         '--token',
         'mytoken',
-        '--org-id',
-        'org123',
         '--org',
         'my-org',
         '/tmp/dumpfile',
@@ -450,15 +519,47 @@ def test_build_restore_command_with_bucket_parameters():
         'name': 'influx-backup',
         'hostname': 'localhost',
         'port': '8086',  # Changed to string to avoid TypeError
-        'token': 'mytoken',
+        'password': 'mytoken',
         'bucket_id': 'bucket123',
         'bucket_name': 'my-bucket',
     }
     connection_params = {
         'hostname': None,
         'port': None,
-        'token': None,
-        'username': None,
+        'password': None,
+    }
+    dump_filename = '/tmp/dumpfile'
+    extract_process = flexmock()
+
+    command = module.build_restore_command(
+        extract_process, database, dump_filename, connection_params
+    )
+
+    # With both bucket_id and bucket_name, only bucket_id should be used
+    assert command == (
+        'influx',
+        'restore',
+        '--host',
+        'https://localhost:8086',
+        '--token',
+        'mytoken',
+        '--bucket-id',
+        'bucket123',
+        '/tmp/dumpfile',
+    )
+
+
+def test_build_restore_command_with_bucket_name_only():
+    database = {
+        'name': 'influx-backup',
+        'hostname': 'localhost',
+        'port': '8086',
+        'password': 'mytoken',
+        'bucket_name': 'my-bucket',
+    }
+    connection_params = {
+        'hostname': None,
+        'port': None,
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
@@ -475,8 +576,6 @@ def test_build_restore_command_with_bucket_parameters():
         'https://localhost:8086',
         '--token',
         'mytoken',
-        '--bucket-id',
-        'bucket123',
         '--bucket',
         'my-bucket',
         '/tmp/dumpfile',
@@ -488,7 +587,7 @@ def test_build_restore_command_with_restore_bucket_and_organization():
         'name': 'influx-backup',
         'hostname': 'localhost',
         'port': '8086',  # Changed to string to avoid TypeError
-        'token': 'mytoken',
+        'password': 'mytoken',
         'bucket_name': 'my-bucket',
         'organization_name': 'my-org',
         'restore_bucket': 'new-bucket',
@@ -497,8 +596,6 @@ def test_build_restore_command_with_restore_bucket_and_organization():
     connection_params = {
         'hostname': None,
         'port': None,
-        'token': None,
-        'username': None,
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
@@ -532,15 +629,13 @@ def test_build_restore_command_with_configurations():
         'name': 'influx-backup',
         'hostname': 'localhost',
         'port': '8086',  # Changed to string to avoid TypeError
-        'token': 'mytoken',
+        'password': 'mytoken',
         'configurations_path': '/etc/influxdb/configs',
         'active_configuration': 'default',
     }
     connection_params = {
         'hostname': None,
         'port': None,
-        'token': None,
-        'username': None,
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
@@ -570,16 +665,14 @@ def test_build_restore_command_with_flags():
         'name': 'influx-backup',
         'hostname': 'localhost',
         'port': '8086',  # Changed to string to avoid TypeError
-        'token': 'mytoken',
+        'password': 'mytoken',
         'skip_verify': True,
         'http_debug': True,
-        'full': True,
+        'full_replace': True,
     }
     connection_params = {
         'hostname': None,
         'port': None,
-        'token': None,
-        'username': None,
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
@@ -608,14 +701,12 @@ def test_build_restore_command_with_custom_influx_command():
         'name': 'influx-backup',
         'hostname': 'localhost',
         'port': '8086',  # Changed to string to avoid TypeError
-        'token': 'mytoken',
+        'password': 'mytoken',
         'influx_command': '/usr/local/bin/influx2',
     }
     connection_params = {
         'hostname': None,
         'port': None,
-        'token': None,
-        'username': None,
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
