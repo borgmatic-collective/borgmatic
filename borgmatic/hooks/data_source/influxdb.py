@@ -54,7 +54,6 @@ def dump_data_sources(
     processes = []
 
     for database in databases:
-
         dump_filename = dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
             database.get('name'),
