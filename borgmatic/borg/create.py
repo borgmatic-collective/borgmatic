@@ -45,7 +45,7 @@ def any_parent_directories(path, candidate_parents):
     return False
 
 
-def collect_special_file_paths(
+def check_planned_backup_paths(
     dry_run,
     create_command,
     config,
@@ -111,7 +111,6 @@ def collect_special_file_paths(
     return tuple(
         path
         for path in paths
-        if special_file(path, working_directory)
         if path not in paths_containing_runtime_directory
     )
 
@@ -228,6 +227,17 @@ def make_base_create_command(
         archive_name_format,
         local_borg_version,
     )
+    working_directory = borgmatic.config.paths.get_working_directory(config)
+
+    logger.debug('Checking file paths Borg plans to backup')
+    planned_backup_paths = check_planned_backup_paths(
+        dry_run,
+        create_flags + create_positional_arguments,
+        config,
+        local_path,
+        working_directory,
+        borgmatic_runtime_directory=borgmatic_runtime_directory,
+    )
 
     # If database hooks are enabled (as indicated by streaming processes), exclude files that might
     # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
@@ -235,16 +245,11 @@ def make_base_create_command(
         logger.warning(
             'Ignoring configured "read_special" value of false, as true is needed for database hooks.',
         )
-        working_directory = borgmatic.config.paths.get_working_directory(config)
 
-        logger.debug('Collecting special file paths')
-        special_file_paths = collect_special_file_paths(
-            dry_run,
-            create_flags + create_positional_arguments,
-            config,
-            local_path,
-            working_directory,
-            borgmatic_runtime_directory=borgmatic_runtime_directory,
+        special_file_paths = tuple(
+            path
+            for path in planned_backup_paths
+            if special_file(path, working_directory)
         )
 
         if special_file_paths:
