@@ -59,7 +59,7 @@ def test_any_parent_directories_treats_unrelated_paths_as_non_match():
     module.any_parent_directories('/foo/bar.txt', ('/usr', '/etc'))
 
 
-def test_check_planned_backup_paths_parses_borg_dry_run_file_list():
+def test_validate_planned_backup_paths_parses_borg_dry_run_file_list():
     flexmock(module.flags).should_receive('omit_flag').replace_with(
         lambda arguments, flag: arguments,
     )
@@ -73,7 +73,7 @@ def test_check_planned_backup_paths_parses_borg_dry_run_file_list():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module).should_receive('any_parent_directories').never()
 
-    assert module.check_planned_backup_paths(
+    assert module.validate_planned_backup_paths(
         dry_run=False,
         create_command=('borg', 'create'),
         config={},
@@ -83,7 +83,7 @@ def test_check_planned_backup_paths_parses_borg_dry_run_file_list():
     ) == ('/foo', '/bar', '/baz')
 
 
-def test_check_planned_backup_paths_skips_borgmatic_runtime_directory():
+def test_validate_planned_backup_paths_skips_borgmatic_runtime_directory():
     flexmock(module.flags).should_receive('omit_flag').replace_with(
         lambda arguments, flag: arguments,
     )
@@ -108,7 +108,7 @@ def test_check_planned_backup_paths_skips_borgmatic_runtime_directory():
         ('/run/borgmatic',),
     ).and_return(False)
 
-    assert module.check_planned_backup_paths(
+    assert module.validate_planned_backup_paths(
         dry_run=False,
         create_command=('borg', 'create'),
         config={},
@@ -118,7 +118,7 @@ def test_check_planned_backup_paths_skips_borgmatic_runtime_directory():
     ) == ('/foo', '/baz')
 
 
-def test_check_planned_backup_paths_with_borgmatic_runtime_directory_missing_from_paths_output_errors():
+def test_validate_planned_backup_paths_with_borgmatic_runtime_directory_missing_from_paths_output_errors():
     flexmock(module.flags).should_receive('omit_flag').replace_with(
         lambda arguments, flag: arguments,
     )
@@ -133,7 +133,7 @@ def test_check_planned_backup_paths_with_borgmatic_runtime_directory_missing_fro
     flexmock(module).should_receive('any_parent_directories').and_return(False)
 
     with pytest.raises(ValueError):
-        module.check_planned_backup_paths(
+        module.validate_planned_backup_paths(
             dry_run=False,
             create_command=('borg', 'create'),
             config={},
@@ -143,7 +143,7 @@ def test_check_planned_backup_paths_with_borgmatic_runtime_directory_missing_fro
         )
 
 
-def test_check_planned_backup_paths_with_dry_run_and_borgmatic_runtime_directory_missing_from_paths_output_does_not_raise():
+def test_validate_planned_backup_paths_with_dry_run_and_borgmatic_runtime_directory_missing_from_paths_output_does_not_raise():
     flexmock(module.flags).should_receive('omit_flag').replace_with(
         lambda arguments, flag: arguments,
     )
@@ -157,7 +157,7 @@ def test_check_planned_backup_paths_with_dry_run_and_borgmatic_runtime_directory
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module).should_receive('any_parent_directories').and_return(False)
 
-    assert module.check_planned_backup_paths(
+    assert module.validate_planned_backup_paths(
         dry_run=True,
         create_command=('borg', 'create'),
         config={},
@@ -180,7 +180,7 @@ def test_make_base_create_produces_borg_command():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -216,7 +216,7 @@ def test_make_base_create_command_includes_patterns_file_in_borg_command():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -249,7 +249,7 @@ def test_make_base_create_command_with_store_config_false_omits_config_files():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -318,7 +318,7 @@ def test_make_base_create_command_includes_configuration_option_as_command_flag(
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -351,7 +351,7 @@ def test_make_base_create_command_includes_dry_run_in_borg_command():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=True,
@@ -384,7 +384,7 @@ def test_make_base_create_command_includes_comment_in_borg_command():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -418,7 +418,7 @@ def test_make_base_create_command_includes_local_path_in_borg_command():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -451,7 +451,7 @@ def test_make_base_create_command_includes_remote_path_in_borg_command():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -484,7 +484,7 @@ def test_make_base_create_command_includes_log_json_in_borg_command():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -517,7 +517,7 @@ def test_make_base_create_command_includes_list_flags_in_borg_command():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -557,7 +557,7 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
     )
     flexmock(module.logger).should_receive('warning').twice()
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(
         (
             '/non/special',
             '/dev/null',
@@ -620,7 +620,7 @@ def test_make_base_create_command_without_patterns_and_with_stream_processes_ign
     )
     flexmock(module.logger).should_receive('warning').twice()
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(
         (
             '/non/special',
             '/dev/null',
@@ -679,7 +679,7 @@ def test_make_base_create_command_with_stream_processes_and_read_special_true_sk
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
     )
     flexmock(module.logger).should_receive('warning').never()
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -713,7 +713,7 @@ def test_make_base_create_command_includes_archive_name_format_in_borg_command()
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         ('repo::ARCHIVE_NAME',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -746,7 +746,7 @@ def test_make_base_create_command_includes_default_archive_name_format_in_borg_c
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         ('repo::{hostname}',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -778,7 +778,7 @@ def test_make_base_create_command_includes_archive_name_format_with_placeholders
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (repository_archive_pattern,),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -811,7 +811,7 @@ def test_make_base_create_command_includes_repository_and_archive_name_format_wi
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (repository_archive_pattern,),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -840,7 +840,7 @@ def test_make_base_create_command_includes_archive_suffix_in_borg_command():
         DEFAULT_ARCHIVE_NAME,
     )
     flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,
@@ -873,7 +873,7 @@ def test_make_base_create_command_includes_extra_borg_options_in_borg_command():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
     )
-    flexmock(module).should_receive('check_planned_backup_paths').and_return(())
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
         dry_run=False,

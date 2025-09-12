@@ -45,7 +45,7 @@ def any_parent_directories(path, candidate_parents):
     return False
 
 
-def check_planned_backup_paths(
+def validate_planned_backup_paths(
     dry_run,
     create_command,
     config,
@@ -55,18 +55,15 @@ def check_planned_backup_paths(
 ):
     '''
     Given a dry-run flag, a Borg create command as a tuple, a configuration dict, a local Borg path,
-    a working directory, and the borgmatic runtime directory, collect the paths for any special
-    files (character devices, block devices, and named pipes / FIFOs) that Borg would encounter
-    during a create. These are all paths that could cause Borg to hang if its --read-special flag is
-    used.
+    a working directory, and the borgmatic runtime directory, perform a "borg create --dry-run" to
+    determine whether Borg's planned paths to include in a backup look good. Specifically, if the
+    given runtime directory exists, validate that it will be included in a backup and hasn't been
+    excluded.
 
-    Skip looking for special files in the given borgmatic runtime directory, as borgmatic creates
-    its own special files there for database dumps and we don't want those omitted.
-
-    Additionally, if the borgmatic runtime directory is not contained somewhere in the files Borg
-    plans to backup, that means the user must have excluded the runtime directory (e.g. via
-    "exclude_patterns" or similar). Therefore, raise, because this means Borg won't be able to
-    consume any database dumps and therefore borgmatic will hang when it tries to do so.
+    Raise ValueError if the runtime directory has been excluded via "exclude_patterns" or similar,
+    because any features that rely on the runtime directory getting backed up will break.  For
+    instance, without the runtime directory, Borg can't consume any database dumps and borgmatic may
+    hang waiting for them to be consumed.
     '''
     # Omit "--exclude-nodump" from the Borg dry run command, because that flag causes Borg to open
     # files including any named pipe we've created. And omit "--filter" because that can break the
@@ -226,7 +223,7 @@ def make_base_create_command(
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
     logger.debug('Checking file paths Borg plans to include')
-    planned_backup_paths = check_planned_backup_paths(
+    planned_backup_paths = validate_planned_backup_paths(
         dry_run,
         create_flags + create_positional_arguments,
         config,
