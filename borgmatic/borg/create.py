@@ -108,11 +108,7 @@ def check_planned_backup_paths(
                 f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.',
             )
 
-    return tuple(
-        path
-        for path in paths
-        if path not in paths_containing_runtime_directory
-    )
+    return tuple(path for path in paths if path not in paths_containing_runtime_directory)
 
 
 MAX_SPECIAL_FILE_PATHS_LENGTH = 1000
@@ -229,7 +225,7 @@ def make_base_create_command(
     )
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    logger.debug('Checking file paths Borg plans to backup')
+    logger.debug('Checking file paths Borg plans to include')
     planned_backup_paths = check_planned_backup_paths(
         dry_run,
         create_flags + create_positional_arguments,
@@ -247,9 +243,7 @@ def make_base_create_command(
         )
 
         special_file_paths = tuple(
-            path
-            for path in planned_backup_paths
-            if special_file(path, working_directory)
+            path for path in planned_backup_paths if special_file(path, working_directory)
         )
 
         if special_file_paths:
