@@ -49,6 +49,7 @@ def validate_planned_backup_paths(
     dry_run,
     create_command,
     config,
+    patterns,
     local_path,
     working_directory,
     borgmatic_runtime_directory,
@@ -91,21 +92,32 @@ def validate_planned_backup_paths(
         if path_line and path_line.startswith(('- ', '+ '))
     )
 
-    # These are the subset of those files that contain the borgmatic runtime directory.
-    paths_containing_runtime_directory = {}
+    # These are the subset of output paths contained within the borgmatic runtime directory.
+    paths_inside_runtime_directory = {
+        path for path in paths if any_parent_directories(path, (borgmatic_runtime_directory,))
+    }
 
-    if os.path.exists(borgmatic_runtime_directory):
-        paths_containing_runtime_directory = {
-            path for path in paths if any_parent_directories(path, (borgmatic_runtime_directory,))
-        }
+    # If the runtime directory isn't present in the source patterns, then we shouldn't expect it to
+    # be in the paths output from the Borg dry run.
+    runtime_directory_present_in_patterns = any(
+        pattern
+        for pattern in patterns
+        if any_parent_directories(pattern.path, (borgmatic_runtime_directory,))
+        if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
+    )
 
-        # If no paths to backup contain the runtime directory, it must've been excluded.
-        if not paths_containing_runtime_directory and not dry_run:
-            raise ValueError(
-                f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.',
-            )
+    # If no paths to backup are inside the runtime directory, it must've been excluded.
+    if (
+        not paths_inside_runtime_directory
+        and runtime_directory_present_in_patterns
+        and not dry_run
+        and os.path.exists(borgmatic_runtime_directory)
+    ):
+        raise ValueError(
+            f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.',
+        )
 
-    return tuple(path for path in paths if path not in paths_containing_runtime_directory)
+    return tuple(path for path in paths if path not in paths_inside_runtime_directory)
 
 
 MAX_SPECIAL_FILE_PATHS_LENGTH = 1000
@@ -227,6 +239,7 @@ def make_base_create_command(
         dry_run,
         create_flags + create_positional_arguments,
         config,
+        patterns,
         local_path,
         working_directory,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
