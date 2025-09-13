@@ -45,28 +45,26 @@ def any_parent_directories(path, candidate_parents):
     return False
 
 
-def collect_special_file_paths(
+def validate_planned_backup_paths(
     dry_run,
     create_command,
     config,
+    patterns,
     local_path,
     working_directory,
     borgmatic_runtime_directory,
 ):
     '''
     Given a dry-run flag, a Borg create command as a tuple, a configuration dict, a local Borg path,
-    a working directory, and the borgmatic runtime directory, collect the paths for any special
-    files (character devices, block devices, and named pipes / FIFOs) that Borg would encounter
-    during a create. These are all paths that could cause Borg to hang if its --read-special flag is
-    used.
+    a working directory, and the borgmatic runtime directory, perform a "borg create --dry-run" to
+    determine whether Borg's planned paths to include in a backup look good. Specifically, if the
+    given runtime directory exists, validate that it will be included in a backup and hasn't been
+    excluded.
 
-    Skip looking for special files in the given borgmatic runtime directory, as borgmatic creates
-    its own special files there for database dumps and we don't want those omitted.
-
-    Additionally, if the borgmatic runtime directory is not contained somewhere in the files Borg
-    plans to backup, that means the user must have excluded the runtime directory (e.g. via
-    "exclude_patterns" or similar). Therefore, raise, because this means Borg won't be able to
-    consume any database dumps and therefore borgmatic will hang when it tries to do so.
+    Raise ValueError if the runtime directory has been excluded via "exclude_patterns" or similar,
+    because any features that rely on the runtime directory getting backed up will break.  For
+    instance, without the runtime directory, Borg can't consume any database dumps and borgmatic may
+    hang waiting for them to be consumed.
     '''
     # Omit "--exclude-nodump" from the Borg dry run command, because that flag causes Borg to open
     # files including any named pipe we've created. And omit "--filter" because that can break the
@@ -94,26 +92,32 @@ def collect_special_file_paths(
         if path_line and path_line.startswith(('- ', '+ '))
     )
 
-    # These are the subset of those files that contain the borgmatic runtime directory.
-    paths_containing_runtime_directory = {}
+    # These are the subset of output paths contained within the borgmatic runtime directory.
+    paths_inside_runtime_directory = {
+        path for path in paths if any_parent_directories(path, (borgmatic_runtime_directory,))
+    }
 
-    if os.path.exists(borgmatic_runtime_directory):
-        paths_containing_runtime_directory = {
-            path for path in paths if any_parent_directories(path, (borgmatic_runtime_directory,))
-        }
-
-        # If no paths to backup contain the runtime directory, it must've been excluded.
-        if not paths_containing_runtime_directory and not dry_run:
-            raise ValueError(
-                f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.',
-            )
-
-    return tuple(
-        path
-        for path in paths
-        if special_file(path, working_directory)
-        if path not in paths_containing_runtime_directory
+    # If the runtime directory isn't present in the source patterns, then we shouldn't expect it to
+    # be in the paths output from the Borg dry run.
+    runtime_directory_present_in_patterns = any(
+        pattern
+        for pattern in patterns
+        if any_parent_directories(pattern.path, (borgmatic_runtime_directory,))
+        if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
     )
+
+    # If no paths to backup are inside the runtime directory, it must've been excluded.
+    if (
+        not paths_inside_runtime_directory
+        and runtime_directory_present_in_patterns
+        and not dry_run
+        and os.path.exists(borgmatic_runtime_directory)
+    ):
+        raise ValueError(
+            f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.',
+        )
+
+    return tuple(path for path in paths if path not in paths_inside_runtime_directory)
 
 
 MAX_SPECIAL_FILE_PATHS_LENGTH = 1000
@@ -228,6 +232,18 @@ def make_base_create_command(
         archive_name_format,
         local_borg_version,
     )
+    working_directory = borgmatic.config.paths.get_working_directory(config)
+
+    logger.debug('Checking file paths Borg plans to include')
+    planned_backup_paths = validate_planned_backup_paths(
+        dry_run,
+        create_flags + create_positional_arguments,
+        config,
+        patterns,
+        local_path,
+        working_directory,
+        borgmatic_runtime_directory=borgmatic_runtime_directory,
+    )
 
     # If database hooks are enabled (as indicated by streaming processes), exclude files that might
     # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
@@ -235,16 +251,9 @@ def make_base_create_command(
         logger.warning(
             'Ignoring configured "read_special" value of false, as true is needed for database hooks.',
         )
-        working_directory = borgmatic.config.paths.get_working_directory(config)
 
-        logger.debug('Collecting special file paths')
-        special_file_paths = collect_special_file_paths(
-            dry_run,
-            create_flags + create_positional_arguments,
-            config,
-            local_path,
-            working_directory,
-            borgmatic_runtime_directory=borgmatic_runtime_directory,
+        special_file_paths = tuple(
+            path for path in planned_backup_paths if special_file(path, working_directory)
         )
 
         if special_file_paths:
