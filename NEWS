@@ -2,6 +2,11 @@
  * #1114: Document systemd configuration changes for the ZFS filesystem hook.
  * #1118: Fix a bug in which Borg hangs during database backup when different filesystems are in
    use.
+ * #1122: To prevent the user from inadvertently excluding the "bootstrap" action's manifest, always
+   error and exit when the borgmatic runtime directory overlaps with the configured excludes.
+ * #1125: Clarify documentation about ZFS, Btrfs, and LVM snapshotting when a separate
+   filesystem is mounted in the source directory. (Spoiler: The separate filesystem doesn't get
+   included in the snapshot.)
  * #1126: Create LVM snapshots as read-write to avoid an error when snapshotting ext4 filesystems
    with orphaned files that need recovery.
  * #1133: Fix the "spot" check to include borgmatic configuration files that were backed up to

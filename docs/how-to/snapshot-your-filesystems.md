@@ -74,8 +74,8 @@ won't snapshot datasets with the `canmount=off` property, which is often set on
 datasets that only serve as a container for other datasets. Use `zfs get
 canmount datasetname` to see the `canmount` value for a dataset.
 
-During a backup, borgmatic automatically snapshots these discovered datasets
-(non-recursively), temporarily mounts the snapshots within its [runtime
+During a backup, borgmatic automatically snapshots these discovered datasets,
+temporarily mounts the snapshots within its [runtime
 directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory),
 and includes the snapshotted files in the paths sent to Borg. borgmatic is also
 responsible for cleaning up (destroying) these snapshots after a backup
@@ -87,6 +87,12 @@ dataset is mounted at `/var/dataset`, then the snapshotted files will appear
 in an archive at `/var/dataset` as well—even if borgmatic has to mount the
 snapshot somewhere in `/run/user/1000/borgmatic/zfs_snapshots/` to perform the
 backup.
+
+If a dataset has a separate filesystem mounted somewhere within it, that
+filesystem won't get included in the snapshot. For instance, if `/` is a ZFS
+dataset but `/boot` is a separate filesystem, borgmatic won't include `/boot` as
+part of the dataset snapshot. You can however add `/boot` to
+`source_directories` if you'd like it included in your backup.
 
 <span class="minilink minilink-addedin">New in version 1.9.4</span> borgmatic
 is smart enough to look at the parent (and grandparent, etc.) directories of
@@ -189,9 +195,9 @@ used if the subvolume was mounted elsewhere; only the mount point could be used.
 using `source_directories`, you can include the subvolume path as a root pattern
 with borgmatic's `patterns` or `patterns_from` options.
 
-During a backup, borgmatic snapshots these subvolumes (non-recursively) and
-includes the snapshotted files in the paths sent to Borg. borgmatic is also
-responsible for cleaning up (deleting) these snapshots after a backup completes.
+During a backup, borgmatic snapshots these subvolumes and includes the
+snapshotted files in the paths sent to Borg. borgmatic is also responsible for
+cleaning up (deleting) these snapshots after a backup completes.
 
 borgmatic is smart enough to look at the parent (and grandparent, etc.)
 directories of each of your `source_directories` to discover any subvolumes. For
@@ -200,6 +206,12 @@ directories, but `/var` is a subvolume path. borgmatic will discover that and
 snapshot `/var` accordingly. This also works even with nested subvolumes;
 borgmatic selects the subvolume that's the "closest" parent to your source
 directories.
+
+If a subvolume has a separate filesystem mounted somewhere within it, that
+filesystem won't get included in the snapshot. For instance, if `/` is a Btrfs
+subvolume but `/boot` is a separate filesystem, borgmatic won't include `/boot`
+as part of the subvolume snapshot. You can however add `/boot` to
+`source_directories` if you'd like it included in your backup.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> When using
 [patterns](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns),
@@ -262,8 +274,8 @@ KVM that contains an MBR, partitions, etc.).
 In those cases, you can omit the `lvm:` option and use Borg's own support for
 [image backup](https://borgbackup.readthedocs.io/en/stable/deployment/image-backup.html).
 
-To use this feature, first you need one or more mounted LVM logical volumes.
-Then, enable LVM within borgmatic by adding the following line to your
+To use the LVM snapshot feature, first you need one or more mounted LVM logical
+volumes. Then, enable LVM within borgmatic by adding the following line to your
 configuration file:
 
 ```yaml
@@ -333,6 +345,12 @@ directories of each of your `source_directories` to discover any logical
 volumes. For instance, let's say you add `/var/log` and `/var/lib` to your
 source directories, but `/var` is a logical volume. borgmatic will discover
 that and snapshot `/var` accordingly.
+
+If a logical volume has a separate filesystem mounted somewhere within it, that
+filesystem won't get included in the snapshot. For instance, if `/` is an LVM
+logical volume but `/boot` is a separate filesystem, borgmatic won't include
+`/boot` as part of the logical volume snapshot. You can however add `/boot` to
+`source_directories` if you'd like it included in your backup.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> When using
 [patterns](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns),
