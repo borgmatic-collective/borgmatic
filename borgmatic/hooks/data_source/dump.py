@@ -1,7 +1,10 @@
 import fnmatch
+import json
 import logging
 import os
 import shutil
+
+import borgmatic.actions.restore
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +34,48 @@ def make_data_source_dump_filename(dump_path, name, hostname=None, port=None):
         (hostname or 'localhost') + ('' if port is None else f':{port}'),
         name,
     )
+
+
+def write_data_source_dumps_metadata(borgmatic_runtime_directory, hook_name, dumps_metadata):
+    '''
+    Given the borgmatic runtime directory, a data source hook name, and a sequence of
+    borgmatic.actions.restore.Dump instances of dump metadata, write a metadata file describing all
+    of those dumps. This metadata is being dumped so that it's available upon restore, e.g. to
+    support the user selecting which data source(s) should be restored.
+
+    Raise ValueError if writing to the file results in an operating system error.
+    '''
+    dumps_metadata_path = os.path.join(borgmatic_runtime_directory, hook_name, 'dumps.json')
+
+    try:
+        with open(dumps_metadata_path, 'w', encoding='utf-8') as metadata_file:
+            json.dump(
+                {
+                    'dumps': [dump._asdict() for dump in dumps_metadata],
+                },
+                metadata_file,
+                sort_keys=True,
+            )
+    except OSError as error:
+        raise ValueError(f'Error writing to dumps metadata at {dumps_metadata_path}: {error}')
+
+
+def parse_data_source_dumps_metadata(dumps_json, dumps_metadata_path):
+    '''
+    Given a dumps metadata JSON string as extracted from an archive and its path within the archive,
+    parse it into a tuple of borgmatic.actions.restore.Dump instances and return them.
+
+    Raise ValueError if parsing the JSON results in a JSON decode error or the data does not have
+    the expected keys.
+    '''
+    try:
+        return tuple(
+            borgmatic.actions.restore.Dump(**dump) for dump in json.loads(dumps_json)['dumps']
+        )
+    except (json.JSONDecodeError, TypeError, KeyError) as error:
+        raise ValueError(
+            f'Cannot read archive data source dumps metadata at {dumps_metadata_path} due to invalid JSON: {error}',
+        )
 
 
 def create_parent_directory_for_dump(dump_path):

@@ -257,11 +257,12 @@ def dump_data_sources(
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
+    dumps_metadata = []
 
     logger.info(f'Dumping MariaDB databases{dry_run_label}')
+    dump_path = make_dump_path(borgmatic_runtime_directory)
 
     for database in databases:
-        dump_path = make_dump_path(borgmatic_runtime_directory)
         username = borgmatic.hooks.credential.parse.resolve_credential(
             database.get('username'),
             config,
@@ -294,9 +295,17 @@ def dump_data_sources(
             raise ValueError('Cannot find any MariaDB databases to dump.')
 
         if database['name'] == 'all' and database.get('format'):
-            for dump_name in dump_database_names:
+            for database_name in dump_database_names:
+                dumps_metadata.append(
+                    borgmatic.actions.restore.Dump(
+                        'mariadb_databases',
+                        database_name,
+                        database.get('hostname', 'localhost'),
+                        database.get('port'),
+                    )
+                )
                 renamed_database = copy.copy(database)
-                renamed_database['name'] = dump_name
+                renamed_database['name'] = database_name
                 processes.append(
                     execute_dump_command(
                         renamed_database,
@@ -304,13 +313,21 @@ def dump_data_sources(
                         username,
                         password,
                         dump_path,
-                        (dump_name,),
+                        (database_name,),
                         environment,
                         dry_run,
                         dry_run_label,
                     ),
                 )
         else:
+            dumps_metadata.append(
+                borgmatic.actions.restore.Dump(
+                    'mariadb_databases',
+                    database['name'],
+                    database.get('hostname', 'localhost'),
+                    database.get('port'),
+                )
+            )
             processes.append(
                 execute_dump_command(
                     database,
@@ -326,6 +343,9 @@ def dump_data_sources(
             )
 
     if not dry_run:
+        dump.write_data_source_dumps_metadata(
+            borgmatic_runtime_directory, 'mariadb_databases', dumps_metadata
+        )
         patterns.append(
             borgmatic.borg.pattern.Pattern(
                 os.path.join(borgmatic_runtime_directory, 'mariadb_databases'),

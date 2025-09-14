@@ -252,6 +252,66 @@ def collect_dumps_from_archive(
     borgmatic runtime directory, query the archive for the names of data sources dumps it contains
     and return them as a set of Dump instances.
     '''
+    dumps_from_archive = set()
+
+    # There is (at most) one dump metadata file per data source hook. Load each.
+    for dumps_metadata_path in borgmatic.borg.list.capture_archive_listing(
+        repository,
+        archive,
+        config,
+        local_borg_version,
+        global_arguments,
+        list_paths=[
+            'sh:'
+            + borgmatic.hooks.data_source.dump.make_data_source_dump_path(
+                base_directory,
+                '*_databases/dumps.json',
+            )
+            # Probe for dump metadata files in multiple locations, as the default location is
+            # "/borgmatic/*_databases/dumps.json" with Borg 1.4+, but instead begins with the
+            # borgmatic runtime directory for older versions of Borg.
+            for base_directory in (
+                'borgmatic',
+                borgmatic.config.paths.make_runtime_directory_glob(borgmatic_runtime_directory),
+            )
+        ],
+        local_path=local_path,
+        remote_path=remote_path,
+    ):
+        if not dumps_metadata_path:
+            continue
+
+        dumps_from_archive.update(
+            set(
+                borgmatic.hooks.data_source.dump.parse_data_source_dumps_metadata(
+                    borgmatic.borg.extract.extract_archive(
+                        global_arguments.dry_run,
+                        repository,
+                        archive,
+                        [dumps_metadata_path],
+                        config,
+                        local_borg_version,
+                        global_arguments,
+                        local_path=local_path,
+                        remote_path=remote_path,
+                        extract_to_stdout=True,
+                    )
+                    .stdout.read()
+                    .decode(),
+                    dumps_metadata_path,
+                )
+            )
+        )
+
+    # If we've successfully loaded any dumps metadata, we're done.
+    if dumps_from_archive:
+        logger.debug('Collecting database dumps from archive data source dumps metadata files')
+
+        return dumps_from_archive
+
+    # No dumps metadata files were found, so for backwards compatibility, fall back to parsing the
+    # paths of dumps found in the archive to get their respective dump metadata.
+    logger.debug('Collecting database dumps from archive data source dump paths (fallback)')
     borgmatic_source_directory = str(
         pathlib.Path(borgmatic.config.paths.get_borgmatic_source_directory(config)),
     )
@@ -280,9 +340,6 @@ def collect_dumps_from_archive(
         local_path=local_path,
         remote_path=remote_path,
     )
-
-    # Parse the paths of dumps found in the archive to get their respective dump metadata.
-    dumps_from_archive = set()
 
     for dump_path in dump_paths:
         if not dump_path:

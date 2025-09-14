@@ -53,9 +53,19 @@ def dump_data_sources(
     logger.info(f'Dumping MongoDB databases{dry_run_label}')
 
     processes = []
+    dumps_metadata = []
 
     for database in databases:
         name = database['name']
+        dumps_metadata.append(
+            borgmatic.actions.restore.Dump(
+                'mongodb_databases',
+                name,
+                database.get('hostname', 'localhost'),
+                database.get('port'),
+            )
+        )
+
         dump_filename = dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
             name,
@@ -82,6 +92,9 @@ def dump_data_sources(
             )
 
     if not dry_run:
+        dump.write_data_source_dumps_metadata(
+            borgmatic_runtime_directory, 'mongodb_databases', dumps_metadata
+        )
         patterns.append(
             borgmatic.borg.pattern.Pattern(
                 os.path.join(borgmatic_runtime_directory, 'mongodb_databases'),

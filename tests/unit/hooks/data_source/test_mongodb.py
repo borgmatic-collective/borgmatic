@@ -39,6 +39,15 @@ def test_dump_data_sources_runs_mongodump_for_each_database():
             run_to_completion=False,
         ).and_return(process).once()
 
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'bar'),
+        ],
+    ).once()
+
     assert (
         module.dump_data_sources(
             databases,
@@ -60,6 +69,7 @@ def test_dump_data_sources_with_dry_run_skips_mongodump():
     ).and_return('databases/localhost/bar')
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').never()
 
     assert (
         module.dump_data_sources(
@@ -75,7 +85,7 @@ def test_dump_data_sources_with_dry_run_skips_mongodump():
 
 
 def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
-    databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
+    databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 27018}]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -89,7 +99,7 @@ def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
             '--host',
             'database.example.org',
             '--port',
-            '5433',
+            '27018',
             '--db',
             'foo',
             '--archive',
@@ -99,6 +109,15 @@ def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
         shell=True,
         run_to_completion=False,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump(
+                'mongodb_databases', 'foo', 'database.example.org', 27018
+            ),
+        ],
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -150,6 +169,13 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
         shell=True,
         run_to_completion=False,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
+        ],
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -174,6 +200,13 @@ def test_dump_data_sources_runs_mongodump_with_directory_format():
         ('mongodump', '--out', 'databases/localhost/foo', '--db', 'foo'),
         shell=True,
     ).and_return(flexmock()).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
+        ],
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -210,6 +243,13 @@ def test_dump_data_sources_runs_mongodump_with_options():
         shell=True,
         run_to_completion=False,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
+        ],
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -235,6 +275,13 @@ def test_dump_data_sources_runs_mongodumpall_for_all_databases():
         shell=True,
         run_to_completion=False,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'all'),
+        ],
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -308,7 +355,7 @@ def test_restore_data_source_dump_runs_mongorestore():
 
 def test_restore_data_source_dump_runs_mongorestore_with_hostname_and_port():
     hook_config = [
-        {'name': 'foo', 'hostname': 'database.example.org', 'port': 5433, 'schemas': None},
+        {'name': 'foo', 'hostname': 'database.example.org', 'port': 27018, 'schemas': None},
     ]
     extract_process = flexmock(stdout=flexmock())
 
@@ -325,7 +372,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_hostname_and_port():
             '--host',
             'database.example.org',
             '--port',
-            '5433',
+            '27018',
         ],
         processes=[extract_process],
         output_log_level=logging.DEBUG,
@@ -708,6 +755,13 @@ def test_dump_data_sources_uses_custom_mongodump_command():
         shell=True,
         run_to_completion=False,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
+        ],
+    ).once()
 
     assert module.dump_data_sources(
         databases,

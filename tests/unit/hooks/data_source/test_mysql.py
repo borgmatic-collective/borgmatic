@@ -232,6 +232,15 @@ def test_dump_data_sources_dumps_each_database():
             dry_run_label=object,
         ).and_return(process).once()
 
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mysql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mysql_databases', 'foo'),
+            module.borgmatic.actions.restore.Dump('mysql_databases', 'bar'),
+        ],
+    ).once()
+
     assert (
         module.dump_data_sources(
             databases,
@@ -273,6 +282,13 @@ def test_dump_data_sources_dumps_with_password():
         dry_run=object,
         dry_run_label=object,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mysql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mysql_databases', 'foo'),
+        ],
+    ).once()
 
     assert module.dump_data_sources(
         [database],
@@ -317,6 +333,13 @@ def test_dump_data_sources_dumps_with_environment_password_transport_passes_pass
         dry_run=object,
         dry_run_label=object,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mysql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mysql_databases', 'foo'),
+        ],
+    ).once()
 
     assert module.dump_data_sources(
         [database],
@@ -348,6 +371,14 @@ def test_dump_data_sources_dumps_all_databases_at_once():
         dry_run=object,
         dry_run_label=object,
     ).and_return(process).once()
+
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mysql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mysql_databases', 'all'),
+        ],
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -381,6 +412,15 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
             dry_run=object,
             dry_run_label=object,
         ).and_return(process).once()
+
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mysql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mysql_databases', 'foo'),
+            module.borgmatic.actions.restore.Dump('mysql_databases', 'bar'),
+        ],
+    ).once()
 
     assert (
         module.dump_data_sources(
