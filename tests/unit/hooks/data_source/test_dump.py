@@ -51,7 +51,7 @@ def test_write_data_source_dumps_metadata_writes_json_to_file():
 
     assert (
         dumps_stream.getvalue()
-        == '[{"data_source_name": "foo", "hook_name": "databases", "hostname": "localhost", "port": null}, {"data_source_name": "bar", "hook_name": "databases", "hostname": "localhost", "port": null}]'
+        == '{"dumps": [{"data_source_name": "foo", "hook_name": "databases", "hostname": "localhost", "port": null}, {"data_source_name": "bar", "hook_name": "databases", "hostname": "localhost", "port": null}]}'
     )
 
 
@@ -72,7 +72,7 @@ def test_write_data_source_dumps_metadata_with_operating_system_error_raises():
 
 
 def test_parse_data_source_dumps_metadata_converts_json_to_dump_instances():
-    dumps_json = '[{"data_source_name": "foo", "hook_name": "databases", "hostname": "localhost", "port": null}, {"data_source_name": "bar", "hook_name": "databases", "hostname": "example.org", "port": 1234}]'
+    dumps_json = '{"dumps": [{"data_source_name": "foo", "hook_name": "databases", "hostname": "localhost", "port": null}, {"data_source_name": "bar", "hook_name": "databases", "hostname": "example.org", "port": 1234}]}'
 
     assert module.parse_data_source_dumps_metadata(
         dumps_json, 'borgmatic/databases/dumps.json'
@@ -88,7 +88,16 @@ def test_parse_data_source_dumps_metadata_with_invalid_json_raises():
 
 
 def test_parse_data_source_dumps_metadata_with_unknown_keys_raises():
-    dumps_json = '[{"data_source_name": "foo", "hook_name": "databases", "wtf": "is this"}]'
+    dumps_json = (
+        '{"dumps": [{"data_source_name": "foo", "hook_name": "databases", "wtf": "is this"}]}'
+    )
+
+    with pytest.raises(ValueError):
+        module.parse_data_source_dumps_metadata(dumps_json, 'borgmatic/databases/dumps.json')
+
+
+def test_parse_data_source_dumps_metadata_with_missing_dumps_key_raises():
+    dumps_json = '{"not": "what we are looking for"}'
 
     with pytest.raises(ValueError):
         module.parse_data_source_dumps_metadata(dumps_json, 'borgmatic/databases/dumps.json')

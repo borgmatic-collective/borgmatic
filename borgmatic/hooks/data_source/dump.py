@@ -49,7 +49,13 @@ def write_data_source_dumps_metadata(borgmatic_runtime_directory, hook_name, dum
 
     try:
         with open(dumps_metadata_path, 'w', encoding='utf-8') as metadata_file:
-            json.dump([dump._asdict() for dump in dumps_metadata], metadata_file, sort_keys=True)
+            json.dump(
+                {
+                    'dumps': [dump._asdict() for dump in dumps_metadata],
+                },
+                metadata_file,
+                sort_keys=True,
+            )
     except OSError as error:
         raise ValueError(f'Error writing to dumps metadata at {dumps_metadata_path}: {error}')
 
@@ -63,8 +69,10 @@ def parse_data_source_dumps_metadata(dumps_json, dumps_metadata_path):
     the expected keys.
     '''
     try:
-        return tuple(borgmatic.actions.restore.Dump(**dump) for dump in json.loads(dumps_json))
-    except (json.JSONDecodeError, TypeError) as error:
+        return tuple(
+            borgmatic.actions.restore.Dump(**dump) for dump in json.loads(dumps_json)['dumps']
+        )
+    except (json.JSONDecodeError, TypeError, KeyError) as error:
         raise ValueError(
             f'Cannot read archive data source dumps metadata at {dumps_metadata_path} due to invalid JSON: {error}',
         )
