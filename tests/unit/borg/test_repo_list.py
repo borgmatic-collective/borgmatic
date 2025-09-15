@@ -16,6 +16,14 @@ BORG_LIST_LATEST_ARGUMENTS = (
     'repo',
 )
 
+BORG_REPO_LIST_LATEST_ARGUMENTS = (
+    '--last',
+    '1',
+    '--json',
+    '--repo',
+    'repo',
+)
+
 
 def test_resolve_archive_name_passes_through_non_latest_archive_name():
     archive = 'myhost-2030-01-01T14:41:17.647620'
@@ -69,6 +77,12 @@ def test_resolve_archive_name_calls_get_latest_archive():
 
 def test_get_latest_archive_calls_borg_with_flags():
     expected_archive = {'name': 'archive-name'}
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
@@ -92,6 +106,12 @@ def test_get_latest_archive_calls_borg_with_flags():
 
 def test_get_latest_archive_with_log_info_calls_borg_without_info_flag():
     expected_archive = {'name': 'archive-name'}
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
@@ -116,6 +136,12 @@ def test_get_latest_archive_with_log_info_calls_borg_without_info_flag():
 
 def test_get_latest_archive_with_log_debug_calls_borg_without_debug_flag():
     expected_archive = {'name': 'archive-name'}
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
@@ -140,6 +166,12 @@ def test_get_latest_archive_with_log_debug_calls_borg_without_debug_flag():
 
 def test_get_latest_archive_with_local_path_calls_borg_via_local_path():
     expected_archive = {'name': 'archive-name'}
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
@@ -164,6 +196,12 @@ def test_get_latest_archive_with_local_path_calls_borg_via_local_path():
 
 def test_get_latest_archive_with_exit_codes_calls_borg_using_them():
     expected_archive = {'name': 'archive-name'}
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     borg_exit_codes = flexmock()
@@ -188,6 +226,15 @@ def test_get_latest_archive_with_exit_codes_calls_borg_using_them():
 
 def test_get_latest_archive_with_remote_path_calls_borg_with_remote_path_flags():
     expected_archive = {'name': 'archive-name'}
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'remote-path', 'borg1'
+    ).and_return(('--remote-path', 'borg1'))
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
@@ -212,6 +259,15 @@ def test_get_latest_archive_with_remote_path_calls_borg_with_remote_path_flags()
 
 def test_get_latest_archive_with_umask_calls_borg_with_umask_flags():
     expected_archive = {'name': 'archive-name'}
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('umask', '077').and_return(
+        ('--umask', '077')
+    )
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
@@ -235,6 +291,12 @@ def test_get_latest_archive_with_umask_calls_borg_with_umask_flags():
 
 def test_get_latest_archive_without_archives_raises():
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list', *BORG_LIST_LATEST_ARGUMENTS),
@@ -253,9 +315,17 @@ def test_get_latest_archive_without_archives_raises():
         )
 
 
-def test_get_latest_archive_with_log_json_calls_borg_with_log_json_flags():
+def test_get_latest_archive_with_log_json_calls_borg_with_log_json_flag():
     expected_archive = {'name': 'archive-name'}
-
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('log-json', True).and_return(
+        ('--log-json',)
+    )
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
@@ -279,7 +349,15 @@ def test_get_latest_archive_with_log_json_calls_borg_with_log_json_flags():
 
 def test_get_latest_archive_with_lock_wait_calls_borg_with_lock_wait_flags():
     expected_archive = {'name': 'archive-name'}
-
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('lock-wait', 'okay').and_return(
+        ('--lock-wait', 'okay')
+    )
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
@@ -301,8 +379,80 @@ def test_get_latest_archive_with_lock_wait_calls_borg_with_lock_wait_flags():
     )
 
 
+def test_get_latest_archive_with_consider_checkpoints_calls_borg_with_consider_checkpoints_flag():
+    expected_archive = {'name': 'archive-name'}
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'consider-checkpoints', True
+    ).and_return(('--consider-checkpoints',))
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        ('borg', 'list', '--consider-checkpoints', *BORG_LIST_LATEST_ARGUMENTS),
+        environment=None,
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ).and_return(json.dumps({'archives': [expected_archive]}))
+
+    assert (
+        module.get_latest_archive(
+            'repo',
+            config={},
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            consider_checkpoints=True,
+        )
+        == expected_archive
+    )
+
+
+def test_get_latest_archive_with_consider_checkpoints_and_feature_available_calls_borg_without_consider_checkpoints_flag():
+    expected_archive = {'name': 'archive-name'}
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'consider-checkpoints', object
+    ).never()
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        ('borg', 'repo-list', *BORG_REPO_LIST_LATEST_ARGUMENTS),
+        environment=None,
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ).and_return(json.dumps({'archives': [expected_archive]}))
+
+    assert (
+        module.get_latest_archive(
+            'repo',
+            config={},
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            consider_checkpoints=True,
+        )
+        == expected_archive
+    )
+
+
 def test_get_latest_archive_calls_borg_with_working_directory():
     expected_archive = {'name': 'archive-name'}
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working/dir',
@@ -787,6 +937,7 @@ def test_make_repo_list_command_with_match_archives_calls_borg_with_match_archiv
 
 def test_list_repository_calls_two_commands():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_repo_list_command')
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
@@ -872,6 +1023,7 @@ def test_make_repo_list_command_with_date_based_matching_calls_borg_with_date_ba
 
 def test_list_repository_calls_borg_with_working_directory():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_repo_list_command')
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
