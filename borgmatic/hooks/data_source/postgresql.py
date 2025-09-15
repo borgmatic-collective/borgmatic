@@ -167,6 +167,8 @@ def dump_data_sources(
                     database_name,
                     database.get('hostname', 'localhost'),
                     database.get('port'),
+                    database.get('label'),
+                    database.get('container'),
                 )
             )
             dump_format = database.get('format', None if database_name == 'all' else 'custom')
@@ -181,7 +183,8 @@ def dump_data_sources(
                 database_name,
                 hostname=database.get('hostname'),
                 port=database.get('port'),
-                label=database.get('label', database.get('container')),
+                container=database.get('container'),
+                label=database.get('label'),
             )
 
             if os.path.exists(dump_filename):
@@ -351,7 +354,8 @@ def restore_data_source_dump(
         data_source['name'],
         hostname=hostname,
         port=port,
-        label=data_source.get('label', data_source.get('container')),
+        container=data_source.get('container'),
+        label=data_source.get('label'),
     )
     psql_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('psql_command') or 'psql')

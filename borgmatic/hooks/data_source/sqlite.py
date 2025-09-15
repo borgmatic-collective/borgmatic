@@ -57,8 +57,7 @@ def dump_data_sources(
         database_path = database['path']
         dumps_metadata.append(
             borgmatic.actions.restore.Dump(
-                'sqlite_databases',
-                database['name'],
+                'sqlite_databases', database['name'], label=database.get('label')
             )
         )
 

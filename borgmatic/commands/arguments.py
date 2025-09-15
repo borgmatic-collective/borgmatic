@@ -1500,6 +1500,10 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         help='The hostname where the dump to restore came from, only necessary if you need to disambiguate dumps',
     )
     restore_group.add_argument(
+        '--original-container',
+        help='The container where the dump to restore came from, only necessary if you need to disambiguate dumps',
+    )
+    restore_group.add_argument(
         '--original-port',
         type=int,
         help="The port where the dump to restore came from (if that port is in borgmatic's configuration), only necessary if you need to disambiguate dumps",

@@ -22,8 +22,8 @@ UNSPECIFIED = object()
 
 Dump = collections.namedtuple(
     'Dump',
-    ('hook_name', 'data_source_name', 'hostname', 'port', 'label'),
-    defaults=('localhost', None, None),
+    ('hook_name', 'data_source_name', 'hostname', 'port', 'label', 'container'),
+    defaults=('localhost', None, None, None),
 )
 
 
@@ -33,7 +33,7 @@ def dumps_match(first, second, default_port=None):
     indicates that the field should match any value. If a default port is given, then consider any
     dump having that port to match with a dump having a None port.
     '''
-    # label kinda counts as id, if they match ignore hostname & port
+    # label kinda counts as an unique id, if they match ignore host/container/port
     if first.label not in {None, UNSPECIFIED} and first.label == second.label:
         field_list = ('hook_name', 'data_source_name')
     else:
@@ -65,15 +65,15 @@ def render_dump_metadata(dump):
     '''
     label = dump.label or UNSPECIFIED
     name = 'unspecified' if dump.data_source_name is UNSPECIFIED else dump.data_source_name
-    hostname = dump.hostname or UNSPECIFIED
+    host = dump.container or dump.hostname or UNSPECIFIED
     port = None if dump.port is UNSPECIFIED else dump.port
 
     if label is not UNSPECIFIED:
         metadata = f'{name}@{label}'
     elif port:
-        metadata = f'{name}@:{port}' if hostname is UNSPECIFIED else f'{name}@{hostname}:{port}'
+        metadata = f'{name}@:{port}' if host is UNSPECIFIED else f'{name}@{host}:{port}'
     else:
-        metadata = f'{name}' if hostname is UNSPECIFIED else f'{name}@{hostname}'
+        metadata = f'{name}' if host is UNSPECIFIED else f'{name}@{host}'
 
     if dump.hook_name not in {None, UNSPECIFIED}:
         return f'{metadata} ({dump.hook_name})'
@@ -110,7 +110,8 @@ def get_configured_data_source(config, restore_dump):
                 hook_data_source.get('name'),
                 hook_data_source.get('hostname', 'localhost'),
                 hook_data_source.get('port'),
-                hook_data_source.get('label') or hook_data_source.get('container') or UNSPECIFIED,
+                hook_data_source.get('label') or UNSPECIFIED,
+                hook_data_source.get('container'),
             ),
             restore_dump,
             default_port,
@@ -425,6 +426,7 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
                 hostname=restore_arguments.original_hostname or UNSPECIFIED,
                 port=restore_arguments.original_port,
                 label=restore_arguments.original_label or UNSPECIFIED,
+                container=restore_arguments.original_container or UNSPECIFIED,
             )
             for name in restore_arguments.data_sources or (UNSPECIFIED,)
         }
@@ -433,6 +435,7 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
         or restore_arguments.original_hostname
         or restore_arguments.original_port
         or restore_arguments.original_label
+        or restore_arguments.original_container
         else {
             Dump(
                 hook_name=UNSPECIFIED,
@@ -440,6 +443,7 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
                 hostname=UNSPECIFIED,
                 port=UNSPECIFIED,
                 label=UNSPECIFIED,
+                container=UNSPECIFIED,
             ),
         }
     )
@@ -585,6 +589,7 @@ def run_restore(
                         restore_dump.hostname,
                         restore_dump.port,
                         restore_dump.label,
+                        restore_dump.container,
                     ),
                 )
 

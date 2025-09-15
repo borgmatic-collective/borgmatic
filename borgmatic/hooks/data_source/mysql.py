@@ -106,7 +106,8 @@ def execute_dump_command(
         database['name'],
         hostname=database.get('hostname'),
         port=database.get('port'),
-        label=database.get('label', database.get('container')),
+        container=database.get('container'),
+        label=database.get('label'),
     )
 
     if os.path.exists(dump_filename):
@@ -237,6 +238,8 @@ def dump_data_sources(
                         database_name,
                         database.get('hostname', 'localhost'),
                         database.get('port'),
+                        database.get('label'),
+                        database.get('container'),
                     )
                 )
                 renamed_database = copy.copy(database)
@@ -261,6 +264,8 @@ def dump_data_sources(
                     database['name'],
                     database.get('hostname', 'localhost'),
                     database.get('port'),
+                    database.get('label'),
+                    database.get('container'),
                 )
             )
             processes.append(

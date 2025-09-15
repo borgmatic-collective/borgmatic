@@ -117,29 +117,29 @@ encryption_passphrase: "test"
 
 postgresql_databases:
     - name: test
-      hostname: postgresql
+      container: postgresql
       username: postgres
       password: test
-      restore_hostname: postgresql2
+      restore_container: postgresql2
       restore_port: 5433
       restore_password: test2
 mariadb_databases:
     - name: test
-      hostname: mariadb
+      container: mariadb
       username: root
       password: test
-      restore_hostname: mariadb2
+      restore_container: mariadb2
       restore_port: 3307
       restore_username: root
       restore_password: test2
 mysql_databases:
     - name: test
-      hostname: not-actually-mysql
+      container: not-actually-mysql
       username: root
       password: test
 mongodb_databases:
     - name: test
-      hostname: mongodb
+      container: mongodb
       username: root
       password: test
       authentication_database: admin
@@ -273,7 +273,11 @@ postgresql_databases:
 
 
 def get_connection_params(database, use_restore_options=False):
-    hostname = (database.get('restore_hostname') if use_restore_options else None) or database.get(
+    hostname = (
+        database.get('restore_container', database.get('restore_hostname'))
+        if use_restore_options
+        else None
+    ) or database.get(
         'container',
         database.get('hostname'),
     )

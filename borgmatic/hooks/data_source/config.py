@@ -11,6 +11,14 @@ logger = logging.getLogger(__name__)
 
 
 def resolve_database_option(option, data_source, connection_params=None, restore=False):
+    '''
+    Resolves a database option from the given data source configuration dict and
+    connection parameters dict. If restore is set to True it will consider the
+    `restore_<option>` instead.
+
+    Returns the resolved option or None. Can raise a ValueError if the hostname lookup
+    results in a container IP check.
+    '''
     # Special case `hostname` since it overlaps with `container`
     if option == 'hostname':
         return get_hostname_from_config(data_source, connection_params, restore)
@@ -22,6 +30,12 @@ def resolve_database_option(option, data_source, connection_params=None, restore
 
 
 def get_hostname_from_config(data_source, connection_params=None, restore=False):
+    '''
+    Specialisation of `resolve_database_option` to handle the extra complexity of
+    the hostname option to also handle containers.
+
+    Returns a hostname/IP or raises an ValueError if a container IP lookup fails.
+    '''
     # connection params win, full stop
     if connection_params:
         if container := connection_params.get('container'):
@@ -41,6 +55,11 @@ def get_hostname_from_config(data_source, connection_params=None, restore=False)
 
 
 def get_ip_from_container(container):
+    '''
+    Determine the IP for a given container name via podman and docker.
+
+    Returns an IP or raises a ValueError if the lookup fails.
+    '''
     engines = (shutil.which(engine) for engine in ('docker', 'podman'))
     engines = [engine for engine in engines if engine]
 
