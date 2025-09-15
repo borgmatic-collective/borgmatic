@@ -68,7 +68,11 @@ def get_latest_archive(
         *flags.make_flags('umask', config.get('umask')),
         *flags.make_flags('log-json', config.get('log_json')),
         *flags.make_flags('lock-wait', config.get('lock_wait')),
-        *flags.make_flags('consider-checkpoints', consider_checkpoints),
+        *(
+            flags.make_flags('consider-checkpoints', consider_checkpoints)
+            if not feature.available(feature.Feature.REPO_LIST, local_borg_version)
+            else ()
+        ),
         *flags.make_flags('last', 1),
         '--json',
         *flags.make_repository_flags(repository_path, local_borg_version),
