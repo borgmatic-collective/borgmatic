@@ -6,6 +6,7 @@ import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.hooks.credential.parse
 from borgmatic.execute import execute_command, execute_command_with_processes
+from borgmatic.hooks.data_source import config as database_config
 from borgmatic.hooks.data_source import dump
 
 logger = logging.getLogger(__name__)
@@ -63,14 +64,18 @@ def dump_data_sources(
                 name,
                 database.get('hostname', 'localhost'),
                 database.get('port'),
+                database.get('label'),
+                database.get('container'),
             )
         )
 
         dump_filename = dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
             name,
-            database.get('hostname'),
-            database.get('port'),
+            hostname=database.get('hostname'),
+            port=database.get('port'),
+            container=database.get('container'),
+            label=database.get('label'),
         )
         dump_format = database.get('format', 'archive')
 
@@ -138,10 +143,11 @@ def build_dump_command(database, config, dump_filename, dump_format):
     dump_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mongodump_command') or 'mongodump')
     )
+    hostname = database_config.resolve_database_option('hostname', database)
     return (
         dump_command
         + (('--out', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
-        + (('--host', shlex.quote(database['hostname'])) if 'hostname' in database else ())
+        + (('--host', shlex.quote(hostname)) if hostname else ())
         + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
         + (
             (
@@ -158,7 +164,10 @@ def build_dump_command(database, config, dump_filename, dump_format):
         )
         + (('--config', make_password_config_file(password)) if password else ())
         + (
-            ('--authenticationDatabase', shlex.quote(database['authentication_database']))
+            (
+                '--authenticationDatabase',
+                shlex.quote(database['authentication_database']),
+            )
             if 'authentication_database' in database
             else ()
         )
@@ -200,16 +209,16 @@ def make_data_source_dump_patterns(
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
     return (
-        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
+        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, label='*'),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
             name,
-            hostname='*',
+            label='*',
         ),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_source_directory),
             name,
-            hostname='*',
+            label='*',
         ),
     )
 
@@ -237,7 +246,10 @@ def restore_data_source_dump(
     dump_filename = dump.make_data_source_dump_filename(
         make_dump_path(borgmatic_runtime_directory),
         data_source['name'],
-        data_source.get('hostname'),
+        hostname=data_source.get('hostname'),
+        port=data_source.get('port'),
+        container=data_source.get('container'),
+        label=data_source.get('label'),
     )
     restore_command = build_restore_command(
         extract_process,
@@ -247,7 +259,7 @@ def restore_data_source_dump(
         connection_params,
     )
 
-    logger.debug(f"Restoring MongoDB database {data_source['name']}{dry_run_label}")
+    logger.debug(f'Restoring MongoDB database {data_source["name"]}{dry_run_label}')
     if dry_run:
         return
 
@@ -265,22 +277,21 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
     '''
     Return the custom mongorestore_command from a single database configuration.
     '''
-    hostname = connection_params['hostname'] or database.get(
-        'restore_hostname',
-        database.get('hostname'),
+    hostname = database_config.resolve_database_option(
+        'hostname', database, connection_params, restore=True
     )
-    port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
+    port = database_config.resolve_database_option(
+        'port', database, connection_params, restore=True
+    )
     username = borgmatic.hooks.credential.parse.resolve_credential(
-        (
-            connection_params['username']
-            or database.get('restore_username', database.get('username'))
+        database_config.resolve_database_option(
+            'username', database, connection_params, restore=True
         ),
         config,
     )
     password = borgmatic.hooks.credential.parse.resolve_credential(
-        (
-            connection_params['password']
-            or database.get('restore_password', database.get('password'))
+        database_config.resolve_database_option(
+            'password', database, connection_params, restore=True
         ),
         config,
     )

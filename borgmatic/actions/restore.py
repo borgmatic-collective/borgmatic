@@ -22,8 +22,8 @@ UNSPECIFIED = object()
 
 Dump = collections.namedtuple(
     'Dump',
-    ('hook_name', 'data_source_name', 'hostname', 'port'),
-    defaults=('localhost', None),
+    ('hook_name', 'data_source_name', 'hostname', 'port', 'label', 'container'),
+    defaults=('localhost', None, None, None),
 )
 
 
@@ -33,7 +33,13 @@ def dumps_match(first, second, default_port=None):
     indicates that the field should match any value. If a default port is given, then consider any
     dump having that port to match with a dump having a None port.
     '''
-    for field_name in first._fields:
+    # label kinda counts as an unique id, if they match ignore host/container/port
+    if first.label not in {None, UNSPECIFIED} and first.label == second.label:
+        field_list = ('hook_name', 'data_source_name')
+    else:
+        field_list = Dump._fields
+
+    for field_name in field_list:
         first_value = getattr(first, field_name)
         second_value = getattr(second, field_name)
 
@@ -57,14 +63,17 @@ def render_dump_metadata(dump):
     '''
     Given a Dump instance, make a display string describing it for use in log messages.
     '''
+    label = dump.label or UNSPECIFIED
     name = 'unspecified' if dump.data_source_name is UNSPECIFIED else dump.data_source_name
-    hostname = dump.hostname or UNSPECIFIED
+    host = dump.container or dump.hostname or UNSPECIFIED
     port = None if dump.port is UNSPECIFIED else dump.port
 
-    if port:
-        metadata = f'{name}@:{port}' if hostname is UNSPECIFIED else f'{name}@{hostname}:{port}'
+    if label is not UNSPECIFIED:
+        metadata = f'{name}@{label}'
+    elif port:
+        metadata = f'{name}@:{port}' if host is UNSPECIFIED else f'{name}@{host}:{port}'
     else:
-        metadata = f'{name}' if hostname is UNSPECIFIED else f'{name}@{hostname}'
+        metadata = f'{name}' if host is UNSPECIFIED else f'{name}@{host}'
 
     if dump.hook_name not in {None, UNSPECIFIED}:
         return f'{metadata} ({dump.hook_name})'
@@ -101,6 +110,8 @@ def get_configured_data_source(config, restore_dump):
                 hook_data_source.get('name'),
                 hook_data_source.get('hostname', 'localhost'),
                 hook_data_source.get('port'),
+                hook_data_source.get('label') or UNSPECIFIED,
+                hook_data_source.get('container'),
             ),
             restore_dump,
             default_port,
@@ -172,7 +183,14 @@ def restore_single_dump(
     that data source from the archive.
     '''
     dump_metadata = render_dump_metadata(
-        Dump(hook_name, data_source['name'], data_source.get('hostname'), data_source.get('port')),
+        Dump(
+            hook_name,
+            data_source['name'],
+            data_source.get('hostname'),
+            data_source.get('port'),
+            data_source.get('label') or UNSPECIFIED,
+            data_source.get('container'),
+        ),
     )
 
     logger.info(f'Restoring data source {dump_metadata}')
@@ -408,6 +426,8 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
                 data_source_name=name,
                 hostname=restore_arguments.original_hostname or UNSPECIFIED,
                 port=restore_arguments.original_port,
+                label=restore_arguments.original_label or UNSPECIFIED,
+                container=restore_arguments.original_container or UNSPECIFIED,
             )
             for name in restore_arguments.data_sources or (UNSPECIFIED,)
         }
@@ -415,12 +435,16 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
         or restore_arguments.data_sources
         or restore_arguments.original_hostname
         or restore_arguments.original_port
+        or restore_arguments.original_label
+        or restore_arguments.original_container
         else {
             Dump(
                 hook_name=UNSPECIFIED,
                 data_source_name='all',
                 hostname=UNSPECIFIED,
                 port=UNSPECIFIED,
+                label=UNSPECIFIED,
+                container=UNSPECIFIED,
             ),
         }
     )
@@ -541,6 +565,7 @@ def run_restore(
 
         dumps_actually_restored = set()
         connection_params = {
+            'container': restore_arguments.container,
             'hostname': restore_arguments.hostname,
             'port': restore_arguments.port,
             'username': restore_arguments.username,
@@ -554,13 +579,19 @@ def run_restore(
                 config,
                 restore_dump,
             )
-
             # For a dump that wasn't found via an exact match in the configuration, try to fallback
             # to an "all" data source.
             if not found_data_source:
                 found_data_source = get_configured_data_source(
                     config,
-                    Dump(restore_dump.hook_name, 'all', restore_dump.hostname, restore_dump.port),
+                    Dump(
+                        restore_dump.hook_name,
+                        'all',
+                        restore_dump.hostname,
+                        restore_dump.port,
+                        restore_dump.label,
+                        restore_dump.container,
+                    ),
                 )
 
                 if not found_data_source:

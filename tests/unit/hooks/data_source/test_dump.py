@@ -25,6 +25,24 @@ def test_make_data_source_dump_filename_uses_name_and_hostname_and_port():
     )
 
 
+def test_make_data_source_dump_filename_uses_label():
+    assert (
+        module.make_data_source_dump_filename(
+            'databases', 'test', 'hostname', 1234, label='custom_label'
+        )
+        == 'databases/custom_label/test'
+    )
+
+
+def test_make_data_source_dump_filename_uses_container():
+    assert (
+        module.make_data_source_dump_filename(
+            'databases', 'test', 'hostname', 1234, container='container'
+        )
+        == 'databases/container:1234/test'
+    )
+
+
 def test_make_data_source_dump_filename_without_hostname_defaults_to_localhost():
     assert module.make_data_source_dump_filename('databases', 'test') == 'databases/localhost/test'
 
@@ -51,7 +69,7 @@ def test_write_data_source_dumps_metadata_writes_json_to_file():
 
     assert (
         dumps_stream.getvalue()
-        == '{"dumps": [{"data_source_name": "foo", "hook_name": "databases", "hostname": "localhost", "port": null}, {"data_source_name": "bar", "hook_name": "databases", "hostname": "localhost", "port": null}]}'
+        == '{"dumps": [{"container": null, "data_source_name": "foo", "hook_name": "databases", "hostname": "localhost", "label": null, "port": null}, {"container": null, "data_source_name": "bar", "hook_name": "databases", "hostname": "localhost", "label": null, "port": null}]}'
     )
 
 

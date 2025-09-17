@@ -1323,6 +1323,23 @@ properties:
                         implicitly enables read_special (see above) to support
                         dump and restore streaming.
                     example: users
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
+                container:
+                    type: string
+                    description: |
+                        Container name/id to connect to. When specified the
+                        hostname is ignored. Requires docker/podman CLI.
+                    example: debian_stable
+                restore_container:
+                    type: string
+                    description: |
+                        Container name/id to restore to. Defaults to the
+                        "container" option.
+                    example: restore_container
                 hostname:
                     type: string
                     description: |
@@ -1524,6 +1541,23 @@ properties:
                         database hook implicitly enables read_special (see
                         above) to support dump and restore streaming.
                     example: users
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
+                container:
+                    type: string
+                    description: |
+                        Container name/id to connect to. When specified the
+                        hostname is ignored. Requires docker/podman CLI.
+                    example: debian_stable
+                restore_container:
+                    type: string
+                    description: |
+                        Container name/id to restore to. Defaults to the
+                        "container" option.
+                    example: restore_container
                 hostname:
                     type: string
                     description: |
@@ -1689,6 +1723,23 @@ properties:
                         database hook implicitly enables read_special (see
                         above) to support dump and restore streaming.
                     example: users
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
+                container:
+                    type: string
+                    description: |
+                        Container name/id to connect to. When specified the
+                        hostname is ignored. Requires docker/podman CLI.
+                    example: debian_stable
+                restore_container:
+                    type: string
+                    description: |
+                        Container name/id to restore to. Defaults to the
+                        "container" option.
+                    example: restore_container
                 hostname:
                     type: string
                     description: |
@@ -1862,6 +1913,11 @@ properties:
                         read_special (see above) to support dump and restore
                         streaming.
                     example: /var/lib/sqlite/users.db
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
                 restore_path:
                     type: string
                     description: |
@@ -1910,6 +1966,23 @@ properties:
                         database hook implicitly enables read_special (see
                         above) to support dump and restore streaming.
                     example: users
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
+                container:
+                    type: string
+                    description: |
+                        Container name/id to connect to. When specified the
+                        hostname is ignored. Requires docker/podman CLI.
+                    example: debian_stable
+                restore_container:
+                    type: string
+                    description: |
+                        Container name/id to restore to. Defaults to the
+                        "container" option.
+                    example: restore_container
                 hostname:
                     type: string
                     description: |

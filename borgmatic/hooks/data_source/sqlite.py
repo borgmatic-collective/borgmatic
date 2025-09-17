@@ -57,8 +57,7 @@ def dump_data_sources(
         database_path = database['path']
         dumps_metadata.append(
             borgmatic.actions.restore.Dump(
-                'sqlite_databases',
-                database['name'],
+                'sqlite_databases', database['name'], label=database.get('label')
             )
         )
 
@@ -71,7 +70,9 @@ def dump_data_sources(
             )
 
         dump_path = make_dump_path(borgmatic_runtime_directory)
-        dump_filename = dump.make_data_source_dump_filename(dump_path, database['name'])
+        dump_filename = dump.make_data_source_dump_filename(
+            dump_path, database['name'], label=database.get('label')
+        )
 
         if os.path.exists(dump_filename):
             logger.warning(
@@ -143,16 +144,16 @@ def make_data_source_dump_patterns(
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
     return (
-        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
+        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, label='*'),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
             name,
-            hostname='*',
+            label='*',
         ),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_source_directory),
             name,
-            hostname='*',
+            label='*',
         ),
     )
 

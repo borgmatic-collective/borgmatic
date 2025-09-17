@@ -1476,6 +1476,10 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         help='Database port to restore to. Defaults to the "restore_port" option in borgmatic\'s configuration',
     )
     restore_group.add_argument(
+        '--container',
+        help='Container to restore to. Defaults to the "restore_container" option in borgmatic\'s configuration',
+    )
+    restore_group.add_argument(
         '--username',
         help='Username with which to connect to the database. Defaults to the "restore_username" option in borgmatic\'s configuration',
     )
@@ -1488,8 +1492,16 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         help='Path to restore SQLite database dumps to. Defaults to the "restore_path" option in borgmatic\'s configuration',
     )
     restore_group.add_argument(
+        '--original-label',
+        help='The label where the dump to restore came from, only necessary if you need to disambiguate dumps',
+    )
+    restore_group.add_argument(
         '--original-hostname',
         help='The hostname where the dump to restore came from, only necessary if you need to disambiguate dumps',
+    )
+    restore_group.add_argument(
+        '--original-container',
+        help='The container where the dump to restore came from, only necessary if you need to disambiguate dumps',
     )
     restore_group.add_argument(
         '--original-port',

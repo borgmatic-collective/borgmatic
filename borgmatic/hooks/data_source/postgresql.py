@@ -13,6 +13,7 @@ from borgmatic.execute import (
     execute_command_and_capture_output,
     execute_command_with_processes,
 )
+from borgmatic.hooks.data_source import config as database_config
 from borgmatic.hooks.data_source import dump
 
 logger = logging.getLogger(__name__)
@@ -32,22 +33,15 @@ def make_environment(database, config, restore_connection_params=None):
     '''
     environment = dict(os.environ)
 
-    try:
-        if restore_connection_params:
-            environment['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
-                (
-                    restore_connection_params.get('password')
-                    or database.get('restore_password', database['password'])
-                ),
-                config,
-            )
-        else:
-            environment['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
-                database['password'],
-                config,
-            )
-    except (AttributeError, KeyError):
-        pass
+    password = database_config.resolve_database_option(
+        'password', database, restore_connection_params, restore=restore_connection_params
+    )
+
+    if password:
+        environment['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
+            password,
+            config,
+        )
 
     if 'ssl_mode' in database:
         environment['PGSSLMODE'] = database['ssl_mode']
@@ -91,10 +85,11 @@ def database_names_to_dump(database, config, environment, dry_run):
     psql_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('psql_command') or 'psql')
     )
+    hostname = database_config.resolve_database_option('hostname', database)
     list_command = (
         psql_command
         + ('--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only')
-        + (('--host', database['hostname']) if 'hostname' in database else ())
+        + (('--host', hostname) if hostname else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (
             (
@@ -172,6 +167,8 @@ def dump_data_sources(
                     database_name,
                     database.get('hostname', 'localhost'),
                     database.get('port'),
+                    database.get('label'),
+                    database.get('container'),
                 )
             )
             dump_format = database.get('format', None if database_name == 'all' else 'custom')
@@ -184,8 +181,10 @@ def dump_data_sources(
             dump_filename = dump.make_data_source_dump_filename(
                 dump_path,
                 database_name,
-                database.get('hostname'),
-                database.get('port'),
+                hostname=database.get('hostname'),
+                port=database.get('port'),
+                container=database.get('container'),
+                label=database.get('label'),
             )
 
             if os.path.exists(dump_filename):
@@ -194,6 +193,7 @@ def dump_data_sources(
                 )
                 continue
 
+            hostname = database_config.resolve_database_option('hostname', database)
             command = (
                 dump_command
                 + (
@@ -201,7 +201,7 @@ def dump_data_sources(
                     '--clean',
                     '--if-exists',
                 )
-                + (('--host', shlex.quote(database['hostname'])) if 'hostname' in database else ())
+                + (('--host', shlex.quote(hostname)) if hostname else ())
                 + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
                 + (
                     (
@@ -302,16 +302,16 @@ def make_data_source_dump_patterns(
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
     return (
-        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
+        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, label='*'),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
             name,
-            hostname='*',
+            label='*',
         ),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_source_directory),
             name,
-            hostname='*',
+            label='*',
         ),
     )
 
@@ -339,17 +339,15 @@ def restore_data_source_dump(
     hostname, port, username, and password.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
-    hostname = connection_params['hostname'] or data_source.get(
-        'restore_hostname',
-        data_source.get('hostname'),
+    hostname = database_config.resolve_database_option(
+        'hostname', data_source, connection_params, restore=True
     )
-    port = str(
-        connection_params['port'] or data_source.get('restore_port', data_source.get('port', '')),
+    port = database_config.resolve_database_option(
+        'port', data_source, connection_params, restore=True
     )
     username = borgmatic.hooks.credential.parse.resolve_credential(
-        (
-            connection_params['username']
-            or data_source.get('restore_username', data_source.get('username'))
+        database_config.resolve_database_option(
+            'username', data_source, connection_params, restore=True
         ),
         config,
     )
@@ -358,7 +356,10 @@ def restore_data_source_dump(
     dump_filename = dump.make_data_source_dump_filename(
         make_dump_path(borgmatic_runtime_directory),
         data_source['name'],
-        data_source.get('hostname'),
+        hostname=hostname,
+        port=port,
+        container=data_source.get('container'),
+        label=data_source.get('label'),
     )
     psql_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('psql_command') or 'psql')
@@ -367,7 +368,7 @@ def restore_data_source_dump(
         psql_command
         + ('--no-password', '--no-psqlrc', '--quiet')
         + (('--host', hostname) if hostname else ())
-        + (('--port', port) if port else ())
+        + (('--port', str(port)) if port else ())
         + (('--username', username) if username else ())
         + (('--dbname', data_source['name']) if not all_databases else ())
         + (
@@ -388,7 +389,7 @@ def restore_data_source_dump(
         + (('--no-psqlrc',) if use_psql_command else ('--if-exists', '--exit-on-error', '--clean'))
         + (('--dbname', data_source['name']) if not all_databases else ())
         + (('--host', hostname) if hostname else ())
-        + (('--port', port) if port else ())
+        + (('--port', str(port)) if port else ())
         + (('--username', username) if username else ())
         + (('--no-owner',) if data_source.get('no_owner', False) else ())
         + (

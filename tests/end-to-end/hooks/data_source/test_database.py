@@ -94,6 +94,63 @@ sqlite_databases:
     return ruamel.yaml.YAML(typ='safe').load(config_yaml)
 
 
+def write_container_configuration(
+    source_directory,
+    config_path,
+    repository_path,
+    user_runtime_directory,
+):
+    '''
+    Write out borgmatic configuration into a file at the config path. Set the options so as to work
+    for testing. This includes injecting the given repository path, borgmatic source directory for
+    storing database dumps, and encryption passphrase.
+    '''
+
+    config_yaml = f'''
+source_directories:
+    - {source_directory}
+repositories:
+    - path: {repository_path}
+user_runtime_directory: {user_runtime_directory}
+
+encryption_passphrase: "test"
+
+postgresql_databases:
+    - name: test
+      container: postgresql
+      username: postgres
+      password: test
+      restore_container: postgresql2
+      restore_port: 5433
+      restore_password: test2
+mariadb_databases:
+    - name: test
+      container: mariadb
+      username: root
+      password: test
+      restore_container: mariadb2
+      restore_port: 3307
+      restore_username: root
+      restore_password: test2
+mysql_databases:
+    - name: test
+      container: not-actually-mysql
+      username: root
+      password: test
+mongodb_databases:
+    - name: test
+      container: mongodb
+      username: root
+      password: test
+      authentication_database: admin
+'''
+
+    with open(config_path, 'w') as config_file:
+        config_file.write(config_yaml)
+
+    return ruamel.yaml.YAML(typ='safe').load(config_yaml)
+
+
 @pytest.mark.parametrize(
     'postgresql_all_dump_format,mariadb_mysql_all_dump_format',
     (
@@ -116,6 +173,7 @@ def write_custom_restore_configuration(
     for testing with custom restore options. This includes a custom restore_hostname, restore_port,
     restore_username, restore_password and restore_path.
     '''
+
     config_yaml = f'''
 source_directories:
     - {source_directory}
@@ -212,8 +270,13 @@ postgresql_databases:
 
 
 def get_connection_params(database, use_restore_options=False):
-    hostname = (database.get('restore_hostname') if use_restore_options else None) or database.get(
-        'hostname',
+    hostname = (
+        database.get('restore_container', database.get('restore_hostname'))
+        if use_restore_options
+        else None
+    ) or database.get(
+        'container',
+        database.get('hostname'),
     )
     port = (database.get('restore_port') if use_restore_options else None) or database.get('port')
     username = (database.get('restore_username') if use_restore_options else None) or database.get(
@@ -656,3 +719,65 @@ def test_database_dump_with_error_causes_borgmatic_to_exit():
     finally:
         os.chdir(original_working_directory)
         shutil.rmtree(temporary_directory)
+
+
+def test_database_dump_and_restore_containers():
+    # Create a Borg repository.
+    temporary_directory = tempfile.mkdtemp()
+    repository_path = os.path.join(temporary_directory, 'test.borg')
+
+    original_working_directory = os.getcwd()
+    original_path = os.environ.get('PATH', '')
+
+    os.environ['PATH'] = f'/app/tests/end-to-end/commands:{original_path}'
+
+    try:
+        config_path = os.path.join(temporary_directory, 'test.yaml')
+        config = write_container_configuration(
+            temporary_directory,
+            config_path,
+            repository_path,
+            temporary_directory,
+        )
+        create_test_tables(config)
+        select_test_tables(config)
+
+        subprocess.check_call(
+            [
+                'borgmatic',
+                '-v',
+                '2',
+                '--config',
+                config_path,
+                'repo-create',
+                '--encryption',
+                'repokey',
+            ],
+        )
+
+        # Run borgmatic to generate a backup archive including database dumps.
+        subprocess.check_call(['borgmatic', 'create', '--config', config_path, '-v', '2'])
+
+        # Get the created archive name.
+        output = subprocess.check_output(
+            ['borgmatic', '--config', config_path, 'list', '--json'],
+        ).decode(sys.stdout.encoding)
+        parsed_output = json.loads(output)
+
+        assert len(parsed_output) == 1
+        assert len(parsed_output[0]['archives']) == 1
+        archive_name = parsed_output[0]['archives'][0]['archive']
+
+        # Restore the databases from the archive.
+        drop_test_tables(config)
+        subprocess.check_call(
+            ['borgmatic', '-v', '2', '--config', config_path, 'restore', '--archive', archive_name],
+        )
+
+        # Ensure the test tables have actually been restored.
+        select_test_tables(config, use_restore_options=True)
+    finally:
+        os.chdir(original_working_directory)
+        shutil.rmtree(temporary_directory)
+        drop_test_tables(config)
+        os.environ['PATH'] = original_path
