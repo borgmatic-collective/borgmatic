@@ -189,6 +189,7 @@ def restore_single_dump(
             data_source.get('hostname'),
             data_source.get('port'),
             data_source.get('label') or UNSPECIFIED,
+            data_source.get('container'),
         ),
     )
 

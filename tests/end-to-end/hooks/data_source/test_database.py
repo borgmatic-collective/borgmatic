@@ -143,9 +143,6 @@ mongodb_databases:
       username: root
       password: test
       authentication_database: admin
-sqlite_databases:
-    - name: sqlite_test
-      path: /tmp/sqlite_test.db
 '''
 
     with open(config_path, 'w') as config_file:
