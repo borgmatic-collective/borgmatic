@@ -6,7 +6,7 @@ import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.hooks.credential.parse
 from borgmatic.execute import execute_command, execute_command_with_processes
-from borgmatic.hooks.data_source import config as ds_config
+from borgmatic.hooks.data_source import config as database_config
 from borgmatic.hooks.data_source import dump
 
 logger = logging.getLogger(__name__)
@@ -143,7 +143,7 @@ def build_dump_command(database, config, dump_filename, dump_format):
     dump_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mongodump_command') or 'mongodump')
     )
-    hostname = ds_config.resolve_database_option('hostname', database)
+    hostname = database_config.resolve_database_option('hostname', database)
     return (
         dump_command
         + (('--out', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
@@ -277,16 +277,22 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
     '''
     Return the custom mongorestore_command from a single database configuration.
     '''
-    hostname = ds_config.resolve_database_option(
+    hostname = database_config.resolve_database_option(
         'hostname', database, connection_params, restore=True
     )
-    port = ds_config.resolve_database_option('port', database, connection_params, restore=True)
+    port = database_config.resolve_database_option(
+        'port', database, connection_params, restore=True
+    )
     username = borgmatic.hooks.credential.parse.resolve_credential(
-        ds_config.resolve_database_option('username', database, connection_params, restore=True),
+        database_config.resolve_database_option(
+            'username', database, connection_params, restore=True
+        ),
         config,
     )
     password = borgmatic.hooks.credential.parse.resolve_credential(
-        ds_config.resolve_database_option('password', database, connection_params, restore=True),
+        database_config.resolve_database_option(
+            'password', database, connection_params, restore=True
+        ),
         config,
     )
 

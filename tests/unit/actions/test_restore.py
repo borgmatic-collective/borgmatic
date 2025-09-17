@@ -564,9 +564,9 @@ def test_collect_dumps_from_archive_with_empty_dumps_metadata_path_falls_back_to
     )
 
     assert archive_dumps == {
-        module.Dump('postgresql_databases', 'foo', label='localhost'),
-        module.Dump('postgresql_databases', 'bar', 'host', 1234, label='host:1234'),
-        module.Dump('mysql_databases', 'quux', label='localhost'),
+        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('postgresql_databases', 'bar', 'host', 1234),
+        module.Dump('mysql_databases', 'quux'),
     }
 
 
@@ -606,9 +606,9 @@ def test_collect_dumps_from_archive_without_dumps_metadata_falls_back_to_parsing
     )
 
     assert archive_dumps == {
-        module.Dump('postgresql_databases', 'foo', label='localhost'),
-        module.Dump('postgresql_databases', 'bar', 'host', 1234, 'host:1234'),
-        module.Dump('mysql_databases', 'quux', label='localhost'),
+        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('postgresql_databases', 'bar', 'host', 1234),
+        module.Dump('mysql_databases', 'quux'),
     }
 
 
@@ -649,10 +649,10 @@ def test_collect_dumps_from_archive_parses_archive_paths_with_different_base_dir
     )
 
     assert archive_dumps == {
-        module.Dump('postgresql_databases', 'foo', label='localhost'),
-        module.Dump('postgresql_databases', 'bar', label='localhost'),
-        module.Dump('postgresql_databases', 'baz', label='localhost'),
-        module.Dump('mysql_databases', 'quux', label='localhost'),
+        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('postgresql_databases', 'bar'),
+        module.Dump('postgresql_databases', 'baz'),
+        module.Dump('mysql_databases', 'quux'),
     }
 
 
@@ -691,7 +691,7 @@ def test_collect_dumps_from_archive_parses_directory_format_archive_paths():
     )
 
     assert archive_dumps == {
-        module.Dump('postgresql_databases', 'foo', label='localhost'),
+        module.Dump('postgresql_databases', 'foo'),
     }
 
 
@@ -733,8 +733,8 @@ def test_collect_dumps_from_archive_skips_bad_archive_paths_or_bad_path_componen
     )
 
     assert archive_dumps == {
-        module.Dump('postgresql_databases', 'foo', label='localhost'),
-        module.Dump('postgresql_databases', 'bar', label='localhost:abcd'),
+        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('postgresql_databases', 'bar'),
     }
 
 

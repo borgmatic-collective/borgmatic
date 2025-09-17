@@ -188,7 +188,7 @@ def restore_single_dump(
             data_source['name'],
             data_source.get('hostname'),
             data_source.get('port'),
-            data_source.get('label') or data_source.get('container') or UNSPECIFIED,
+            data_source.get('label') or UNSPECIFIED,
         ),
     )
 
@@ -388,7 +388,7 @@ def collect_dumps_from_archive(
             except (ValueError, TypeError):
                 port = None
 
-            dumps_from_archive.add(Dump(hook_name, data_source_name, hostname, port, host_and_port))
+            dumps_from_archive.add(Dump(hook_name, data_source_name, hostname, port))
 
             # We've successfully parsed the dump path, so need to probe any further.
             break
