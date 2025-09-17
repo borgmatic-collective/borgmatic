@@ -214,8 +214,10 @@ these options in the `hooks:` section of your configuration.
 
 #### Database client on the host
 
-But what if borgmatic is running on the host? You can connect to the database
-container by specifying its container name or id:
+But what if borgmatic is running on the host?
+
+<span class="minilink minilink-addedin">New in version 2.0.8</span> You can
+connect to the database container by specifying its container name or ID:
 
 ```yaml
 postgresql_databases:
@@ -226,8 +228,16 @@ postgresql_databases:
       password: trustsome1
 ```
 
-Now borgmatic will use the `docker`/`podman` CLI to figure out the container IP.
-Alternatively you can publish your container ports to the host.
+borgmatic uses the `docker`/`podman` CLI to figure out the container IP to
+connect to. But `container:` does not work when borgmatic itself is running in a
+container; in that case, use `hostname:` as described above.
+
+<span class="minilink minilink-addedin">Prior to version 2.0.8</span> If you're
+running an older version of borgmatic on the host, you can publish your database
+container ports to the host (e.g. via `docker run --publish` or Compose's
+`ports`)—and then configure borgmatic to connect to `localhost` and the
+published port.
+
 
 #### Database client in a running container
 
