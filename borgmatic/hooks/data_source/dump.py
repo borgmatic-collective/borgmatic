@@ -19,7 +19,9 @@ def make_data_source_dump_path(borgmatic_runtime_directory, data_source_hook_nam
     return os.path.join(borgmatic_runtime_directory, data_source_hook_name)
 
 
-def make_data_source_dump_filename(dump_path, name, hostname=None, port=None):
+def make_data_source_dump_filename(
+    dump_path, name, hostname=None, port=None, container=None, label=None
+):
     '''
     Based on the given dump directory path, data source name, hostname, and port, return a filename
     to use for the data source dump. The hostname defaults to localhost.
@@ -29,11 +31,14 @@ def make_data_source_dump_filename(dump_path, name, hostname=None, port=None):
     if os.path.sep in name:
         raise ValueError(f'Invalid data source name {name}')
 
-    return os.path.join(
-        dump_path,
-        (hostname or 'localhost') + ('' if port is None else f':{port}'),
-        name,
-    )
+    if container:
+        hostname = container
+    elif not hostname:
+        hostname = 'localhost'
+
+    identifier = label if label else hostname + ('' if port is None else f':{port}')
+
+    return os.path.join(dump_path, identifier, name)
 
 
 def write_data_source_dumps_metadata(borgmatic_runtime_directory, hook_name, dumps_metadata):

@@ -72,8 +72,10 @@ Here's a more involved example that connects to remote databases:
 ```yaml
 postgresql_databases:
     - name: users
+      label: database_server1
       hostname: database1.example.org
     - name: orders
+      label: database_server2
       hostname: database2.example.org
       port: 5433
       username: postgres
@@ -212,34 +214,29 @@ these options in the `hooks:` section of your configuration.
 
 #### Database client on the host
 
-But what if borgmatic is running on the host? You can still connect to a
-database server container if its ports are properly exposed to the host. For
-instance, when running the database container, you can specify `--publish
-127.0.0.1:5433:5432` so that it exposes the container's port 5432 to port 5433
-on the host (only reachable on localhost, in this case). Or the same thing with
-Docker Compose:
+But what if borgmatic is running on the host?
 
-```yaml
-services:
-   your-database-server-container-name:
-       image: postgres
-       ports:
-           - 127.0.0.1:5433:5432
-```
-
-And then you can configure borgmatic running on the host to connect to the
-database:
+<span class="minilink minilink-addedin">New in version 2.0.8</span> You can
+connect to the database container by specifying its container name or ID:
 
 ```yaml
 postgresql_databases:
     - name: users
-      hostname: 127.0.0.1
+      container: your-database-server-container-name
       port: 5433
       username: postgres
       password: trustsome1
 ```
 
-Alter the ports in these examples to suit your particular database system.
+borgmatic uses the `docker`/`podman` CLI to figure out the container IP to
+connect to. But `container:` does not work when borgmatic itself is running in a
+container; in that case, use `hostname:` as described above.
+
+<span class="minilink minilink-addedin">Prior to version 2.0.8</span> If you're
+running an older version of borgmatic on the host, you can publish your database
+container ports to the host (e.g. via `docker run --publish` or Compose's
+`ports`)—and then configure borgmatic to connect to `localhost` and the
+published port.
 
 
 #### Database client in a running container

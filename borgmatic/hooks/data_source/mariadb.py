@@ -12,6 +12,7 @@ from borgmatic.execute import (
     execute_command_and_capture_output,
     execute_command_with_processes,
 )
+from borgmatic.hooks.data_source import config as database_config
 from borgmatic.hooks.data_source import dump
 
 logger = logging.getLogger(__name__)
@@ -122,6 +123,7 @@ def database_names_to_dump(database, config, username, password, environment, dr
     )
     extra_options, defaults_extra_filename = parse_extra_options(database.get('list_options'))
     password_transport = database.get('password_transport', 'pipe')
+    hostname = database_config.resolve_database_option('hostname', database)
     show_command = (
         mariadb_show_command
         + (
@@ -130,9 +132,9 @@ def database_names_to_dump(database, config, username, password, environment, dr
             else ()
         )
         + extra_options
-        + (('--host', database['hostname']) if 'hostname' in database else ())
+        + (('--host', hostname) if hostname else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
-        + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
+        + (('--protocol', 'tcp') if hostname or 'port' in database else ())
         + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if database.get('tls') is True else ())
         + (('--skip-ssl',) if database.get('tls') is False else ())
@@ -176,8 +178,10 @@ def execute_dump_command(
     dump_filename = dump.make_data_source_dump_filename(
         dump_path,
         database['name'],
-        database.get('hostname'),
-        database.get('port'),
+        hostname=database.get('hostname'),
+        port=database.get('port'),
+        container=database.get('container'),
+        label=database.get('label'),
     )
 
     if os.path.exists(dump_filename):
@@ -192,6 +196,7 @@ def execute_dump_command(
     )
     extra_options, defaults_extra_filename = parse_extra_options(database.get('options'))
     password_transport = database.get('password_transport', 'pipe')
+    hostname = database_config.resolve_database_option('hostname', database)
     dump_command = (
         mariadb_dump_command
         + (
@@ -201,9 +206,9 @@ def execute_dump_command(
         )
         + extra_options
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
-        + (('--host', database['hostname']) if 'hostname' in database else ())
+        + (('--host', hostname) if hostname else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
-        + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
+        + (('--protocol', 'tcp') if hostname or 'port' in database else ())
         + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if database.get('tls') is True else ())
         + (('--skip-ssl',) if database.get('tls') is False else ())
@@ -302,6 +307,8 @@ def dump_data_sources(
                         database_name,
                         database.get('hostname', 'localhost'),
                         database.get('port'),
+                        database.get('label'),
+                        database.get('container'),
                     )
                 )
                 renamed_database = copy.copy(database)
@@ -326,6 +333,8 @@ def dump_data_sources(
                     database['name'],
                     database.get('hostname', 'localhost'),
                     database.get('port'),
+                    database.get('label'),
+                    database.get('container'),
                 )
             )
             processes.append(
@@ -384,16 +393,16 @@ def make_data_source_dump_patterns(
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
     return (
-        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
+        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, label='*'),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
             name,
-            hostname='*',
+            label='*',
         ),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_source_directory),
             name,
-            hostname='*',
+            label='*',
         ),
     )
 
@@ -414,25 +423,22 @@ def restore_data_source_dump(
     subprocess.Popen) to produce output to consume.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
-    hostname = connection_params['hostname'] or data_source.get(
-        'restore_hostname',
-        data_source.get('hostname'),
+    hostname = database_config.resolve_database_option(
+        'hostname', data_source, connection_params, restore=True
     )
-    port = str(
-        connection_params['port'] or data_source.get('restore_port', data_source.get('port', '')),
+    port = database_config.resolve_database_option(
+        'port', data_source, connection_params, restore=True
     )
-    tls = data_source.get('restore_tls', data_source.get('tls'))
+    tls = database_config.resolve_database_option('tls', data_source, restore=True)
     username = borgmatic.hooks.credential.parse.resolve_credential(
-        (
-            connection_params['username']
-            or data_source.get('restore_username', data_source.get('username'))
+        database_config.resolve_database_option(
+            'username', data_source, connection_params, restore=True
         ),
         config,
     )
     password = borgmatic.hooks.credential.parse.resolve_credential(
-        (
-            connection_params['password']
-            or data_source.get('restore_password', data_source.get('password'))
+        database_config.resolve_database_option(
+            'password', data_source, connection_params, restore=True
         ),
         config,
     )

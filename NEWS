@@ -1,5 +1,9 @@
 2.0.8.dev0
  * #1114: Document systemd configuration changes for the ZFS filesystem hook.
+ * #1116: Add dumping of database containers via their container names, handy for backing up
+   database containers from the host. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#database-client-on-the-host
+ * #1116: Add optional database labels to make it easier to find your dumps within a Borg archive.
  * #1118: Fix a bug in which Borg hangs during database backup when different filesystems are in
    use.
  * #1122: To prevent the user from inadvertently excluding the "bootstrap" action's manifest, always
