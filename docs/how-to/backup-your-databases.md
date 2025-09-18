@@ -228,9 +228,10 @@ postgresql_databases:
       password: trustsome1
 ```
 
-borgmatic uses the `docker`/`podman` CLI to figure out the container IP to
-connect to. But `container:` does not work when borgmatic itself is running in a
-container; in that case, use `hostname:` as described above.
+borgmatic uses the `docker` or `podman` command to figure out the container IP
+to connect to. But `container:` doesn't work when borgmatic itself is running in
+a container—unless the `docker` or `podman` command works inside that container.
+But you can always use `hostname:` as described above.
 
 <span class="minilink minilink-addedin">Prior to version 2.0.8</span> If you're
 running an older version of borgmatic on the host, you can publish your database
