@@ -26,6 +26,7 @@ def resolve_database_option(option, data_source, connection_params=None, restore
         return value
     if restore and f'restore_{option}' in data_source:
         return data_source[f'restore_{option}']
+
     return data_source.get(option)
 
 
@@ -51,6 +52,7 @@ def get_hostname_from_config(data_source, connection_params=None, restore=False)
     # ... and finally fall back to the normal options
     if 'container' in data_source:
         return get_ip_from_container(data_source['container'])
+
     return data_source.get('hostname')
 
 
