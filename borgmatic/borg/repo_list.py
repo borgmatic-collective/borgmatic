@@ -23,7 +23,9 @@ def resolve_archive_name(
     Given a local or remote repository path, an archive name, a configuration dict, the local Borg
     version, global arguments as an argparse.Namespace, a local Borg path, and a remote Borg path,
     return the archive name. But if the archive name is "latest", then instead introspect the
-    repository for the latest archive and return its name.
+    repository for the latest archive and return its name or ID, depending on whether the version of
+    Borg in use supports archive series—different archives that share the same name but have unique
+    IDs.
 
     Raise ValueError if "latest" is given but there are no archives in the repository.
     '''
@@ -39,7 +41,11 @@ def resolve_archive_name(
         remote_path=remote_path,
     )
 
-    return latest_archive['name']
+    return (
+        latest_archive['id']
+        if feature.available(feature.Feature.ARCHIVE_SERIES, local_borg_version)
+        else latest_archive['name']
+    )
 
 
 def get_latest_archive(
@@ -68,7 +74,11 @@ def get_latest_archive(
         *flags.make_flags('umask', config.get('umask')),
         *flags.make_flags('log-json', config.get('log_json')),
         *flags.make_flags('lock-wait', config.get('lock_wait')),
-        *flags.make_flags('consider-checkpoints', consider_checkpoints),
+        *(
+            flags.make_flags('consider-checkpoints', consider_checkpoints)
+            if not feature.available(feature.Feature.REPO_LIST, local_borg_version)
+            else ()
+        ),
         *flags.make_flags('last', 1),
         '--json',
         *flags.make_repository_flags(repository_path, local_borg_version),
@@ -89,7 +99,7 @@ def get_latest_archive(
     except IndexError:
         raise ValueError('No archives found in the repository')
 
-    logger.debug(f'Latest archive is {latest_archive["name"]}')
+    logger.debug(f'Latest archive is {latest_archive["name"]} ({latest_archive["id"]})')
 
     return latest_archive
 

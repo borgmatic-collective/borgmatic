@@ -17,6 +17,8 @@
    support the "bootstrap" action.
  * #1136: For all database hooks, record metadata about the dumps contained within an archive.
  * #1139: Set "borgmatic" as the user agent when connecting to monitoring services.
+ * #1146: Fix a broken "create" action and "--archive latest" flag when multiple archives share the
+   same name with Borg 2.
  * Treat configuration file permissions issues as errors instead of warnings.
  * When running tests, use Ruff for faster and more comprehensive code linting and formatting,
    replacing Flake8, Black, isort, etc.
