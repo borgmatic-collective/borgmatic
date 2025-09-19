@@ -69,7 +69,7 @@ def test_write_data_source_dumps_metadata_writes_json_to_file():
 
     assert (
         dumps_stream.getvalue()
-        == '{"dumps": [{"container": null, "data_source_name": "foo", "hook_name": "databases", "hostname": "localhost", "label": null, "port": null}, {"container": null, "data_source_name": "bar", "hook_name": "databases", "hostname": "localhost", "label": null, "port": null}]}'
+        == '{"dumps": [{"container": null, "data_source_name": "foo", "hook_name": "databases", "hostname": null, "label": null, "port": null}, {"container": null, "data_source_name": "bar", "hook_name": "databases", "hostname": null, "label": null, "port": null}]}'
     )
 
 
@@ -90,7 +90,7 @@ def test_write_data_source_dumps_metadata_with_operating_system_error_raises():
 
 
 def test_parse_data_source_dumps_metadata_converts_json_to_dump_instances():
-    dumps_json = '{"dumps": [{"data_source_name": "foo", "hook_name": "databases", "hostname": "localhost", "port": null}, {"data_source_name": "bar", "hook_name": "databases", "hostname": "example.org", "port": 1234}]}'
+    dumps_json = '{"dumps": [{"data_source_name": "foo", "hook_name": "databases", "hostname": null, "port": null}, {"data_source_name": "bar", "hook_name": "databases", "hostname": "example.org", "port": 1234}]}'
 
     assert module.parse_data_source_dumps_metadata(
         dumps_json, 'borgmatic/databases/dumps.json'

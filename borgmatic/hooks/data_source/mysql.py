@@ -236,7 +236,7 @@ def dump_data_sources(
                     borgmatic.actions.restore.Dump(
                         'mysql_databases',
                         database_name,
-                        database.get('hostname', 'localhost'),
+                        database.get('hostname'),
                         database.get('port'),
                         database.get('label'),
                         database.get('container'),
@@ -262,7 +262,7 @@ def dump_data_sources(
                 borgmatic.actions.restore.Dump(
                     'mysql_databases',
                     database['name'],
-                    database.get('hostname', 'localhost'),
+                    database.get('hostname'),
                     database.get('port'),
                     database.get('label'),
                     database.get('container'),
