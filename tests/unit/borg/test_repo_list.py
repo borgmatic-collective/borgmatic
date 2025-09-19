@@ -40,16 +40,14 @@ def test_resolve_archive_name_passes_through_non_latest_archive_name():
     )
 
 
-def test_resolve_archive_name_calls_get_latest_archive():
-    expected_archive = 'archive-name'
-
+def test_resolve_archive_looks_up_latest_archive_name():
+    expected_name = 'archive-name'
     repository_path = flexmock()
     config = flexmock()
     local_borg_version = flexmock()
     global_arguments = flexmock()
     local_path = flexmock()
     remote_path = flexmock()
-
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('get_latest_archive').with_args(
@@ -59,7 +57,8 @@ def test_resolve_archive_name_calls_get_latest_archive():
         global_arguments,
         local_path,
         remote_path,
-    ).and_return({'name': expected_archive})
+    ).and_return({'name': expected_name, 'id': 'd34db33f'})
+    flexmock(module.feature).should_receive('available').and_return(False)
 
     assert (
         module.resolve_archive_name(
@@ -71,12 +70,46 @@ def test_resolve_archive_name_calls_get_latest_archive():
             local_path,
             remote_path,
         )
-        == expected_archive
+        == expected_name
+    )
+
+
+def test_resolve_archive_with_feature_available_looks_up_latest_archive_id():
+    expected_id = 'd34db33f'
+    repository_path = flexmock()
+    config = flexmock()
+    local_borg_version = flexmock()
+    global_arguments = flexmock()
+    local_path = flexmock()
+    remote_path = flexmock()
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('get_latest_archive').with_args(
+        repository_path,
+        config,
+        local_borg_version,
+        global_arguments,
+        local_path,
+        remote_path,
+    ).and_return({'name': 'archive-name', 'id': expected_id})
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    assert (
+        module.resolve_archive_name(
+            repository_path,
+            'latest',
+            config,
+            local_borg_version,
+            global_arguments,
+            local_path,
+            remote_path,
+        )
+        == expected_id
     )
 
 
 def test_get_latest_archive_calls_borg_with_flags():
-    expected_archive = {'name': 'archive-name'}
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
@@ -105,7 +138,7 @@ def test_get_latest_archive_calls_borg_with_flags():
 
 
 def test_get_latest_archive_with_log_info_calls_borg_without_info_flag():
-    expected_archive = {'name': 'archive-name'}
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
@@ -135,7 +168,7 @@ def test_get_latest_archive_with_log_info_calls_borg_without_info_flag():
 
 
 def test_get_latest_archive_with_log_debug_calls_borg_without_debug_flag():
-    expected_archive = {'name': 'archive-name'}
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
@@ -165,7 +198,7 @@ def test_get_latest_archive_with_log_debug_calls_borg_without_debug_flag():
 
 
 def test_get_latest_archive_with_local_path_calls_borg_via_local_path():
-    expected_archive = {'name': 'archive-name'}
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
@@ -195,7 +228,7 @@ def test_get_latest_archive_with_local_path_calls_borg_via_local_path():
 
 
 def test_get_latest_archive_with_exit_codes_calls_borg_using_them():
-    expected_archive = {'name': 'archive-name'}
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
@@ -225,7 +258,7 @@ def test_get_latest_archive_with_exit_codes_calls_borg_using_them():
 
 
 def test_get_latest_archive_with_remote_path_calls_borg_with_remote_path_flags():
-    expected_archive = {'name': 'archive-name'}
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(
@@ -258,7 +291,7 @@ def test_get_latest_archive_with_remote_path_calls_borg_with_remote_path_flags()
 
 
 def test_get_latest_archive_with_umask_calls_borg_with_umask_flags():
-    expected_archive = {'name': 'archive-name'}
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('umask', '077').and_return(
@@ -316,7 +349,7 @@ def test_get_latest_archive_without_archives_raises():
 
 
 def test_get_latest_archive_with_log_json_calls_borg_with_log_json_flag():
-    expected_archive = {'name': 'archive-name'}
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('log-json', True).and_return(
@@ -348,7 +381,7 @@ def test_get_latest_archive_with_log_json_calls_borg_with_log_json_flag():
 
 
 def test_get_latest_archive_with_lock_wait_calls_borg_with_lock_wait_flags():
-    expected_archive = {'name': 'archive-name'}
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('lock-wait', 'okay').and_return(
@@ -380,7 +413,7 @@ def test_get_latest_archive_with_lock_wait_calls_borg_with_lock_wait_flags():
 
 
 def test_get_latest_archive_with_consider_checkpoints_calls_borg_with_consider_checkpoints_flag():
-    expected_archive = {'name': 'archive-name'}
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(
@@ -413,7 +446,7 @@ def test_get_latest_archive_with_consider_checkpoints_calls_borg_with_consider_c
 
 
 def test_get_latest_archive_with_consider_checkpoints_and_feature_available_calls_borg_without_consider_checkpoints_flag():
-    expected_archive = {'name': 'archive-name'}
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(
@@ -446,7 +479,7 @@ def test_get_latest_archive_with_consider_checkpoints_and_feature_available_call
 
 
 def test_get_latest_archive_calls_borg_with_working_directory():
-    expected_archive = {'name': 'archive-name'}
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(

@@ -2,6 +2,7 @@ import logging
 
 import borgmatic.actions.json
 import borgmatic.borg.create
+import borgmatic.borg.feature
 import borgmatic.borg.rename
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
@@ -182,7 +183,13 @@ def rename_checkpoint_archive(
 
     borgmatic.borg.rename.rename_archive(
         repository_path,
-        archive_name,
+        (
+            archive['id']
+            if borgmatic.borg.feature.available(
+                borgmatic.borg.feature.Feature.ARCHIVE_SERIES, local_borg_version
+            )
+            else archive['name']
+        ),
         new_archive_name,
         global_arguments.dry_run,
         config,
