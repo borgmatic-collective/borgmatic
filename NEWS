@@ -17,6 +17,7 @@
    support the "bootstrap" action.
  * #1136: For all database hooks, record metadata about the dumps contained within an archive.
  * #1139: Set "borgmatic" as the user agent when connecting to monitoring services.
+ * Treat configuration file permissions issues as errors instead of warnings.
  * When running tests, use Ruff for faster and more comprehensive code linting and formatting,
    replacing Flake8, Black, isort, etc.
  * Switch from pipx to uv for installing development tools, and added tox-uv for speeding up test

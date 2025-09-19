@@ -663,8 +663,8 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
                 [
                     logging.makeLogRecord(
                         dict(
-                            levelno=logging.WARNING,
-                            levelname='WARNING',
+                            levelno=logging.CRITICAL,
+                            levelname='CRITICAL',
                             msg=f'{config_filename}: Insufficient permissions to read configuration file',
                         ),
                     ),

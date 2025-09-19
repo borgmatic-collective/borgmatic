@@ -1695,7 +1695,7 @@ def test_load_configurations_collects_parsed_configurations_and_logs(resolve_env
     assert set(logs) >= set(test_expected_logs + other_expected_logs)
 
 
-def test_load_configurations_logs_warning_for_permission_error():
+def test_load_configurations_logs_error_for_permission_error():
     flexmock(module.validate).should_receive('parse_configuration').and_raise(PermissionError)
 
     configs, config_paths, logs = tuple(
@@ -1704,7 +1704,7 @@ def test_load_configurations_logs_warning_for_permission_error():
 
     assert configs == {}
     assert config_paths == []
-    assert max(log.levelno for log in logs) == logging.WARNING
+    assert max(log.levelno for log in logs) == logging.CRITICAL
 
 
 def test_load_configurations_logs_critical_for_parse_error():
