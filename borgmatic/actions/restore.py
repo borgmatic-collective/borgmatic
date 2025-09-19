@@ -23,7 +23,7 @@ UNSPECIFIED = object()
 Dump = collections.namedtuple(
     'Dump',
     ('hook_name', 'data_source_name', 'hostname', 'port', 'label', 'container'),
-    defaults=('localhost', None, None, None),
+    defaults=(None, None, None, None),
 )
 
 
@@ -108,7 +108,7 @@ def get_configured_data_source(config, restore_dump):
             Dump(
                 hook_name,
                 hook_data_source.get('name'),
-                hook_data_source.get('hostname', 'localhost'),
+                hook_data_source.get('hostname'),
                 hook_data_source.get('port'),
                 hook_data_source.get('label') or UNSPECIFIED,
                 hook_data_source.get('container'),
@@ -389,7 +389,11 @@ def collect_dumps_from_archive(
             except (ValueError, TypeError):
                 port = None
 
-            dumps_from_archive.add(Dump(hook_name, data_source_name, hostname, port))
+            dumps_from_archive.add(
+                Dump(
+                    hook_name, data_source_name, None if hostname == 'localhost' else hostname, port
+                )
+            )
 
             # We've successfully parsed the dump path, so need to probe any further.
             break

@@ -160,15 +160,15 @@ def test_dumps_match_compares_two_dumps_while_respecting_unspecified_values(
     (
         (
             module.Dump('postgresql_databases', 'foo'),
-            'foo@localhost (postgresql_databases)',
+            'foo (postgresql_databases)',
         ),
         (
             module.Dump(module.UNSPECIFIED, 'foo'),
-            'foo@localhost',
+            'foo',
         ),
         (
             module.Dump('postgresql_databases', module.UNSPECIFIED),
-            'unspecified@localhost (postgresql_databases)',
+            'unspecified (postgresql_databases)',
         ),
         (
             module.Dump('postgresql_databases', 'foo', 'host'),

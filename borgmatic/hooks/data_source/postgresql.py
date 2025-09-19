@@ -165,7 +165,7 @@ def dump_data_sources(
                 borgmatic.actions.restore.Dump(
                     'postgresql_databases',
                     database_name,
-                    database.get('hostname', 'localhost'),
+                    database.get('hostname'),
                     database.get('port'),
                     database.get('label'),
                     database.get('container'),
