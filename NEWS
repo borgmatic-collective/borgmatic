@@ -1,4 +1,4 @@
-2.0.8.dev0
+2.0.8
  * #1114: Document systemd configuration changes for the ZFS filesystem hook.
  * #1116: Add dumping of database containers via their container names, handy for backing up
    database containers from the host. See the documentation for more information:
