@@ -1,5 +1,6 @@
 2.0.9.dev0
  * #1149: Add support for Python 3.14.
+ * #1149: Include automated tests in the source dist tarball uploaded to PyPI.
 
 2.0.8
  * #1114: Document systemd configuration changes for the ZFS filesystem hook.

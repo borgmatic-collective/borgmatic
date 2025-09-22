@@ -1,2 +1,6 @@
-include borgmatic/config/schema.yaml
-graft sample/systemd
+# This file only applies to the source dist tarball, not the built wheel.
+graft docs
+graft sample
+graft scripts
+graft tests
+global-exclude *.py[co]
