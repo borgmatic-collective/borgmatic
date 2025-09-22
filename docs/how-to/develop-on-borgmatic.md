@@ -46,6 +46,14 @@ To get oriented with the borgmatic source code, have a look at the [source
 code reference](https://torsion.org/borgmatic/docs/reference/source-code/).
 
 
+### Source packages
+
+Each [borgmatic
+release](https://projects.torsion.org/borgmatic-collective/borgmatic/releases)
+also has source packages available. These include automated tests and serve as
+a good starting point for creating third-party borgmatic packages.
+
+
 ## Automated tests
 
 Assuming you've cloned the borgmatic source code as described above and you're
