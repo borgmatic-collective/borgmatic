@@ -1,4 +1,5 @@
 # This file only applies to the source dist tarball, not the built wheel.
+include borgmatic/config/schema.yaml
 graft docs
 graft sample
 graft scripts
