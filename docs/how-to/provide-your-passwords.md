@@ -127,15 +127,26 @@ encryption_passcommand: cat ${CREDENTIALS_DIRECTORY}/borgmatic_backupserver1
 Adjust `borgmatic_backupserver1` according to the name of the credential and the
 directory set in the service file.
 
-Be aware that when using this systemd `{credential ...}` feature, you may no
-longer be able to run certain borgmatic actions outside of the systemd service,
-as the credentials are only available from within the context of that service.
-So for instance, `borgmatic list` necessarily relies on the
-`encryption_passphrase` in order to access the Borg repository, but `list`
-shouldn't need to load any credentials for your database or monitoring hooks.
+<span class="minilink minilink-addedin">New in version 2.0.9</span> When using
+the systemd `{credential ...}` feature, borgmatic loads systemd credentials even
+when run outside of a systemd service. This works by falling back to calling
+`systemd-creds decrypt` instead of reading credentials directly. To customize
+this behavior, you can override the `systemd-creds` command and/or the
+credential store directory it uses:
 
-The one exception is `borgmatic config validate`, which doesn't actually load
-any credentials and should continue working anywhere.
+```yaml
+systemd:
+    systemd_creds_command: /usr/local/bin/systemd-creds
+    encrypted_credentials_directory: /path/to/credstore.encrypted
+```
+
+<span class="minilink minilink-addedin">Prior to version 2.0.9</span> The
+systemd `{credential ...}` feature did not work when run outside of a systemd
+service. But depending on the borgmatic action invoked and the configuration
+option where `{credential ...}` was used, you could sometimes get away without
+working systemd credentials for certain actions. For instance, `borgmatic list`
+doesn't connect to any databases or monitoring services, and `borgmatic config
+validate` doesn't use credentials as all.
 
 
 ### Container secrets

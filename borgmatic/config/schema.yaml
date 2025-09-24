@@ -3002,6 +3002,25 @@ properties:
         description: |
             Configuration for integration with Linux LVM (Logical Volume
             Manager).
+    systemd:
+        type: object
+        additionalProperties: false
+        properties:
+            systemd_creds_command:
+                type: string
+                description: |
+                    Command to use instead of "systemd-creds". Only used as a
+                    fallback when borgmatic is run outside of a systemd service.
+                example: /usr/local/bin/systemd-creds
+            encrypted_credentials_directory:
+                type: string
+                description: |
+                    Directory containing encrypted credentials for
+                    "systemd-creds" to use instead of
+                    "/etc/credstore.encrypted".
+                example: /path/to/credstore.encrypted
+        description: |
+            Configuration for integration with systemd credentials.
     container:
         type: object
         additionalProperties: false

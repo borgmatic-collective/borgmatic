@@ -1,4 +1,6 @@
 2.0.9.dev0
+ * #1123: Add loading of systemd credentials even when running borgmatic outside of a systemd
+   service.
  * #1149: Add support for Python 3.14.
  * #1149: Include automated tests in the source dist tarball uploaded to PyPI.
 

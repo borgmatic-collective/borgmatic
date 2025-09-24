@@ -19,13 +19,60 @@ def test_load_credential_with_invalid_credential_parameters_raises(credential_pa
         )
 
 
-def test_load_credential_without_credentials_directory_raises():
+def test_load_credential_without_credentials_directory_falls_back_to_systemd_creds_command():
     flexmock(module.os.environ).should_receive('get').with_args('CREDENTIALS_DIRECTORY').and_return(
         None,
     )
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('systemd-creds', 'decrypt', '/etc/credstore.encrypted/mycredential')).and_return(
+        'password'
+    ).once()
 
-    with pytest.raises(ValueError):
+    assert (
         module.load_credential(hook_config={}, config={}, credential_parameters=('mycredential',))
+        == 'password'
+    )
+
+
+def test_load_credential_without_credentials_directory_calls_custom_systemd_creds_command():
+    flexmock(module.os.environ).should_receive('get').with_args('CREDENTIALS_DIRECTORY').and_return(
+        None,
+    )
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(
+        ('/path/to/systemd-creds', '--flag', 'decrypt', '/etc/credstore.encrypted/mycredential')
+    ).and_return('password').once()
+
+    assert (
+        module.load_credential(
+            hook_config={'systemd_creds_command': '/path/to/systemd-creds --flag'},
+            config={},
+            credential_parameters=('mycredential',),
+        )
+        == 'password'
+    )
+
+
+def test_load_credential_without_credentials_directory_uses_custom_encrypted_credentials_directory():
+    flexmock(module.os.environ).should_receive('get').with_args('CREDENTIALS_DIRECTORY').and_return(
+        None,
+    )
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('systemd-creds', 'decrypt', '/my/credstore.encrypted/mycredential')).and_return(
+        'password'
+    ).once()
+
+    assert (
+        module.load_credential(
+            hook_config={'encrypted_credentials_directory': '/my/credstore.encrypted'},
+            config={},
+            credential_parameters=('mycredential',),
+        )
+        == 'password'
+    )
 
 
 def test_load_credential_with_invalid_credential_name_raises():
