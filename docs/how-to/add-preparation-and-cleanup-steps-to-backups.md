@@ -77,7 +77,7 @@ commands:
 Each command in the `commands:` list has the following options:
 
  * `before` or `after`: Name for the point in borgmatic's execution that the commands should be run before or after, one of:
-    * `action` runs before each action for each repository. This replaces the deprecated `before_create`, `after_prune`, etc.
+    * `action` runs before or after each action for each repository. This replaces the deprecated `before_create`, `after_prune`, etc.
     * `repository` runs before or after all actions for each repository. This replaces the deprecated `before_actions` and `after_actions`.
     * `configuration` runs before or after all actions and repositories in the current configuration file.
     * `everything` runs before or after all configuration files. Errors here do not trigger `error` hooks or the `fail` state in monitoring hooks. This replaces the deprecated `before_everything` and `after_everything`.
