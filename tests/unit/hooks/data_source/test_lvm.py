@@ -270,6 +270,10 @@ def test_snapshot_logical_volume_with_non_percentage_snapshot_name_uses_lvcreate
         ),
         (Pattern('/foo'), Pattern('/run/borgmatic/lvm_snapshots/b33f/./foo')),
         (Pattern('/'), Pattern('/run/borgmatic/lvm_snapshots/b33f/./')),
+        (
+            Pattern('/foo/./bar/baz'),
+            Pattern('/run/borgmatic/lvm_snapshots/b33f/foo/./bar/baz'),
+        ),
     ),
 )
 def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_path(
