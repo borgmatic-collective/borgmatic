@@ -77,12 +77,14 @@ commands:
 Each command in the `commands:` list has the following options:
 
  * `before` or `after`: Name for the point in borgmatic's execution that the commands should be run before or after, one of:
+    * <span class="minilink minilink-addedin">New in version 2.0.9</span> `step` runs before or after each sub-action step for each repository, e.g. for an individual check.
     * `action` runs before or after each action for each repository. This replaces the deprecated `before_create`, `after_prune`, etc.
     * `repository` runs before or after all actions for each repository. This replaces the deprecated `before_actions` and `after_actions`.
     * `configuration` runs before or after all actions and repositories in the current configuration file.
     * `everything` runs before or after all configuration files. Errors here do not trigger `error` hooks or the `fail` state in monitoring hooks. This replaces the deprecated `before_everything` and `after_everything`.
     * `error` runs after an error occurs—and it's only available for `after`. This replaces the deprecated `on_error` hook.
  * `when`: Only trigger the hook when borgmatic is run with particular actions (`create`, `prune`, etc.) listed here. Defaults to running for all actions.
+ * `steps`: <span class="minilink minilink-addedin">New in version 2.0.9</span> Only trigger the hook when borgmatic runs particular sub-action steps (`extract`, `spot`, etc.) listed here. Defaults to running for all steps.
  * `states`: <span class="minilink minilink-addedin">New in version 2.0.3</span> Only trigger the hook if borgmatic encounters one of the states (execution results) listed here. This state is evaluated only for the scope of the configured `action`, `repository`, etc., rather than for the entire borgmatic run. Only available for `after` hooks. Defaults to running the hook for all states. One or more of:
     * `finish`: No errors occurred.
     * `fail`: An error occurred.
@@ -107,17 +109,22 @@ execution.
 
 Let's say you've got a borgmatic configuration file with a configured
 repository. And suppose you configure several command hooks and then run
-borgmatic for the `create` and `prune` actions. Here's the order of execution:
+borgmatic for the `create` and `check` actions. Here's the order of execution:
 
  * Run `before: everything` hooks (from all configuration files).
     * Run `before: configuration` hooks (from the first configuration file).
         * Run `before: repository` hooks (for the first repository).
             * Run `before: action` hooks for `create`.
-            * Actually run the `create` action (e.g. `borg create`).
+                * Run the `create` action including `borg create`.
             * Run `after: action` hooks for `create`.
-            * Run `before: action` hooks for `prune`.
-            * Actually run the `prune` action (e.g. `borg prune`).
-            * Run `after: action` hooks for `prune`.
+            * Run `before: action` hooks for `check`.
+                * Run `before: step` hooks for the `archives_repository_data` step.
+                    * Run the `borg check` portion of the `check` action.
+                * Run `after: step` hooks for the `archives_repository_data` step.
+                * Run `before: step` hooks for the `spot` step.
+                    * Run the `spot` check portion of the `check` action.
+                * Run `after: step` hooks for the `spot` step.
+            * Run `after: action` hooks for `check`.
         * Run `after: repository` hooks (for the first repository).
     * Run `after: configuration` hooks (from the first configuration file).
     * Run `after: error` hooks (if an error occurs).
@@ -134,9 +141,9 @@ have a chance to run. Whereas the `after: error` hook doesn't run until all
 actions for—and repositories in—a configuration file have had a chance to
 execute.
 
-And if there are multiple hooks defined for a particular step (e.g. `before:
-action` for `create`), then those hooks are run in the order they're defined in
-configuration.
+And if there are multiple hooks defined for a particular combination (e.g.
+`before: action` for `create`), then those hooks are run in the order they're
+defined in configuration.
 
 
 ### Deprecated command hooks

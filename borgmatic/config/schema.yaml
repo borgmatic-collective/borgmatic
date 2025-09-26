@@ -1140,6 +1140,7 @@ properties:
                       before:
                           type: string
                           enum:
+                              - step
                               - action
                               - repository
                               - configuration
@@ -1148,6 +1149,8 @@ properties:
                               Name for the point in borgmatic's execution that
                               the commands should be run before (required if
                               "after" isn't set):
+                               * "step" runs before a sub-action step for each
+                              repository, e.g. for an individual check.
                                * "action" runs before each action for each
                               repository.
                                * "repository" runs before all actions for each
@@ -1188,6 +1191,18 @@ properties:
                               List of actions for which the commands will be
                               run. Defaults to running for all actions.
                           example: [create, prune, compact, check]
+                      steps:
+                          type: array
+                          items:
+                              type: string
+                              enum:
+                                  - archives_repository_data
+                                  - extract
+                                  - spot
+                          description: |
+                              List of sub-action steps for which the commands
+                              will be run. Defaults to running for all steps.
+                          example: [extract, spot]
                       run:
                           type: array
                           items:
@@ -1203,6 +1218,7 @@ properties:
                       after:
                           type: string
                           enum:
+                              - step
                               - action
                               - repository
                               - configuration
@@ -1212,6 +1228,8 @@ properties:
                               Name for the point in borgmatic's execution that
                               the commands should be run after (required if
                               "before" isn't set):
+                               * "step" runs before a sub-action step for each
+                              repository, e.g. for an individual check.
                                * "action" runs after each action for each
                               repository.
                                * "repository" runs after all actions for each
@@ -1254,6 +1272,18 @@ properties:
                               particular actions listed here. Defaults to
                               running for all actions.
                           example: [create, prune, compact, check]
+                      steps:
+                          type: array
+                          items:
+                              type: string
+                              enum:
+                                  - archives_repository_data
+                                  - extract
+                                  - spot
+                          description: |
+                              List of sub-action steps for which the commands
+                              will be run. Defaults to running for all steps.
+                          example: [extract, spot]
                       states:
                           type: array
                           items:

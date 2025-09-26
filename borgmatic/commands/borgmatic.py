@@ -463,6 +463,7 @@ def run_actions(  # noqa: PLR0912, PLR0915
                             global_arguments,
                             local_path,
                             remote_path,
+                            hook_context,
                         )
                 elif action_name == 'extract':
                     borgmatic.actions.extract.run_extract(

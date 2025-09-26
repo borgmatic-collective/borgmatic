@@ -278,6 +278,10 @@ def test_get_all_dataset_mount_points_omits_duplicates():
         ),
         (Pattern('/foo'), Pattern('/run/borgmatic/zfs_snapshots/b33f/./foo')),
         (Pattern('/'), Pattern('/run/borgmatic/zfs_snapshots/b33f/./')),
+        (
+            Pattern('/foo/./bar/baz'),
+            Pattern('/run/borgmatic/zfs_snapshots/b33f/foo/./bar/baz'),
+        ),
     ),
 )
 def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_path(

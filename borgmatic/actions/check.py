@@ -744,6 +744,7 @@ def run_check(
     global_arguments,
     local_path,
     remote_path,
+    hook_context,
 ):
     '''
     Run the "check" action for the given repository.
@@ -783,44 +784,75 @@ def run_check(
         archives_check_id,
     )
     borg_specific_checks = set(checks).intersection({'repository', 'archives', 'data'})
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     if borg_specific_checks:
-        borgmatic.borg.check.check_archives(
-            repository['path'],
-            config,
-            local_borg_version,
-            check_arguments,
-            global_arguments,
-            borg_specific_checks,
-            archive_filter_flags,
-            local_path=local_path,
-            remote_path=remote_path,
-        )
-        for check in borg_specific_checks:
-            write_check_time(make_check_time_path(config, repository_id, check, archives_check_id))
+        with borgmatic.hooks.command.Before_after_hooks(
+            command_hooks=config.get('commands'),
+            before_after='step',
+            umask=config.get('umask'),
+            working_directory=working_directory,
+            dry_run=global_arguments.dry_run,
+            action_names=('check',),
+            step_names=('archives_repository_data',),
+            **hook_context,
+        ):
+            borgmatic.borg.check.check_archives(
+                repository['path'],
+                config,
+                local_borg_version,
+                check_arguments,
+                global_arguments,
+                borg_specific_checks,
+                archive_filter_flags,
+                local_path=local_path,
+                remote_path=remote_path,
+            )
+            for check in borg_specific_checks:
+                write_check_time(make_check_time_path(config, repository_id, check, archives_check_id))
 
     if 'extract' in checks:
-        borgmatic.borg.extract.extract_last_archive_dry_run(
-            config,
-            local_borg_version,
-            global_arguments,
-            repository['path'],
-            config.get('lock_wait'),
-            local_path,
-            remote_path,
-        )
-        write_check_time(make_check_time_path(config, repository_id, 'extract'))
-
-    if 'spot' in checks:
-        with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
-            spot_check(
-                repository,
+        with borgmatic.hooks.command.Before_after_hooks(
+            command_hooks=config.get('commands'),
+            before_after='step',
+            umask=config.get('umask'),
+            working_directory=working_directory,
+            dry_run=global_arguments.dry_run,
+            action_names=('check',),
+            step_names=('extract',),
+            **hook_context,
+        ):
+            borgmatic.borg.extract.extract_last_archive_dry_run(
                 config,
                 local_borg_version,
                 global_arguments,
+                repository['path'],
+                config.get('lock_wait'),
                 local_path,
                 remote_path,
-                borgmatic_runtime_directory,
             )
+            write_check_time(make_check_time_path(config, repository_id, 'extract'))
 
-        write_check_time(make_check_time_path(config, repository_id, 'spot'))
+    if 'spot' in checks:
+        with borgmatic.hooks.command.Before_after_hooks(
+            command_hooks=config.get('commands'),
+            before_after='step',
+            umask=config.get('umask'),
+            working_directory=working_directory,
+            dry_run=global_arguments.dry_run,
+            action_names=('check',),
+            step_names=('spot',),
+            **hook_context,
+        ):
+            with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
+                spot_check(
+                    repository,
+                    config,
+                    local_borg_version,
+                    global_arguments,
+                    local_path,
+                    remote_path,
+                    borgmatic_runtime_directory,
+                )
+
+            write_check_time(make_check_time_path(config, repository_id, 'spot'))

@@ -64,22 +64,27 @@ def make_environment(current_environment, sys_module=sys):
     return environment
 
 
-def filter_hooks(command_hooks, before=None, after=None, action_names=None, state_names=None):
+def filter_hooks(command_hooks, before=None, after=None, action_names=None, step_names=None, state_names=None):
     '''
     Given a sequence of command hook dicts from configuration and one or more filters (before name,
-    after name, a sequence of action names, and/or a sequence of execution result state names),
-    filter down the command hooks to just the ones that match the given filters.
+    after name, a sequence of action names, a sequence of sub-action steps, and/or a sequence of
+    execution result state names), filter down the command hooks to just the ones that match the
+    given filters.
     '''
     return tuple(
         hook_config
         for hook_config in command_hooks or ()
         for config_action_names in (hook_config.get('when'),)
+        for config_step_names in (hook_config.get('steps'),)
         for config_state_names in (hook_config.get('states'),)
         if before is None or hook_config.get('before') == before
         if after is None or hook_config.get('after') == after
         if action_names is None
         or config_action_names is None
         or set(config_action_names or ()).intersection(set(action_names))
+        if step_names is None
+        or config_step_names is None
+        or set(config_step_names or ()).intersection(set(step_names))
         if state_names is None
         or config_state_names is None
         or set(config_state_names or ()).intersection(set(state_names))
@@ -164,7 +169,8 @@ class Before_after_hooks:
            before_after='do_stuff',
            umask=config.get('umask'),
            dry_run=dry_run,
-           action_names=['create'],
+           action_names=['check'],
+           step_names=['spot'],
        ):
             do()
             some()
@@ -182,13 +188,14 @@ class Before_after_hooks:
         working_directory,
         dry_run,
         action_names=None,
+        step_names=None,
         **context,
     ):
         '''
         Given a sequence of command hook configuration dicts, the before/after name, a umask to run
         commands with, a working directory to run commands with, a dry run flag, a sequence of
-        action names, and any context for the executed commands, save those data points for use
-        below.
+        action names, a sequence of sub-action step names, and any context for the executed
+        commands, save those data points for use below.
         '''
         self.command_hooks = command_hooks
         self.before_after = before_after
@@ -196,6 +203,7 @@ class Before_after_hooks:
         self.working_directory = working_directory
         self.dry_run = dry_run
         self.action_names = action_names
+        self.step_names = step_names
         self.context = context
 
     def __enter__(self):
@@ -208,6 +216,7 @@ class Before_after_hooks:
                     self.command_hooks,
                     before=self.before_after,
                     action_names=self.action_names,
+                    step_names=self.step_names,
                 ),
                 self.umask,
                 self.working_directory,
@@ -234,6 +243,7 @@ class Before_after_hooks:
                     self.command_hooks,
                     after=self.before_after,
                     action_names=self.action_names,
+                    step_names=self.step_names,
                     state_names=['fail' if exception_type else 'finish'],
                 ),
                 self.umask,

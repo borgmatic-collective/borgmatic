@@ -265,7 +265,10 @@ def make_borg_snapshot_pattern(subvolume_path, pattern):
     rewritten_path = initial_caret + os.path.join(
         subvolume_path,
         f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}',
-        '.',  # Borg 1.4+ "slashdot" hack.
+        # Use the Borg 1.4+ "slashdot" hack to prevent the snapshot path prefix from getting
+        # included in the archive—but only if there's not already a slashdot hack present in the
+        # pattern.
+        ('' if f'{os.path.sep}.{os.path.sep}' in pattern.path else '.'),
         # Included so that the source directory ends up in the Borg archive at its "original" path.
         pattern.path.lstrip('^').lstrip(os.path.sep),
     )

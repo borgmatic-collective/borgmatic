@@ -214,7 +214,10 @@ def make_borg_snapshot_pattern(pattern, dataset, normalized_runtime_directory):
         # For instance, without this, snapshotting a dataset at /var and another at /var/spool would
         # result in overlapping snapshot patterns and therefore colliding mount attempts.
         hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(MOUNT_POINT_HASH_LENGTH),
-        '.',  # Borg 1.4+ "slashdot" hack.
+        # Use the Borg 1.4+ "slashdot" hack to prevent the snapshot path prefix from getting
+        # included in the archive—but only if there's not already a slashdot hack present in the
+        # pattern.
+        ('' if f'{os.path.sep}.{os.path.sep}' in pattern.path else '.'),
         # Included so that the source directory ends up in the Borg archive at its "original" path.
         pattern.path.lstrip('^').lstrip(os.path.sep),
     )

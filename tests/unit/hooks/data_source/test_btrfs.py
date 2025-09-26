@@ -326,6 +326,11 @@ def test_make_snapshot_path_includes_stripped_subvolume_path(
         ),
         ('/', Pattern('/foo'), Pattern('/.borgmatic-snapshot-1234/./foo')),
         ('/', Pattern('/'), Pattern('/.borgmatic-snapshot-1234/./')),
+        (
+            '/foo/bar',
+            Pattern('/foo/bar/./baz'),
+            Pattern('/foo/bar/.borgmatic-snapshot-1234/foo/bar/./baz'),
+        ),
     ),
 )
 def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_path(
