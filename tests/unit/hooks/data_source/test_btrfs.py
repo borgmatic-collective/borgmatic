@@ -773,6 +773,7 @@ def test_remove_data_source_dumps_deletes_snapshots():
         hook_config=config['btrfs'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -790,6 +791,7 @@ def test_remove_data_source_dumps_without_hook_configuration_bails():
         hook_config=None,
         config={'source_directories': '/mnt/subvolume'},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -808,6 +810,7 @@ def test_remove_data_source_dumps_with_get_subvolumes_file_not_found_error_bails
         hook_config=config['btrfs'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -828,6 +831,7 @@ def test_remove_data_source_dumps_with_get_subvolumes_called_process_error_bails
         hook_config=config['btrfs'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -887,6 +891,7 @@ def test_remove_data_source_dumps_with_dry_run_skips_deletes():
         hook_config=config['btrfs'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=True,
     )
 
@@ -905,6 +910,7 @@ def test_remove_data_source_dumps_without_subvolumes_skips_deletes():
         hook_config=config['btrfs'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -944,6 +950,7 @@ def test_remove_data_source_without_snapshots_skips_deletes():
         hook_config=config['btrfs'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -1003,6 +1010,7 @@ def test_remove_data_source_dumps_with_delete_snapshot_file_not_found_error_bail
         hook_config=config['btrfs'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -1064,6 +1072,7 @@ def test_remove_data_source_dumps_with_delete_snapshot_called_process_error_bail
         hook_config=config['btrfs'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -1107,5 +1116,6 @@ def test_remove_data_source_dumps_with_root_subvolume_skips_duplicate_removal():
         hook_config=config['btrfs'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )

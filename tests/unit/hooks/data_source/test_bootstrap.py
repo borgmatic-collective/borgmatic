@@ -76,6 +76,7 @@ def test_remove_data_source_dumps_deletes_manifest_and_parent_directory():
         hook_config=None,
         config={},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -92,6 +93,7 @@ def test_remove_data_source_dumps_with_dry_run_bails():
         hook_config=None,
         config={},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=True,
     )
 
@@ -110,6 +112,7 @@ def test_remove_data_source_dumps_swallows_manifest_file_not_found_error():
         hook_config=None,
         config={},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -130,5 +133,6 @@ def test_remove_data_source_dumps_swallows_manifest_parent_directory_not_found_e
         hook_config=None,
         config={},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )

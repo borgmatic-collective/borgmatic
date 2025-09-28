@@ -524,6 +524,7 @@ def test_remove_data_source_dumps_unmounts_and_destroys_snapshots():
         hook_config={},
         config={'source_directories': '/mnt/dataset', 'zfs': {}},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -556,6 +557,7 @@ def test_remove_data_source_dumps_use_custom_commands():
         hook_config=hook_config,
         config={'source_directories': '/mnt/dataset', 'zfs': hook_config},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -570,6 +572,7 @@ def test_remove_data_source_dumps_bails_for_missing_hook_configuration():
         hook_config=None,
         config={'source_directories': '/mnt/dataset'},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -585,6 +588,7 @@ def test_remove_data_source_dumps_bails_for_missing_zfs_command():
         hook_config=hook_config,
         config={'source_directories': '/mnt/dataset', 'zfs': hook_config},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -602,6 +606,7 @@ def test_remove_data_source_dumps_bails_for_zfs_command_error():
         hook_config=hook_config,
         config={'source_directories': '/mnt/dataset', 'zfs': hook_config},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -629,6 +634,7 @@ def test_remove_data_source_dumps_bails_for_missing_umount_command():
         hook_config=hook_config,
         config={'source_directories': '/mnt/dataset', 'zfs': hook_config},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -661,6 +667,7 @@ def test_remove_data_source_dumps_swallows_umount_command_error():
         hook_config=hook_config,
         config={'source_directories': '/mnt/dataset', 'zfs': hook_config},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -688,6 +695,7 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_directories_that_are_no
         hook_config={},
         config={'source_directories': '/mnt/dataset', 'zfs': {}},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -721,6 +729,7 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_that_are_no
         hook_config={},
         config={'source_directories': '/mnt/dataset', 'zfs': {}},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -756,6 +765,7 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_that_are_em
         hook_config={},
         config={'source_directories': '/mnt/dataset', 'zfs': {}},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -789,6 +799,7 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_after_rmtre
         hook_config={},
         config={'source_directories': '/mnt/dataset', 'zfs': {}},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -814,5 +825,6 @@ def test_remove_data_source_dumps_with_dry_run_skips_unmount_and_destroy():
         hook_config={},
         config={'source_directories': '/mnt/dataset', 'zfs': {}},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=True,
     )
