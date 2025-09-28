@@ -1,4 +1,6 @@
 2.0.9.dev0
+ * #1105: More accurately collect Btrfs subvolumes to snapshot by using the "btrfs" command rather
+   than "findmnt". The Btrfs "findmnt_command" option is now deprecated.
  * #1123: Add loading of systemd credentials even when running borgmatic outside of a systemd
    service.
  * #1149: Add support for Python 3.14.

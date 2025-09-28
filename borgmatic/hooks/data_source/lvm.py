@@ -353,7 +353,7 @@ def get_snapshots(lvs_command, snapshot_name=None):
         raise ValueError(f'Invalid {lvs_command} output: Missing key "{error}"')
 
 
-def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):  # noqa: PLR0912
+def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, patterns, dry_run):  # noqa: PLR0912
     '''
     Given an LVM configuration dict, a configuration dict, the borgmatic runtime directory, and
     whether this is a dry run, unmount and delete any LVM snapshots created by borgmatic. If this is

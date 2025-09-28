@@ -75,7 +75,7 @@ def dump_data_sources(
     return []
 
 
-def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):
+def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, patterns, dry_run):
     '''
     Given a bootstrap configuration dict, a configuration dict, the borgmatic runtime directory, and
     whether this is a dry run, then remove the manifest file created above. If this is a dry run,
