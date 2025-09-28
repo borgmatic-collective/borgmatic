@@ -65,12 +65,13 @@ class Loki_log_buffer:
             # Skip as there are not logs to send yet
             return
 
+        request_body = self.to_request()
         self.root['streams'][0]['values'] = []
 
         try:
             result = requests.post(
                 self.url,
-                data=self.to_request(),
+                data=request_body,
                 timeout=TIMEOUT_SECONDS,
                 headers={
                     'Content-Type': 'application/json',

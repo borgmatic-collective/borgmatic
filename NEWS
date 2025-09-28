@@ -5,6 +5,7 @@
  * #1149: Include automated tests in the source dist tarball uploaded to PyPI.
  * #1151: Fix snapshotting in the ZFS, Btrfs, and LVM hooks to play nicely with the Borg 1.4+
    "slashdot" hack within source directory paths.
+ * #1152: Fix a regression in the Loki monitoring hook in which log messages weren't sending.
 
 2.0.8
  * #1114: Document systemd configuration changes for the ZFS filesystem hook.
