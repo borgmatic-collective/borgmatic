@@ -15,8 +15,7 @@ def test_initialize_monitor_replaces_labels():
         'labels': {'hostname': '__hostname', 'config': '__config', 'config_full': '__config_path'},
     }
     config_filename = '/mock/path/test.yaml'
-    dry_run = True
-    module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run)
+    module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run=False)
 
     for handler in tuple(logging.getLogger().handlers):
         if isinstance(handler, module.Loki_log_handler):
@@ -48,32 +47,39 @@ def test_initialize_monitor_adds_log_handler():
     raise AssertionError()
 
 
-def test_ping_monitor_adds_log_message():
+def test_ping_monitor_sends_log_message():
     '''
-    Assert that calling ping_monitor adds a message to our logger.
+    Assert that calling ping_monitor sends a message to Loki via our logger.
     '''
     hook_config = {'url': 'http://localhost:3100/loki/api/v1/push', 'labels': {'app': 'borgmatic'}}
     config_filename = 'test.yaml'
-    dry_run = True
-    module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run)
+    post_called = False
+
+    def post(url, data, timeout, headers):
+        nonlocal post_called
+        post_called = True
+
+        assert any(
+            value[1] == f'{module.MONITOR_STATE_TO_LOKI[module.monitor.State.FINISH]} backup'
+            for value in module.json.loads(data)['streams'][0]['values']
+        )
+
+        return flexmock(raise_for_status=lambda: None)
+
+    flexmock(module.requests).should_receive('post').replace_with(post)
+
+    module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run=False)
     module.ping_monitor(
         hook_config,
         flexmock(),
         config_filename,
         module.monitor.State.FINISH,
         flexmock(),
-        dry_run,
+        dry_run=False,
     )
+    module.destroy_monitor(hook_config, flexmock(), flexmock(), dry_run=False)
 
-    for handler in tuple(logging.getLogger().handlers):
-        if isinstance(handler, module.Loki_log_handler):
-            assert any(
-                value[1] == f'{module.MONITOR_STATE_TO_LOKI[module.monitor.State.FINISH]} backup'
-                for value in handler.buffer.root['streams'][0]['values']
-            )
-            return
-
-    raise AssertionError()
+    assert post_called
 
 
 def test_destroy_monitor_removes_log_handler():
@@ -82,9 +88,10 @@ def test_destroy_monitor_removes_log_handler():
     '''
     hook_config = {'url': 'http://localhost:3100/loki/api/v1/push', 'labels': {'app': 'borgmatic'}}
     config_filename = 'test.yaml'
-    dry_run = True
-    module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run)
-    module.destroy_monitor(hook_config, flexmock(), flexmock(), dry_run)
+    flexmock(module.requests).should_receive('post').never()
+
+    module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run=False)
+    module.destroy_monitor(hook_config, flexmock(), flexmock(), dry_run=False)
 
     for handler in tuple(logging.getLogger().handlers):
         if isinstance(handler, module.Loki_log_handler):
