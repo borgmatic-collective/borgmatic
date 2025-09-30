@@ -66,7 +66,7 @@ def load_config_paths_from_archive(
             config,
             local_borg_version,
             global_arguments,
-            local_path=config.get('local_path'),
+            local_path=config.get('local_path', 'borg'),
             remote_path=config.get('remote_path'),
             extract_to_stdout=True,
         )

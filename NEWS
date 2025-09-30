@@ -6,6 +6,8 @@
  * #1151: Fix snapshotting in the ZFS, Btrfs, and LVM hooks to play nicely with the Borg 1.4+
    "slashdot" hack within source directory paths.
  * #1152: Fix a regression in the Loki monitoring hook in which log messages weren't sending.
+ * Fix a traceback (TypeError) regression in the "spot" check when the "local_path" option isn't
+   set.
 
 2.0.8
  * #1114: Document systemd configuration changes for the ZFS filesystem hook.
