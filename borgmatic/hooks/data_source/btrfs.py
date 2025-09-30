@@ -1,8 +1,6 @@
 import collections
 import functools
 import glob
-import itertools
-import json
 import logging
 import os
 import pathlib
@@ -27,7 +25,9 @@ def use_streaming(hook_config, config):  # pragma: no cover
 @functools.cache
 def path_is_a_subvolume(btrfs_command, path):
     '''
-    Given a btrfs command and a path, return whether the path is a Btrfs subvolume.
+    Given a btrfs command and a path, return whether the path is a Btrfs subvolume. Return False if
+    the btrfs command errors, which probably indicates there isn't a containing Btrfs subvolume for
+    the given path.
 
     As a performance optimization, multiple calls to this function with the same arguments are
     cached.
@@ -50,21 +50,16 @@ def path_is_a_subvolume(btrfs_command, path):
     return True
 
 
-def get_containing_subvolume_path(btrfs_command, pattern):
+def get_containing_subvolume_path(btrfs_command, path):
     '''
-    Given a btrfs command and a pattern as a borgmatic.borg.pattern.Pattern instance, return the
-    subvolume path that contains the pattern's path (or is the same as the pattern's path).
-
-    Return None if the btrfs command errors, which probably indicates there isn't a containing Btrfs
-    subvolume for the given pattern.
+    Given a btrfs command and a path, return the subvolume path that contains the given path (or is
+    the same as the path).
     '''
-    pattern_path = pattern.path.lstrip('^')
-
     # Probe the given pattern's path and all of its parents, grandparents, etc. to try to find a
     # Btrfs subvolume.
     for candidate_path in (
-        pattern_path,
-        *tuple(str(path) for path in pathlib.PurePath(pattern_path).parents),
+        path,
+        *tuple(str(ancestor) for ancestor in pathlib.PurePath(path).parents),
     ):
         if path_is_a_subvolume(btrfs_command, candidate_path):
             logger.debug(f'Path {candidate_path} is a Btrfs subvolume')
@@ -85,7 +80,7 @@ def get_all_subvolume_paths(btrfs_command, patterns):
                 for pattern in patterns
                 if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
                 if pattern.source == borgmatic.borg.pattern.Pattern_source.CONFIG
-                for subvolume_path in (get_containing_subvolume_path(btrfs_command, pattern),)
+                for subvolume_path in (get_containing_subvolume_path(btrfs_command, pattern.path),)
                 if subvolume_path
             }
         ),
