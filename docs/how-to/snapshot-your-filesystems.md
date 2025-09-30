@@ -162,12 +162,11 @@ btrfs:
 ```
 
 No other options are necessary to enable Btrfs support, but if desired you can
-override some of the commands used by the Btrfs hook. For instance:
+override the `btrfs` command used by the Btrfs hook. For instance:
 
 ```yaml
 btrfs:
     btrfs_command: /usr/local/bin/btrfs
-    findmnt_command: /usr/local/bin/findmnt
 ```
 
 If you're using systemd to run borgmatic, you may need to modify the [sample systemd service
@@ -183,8 +182,8 @@ feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
 #### Subvolume discovery
 
 For any read-write subvolume you'd like backed up, add its subvolume path to
-borgmatic's `source_directories` option. Btrfs does not support snapshotting
-read-only subvolumes.
+borgmatic's `source_directories` option. borgmatic does not currently support
+snapshotting read-only subvolumes.
 
 <span class="minilink minilink-addedin">New in version 2.0.7</span> The path can
 be either the path of the subvolume itself or the mount point where the

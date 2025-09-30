@@ -50,46 +50,6 @@ def path_is_a_subvolume(btrfs_command, path):
     return True
 
 
-def get_containing_subvolume_path(btrfs_command, path):
-    '''
-    Given a btrfs command and a path, return the subvolume path that contains the given path (or is
-    the same as the path).
-    '''
-    # Probe the given pattern's path and all of its parents, grandparents, etc. to try to find a
-    # Btrfs subvolume.
-    for candidate_path in (
-        path,
-        *tuple(str(ancestor) for ancestor in pathlib.PurePath(path).parents),
-    ):
-        if path_is_a_subvolume(btrfs_command, candidate_path):
-            logger.debug(f'Path {candidate_path} is a Btrfs subvolume')
-            return candidate_path
-
-    return None
-
-
-def get_all_subvolume_paths(btrfs_command, patterns):
-    '''
-    Given a btrfs command and a sequence of patterns, get the sorted paths for all Btrfs subvolumes
-    containing those patterns.
-    '''
-    return tuple(
-        sorted(
-            {
-                subvolume_path
-                for pattern in patterns
-                if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
-                if pattern.source == borgmatic.borg.pattern.Pattern_source.CONFIG
-                for subvolume_path in (get_containing_subvolume_path(btrfs_command, pattern.path),)
-                if subvolume_path
-            }
-        ),
-    )
-
-
-Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_patterns'), defaults=((),))
-
-
 def get_subvolume_property(btrfs_command, subvolume_path, property_name):
     '''
     Given a btrfs command, a subvolume path, and a property name to lookup, return the value of the
@@ -121,26 +81,61 @@ def get_subvolume_property(btrfs_command, subvolume_path, property_name):
     }.get(value, value)
 
 
-def omit_read_only_subvolume_paths(btrfs_command, subvolume_paths):
+def get_containing_subvolume_path(btrfs_command, path):
     '''
-    Given a Btrfs command to run and a sequence of Btrfs subvolume paths, filter them down to just
-    those that are read-write. The idea is that Btrfs can't actually snapshot a read-only subvolume,
-    so we should just ignore them.
-    '''
-    retained_subvolume_paths = []
+    Given a btrfs command and a path, return the subvolume path that contains the given path (or is
+    the same as the path).
 
-    for subvolume_path in subvolume_paths:
+    If there is no such subvolume path or the containing subvolume is read-only, return None.
+    '''
+    # Probe the given pattern's path and all of its parents, grandparents, etc. to try to find a
+    # Btrfs subvolume.
+    for candidate_path in (
+        path,
+        *tuple(str(ancestor) for ancestor in pathlib.PurePath(path).parents),
+    ):
+        if not path_is_a_subvolume(btrfs_command, candidate_path):
+            continue
+
         try:
-            if get_subvolume_property(btrfs_command, subvolume_path, 'ro'):
-                logger.debug(f'Ignoring Btrfs subvolume {subvolume_path} because it is read-only')
-            else:
-                retained_subvolume_paths.append(subvolume_path)
-        except subprocess.CalledProcessError as error:  # noqa: PERF203
+            if get_subvolume_property(btrfs_command, candidate_path, 'ro'):
+                logger.debug(f'Ignoring Btrfs subvolume {candidate_path} because it is read-only')
+
+                return None
+
+            logger.debug(f'Path {candidate_path} is a Btrfs subvolume')
+
+            return candidate_path
+        except subprocess.CalledProcessError as error:
             logger.debug(
-                f'Error determining read-only status of Btrfs subvolume {subvolume_path}: {error}',
+                f'Error determining read-only status of Btrfs subvolume {candidate_path}: {error}',
             )
 
-    return tuple(retained_subvolume_paths)
+            return None
+
+    return None
+
+
+def get_all_subvolume_paths(btrfs_command, patterns):
+    '''
+    Given a btrfs command and a sequence of patterns, get the sorted paths for all Btrfs subvolumes
+    containing those patterns.
+    '''
+    return tuple(
+        sorted(
+            {
+                subvolume_path
+                for pattern in patterns
+                if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
+                if pattern.source == borgmatic.borg.pattern.Pattern_source.CONFIG
+                for subvolume_path in (get_containing_subvolume_path(btrfs_command, pattern.path),)
+                if subvolume_path
+            }
+        ),
+    )
+
+
+Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_patterns'), defaults=((),))
 
 
 def get_subvolumes(btrfs_command, patterns):
@@ -161,12 +156,7 @@ def get_subvolumes(btrfs_command, patterns):
     # backup. Sort the subvolumes from longest to shortest mount points, so longer subvolumes get
     # a whack at the candidate pattern piñata before their parents do. (Patterns are consumed during
     # this process, so no two subvolumes end up with the same contained patterns.)
-    for subvolume_path in reversed(
-        omit_read_only_subvolume_paths(
-            btrfs_command,
-            get_all_subvolume_paths(btrfs_command, patterns),
-        ),
-    ):
+    for subvolume_path in reversed(get_all_subvolume_paths(btrfs_command, patterns)):
         subvolumes.extend(
             Subvolume(subvolume_path, contained_patterns)
             for contained_patterns in (
