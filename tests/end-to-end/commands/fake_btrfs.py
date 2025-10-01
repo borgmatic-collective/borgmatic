@@ -12,9 +12,8 @@ def parse_arguments(*unparsed_arguments):
     subvolume_parser = action_parsers.add_parser('subvolume')
     subvolume_subparser = subvolume_parser.add_subparsers(dest='subaction')
 
-    list_parser = subvolume_subparser.add_parser('list')
-    list_parser.add_argument('-s', dest='snapshots_only', action='store_true')
-    list_parser.add_argument('subvolume_path')
+    show_parser = subvolume_subparser.add_parser('show')
+    show_parser.add_argument('subvolume_path')
 
     snapshot_parser = subvolume_subparser.add_parser('snapshot')
     snapshot_parser.add_argument('-r', dest='read_only', action='store_true')
@@ -24,6 +23,9 @@ def parse_arguments(*unparsed_arguments):
     delete_parser = subvolume_subparser.add_parser('delete')
     delete_parser.add_argument('snapshot_path')
 
+    ensure_deleted_parser = subvolume_subparser.add_parser('ensure_deleted')
+    ensure_deleted_parser.add_argument('snapshot_path')
+
     property_parser = action_parsers.add_parser('property')
     property_subparser = property_parser.add_subparsers(dest='subaction')
     get_parser = property_subparser.add_parser('get')
@@ -32,13 +34,6 @@ def parse_arguments(*unparsed_arguments):
     get_parser.add_argument('property_name')
 
     return (global_parser, global_parser.parse_args(unparsed_arguments))
-
-
-BUILTIN_SUBVOLUME_LIST_LINES = (
-    '261 gen 29 top level 5 path sub',
-    '262 gen 29 top level 5 path other',
-)
-SUBVOLUME_LIST_LINE_PREFIX = '263 gen 29 top level 5 path '
 
 
 def load_snapshots():
@@ -52,18 +47,12 @@ def save_snapshots(snapshot_paths):
     json.dump(snapshot_paths, open('/tmp/fake_btrfs.json', 'w'))
 
 
-def print_subvolume_list(arguments, snapshot_paths):
+def print_subvolume_show(arguments):
     assert arguments.subvolume_path == '/e2e/mnt/subvolume'
 
-    if not arguments.snapshots_only:
-        for line in BUILTIN_SUBVOLUME_LIST_LINES:
-            print(line)
-
-    for snapshot_path in snapshot_paths:
-        print(
-            SUBVOLUME_LIST_LINE_PREFIX
-            + snapshot_path[snapshot_path.index('.borgmatic-snapshot-') :],
-        )
+    # borgmatic doesn't currently parse the output of "btrfs subvolume show"—it's just checking the
+    # exit code—so what we print in response doesn't matter in this test.
+    print('Totally legit btrfs subvolume!')
 
 
 def main():
@@ -74,8 +63,8 @@ def main():
         global_parser.print_help()
         sys.exit(1)
 
-    if arguments.subaction == 'list':
-        print_subvolume_list(arguments, snapshot_paths)
+    if arguments.subaction == 'show':
+        print_subvolume_show(arguments)
     elif arguments.subaction == 'snapshot':
         snapshot_paths.append(arguments.snapshot_path)
         save_snapshots(snapshot_paths)
@@ -95,6 +84,8 @@ def main():
             if snapshot_path.endswith('/' + arguments.snapshot_path)
         ]
         save_snapshots(snapshot_paths)
+    elif arguments.subaction == 'ensure_deleted':
+        assert arguments.snapshot_path not in snapshot_paths
     elif arguments.action == 'property' and arguments.subaction == 'get':
         print(f'{arguments.property_name}=false')
 

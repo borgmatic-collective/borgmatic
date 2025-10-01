@@ -5,6 +5,7 @@ import pathlib
 import shutil
 import tempfile
 
+import borgmatic.actions.pattern
 import borgmatic.borg.extract
 import borgmatic.borg.list
 import borgmatic.borg.mount
@@ -536,13 +537,20 @@ def run_restore(
         return
 
     logger.info(f'Restoring data sources from archive {restore_arguments.archive}')
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
+        patterns = borgmatic.actions.pattern.process_patterns(
+            borgmatic.actions.pattern.collect_patterns(config),
+            config,
+            working_directory,
+        )
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',
             config,
             borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             borgmatic_runtime_directory,
+            patterns,
             global_arguments.dry_run,
         )
 
@@ -625,6 +633,7 @@ def run_restore(
             config,
             borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             borgmatic_runtime_directory,
+            patterns,
             global_arguments.dry_run,
         )
 

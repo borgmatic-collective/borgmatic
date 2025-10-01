@@ -24,7 +24,6 @@ def generate_configuration(config_path, repository_path):
         + 'encryption_passphrase: "test"\n'
         + 'btrfs:\n'
         + '    btrfs_command: python3 /app/tests/end-to-end/commands/fake_btrfs.py\n'
-        + '    findmnt_command: python3 /app/tests/end-to-end/commands/fake_findmnt.py\n'
     )
     config_file = open(config_path, 'w')
     config_file.write(config)
@@ -55,7 +54,7 @@ def test_btrfs_create_and_list():
 
         # Assert that the snapshot has been deleted.
         assert not subprocess.check_output(
-            'python3 /app/tests/end-to-end/commands/fake_btrfs.py subvolume list -s /e2e/mnt/subvolume'.split(
+            'python3 /app/tests/end-to-end/commands/fake_btrfs.py subvolume ensure_deleted /e2e/mnt/subvolume'.split(
                 ' ',
             ),
         )
