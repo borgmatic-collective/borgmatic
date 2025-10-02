@@ -365,10 +365,10 @@ def get_all_snapshots(zfs_command):
 
 def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, patterns, dry_run):  # noqa: PLR0912
     '''
-    Given a ZFS configuration dict, a configuration dict, the borgmatic runtime directory, and
-    whether this is a dry run, unmount and destroy any ZFS snapshots created by borgmatic. If this
-    is a dry run or ZFS isn't configured in borgmatic's configuration, then don't actually remove
-    anything.
+    Given a ZFS configuration dict, a configuration dict, the borgmatic runtime directory, the
+    configured patterns, and whether this is a dry run, unmount and destroy any ZFS snapshots
+    created by borgmatic. If this is a dry run or ZFS isn't configured in borgmatic's configuration,
+    then don't actually remove anything.
     '''
     if hook_config is None:
         return

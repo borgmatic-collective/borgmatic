@@ -84,6 +84,7 @@ def main():
             if snapshot_path.endswith('/' + arguments.snapshot_path)
         ]
         save_snapshots(snapshot_paths)
+    # Not a real btrfs subcommand.
     elif arguments.subaction == 'ensure_deleted':
         assert arguments.snapshot_path not in snapshot_paths
     elif arguments.action == 'property' and arguments.subaction == 'get':
