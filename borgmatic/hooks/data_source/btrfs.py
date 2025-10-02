@@ -50,12 +50,16 @@ def path_is_a_subvolume(btrfs_command, path):
     return True
 
 
+@functools.cache
 def get_subvolume_property(btrfs_command, subvolume_path, property_name):
     '''
     Given a btrfs command, a subvolume path, and a property name to lookup, return the value of the
     corresponding property.
 
     Raise subprocess.CalledProcessError if the btrfs command errors.
+
+    As a performance optimization, multiple calls to this function with the same arguments are
+    cached.
     '''
     output = borgmatic.execute.execute_command_and_capture_output(
         (

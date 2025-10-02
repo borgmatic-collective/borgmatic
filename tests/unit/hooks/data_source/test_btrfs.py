@@ -38,6 +38,7 @@ def test_path_is_a_subvolume_caches_result_after_first_call():
 
 
 def test_get_subvolume_property_with_invalid_btrfs_output_errors():
+    module.get_subvolume_property.cache_clear()
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
     ).and_return('invalid')
@@ -47,6 +48,7 @@ def test_get_subvolume_property_with_invalid_btrfs_output_errors():
 
 
 def test_get_subvolume_property_with_true_output_returns_true_bool():
+    module.get_subvolume_property.cache_clear()
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
     ).and_return('ro=true')
@@ -55,6 +57,7 @@ def test_get_subvolume_property_with_true_output_returns_true_bool():
 
 
 def test_get_subvolume_property_with_false_output_returns_false_bool():
+    module.get_subvolume_property.cache_clear()
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
     ).and_return('ro=false')
@@ -63,10 +66,21 @@ def test_get_subvolume_property_with_false_output_returns_false_bool():
 
 
 def test_get_subvolume_property_passes_through_general_value():
+    module.get_subvolume_property.cache_clear()
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
     ).and_return('thing=value')
 
+    assert module.get_subvolume_property('btrfs', '/foo', 'thing') == 'value'
+
+
+def test_get_subvolume_property_caches_result_after_first_call():
+    module.get_subvolume_property.cache_clear()
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output',
+    ).and_return('thing=value').once()
+
+    assert module.get_subvolume_property('btrfs', '/foo', 'thing') == 'value'
     assert module.get_subvolume_property('btrfs', '/foo', 'thing') == 'value'
 
 
