@@ -18,6 +18,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured',
     ).and_return({})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
     flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
@@ -60,6 +61,7 @@ def test_run_create_runs_with_selected_repository():
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured',
     ).and_return({})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
     flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
@@ -207,6 +209,7 @@ def test_run_create_produces_json():
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured',
     ).and_return({})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
     flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
@@ -252,6 +255,7 @@ def test_run_create_with_active_dumps_roundtrips_via_checkpoint_archive():
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured',
     ).and_return({})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
     flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
@@ -335,6 +339,7 @@ def test_run_create_with_active_dumps_json_updates_archive_info():
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured',
     ).and_return({})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
     flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')

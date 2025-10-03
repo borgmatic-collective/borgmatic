@@ -120,6 +120,7 @@ def remove_data_source_dumps(
     databases,
     config,
     borgmatic_runtime_directory,
+    patterns,
     dry_run,
 ):  # pragma: no cover
     '''

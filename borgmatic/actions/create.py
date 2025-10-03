@@ -50,17 +50,18 @@ def run_create(
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
     with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
+        patterns = pattern.process_patterns(
+            pattern.collect_patterns(config),
+            config,
+            working_directory,
+        )
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',
             config,
             borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             borgmatic_runtime_directory,
+            patterns,
             global_arguments.dry_run,
-        )
-        patterns = pattern.process_patterns(
-            pattern.collect_patterns(config),
-            config,
-            working_directory,
         )
         active_dumps = borgmatic.hooks.dispatch.call_hooks(
             'dump_data_sources',
@@ -138,6 +139,7 @@ def run_create(
             config,
             borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             borgmatic_runtime_directory,
+            patterns,
             global_arguments.dry_run,
         )
 

@@ -2951,7 +2951,8 @@ properties:
             findmnt_command:
                 type: string
                 description: |
-                    Command to use instead of "findmnt".
+                    Deprecated and unused. Was the command to use instead of
+                    "findmnt".
                 example: /usr/local/bin/findmnt
         description: |
             Configuration for integration with the Btrfs filesystem.

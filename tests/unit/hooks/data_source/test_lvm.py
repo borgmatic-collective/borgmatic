@@ -912,6 +912,7 @@ def test_remove_data_source_dumps_unmounts_and_remove_snapshots():
         hook_config=config['lvm'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -928,6 +929,7 @@ def test_remove_data_source_dumps_bails_for_missing_lvm_configuration():
         hook_config=None,
         config={'source_directories': '/mnt/lvolume'},
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -945,6 +947,7 @@ def test_remove_data_source_dumps_bails_for_missing_lsblk_command():
         hook_config=config['lvm'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -964,6 +967,7 @@ def test_remove_data_source_dumps_bails_for_lsblk_command_error():
         hook_config=config['lvm'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -1010,6 +1014,7 @@ def test_remove_data_source_dumps_with_missing_snapshot_directory_skips_unmount(
         hook_config=config['lvm'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -1070,6 +1075,7 @@ def test_remove_data_source_dumps_with_missing_snapshot_mount_path_skips_unmount
         hook_config=config['lvm'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -1135,6 +1141,7 @@ def test_remove_data_source_dumps_with_empty_snapshot_mount_path_skips_unmount()
         hook_config=config['lvm'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -1195,6 +1202,7 @@ def test_remove_data_source_dumps_with_successful_mount_point_removal_skips_unmo
         hook_config=config['lvm'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -1241,6 +1249,7 @@ def test_remove_data_source_dumps_bails_for_missing_umount_command():
         hook_config=config['lvm'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -1293,6 +1302,7 @@ def test_remove_data_source_dumps_swallows_umount_command_error():
         hook_config=config['lvm'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -1339,6 +1349,7 @@ def test_remove_data_source_dumps_bails_for_missing_lvs_command():
         hook_config=config['lvm'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -1387,6 +1398,7 @@ def test_remove_data_source_dumps_bails_for_lvs_command_error():
         hook_config=config['lvm'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=False,
     )
 
@@ -1430,5 +1442,6 @@ def test_remove_data_source_with_dry_run_skips_snapshot_unmount_and_delete():
         hook_config=config['lvm'],
         config=config,
         borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
         dry_run=True,
     )
