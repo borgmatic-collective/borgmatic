@@ -227,23 +227,37 @@ def device_map_patterns(patterns, working_directory=None):
     )
 
 
-def deduplicate_patterns(patterns, config):
+def deduplicate_runtime_directory_patterns(patterns, config, borgmatic_runtime_directory=None):
     '''
-    Given a sequence of borgmatic.borg.pattern.Pattern instances and a configuration dict, return
-    them with all duplicate root child patterns removed. For instance, if two root patterns are
-    given with paths "/foo" and "/foo/bar", return just the one with "/foo". Non-root patterns are
-    passed through without modification.
+    Given a sequence of borgmatic.borg.pattern.Pattern instances, the borgmatic runtime directory,
+    and a configuration dict, return them without any duplicate root child patterns that contain the
+    runtime directory. For instance, if two root patterns are given with paths "/foo" and
+    "/foo/bar", and the runtime directory is "/foo/bar", return just the "/foo" pattern. Non-root
+    patterns and patterns not containing the runtime directory are passed through without
+    modification.
 
-    The one exception to deduplication is if two paths are on different filesystems (devices) and
+    One exception to deduplication is if two paths are on different filesystems (devices) and
     "one_file_system" is True in the given configuration. In that case, the paths won't get
     deduplicated, because Borg won't cross filesystem boundaries when "one_file_system" is True.
 
-    The idea is that if Borg is given a root parent pattern, then it doesn't also need to be given
-    child patterns, because it will naturally spider the contents of the parent pattern's path. And
-    there are cases where Borg coming across the same file twice will result in duplicate reads and
-    even hangs, e.g. when a database hook is using a named pipe for streaming database dumps to
-    Borg.
+    The idea is that if Borg is given a root parent pattern containing the borgmatic runtime
+    directory, then Borg doesn't also need to be given child patterns, because it will naturally
+    spider the contents of the parent pattern's path. Additionally, there are cases where Borg
+    coming across the same file twice will result in duplicate reads and even hangs, e.g. when a
+    database hook in the borgmatic runtime directory is using a named pipe for streaming database
+    dumps to Borg.
+
+    This deduplication is limited to the borgmatic runtime directory (where borgmatic's named pipes
+    exist), because there are other legitimate use cases for parent and child patterns to both exist
+    in patterns. For instance, with some snapshotted filesystems, snapshots don't traverse from a
+    parent filesystem to a child and therefore both need to remain in patterns.
+
+    And for the case of named pipes outside of the borgmatic runtime directory, there is code
+    elsewhere (in the "create" action) that auto-excludes special files to prevent Borg hangs.
     '''
+    if borgmatic_runtime_directory is None:
+        return patterns
+
     deduplicated = {}  # Use just the keys as an ordered set.
 
     for pattern in patterns:
@@ -262,6 +276,8 @@ def deduplicate_patterns(patterns, config):
 
             if any(
                 pathlib.PurePath(other_pattern.path) == parent
+                and pathlib.PurePosixPath(other_pattern.path)
+                in pathlib.PurePath(borgmatic_runtime_directory).parents
                 and pattern.device is not None
                 and (
                     other_pattern.device == pattern.device
@@ -276,16 +292,22 @@ def deduplicate_patterns(patterns, config):
     return tuple(deduplicated.keys())
 
 
-def process_patterns(patterns, config, working_directory, skip_expand_paths=None):
+def process_patterns(
+    patterns, config, working_directory, borgmatic_runtime_directory=None, skip_expand_paths=None
+):
     '''
-    Given a sequence of Borg patterns, a configuration dict, a configured working directory, and a
-    sequence of paths to skip path expansion for, expand and deduplicate any "root" patterns,
-    returning the resulting root and non-root patterns as a list.
+    Given a sequence of Borg patterns, a configuration dict, a configured working directory, the
+    borgmatic runtime directory, and a sequence of paths to skip path expansion for, expand and
+    deduplicate any "root" patterns, returning the resulting root and non-root patterns as a list.
+
+    If the borgmatic runtime directory is None, then don't deduplicate patterns. Deduplication is
+    really only necessary for the "create" action when the runtime directory might contain named
+    pipes for database dumps.
     '''
     skip_paths = set(skip_expand_paths or ())
 
     return list(
-        deduplicate_patterns(
+        deduplicate_runtime_directory_patterns(
             device_map_patterns(
                 expand_patterns(
                     patterns,
@@ -294,5 +316,6 @@ def process_patterns(patterns, config, working_directory, skip_expand_paths=None
                 ),
             ),
             config,
+            borgmatic_runtime_directory,
         ),
     )

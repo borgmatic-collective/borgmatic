@@ -375,43 +375,97 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
 
 
 @pytest.mark.parametrize(
-    'patterns,expected_patterns,one_file_system',
+    'patterns,borgmatic_runtime_directory,expected_patterns,one_file_system',
     (
-        ((Pattern('/', device=1), Pattern('/root', device=1)), (Pattern('/', device=1),), False),
-        ((Pattern('/', device=1), Pattern('/root/', device=1)), (Pattern('/', device=1),), False),
         (
-            (Pattern('/', device=1), Pattern('/root', device=2)),
+            (Pattern('/', device=1), Pattern('/root', device=1)),
+            '/root',
             (Pattern('/', device=1),),
             False,
         ),
-        ((Pattern('/root', device=1), Pattern('/', device=1)), (Pattern('/', device=1),), False),
+        # No deduplication is expected when borgmatic runtime directory is None.
+        (
+            (Pattern('/', device=1), Pattern('/root', device=1)),
+            None,
+            (Pattern('/', device=1), Pattern('/root', device=1)),
+            False,
+        ),
+        (
+            (Pattern('/', device=1), Pattern('/root/', device=1)),
+            '/root',
+            (Pattern('/', device=1),),
+            False,
+        ),
+        (
+            (Pattern('/', device=1), Pattern('/root', device=2)),
+            '/root',
+            (Pattern('/', device=1),),
+            False,
+        ),
+        (
+            (Pattern('/', device=1), Pattern('/root', device=2)),
+            None,
+            (Pattern('/', device=1), Pattern('/root', device=2)),
+            False,
+        ),
+        (
+            (Pattern('/root', device=1), Pattern('/', device=1)),
+            '/root',
+            (Pattern('/', device=1),),
+            False,
+        ),
+        (
+            (Pattern('/root', device=1), Pattern('/', device=1)),
+            None,
+            (Pattern('/root', device=1), Pattern('/', device=1)),
+            False,
+        ),
         (
             (Pattern('/root', device=1), Pattern('/root/foo', device=1)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             False,
         ),
         (
+            (Pattern('/root', device=1), Pattern('/root/foo', device=1)),
+            None,
+            (Pattern('/root', device=1), Pattern('/root/foo', device=1)),
+            False,
+        ),
+        # No deduplication is expected when the runtime directory doesn't match the patterns.
+        (
+            (Pattern('/root', device=1), Pattern('/root/foo', device=1)),
+            '/other',
+            (Pattern('/root', device=1), Pattern('/root/foo', device=1)),
+            False,
+        ),
+        (
             (Pattern('/root/', device=1), Pattern('/root/foo', device=1)),
+            '/root/foo',
             (Pattern('/root/', device=1),),
             False,
         ),
         (
             (Pattern('/root', device=1), Pattern('/root/foo/', device=1)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             False,
         ),
         (
             (Pattern('/root', device=1), Pattern('/root/foo', device=2)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             False,
         ),
         (
             (Pattern('/root/foo', device=1), Pattern('/root', device=1)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             False,
         ),
         (
             (Pattern('/root', device=None), Pattern('/root/foo', device=None)),
+            '/root/foo',
             (Pattern('/root'), Pattern('/root/foo')),
             False,
         ),
@@ -421,6 +475,7 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
                 Pattern('/etc', device=1),
                 Pattern('/root/foo/bar', device=1),
             ),
+            '/root/foo/bar',
             (Pattern('/root', device=1), Pattern('/etc', device=1)),
             False,
         ),
@@ -430,70 +485,126 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
                 Pattern('/root/foo', device=1),
                 Pattern('/root/foo/bar', device=1),
             ),
+            '/root/foo/bar',
             (Pattern('/root', device=1),),
             False,
         ),
         (
+            (
+                Pattern('/root', device=1),
+                Pattern('/root/foo', device=1),
+                Pattern('/root/foo/bar', device=1),
+            ),
+            None,
+            (
+                Pattern('/root', device=1),
+                Pattern('/root/foo', device=1),
+                Pattern('/root/foo/bar', device=1),
+            ),
+            False,
+        ),
+        (
+            (
+                Pattern('/root', device=1),
+                Pattern('/root/foo', device=1),
+                Pattern('/root/foo/bar', device=1),
+            ),
+            '/other',
+            (
+                Pattern('/root', device=1),
+                Pattern('/root/foo', device=1),
+                Pattern('/root/foo/bar', device=1),
+            ),
+            False,
+        ),
+        (
             (Pattern('/dup', device=1), Pattern('/dup', device=1)),
+            '/dup',
             (Pattern('/dup', device=1),),
             False,
         ),
         (
             (Pattern('/foo', device=1), Pattern('/bar', device=1)),
+            '/bar',
             (Pattern('/foo', device=1), Pattern('/bar', device=1)),
             False,
         ),
         (
             (Pattern('/foo', device=1), Pattern('/bar', device=2)),
+            '/bar',
             (Pattern('/foo', device=1), Pattern('/bar', device=2)),
             False,
         ),
-        ((Pattern('/root/foo', device=1),), (Pattern('/root/foo', device=1),), False),
+        ((Pattern('/root/foo', device=1),), '/root/foo', (Pattern('/root/foo', device=1),), False),
         (
             (Pattern('/', device=1), Pattern('/root', Pattern_type.INCLUDE, device=1)),
+            '/root',
             (Pattern('/', device=1), Pattern('/root', Pattern_type.INCLUDE, device=1)),
             False,
         ),
         (
             (Pattern('/root', Pattern_type.INCLUDE, device=1), Pattern('/', device=1)),
+            '/root',
             (Pattern('/root', Pattern_type.INCLUDE, device=1), Pattern('/', device=1)),
             False,
         ),
-        ((Pattern('/', device=1), Pattern('/root', device=1)), (Pattern('/', device=1),), True),
-        ((Pattern('/', device=1), Pattern('/root/', device=1)), (Pattern('/', device=1),), True),
+        (
+            (Pattern('/', device=1), Pattern('/root', device=1)),
+            '/root',
+            (Pattern('/', device=1),),
+            True,
+        ),
+        (
+            (Pattern('/', device=1), Pattern('/root/', device=1)),
+            '/root',
+            (Pattern('/', device=1),),
+            True,
+        ),
         (
             (Pattern('/', device=1), Pattern('/root', device=2)),
+            '/root',
             (Pattern('/', device=1), Pattern('/root', device=2)),
             True,
         ),
-        ((Pattern('/root', device=1), Pattern('/', device=1)), (Pattern('/', device=1),), True),
+        (
+            (Pattern('/root', device=1), Pattern('/', device=1)),
+            '/root',
+            (Pattern('/', device=1),),
+            True,
+        ),
         (
             (Pattern('/root', device=1), Pattern('/root/foo', device=1)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             True,
         ),
         (
             (Pattern('/root/', device=1), Pattern('/root/foo', device=1)),
+            '/root/foo',
             (Pattern('/root/', device=1),),
             True,
         ),
         (
             (Pattern('/root', device=1), Pattern('/root/foo/', device=1)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             True,
         ),
         (
             (Pattern('/root', device=1), Pattern('/root/foo', device=2)),
+            '/root/foo',
             (Pattern('/root', device=1), Pattern('/root/foo', device=2)),
             True,
         ),
         (
             (Pattern('/root/foo', device=1), Pattern('/root', device=1)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             True,
         ),
         (
             (Pattern('/root', device=None), Pattern('/root/foo', device=None)),
+            '/root/foo',
             (Pattern('/root'), Pattern('/root/foo')),
             True,
         ),
@@ -503,6 +614,7 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
                 Pattern('/etc', device=1),
                 Pattern('/root/foo/bar', device=1),
             ),
+            '/root/foo/bar',
             (Pattern('/root', device=1), Pattern('/etc', device=1)),
             True,
         ),
@@ -512,50 +624,59 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
                 Pattern('/root/foo', device=1),
                 Pattern('/root/foo/bar', device=1),
             ),
+            '/root/foo/bar',
             (Pattern('/root', device=1),),
             True,
         ),
         (
             (Pattern('/dup', device=1), Pattern('/dup', device=1)),
+            '/dup',
             (Pattern('/dup', device=1),),
             True,
         ),
         (
             (Pattern('/foo', device=1), Pattern('/bar', device=1)),
+            '/bar',
             (Pattern('/foo', device=1), Pattern('/bar', device=1)),
             True,
         ),
         (
             (Pattern('/foo', device=1), Pattern('/bar', device=2)),
+            '/bar',
             (Pattern('/foo', device=1), Pattern('/bar', device=2)),
             True,
         ),
-        ((Pattern('/root/foo', device=1),), (Pattern('/root/foo', device=1),), True),
+        ((Pattern('/root/foo', device=1),), '/root/foo', (Pattern('/root/foo', device=1),), True),
         (
             (Pattern('/', device=1), Pattern('/root', Pattern_type.INCLUDE, device=1)),
+            '/root',
             (Pattern('/', device=1), Pattern('/root', Pattern_type.INCLUDE, device=1)),
             True,
         ),
         (
             (Pattern('/root', Pattern_type.INCLUDE, device=1), Pattern('/', device=1)),
+            '/root',
             (Pattern('/root', Pattern_type.INCLUDE, device=1), Pattern('/', device=1)),
             True,
         ),
     ),
 )
-def test_deduplicate_patterns_omits_child_paths_based_on_device_and_one_file_system(
+def test_deduplicate_runtime_directory_patterns_omits_child_paths_based_on_device_and_one_file_system(
     patterns,
+    borgmatic_runtime_directory,
     expected_patterns,
     one_file_system,
 ):
     assert (
-        module.deduplicate_patterns(patterns, {'one_file_system': one_file_system})
+        module.deduplicate_runtime_directory_patterns(
+            patterns, {'one_file_system': one_file_system}, borgmatic_runtime_directory
+        )
         == expected_patterns
     )
 
 
 def test_process_patterns_includes_patterns():
-    flexmock(module).should_receive('deduplicate_patterns').and_return(
+    flexmock(module).should_receive('deduplicate_runtime_directory_patterns').and_return(
         (Pattern('foo'), Pattern('bar')),
     )
     flexmock(module).should_receive('device_map_patterns').and_return({})
@@ -574,7 +695,7 @@ def test_process_patterns_includes_patterns():
 
 def test_process_patterns_skips_expand_for_requested_paths():
     skip_paths = {flexmock()}
-    flexmock(module).should_receive('deduplicate_patterns').and_return(
+    flexmock(module).should_receive('deduplicate_runtime_directory_patterns').and_return(
         (Pattern('foo'), Pattern('bar')),
     )
     flexmock(module).should_receive('device_map_patterns').and_return({})

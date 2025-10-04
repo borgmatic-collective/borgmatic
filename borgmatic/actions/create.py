@@ -54,6 +54,7 @@ def run_create(
             pattern.collect_patterns(config),
             config,
             working_directory,
+            borgmatic_runtime_directory,
         )
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',
@@ -80,6 +81,7 @@ def run_create(
             patterns,
             config,
             working_directory,
+            borgmatic_runtime_directory,
             skip_expand_paths=config_paths,
         )
         stream_processes = [process for processes in active_dumps.values() for process in processes]
