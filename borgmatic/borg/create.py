@@ -62,7 +62,7 @@ def validate_planned_backup_paths(
     excluded.
 
     Raise ValueError if the runtime directory has been excluded via "exclude_patterns" or similar,
-    because any features that rely on the runtime directory getting backed up will break.  For
+    because any features that rely on the runtime directory getting backed up will break. For
     instance, without the runtime directory, Borg can't consume any database dumps and borgmatic may
     hang waiting for them to be consumed.
     '''
