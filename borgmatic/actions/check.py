@@ -246,7 +246,7 @@ def write_check_time(path):  # pragma: no cover
     logger.debug(f'Writing check time at {path}')
 
     os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
-    pathlib.Path(path, mode=0o600).touch()
+    pathlib.Path(path).touch(mode=0o600)
 
 
 def read_check_time(path):
