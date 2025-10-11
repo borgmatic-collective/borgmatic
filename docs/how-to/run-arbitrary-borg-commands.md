@@ -5,8 +5,6 @@ eleventyNavigation:
   parent: How-to guides
   order: 12
 ---
-## Running Borg with borgmatic
-
 Borg has several commands and options that borgmatic does not currently
 support. Sometimes though, as a borgmatic user, you may find yourself wanting
 to take advantage of these off-the-beaten-path Borg features. You could of

@@ -112,7 +112,7 @@ h5 {
 }
 h1 {
 	font-size: 2.666666666667em; /* 48px /18 */
-	margin: 0 0 .5em;
+	margin: 0;
 }
 main .elv-toc + h1 {
 	margin-top: 1em;
@@ -229,7 +229,7 @@ pre + .note {
 
 /* Layout */
 .elv-layout {
-	padding: 1rem;
+	padding: 0 1rem 1rem;
 	margin: 0 auto;
 	max-width: 42rem;
 	clear: both;

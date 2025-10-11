@@ -5,8 +5,6 @@ eleventyNavigation:
   parent: How-to guides
   order: 8
 ---
-## Database dump hooks
-
 If you want to backup a database, it's best practice with most database
 systems to backup an exported database dump, rather than backing up your
 database's internal file storage. That's because the internal storage can
@@ -110,7 +108,7 @@ sqlite_databases:
 ```
 
 See your [borgmatic configuration
-file](https://torsion.org/borgmatic/docs/reference/configuration/) for
+file](https://torsion.org/borgmatic/reference/configuration/) for
 additional customization of the options passed to database commands (when
 listing databases, restoring databases, etc.).
 
@@ -328,7 +326,7 @@ password to the temporary `pg_dump` container.
 
 Similar command override options are available for (some of) the other
 supported database types as well. See the [configuration
-reference](https://torsion.org/borgmatic/docs/reference/configuration/) for
+reference](https://torsion.org/borgmatic/reference/configuration/) for
 details.
 
 
@@ -356,7 +354,7 @@ hooks:
 
 If you don't want to keep your database passwords in your borgmatic
 configuration file, you can instead pass them in [from external credential
-sources](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
+sources](https://torsion.org/borgmatic/how-to/provide-your-passwords/).
 
 
 ### Configuration backups
@@ -370,7 +368,7 @@ bring back any missing configuration files in order to restore a database.
 <span class="minilink minilink-addedin">New in version 1.7.15</span> borgmatic
 automatically includes configuration files in your backup. See [the
 documentation on the `config bootstrap`
-action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/#extract-the-configuration-files-used-to-create-an-archive)
+action](https://torsion.org/borgmatic/how-to/extract-a-backup/#extract-the-configuration-files-used-to-create-an-archive)
 for more information.
 
 
@@ -429,6 +427,20 @@ that archive.
 This is a destructive action! `borgmatic restore` replaces live databases by
 restoring dumps from the selected archive. So be very careful when and where
 you run it.
+
+
+### Configuration file selection
+
+If you have a multi-configuration-file setup and you want to restore a database
+from a single configuration file, use the `--config` flag with the path of the
+configuration file to use for the restore. For example:
+
+```bash
+borgmatic restore --config /path/to/config.yaml --archive latest
+```
+
+Without `--config`, borgmatic tries to run the `restore` action once for each
+configuration file it finds.
 
 
 ### Repository selection
@@ -590,7 +602,7 @@ postgresql_databases:
 ### Manual restoration
 
 If you prefer to restore a database without the help of borgmatic, first
-[extract](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) an
+[extract](https://torsion.org/borgmatic/how-to/extract-a-backup/) an
 archive containing a database dump.
 
 borgmatic extracts the dump file into the `borgmatic/` directory within the
@@ -607,7 +619,7 @@ After extraction, you can manually restore the dump file using native database
 commands like `pg_restore`, `mysql`, `mongorestore`, `sqlite`, or similar.
 
 Also see the documentation on [listing database
-dumps](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/#listing-database-dumps).
+dumps](https://torsion.org/borgmatic/how-to/inspect-your-backups/#listing-database-dumps).
 
 
 ## Limitations
@@ -657,7 +669,7 @@ automatically.
 
 If this database integration is too limited for needs, borgmatic also supports
 general-purpose [preparation and cleanup
-hooks](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/).
+hooks](https://torsion.org/borgmatic/how-to/add-preparation-and-cleanup-steps-to-backups/).
 These hooks allows you to trigger arbitrary commands or scripts before and
 after backups. So if necessary, you can use these hooks to create database
 dumps with any database system.

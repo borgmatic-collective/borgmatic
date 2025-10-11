@@ -275,7 +275,7 @@ properties:
             encryption_passphrase takes precedence. This can also be used to
             access encrypted systemd service credentials. Defaults to not set.
             For more details, see:
-            https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
+            https://torsion.org/borgmatic/how-to/provide-your-passwords/
         example: "secret-tool lookup borg-repository repo-name"
     encryption_passphrase:
         type: string

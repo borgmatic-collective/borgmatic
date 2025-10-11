@@ -1,16 +1,14 @@
 ---
-title: Source code reference
+title: Source code
 eleventyNavigation:
-  key: 🐍 Source code reference
+  key: 🐍 Source code
   parent: Reference guides
   order: 3
 ---
-## getting oriented
-
-If case you're interested in [developing on
-borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/),
-here's an abridged primer on how its Python source code is organized to help
-you get started. Starting at the top level, we have:
+If you're interested in [developing on
+borgmatic](https://torsion.org/borgmatic/how-to/develop-on-borgmatic/), here's
+an abridged primer on how its Python source code is organized to help you get
+started. Starting at the top level, we have:
 
  * [borgmatic](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic): The main borgmatic source module. Most of the code is here. Within that:
    * [actions](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/actions): borgmatic-specific logic for running each action (create, list, check, etc.).
@@ -26,4 +24,5 @@ you get started. Starting at the top level, we have:
  * [scripts](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/scripts): Dev-facing scripts for things like building documentation and running end-to-end tests.
  * [tests](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/tests): Automated tests organized by: end-to-end, integration, and unit.
 
-So, broadly speaking, the control flow goes: `commands` → `config` followed by `commands` → `actions` → `borg` and `hooks`.
+So, broadly speaking, the control flow goes: `commands` → `config` followed by
+`commands` → `actions` → `borg` and `hooks`.

@@ -5,8 +5,6 @@ eleventyNavigation:
   parent: How-to guides
   order: 13
 ---
-## When things go wrong
-
 After Borg runs, it indicates whether it succeeded via its exit code, a
 numeric ID indicating success, warning, or error. borgmatic consumes this exit
 code to decide how to respond. Normally, a Borg error results in a borgmatic

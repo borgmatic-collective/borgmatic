@@ -5,7 +5,7 @@ permalink: index.html
 
 ## It's your data. Keep it that way.
 
-<img src="docs/static/borgmatic.png" alt="borgmatic logo" width="150px" style="float: right; padding-left: 1em;">
+<img src="static/borgmatic.png" alt="borgmatic logo" width="150px" style="float: right; padding-left: 1em;">
 
 borgmatic is simple, configuration-driven backup software for servers and
 workstations. Protect your files with client-side encryption. Backup your
@@ -60,45 +60,45 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 
 ### Data
 
-<a href="https://www.postgresql.org/"><img src="docs/static/postgresql.png" alt="PostgreSQL" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://www.mysql.com/"><img src="docs/static/mysql.png" alt="MySQL" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://mariadb.com/"><img src="docs/static/mariadb.png" alt="MariaDB" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://www.mongodb.com/"><img src="docs/static/mongodb.png" alt="MongoDB" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://sqlite.org/"><img src="docs/static/sqlite.png" alt="SQLite" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://openzfs.org/"><img src="docs/static/openzfs.png" alt="OpenZFS" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://btrfs.readthedocs.io/"><img src="docs/static/btrfs.png" alt="Btrfs" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://sourceware.org/lvm2/"><img src="docs/static/lvm.png" alt="LVM" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://rclone.org"><img src="docs/static/rclone.png" alt="rclone" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://www.borgbase.com/?utm_source=borgmatic"><img src="docs/static/borgbase.png" alt="BorgBase" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://www.postgresql.org/"><img src="static/postgresql.png" alt="PostgreSQL" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://www.mysql.com/"><img src="static/mysql.png" alt="MySQL" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://mariadb.com/"><img src="static/mariadb.png" alt="MariaDB" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://www.mongodb.com/"><img src="static/mongodb.png" alt="MongoDB" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://sqlite.org/"><img src="static/sqlite.png" alt="SQLite" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://openzfs.org/"><img src="static/openzfs.png" alt="OpenZFS" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://btrfs.readthedocs.io/"><img src="static/btrfs.png" alt="Btrfs" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://sourceware.org/lvm2/"><img src="static/lvm.png" alt="LVM" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://rclone.org"><img src="static/rclone.png" alt="rclone" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://www.borgbase.com/?utm_source=borgmatic"><img src="static/borgbase.png" alt="BorgBase" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 
 
 ### Monitoring
 
-<a href="https://healthchecks.io/"><img src="docs/static/healthchecks.png" alt="Healthchecks" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://uptime.kuma.pet/"><img src="docs/static/uptimekuma.png" alt="Uptime Kuma" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://cronitor.io/"><img src="docs/static/cronitor.png" alt="Cronitor" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://cronhub.io/"><img src="docs/static/cronhub.png" alt="Cronhub" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://www.pagerduty.com/"><img src="docs/static/pagerduty.png" alt="PagerDuty" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://www.pushover.net/"><img src="docs/static/pushover.png" alt="Pushover" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://ntfy.sh/"><img src="docs/static/ntfy.png" alt="ntfy" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://grafana.com/oss/loki/"><img src="docs/static/loki.png" alt="Loki" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://github.com/caronc/apprise/wiki"><img src="docs/static/apprise.png" alt="Apprise" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://www.zabbix.com/"><img src="docs/static/zabbix.png" alt="Zabbix" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://sentry.io/"><img src="docs/static/sentry.png" alt="Sentry" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://healthchecks.io/"><img src="static/healthchecks.png" alt="Healthchecks" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://uptime.kuma.pet/"><img src="static/uptimekuma.png" alt="Uptime Kuma" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://cronitor.io/"><img src="static/cronitor.png" alt="Cronitor" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://cronhub.io/"><img src="static/cronhub.png" alt="Cronhub" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://www.pagerduty.com/"><img src="static/pagerduty.png" alt="PagerDuty" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://www.pushover.net/"><img src="static/pushover.png" alt="Pushover" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://ntfy.sh/"><img src="static/ntfy.png" alt="ntfy" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://grafana.com/oss/loki/"><img src="static/loki.png" alt="Loki" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://github.com/caronc/apprise/wiki"><img src="static/apprise.png" alt="Apprise" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://www.zabbix.com/"><img src="static/zabbix.png" alt="Zabbix" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://sentry.io/"><img src="static/sentry.png" alt="Sentry" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
 
 
 ### Credentials
 
-<a href="https://systemd.io/"><img src="docs/static/systemd.png" alt="Sentry" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://www.docker.com/"><img src="docs/static/docker.png" alt="Docker" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://podman.io/"><img src="docs/static/podman.png" alt="Podman" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://keepassxc.org/"><img src="docs/static/keepassxc.png" alt="Podman" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://systemd.io/"><img src="static/systemd.png" alt="Sentry" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://www.docker.com/"><img src="static/docker.png" alt="Docker" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://podman.io/"><img src="static/podman.png" alt="Podman" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://keepassxc.org/"><img src="static/keepassxc.png" alt="Podman" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
 
 
 ## Getting started
 
 Your first step is to [install and configure
-borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/).
+borgmatic](https://torsion.org/borgmatic/how-to/set-up-backups/).
 
 For additional documentation, check out the links above (left panel on wide screens)
 for <a href="https://torsion.org/borgmatic/#documentation">borgmatic how-to and
@@ -132,7 +132,7 @@ first. If you prefer to use an existing GitHub account, you can skip account
 creation and [login directly](https://projects.torsion.org/user/login).
 
 Also see the [security
-policy](https://torsion.org/borgmatic/docs/security-policy/) for any security
+policy](https://torsion.org/borgmatic/security-policy/) for any security
 issues.
 
 
@@ -177,7 +177,7 @@ discuss your idea. Note that you'll need to
 first. In general, contributions are very welcome. We don't bite!
 
 Also, please check out the [borgmatic development
-how-to](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/) for
+how-to](https://torsion.org/borgmatic/how-to/develop-on-borgmatic/) for
 info on cloning source code, running tests, etc.
 
 ### Recent contributors

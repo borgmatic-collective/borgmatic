@@ -27,10 +27,9 @@ COPY --from=borgmatic /etc/borgmatic/config.yaml /source/docs/_includes/borgmati
 COPY --from=borgmatic /command-line.txt /source/docs/_includes/borgmatic/command-line.txt
 COPY --from=borgmatic /contributors.html /source/docs/_includes/borgmatic/contributors.html
 COPY . /source
-RUN NODE_ENV=${ENVIRONMENT} npx eleventy --input=/source/docs --output=/output/docs \
-  && mv /output/docs/index.html /output/index.html
+RUN NODE_ENV=${ENVIRONMENT} npx eleventy --input=/source/docs --output=/output
 
 FROM docker.io/nginx:1.26.1-alpine
 
 COPY --from=html /output /usr/share/nginx/html
-COPY --from=borgmatic /etc/borgmatic/config.yaml /usr/share/nginx/html/docs/reference/config.yaml
+COPY --from=borgmatic /etc/borgmatic/config.yaml /usr/share/nginx/html/reference/config.yaml

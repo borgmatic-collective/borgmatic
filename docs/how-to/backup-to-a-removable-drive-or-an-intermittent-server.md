@@ -5,8 +5,6 @@ eleventyNavigation:
   parent: How-to guides
   order: 11
 ---
-## Occasional backups
-
 A common situation is backing up to a repository that's only sometimes online.
 For instance, you might send most of your backups to the cloud, but
 occasionally you want to plug in an external hard drive or backup to your
@@ -28,7 +26,7 @@ concept of "soft failure" come in.
 ## Soft failure command hooks
 
 This feature leverages [borgmatic command
-hooks](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/),
+hooks](https://torsion.org/borgmatic/how-to/add-preparation-and-cleanup-steps-to-backups/),
 so familiarize yourself with them first. The idea is that you write a simple
 test in the form of a borgmatic command hook to see if backups should proceed or
 not.
@@ -42,7 +40,7 @@ If you return any status besides 75, then it's a standard success or error.
 
 So for instance, if you have an external drive that's only sometimes mounted,
 declare its repository in its own [separate configuration
-file](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/),
+file](https://torsion.org/borgmatic/how-to/make-per-application-backups/),
 say at `/etc/borgmatic.d/removable.yaml`:
 
 ```yaml
@@ -137,7 +135,7 @@ There are some caveats you should be aware of with this feature.
  * If you're writing a soft failure script that you want to vary based on the
    current repository, for instance so you can have multiple repositories in a
    single configuration file, have a look at [command hook variable
-   interpolation](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation).
+   interpolation](https://torsion.org/borgmatic/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation).
    And there's always still the option of putting anything that you don't want
    soft-failed (like always-online cloud backups) in separate configuration
    files from your soft-failing repositories.

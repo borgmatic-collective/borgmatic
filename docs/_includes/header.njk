@@ -1,4 +1,8 @@
 <header class="elv-layout elv-layout-full elv-header{% if headerClass %} {{ headerClass }}{% endif %}">
     {% if page.url != '/' %}<h3><a href="https://torsion.org/borgmatic/">borgmatic</a></h3>{% endif %}
+    <div class="container" id="breadcrumb">
+        {% set breadcrumb = collections.all | eleventyNavigationBreadcrumb(eleventyNavigation.key, {allowMissing: true}) %}
+        {{ breadcrumb | eleventyNavigationToHtml | safe }}
+    </div>
     <h1 class="elv-hed">{{ title | safe }}</h1>
 </header>

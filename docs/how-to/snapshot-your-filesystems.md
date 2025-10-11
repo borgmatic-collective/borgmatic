@@ -5,8 +5,6 @@ eleventyNavigation:
   parent: How-to guides
   order: 9
 ---
-## Filesystem hooks
-
 Many filesystems support taking snapshots—point-in-time, read-only "copies" of
 your data, ideal for backing up files that may change during the backup. These
 snapshots initially don't use any additional storage space and can be made
@@ -76,7 +74,7 @@ canmount datasetname` to see the `canmount` value for a dataset.
 
 During a backup, borgmatic automatically snapshots these discovered datasets,
 temporarily mounts the snapshots within its [runtime
-directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory),
+directory](https://torsion.org/borgmatic/how-to/backup-your-databases/#runtime-directory),
 and includes the snapshotted files in the paths sent to Borg. borgmatic is also
 responsible for cleaning up (destroying) these snapshots after a backup
 completes.
@@ -113,7 +111,7 @@ match `/var` to a pattern like `+ fm:/v*/lib/data`.
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
 [runtime
-directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory)
+directory](https://torsion.org/borgmatic/how-to/backup-your-databases/#runtime-directory)
 in use at the time the archive was created, as Borg 1.2 and earlier do not
 support path rewriting.
 
@@ -122,7 +120,7 @@ support path rewriting.
 
 Filesystem snapshots are stored in a Borg archive as normal files, so
 you can use the standard
-[extract action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) to
+[extract action](https://torsion.org/borgmatic/how-to/extract-a-backup/) to
 extract them.
 
 
@@ -135,7 +133,7 @@ cache](https://borgbackup.readthedocs.io/en/stable/internals/data-structures.htm
 may not get cache hits on snapshotted files. This makes backing up ZFS snapshots
 a little slower than non-snapshotted files that have consistent paths. You can
 mitigate this by setting a fixed [runtime
-directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory)
+directory](https://torsion.org/borgmatic/how-to/backup-your-databases/#runtime-directory)
 (that's not located in `/tmp`). This allows borgmatic to use a consistent
 snapshot path from one run to the next, thereby resulting in Borg files cache
 hits.
@@ -236,7 +234,7 @@ temporary snapshot directory in use at the time the archive was created, as Borg
 
 Subvolume snapshots are stored in a Borg archive as normal files, so you can use
 the standard [extract
-action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) to extract
+action](https://torsion.org/borgmatic/how-to/extract-a-backup/) to extract
 them.
 
 
@@ -335,7 +333,7 @@ options.
 
 During a backup, borgmatic automatically snapshots these discovered logical volumes
 (non-recursively), temporarily mounts the snapshots within its [runtime
-directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory), and
+directory](https://torsion.org/borgmatic/how-to/backup-your-databases/#runtime-directory), and
 includes the snapshotted files in the paths sent to Borg. borgmatic is also responsible for cleaning
 up (deleting) these snapshots after a backup completes.
 
@@ -369,7 +367,7 @@ perform the backup.
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
 [runtime
-directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory)
+directory](https://torsion.org/borgmatic/how-to/backup-your-databases/#runtime-directory)
 in use at the time the archive was created, as Borg 1.2 and earlier do not
 support path rewriting.
 
@@ -378,7 +376,7 @@ support path rewriting.
 
 Logical volume snapshots are stored in a Borg archive as normal files, so
 you can use the standard
-[extract action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) to
+[extract action](https://torsion.org/borgmatic/how-to/extract-a-backup/) to
 extract them.
 
 
@@ -391,7 +389,7 @@ cache](https://borgbackup.readthedocs.io/en/stable/internals/data-structures.htm
 may not get cache hits on snapshotted files. This makes backing up LVM snapshots
 a little slower than non-snapshotted files that have consistent paths. You can
 mitigate this by setting a fixed [runtime
-directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory)
+directory](https://torsion.org/borgmatic/how-to/backup-your-databases/#runtime-directory)
 (that's not located in `/tmp`). This allows borgmatic to use a consistent
 snapshot path from one run to the next, thereby resulting in Borg files cache
 hits.

@@ -6,7 +6,7 @@
 # directly. Instead, run scripts/run-end-to-end-tests
 #
 # For more information, see:
-# https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/
+# https://torsion.org/borgmatic/how-to/develop-on-borgmatic/
 
 set -e
 

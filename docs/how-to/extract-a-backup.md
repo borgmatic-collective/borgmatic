@@ -5,8 +5,6 @@ eleventyNavigation:
   parent: How-to guides
   order: 7
 ---
-## Extract
-
 When the worst happens—or you want to test your backups—the first step is
 to figure out which archive to extract. A good way to do that is to use the
 `repo-list` action:
@@ -79,7 +77,7 @@ run the `extract` command above, borgmatic will extract `/var/path/1` and
 
 If you're not sure which archive contains the files you're looking for, you
 can [search across
-archives](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/#searching-for-a-file).
+archives](https://torsion.org/borgmatic/how-to/inspect-your-backups/#searching-for-a-file).
 
 
 ## Extract to a particular destination
@@ -100,7 +98,7 @@ files with extracted files unless that is your intent.
 
 The `borgmatic extract` command only extracts files. To restore a database,
 please see the [documentation on database backups and
-restores](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/).
+restores](https://torsion.org/borgmatic/how-to/backup-your-databases/).
 borgmatic does not perform database restoration as part of `borgmatic extract`
 so that you can extract files from your archive without impacting your live
 databases.
@@ -167,7 +165,7 @@ To support this, borgmatic creates a manifest file that records the paths of
 all the borgmatic configuration files stored within an archive. The file gets
 written to borgmatic's runtime directory on disk and then stored within the
 archive. See the [runtime directory
-documentation](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory)
+documentation](https://torsion.org/borgmatic/how-to/backup-your-databases/#runtime-directory)
 for how and where that happens.
 
 To extract the configuration files from an archive, use the `config bootstrap`

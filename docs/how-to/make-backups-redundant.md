@@ -5,8 +5,6 @@ eleventyNavigation:
   parent: How-to guides
   order: 3
 ---
-## Multiple repositories
-
 If you really care about your data, you probably want more than one backup of
 it. borgmatic supports this in its configuration by specifying multiple backup
 repositories. Here's an example:
@@ -51,7 +49,7 @@ for more information on how to specify local and remote repository paths.
 What if you want borgmatic to backup to multiple repositories—while also
 setting different options for each one? In that case, you'll need to use
 [a separate borgmatic configuration file for each
-repository](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/)
+repository](https://torsion.org/borgmatic/how-to/make-per-application-backups/)
 instead of the multiple repositories in one configuration file as described
 above. That's because all of the repositories in a particular configuration
 file get the same options applied.

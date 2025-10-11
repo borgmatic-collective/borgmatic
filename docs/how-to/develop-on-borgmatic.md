@@ -5,8 +5,6 @@ eleventyNavigation:
   parent: How-to guides
   order: 15
 ---
-## Source code
-
 To get set up to develop on borgmatic, first [`install
 uv`](https://docs.astral.sh/uv/) to make managing your borgmatic environment
 easier without impacting other Python applications on your system.
@@ -35,7 +33,7 @@ uv tool install --editable .
 ```
 
 Or to work on the [Apprise
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook),
+hook](https://torsion.org/borgmatic/how-to/monitor-your-backups/#apprise-hook),
 change that last line to:
 
 ```bash
@@ -43,7 +41,7 @@ uv tool install --editable .[Apprise]
 ```
 
 To get oriented with the borgmatic source code, have a look at the [source
-code reference](https://torsion.org/borgmatic/docs/reference/source-code/).
+code reference](https://torsion.org/borgmatic/reference/source-code/).
 
 
 ### Source packages

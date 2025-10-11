@@ -48,9 +48,10 @@
 	padding-bottom: 0;
 	padding-left: 0.625rem; /* 10px /16 */
 }
-/* Hide inactive menus 3 or more deep */
-.elv-toc-list ul ul > li:not(.elv-toc-active) > ul > li:not(.elv-toc-active) {
-	display: none;
+
+/* Display inline menus 4 or more deep */
+.elv-toc-list ul ul ul > li {
+  display: inline-block;
 }
 
 /* List items */
@@ -97,4 +98,30 @@
 /* Footer category navigation */
 .elv-cat-list-active {
 	font-weight: 600;
+}
+
+.breadcrumb-item.active {
+  color: var(--primary-color);
+}
+
+#breadcrumb ol,
+#breadcrumb ul {
+  margin: 0;
+  padding: 0 0 1em;
+}
+
+#breadcrumb li {
+  display: inline;
+}
+
+#breadcrumb li:not(:last-child)::after {
+  content: " ˃"
+}
+
+#breadcrumb a:not(:hover) {
+	text-decoration: none;
+}
+
+#breadcrumb a {
+	text-decoration-color: #00bcd4;
 }

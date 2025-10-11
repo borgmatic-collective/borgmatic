@@ -5,14 +5,10 @@ eleventyNavigation:
   parent: How-to guides
   order: 0
 ---
-## Installation
-
-### Prerequisites
-
-First, [install
+To install borgmatic, first [install
 Borg](https://borgbackup.readthedocs.io/en/stable/installation.html), at least
-version 1.1. borgmatic does not install Borg automatically so as to avoid
-conflicts with existing Borg installations.
+version 1.1. (borgmatic does not install Borg automatically so as to avoid
+conflicts with existing Borg installations.)
 
 Then, [install pipx](https://pypa.github.io/pipx/installation/) as the root
 user (with `sudo`) to make installing borgmatic easier without impacting other
@@ -147,11 +143,11 @@ care that if you uncomment a particular option, also uncomment its containing
 section name—or else borgmatic won't recognize the option.
 
 You can get the same sample configuration file from the [configuration
-reference](https://torsion.org/borgmatic/docs/reference/configuration/), the
+reference](https://torsion.org/borgmatic/reference/configuration/), the
 authoritative set of all configuration options. This is handy if borgmatic has
 added new options since you originally created your configuration file. Also
 check out how to [upgrade your
-configuration](https://torsion.org/borgmatic/docs/how-to/upgrade/#upgrading-your-configuration).
+configuration](https://torsion.org/borgmatic/how-to/upgrade/#upgrading-your-configuration).
 
 
 ### Encryption
@@ -174,7 +170,7 @@ for more info.
 
 If you'd like to configure your backups to go to multiple different
 repositories, see the documentation on how to [make backups
-redundant](https://torsion.org/borgmatic/docs/how-to/make-backups-redundant/).
+redundant](https://torsion.org/borgmatic/how-to/make-backups-redundant/).
 
 
 ### Validation
@@ -271,45 +267,13 @@ If you'd like to specify an alternate configuration file path, use the
 See `borgmatic --help` and `borgmatic create --help` for more information.
 
 
-## Default actions
+<a id="default-actions"></a>
+<a id="skipping-actions"></a>
+<a id="disabling-default-actions"></a>
 
-If you omit `create` and other actions, borgmatic runs through a set of
-default actions: `prune` any old backups as per the configured retention
-policy, `compact` segments to free up space (with Borg 1.2+, borgmatic
-1.5.23+), `create` a backup, *and* `check` backups for consistency problems
-due to things like file damage. For instance:
-
-```bash
-sudo borgmatic --verbosity 1 --list --stats
-```
-
-### Skipping actions
-
-<span class="minilink minilink-addedin">New in version 1.8.5</span> You can
-configure borgmatic to skip running certain actions (default or otherwise).
-For instance, to always skip the `compact` action when using [Borg's
-append-only
-mode](https://borgbackup.readthedocs.io/en/stable/usage/notes.html#append-only-mode-forbid-compaction),
-set the `skip_actions` option:
-
-```
-skip_actions:
-    - compact
-```
-
-### Disabling default actions
-
-By default, running `borgmatic` without any arguments will perform the default
-backup actions (create, prune, compact and check). If you want to disable this
-behavior and require explicit actions to be specified, add the following to
-your configuration:
-
-```yaml
-default_actions: false
-```
-
-With this setting, running `borgmatic` without arguments will show the help
-message instead of performing any actions.
+And check out the [actions
+documentation](https://torsion.org/borgmatic/reference/command-line/actions/)
+for details on customizing the actions that borgmatic runs.
 
 
 ## Autopilot
@@ -339,7 +303,7 @@ If you're using systemd instead of cron to run jobs, you can still configure
 borgmatic to run automatically.
 
 (If you installed borgmatic from [Other ways to
-install](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#other-ways-to-install),
+install](https://torsion.org/borgmatic/how-to/set-up-backups/#other-ways-to-install),
 you may already have borgmatic systemd service and timer files. If so, you may
 be able to skip some of the steps below.)
 

@@ -5,8 +5,6 @@ eleventyNavigation:
   parent: How-to guides
   order: 10
 ---
-## Preparation and cleanup hooks
-
 If you find yourself performing preparation tasks before your backup runs or
 doing cleanup work afterwards, borgmatic command hooks may be of interest. These
 are custom shell commands you can configure borgmatic to execute at various
@@ -14,7 +12,7 @@ points as it runs.
 
 (But if you're looking to backup a database, it's probably easier to use the
 [database backup
-feature](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
+feature](https://torsion.org/borgmatic/how-to/backup-your-databases/)
 instead.)
 
 <span class="minilink minilink-addedin">New in version 2.0.0</span> Command
@@ -40,7 +38,7 @@ commands:
 
 If you're coming from an older version of borgmatic, there is tooling to help
 you [upgrade your
-configuration](https://torsion.org/borgmatic/docs/how-to/upgrade/#upgrading-your-configuration)
+configuration](https://torsion.org/borgmatic/how-to/upgrade/#upgrading-your-configuration)
 to this new command hook format.
 
 Note that if a `run:` command contains a special YAML character such as a colon,
@@ -315,14 +313,14 @@ commands:
 ```
 
 Note that you can also interpolate [arbitrary environment
-variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
+variables](https://torsion.org/borgmatic/how-to/provide-your-passwords/).
 
 
 ## Hook output
 
 Any output produced by your hooks shows up both at the console and in syslog
 (when enabled). For more information, read about <a
-href="https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/">inspecting
+href="https://torsion.org/borgmatic/how-to/inspect-your-backups/">inspecting
 your backups</a>.
 
 

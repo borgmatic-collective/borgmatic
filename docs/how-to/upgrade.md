@@ -5,11 +5,9 @@ eleventyNavigation:
   parent: How-to guides
   order: 14
 ---
-## Upgrading borgmatic
-
 In general, all you should need to do to upgrade borgmatic if you've
 [installed it with
-pipx](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation)
+pipx](https://torsion.org/borgmatic/how-to/set-up-backups/#installation)
 is to run the following:
 
 ```bash
@@ -23,11 +21,11 @@ upgrade each installation independently.
 If you originally installed borgmatic with `sudo pip3 install --user`, you can
 uninstall it first with `sudo pip3 uninstall borgmatic` and then [install it
 again with
-pipx](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation),
+pipx](https://torsion.org/borgmatic/how-to/set-up-backups/#installation),
 which should better isolate borgmatic from your other Python applications.
 
 But if you [installed borgmatic without pipx or
-pip3](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#other-ways-to-install),
+pip3](https://torsion.org/borgmatic/how-to/set-up-backups/#other-ways-to-install),
 then your upgrade method may be different.
 
 
