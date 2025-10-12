@@ -6,6 +6,7 @@ USER_PODMAN_SOCKET_PATH=/run/user/$UID/podman/podman.sock
 
 if [ -e "$USER_PODMAN_SOCKET_PATH" ]; then
     export DOCKER_HOST="unix://$USER_PODMAN_SOCKET_PATH"
+    export CONTAINER_SOCKET_PATH="$USER_PODMAN_SOCKET_PATH"
 fi
 
 BUILDKIT_PROGRESS=plain docker-compose --file docs/docker-compose.yaml up --build --force-recreate

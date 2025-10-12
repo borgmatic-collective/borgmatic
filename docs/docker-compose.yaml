@@ -1,9 +1,38 @@
 services:
+  traefik:
+    image: public.ecr.aws/docker/library/traefik:3.5.3
+    container_name: borgmatic-docs-traefik
+    command:
+      - "--global.checkNewVersion=false"
+      - "--global.sendAnonymousUsage=false"
+      - "--entrypoints.web.address=:8080"
+      - "--accesslog"
+      - "--accesslog.fields.headers.defaultmode=keep"
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--api.insecure=false"
+      - "--api.dashboard=false"
+      - "--log.level=WARN"
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ${CONTAINER_SOCKET_PATH:-/run/user/docker.sock}:/var/run/docker.sock:ro
   docs:
     image: borgmatic-docs
     container_name: borgmatic-docs
-    ports:
-      - 8080:80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.borgmatic-docs.rule=PathPrefix(`/borgmatic`)"
+#      - "traefik.http.routers.borgmatic-docs.middlewares=borgmatic-trailing-slash-redirectregex,borgmatic-docs-redirectregex,borgmatic-stripprefix"
+      - "traefik.http.routers.borgmatic-docs.middlewares=borgmatic-trailing-slash-redirectregex,borgmatic-stripprefix"
+      - "traefik.http.middlewares.borgmatic-trailing-slash-redirectregex.redirectregex.regex=^(.*)/borgmatic$$"
+      - "traefik.http.middlewares.borgmatic-trailing-slash-redirectregex.redirectregex.replacement=$${1}/borgmatic/"
+      - "traefik.http.middlewares.borgmatic-trailing-slash-redirectregex.redirectregex.permanent=true"
+#      - "traefik.http.middlewares.borgmatic-docs-redirectregex.redirectregex.regex=^(.*)/borgmatic/docs/(.*)$$"
+#      - "traefik.http.middlewares.borgmatic-docs-redirectregex.redirectregex.replacement=$${1}/borgmatic/$${2}"
+#      - "traefik.http.middlewares.borgmatic-docs-redirectregex.redirectregex.permanent=true"
+      - "traefik.http.middlewares.borgmatic-stripprefix.stripprefix.prefixes=/borgmatic"
+      - "traefik.http.routers.borgmatic-docs.entrypoints=web"
     build:
       dockerfile: docs/Dockerfile
       context: ..
@@ -16,6 +45,6 @@ services:
       - sh
       - -c
       - |
-        echo; echo "You can view dev docs at http://localhost:8080"; echo
+        echo; echo "You can view dev docs at http://localhost:8080/borgmatic/"; echo
     depends_on:
       - docs
