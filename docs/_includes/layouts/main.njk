@@ -7,6 +7,16 @@ headerClass: elv-header-default
 
 <main class="elv-layout{% if layoutClass %} {{ layoutClass }}{% endif %}">
     <div id="documentation" class="elv-toc">
+        {% if page.url != '/search/' %}
+        <div id="search-entrance">
+            🔍
+            <form action="/docs/search/">
+                <label>
+                    <input type="search" name="query" placeholder="Search">
+                </label>
+            </form>
+        </div>
+        {% endif %}
         <div>
             {% set navPages = collections.all | eleventyNavigation %}
             {% macro renderNavListItem(entry) -%}
