@@ -5,4 +5,5 @@
         {{ breadcrumb | eleventyNavigationToHtml | safe }}
     </div>
     <h1 class="elv-hed">{{ title | safe }}</h1>
+    {% if page.url == '/' %}<h3>It's your data. Keep it that way.</h3>{% endif %}
 </header>
