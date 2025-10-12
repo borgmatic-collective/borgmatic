@@ -29,7 +29,6 @@ COPY --from=borgmatic /contributors.html /source/docs/_includes/borgmatic/contri
 COPY . /source
 RUN NODE_ENV=${ENVIRONMENT} npx eleventy --input=/source/docs --output=/output/docs \
   && mv /output/docs/index.html /output/index.html
-RUN npx -y pagefind --site /output
 
 FROM docker.io/nginx:1.26.1-alpine
 

@@ -2,6 +2,9 @@
 title: borgmatic
 permalink: index.html
 ---
+
+## It's your data. Keep it that way.
+
 <img src="docs/static/borgmatic.png" alt="borgmatic logo" width="150px" style="float: right; padding-left: 1em;">
 
 borgmatic is simple, configuration-driven backup software for servers and

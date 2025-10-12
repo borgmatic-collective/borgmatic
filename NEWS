@@ -1,6 +1,5 @@
 2.0.10.dev0
  * #1161: Fix a traceback (TypeError) in the "check" action with Python 3.14.
- * Add documentation search.
 
 2.0.9
  * #1105: More accurately collect Btrfs subvolumes to snapshot. As part of this, the Btrfs hook no
