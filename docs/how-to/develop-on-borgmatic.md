@@ -215,7 +215,7 @@ This script assumes you have permission to run `docker`. If you don't, then
 you may need to run with `sudo`.
 
 After you run the script, you can point your web browser at
-http://localhost:8080 to view the documentation with your changes.
+http://localhost:8080/borgmatic/ to view the documentation with your changes.
 
 To close the documentation server, ctrl-C the script. Note that it does not
 currently auto-reload, so you'll need to stop it and re-run it for any

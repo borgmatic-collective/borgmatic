@@ -4,6 +4,7 @@
    https://torsion.org/borgmatic/
  * #1161: Fix a traceback (TypeError) in the "check" action with Python 3.14.
  * Add documentation search.
+ * Change the URL of the local documentation development server to be more like the production URL.
 
 2.0.9
  * #1105: More accurately collect Btrfs subvolumes to snapshot. As part of this, the Btrfs hook no

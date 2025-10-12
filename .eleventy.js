@@ -21,7 +21,7 @@ module.exports = function(eleventyConfig) {
             if (process.env.NODE_ENV == "production") {
                 return link;
             }
-            return link.replace('https://torsion.org/borgmatic/', 'http://localhost:8080/');
+            return link.replace('https://torsion.org/', 'http://localhost:8080/');
         }
     };
     let markdownItAnchorOptions = {
