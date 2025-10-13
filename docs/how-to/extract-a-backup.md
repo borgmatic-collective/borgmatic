@@ -163,7 +163,7 @@ To support this, borgmatic creates a manifest file that records the paths of
 all the borgmatic configuration files stored within an archive. The file gets
 written to borgmatic's runtime directory on disk and then stored within the
 archive. See the [runtime directory
-documentation](https://torsion.org/borgmatic/how-to/backup-your-databases/#runtime-directory)
+documentation](https://torsion.org/borgmatic/reference/configuration/runtime-directory/)
 for how and where that happens.
 
 To extract the configuration files from an archive, use the `config bootstrap`

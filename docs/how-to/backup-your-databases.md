@@ -210,9 +210,11 @@ the `pg_restore_command` and `psql_command` options.
 
 If you choose to use the `pg_dump` command within the container, and you're
 using the `directory` format in particular, you'll also need to mount the
-[runtime directory](#runtime-directory) from your host into the container at the
-same path. Otherwise, the `directory` format dump will remain locked away inside
-the database container where Borg can't read it.
+[runtime
+directory](https://torsion.org/borgmatic/reference/configuration/runtime-directory/)
+from your host into the container at the same path. Otherwise, the `directory`
+format dump will remain locked away inside the database container where Borg
+can't read it.
 
 For example, with Docker Compose and a runtime directory located at
 `/run/user/1000`:

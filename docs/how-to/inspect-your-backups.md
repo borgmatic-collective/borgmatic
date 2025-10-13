@@ -96,7 +96,7 @@ doesn't store the leading `/`.)
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Database dump files are stored at a path dependent on the [runtime
-directory](https://torsion.org/borgmatic/how-to/backup-your-databases/#runtime-directory)
+directory](https://torsion.org/borgmatic/reference/configuration/runtime-directory/)
 in use at the time the archive was created, as Borg 1.2 and earlier do not
 support path rewriting.
 
