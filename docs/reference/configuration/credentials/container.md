@@ -1,5 +1,5 @@
 ---
-title: Container secerts
+title: Container secrets
 eleventyNavigation:
   key: • Container
   parent: 🔒 Credentials

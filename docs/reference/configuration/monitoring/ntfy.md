@@ -17,9 +17,7 @@ to issues. The `states` list can override this. Each state can have its own
 custom messages, priorities and tags or, if none are provided, will use the
 default.
 
-An example configuration is shown here with all the available options,
-including [priorities](https://ntfy.sh/docs/publish/#message-priority) and
-[tags](https://ntfy.sh/docs/publish/#tags-emojis):
+Here's a basic configuration that notifies on failure:
 
 ```yaml
 ntfy:
@@ -28,24 +26,12 @@ ntfy:
     username: myuser
     password: secret
 
-    start:
-        title: A borgmatic backup started
-        message: Watch this space...
-        tags: borgmatic
-        priority: min
-    finish:
-        title: A borgmatic backup completed successfully
-        message: Nice!
-        tags: borgmatic,+1
-        priority: min
     fail:
         title: A borgmatic backup failed
         message: You should probably fix it
         tags: borgmatic,-1,skull
         priority: max
     states:
-        - start
-        - finish
         - fail
 ```
 
@@ -62,3 +48,14 @@ ntfy:
     server: https://ntfy.my-domain.com
     access_token: tk_AgQdq7mVBoFD37zQVN29RhuMzNIz2
 ````
+
+
+### Full configuration
+
+Here's an example configuration with all the available options,
+including [priorities](https://ntfy.sh/docs/publish/#message-priority) and
+[tags](https://ntfy.sh/docs/publish/#tags-emojis):
+
+```yaml
+{% include borgmatic/ntfy.yaml %}
+```

@@ -107,7 +107,7 @@ def comment_out_line(line):
     return '# '.join((indent_spaces, line[count_indent_spaces:]))
 
 
-def comment_out_optional_configuration(rendered_config):
+def transform_optional_configuration(rendered_config, comment_out=True):
     '''
     Post-process a rendered configuration string to comment out optional key/values, as determined
     by a sentinel in the comment before each key.
@@ -117,6 +117,9 @@ def comment_out_optional_configuration(rendered_config):
 
     Ideally ruamel.yaml would support commenting out keys during configuration generation, but it's
     not terribly easy to accomplish that way.
+
+    If comment_out is False, then just strip the comment sentinel without actually commenting
+    anything out.
     '''
     lines = []
     optional = False
@@ -129,6 +132,9 @@ def comment_out_optional_configuration(rendered_config):
         # Upon encountering an optional configuration option, comment out lines until the next blank
         # line.
         if line.strip().startswith(f'# {COMMENTED_OUT_SENTINEL}'):
+            if comment_out is False:
+                continue
+
             optional = True
             indent_characters_at_sentinel = indent_characters
             continue
@@ -313,16 +319,18 @@ def merge_source_configuration_into_destination(destination_config, source_confi
 def generate_sample_configuration(
     dry_run,
     source_filename,
-    destination_filename,
+    destination_path,
     schema_filename,
     overwrite=False,
+    split=False,
 ):
     '''
-    Given an optional source configuration filename, and a required destination configuration
-    filename, the path to a schema filename in a YAML rendition of the JSON Schema format, and
-    whether to overwrite a destination file, write out a sample configuration file based on that
-    schema. If a source filename is provided, merge the parsed contents of that configuration into
-    the generated configuration.
+    Given an optional source configuration filename, a required destination configuration path, the
+    path to a schema filename in a YAML rendition of the JSON Schema format, whether to overwrite a
+    destination file, and whether to split the configuration into multiple files (one per option) in
+    the assumed destination directory, write out sample configuration file(s) based on that schema.
+    If a source filename is provided, merge the parsed contents of that configuration into the
+    generated configuration.
     '''
     schema = ruamel.yaml.YAML(typ='safe').load(open(schema_filename, encoding='utf-8'))
     source_config = None
@@ -345,8 +353,31 @@ def generate_sample_configuration(
     if dry_run:
         return
 
+    if split:
+        if os.path.exists(destination_path) and not os.path.isdir(destination_path):
+            raise ValueError('With the --split flag, the destination path must be a directory')
+
+        os.makedirs(destination_path, exist_ok=True)
+
+        for option_name, option_config in destination_config.items():
+            write_configuration(
+                os.path.join(destination_path, f'{option_name}.yaml'),
+                transform_optional_configuration(
+                    render_configuration({option_name: option_config}),
+                    comment_out=False,
+                ),
+                overwrite=overwrite,
+            )
+
+        return
+
+    if os.path.exists(destination_path) and not os.path.isfile(destination_path):
+        raise ValueError('Without the --split flag, the destination path must be a file')
+
     write_configuration(
-        destination_filename,
-        comment_out_optional_configuration(render_configuration(destination_config)),
+        destination_path,
+        transform_optional_configuration(
+            render_configuration(destination_config), comment_out=True
+        ),
         overwrite=overwrite,
     )

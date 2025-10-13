@@ -2139,17 +2139,17 @@ properties:
                         type: string
                         description: |
                             The message body to publish.
-                        example: Your backups have failed.
+                        example: Your backups have started.
                     priority:
                         type: string
                         description: |
                             The priority to set.
-                        example: urgent
+                        example: min
                     tags:
                         type: string
                         description: |
                             Tags to attach to the message.
-                        example: incoming_envelope
+                        example: borgmatic
             finish:
                 type: object
                 additionalProperties: false
@@ -2163,17 +2163,17 @@ properties:
                         type: string
                         description: |
                             The message body to publish.
-                        example: Your backups have failed.
+                        example: Your backups have finished.
                     priority:
                         type: string
                         description: |
                             The priority to set.
-                        example: urgent
+                        example: min
                     tags:
                         type: string
                         description: |
                             Tags to attach to the message.
-                        example: incoming_envelope
+                        example: borgmatic,+1
             fail:
                 type: object
                 additionalProperties: false
@@ -2192,12 +2192,12 @@ properties:
                         type: string
                         description: |
                             The priority to set.
-                        example: urgent
+                        example: max
                     tags:
                         type: string
                         description: |
                             Tags to attach to the message.
-                        example: incoming_envelope
+                        example: borgmatic,-1,skull
             states:
                 type: array
                 items:

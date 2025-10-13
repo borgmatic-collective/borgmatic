@@ -48,3 +48,10 @@ defaults for these flags in your borgmatic configuration via the
 You can configure Healthchecks to notify you by a [variety of
 mechanisms](https://healthchecks.io/#welcome-integrations) when backups fail
 or it doesn't hear from borgmatic for a certain period of time.
+
+
+### Full configuration
+
+```yaml
+{% include borgmatic/healthchecks.yaml %}
+```

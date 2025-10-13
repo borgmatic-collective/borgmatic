@@ -57,3 +57,10 @@ Heartbeat Retry = 360          # = 10 minutes
 # is sent each time.
 Resend Notification every X times = 1
 ```
+
+
+### Full configuration
+
+```yaml
+{% include borgmatic/uptime_kuma.yaml %}
+```

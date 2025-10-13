@@ -65,5 +65,3 @@ pagerduty:
     integration_key: a177cad45bd374409f78906a810a3074
     send_logs: false
 ```
-
-

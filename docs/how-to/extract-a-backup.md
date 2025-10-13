@@ -30,8 +30,6 @@ and therefore the latest timestamp, run a command like:
 borgmatic extract --archive host-2023-01-02T04:06:07.080910
 ```
 
-(No borgmatic `extract` action? Upgrade borgmatic!)
-
 Or simplify this to:
 
 ```bash

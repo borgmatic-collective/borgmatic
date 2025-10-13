@@ -27,33 +27,6 @@ mysql_databases:
 these and other database options in the `hooks:` section of your
 configuration.
 
-<span class="minilink minilink-addedin">New in version 1.5.22</span> You can
-also dump MongoDB databases. For example:
-
-```yaml
-mongodb_databases:
-    - name: messages
-```
-
-<span class="minilink minilink-addedin">New in version 1.7.9</span>
-Additionally, you can dump SQLite databases. For example:
-
-```yaml
-sqlite_databases:
-    - name: mydb
-      path: /var/lib/sqlite3/mydb.sqlite
-```
-
-<span class="minilink minilink-addedin">New in version 1.8.2</span> If you're
-using MariaDB, use the MariaDB database hook instead of `mysql_databases:` as
-the MariaDB hook calls native MariaDB commands instead of the deprecated MySQL
-ones. For instance:
-
-```yaml
-mariadb_databases:
-    - name: comments
-```
-
 As part of each backup, borgmatic streams a database dump for each configured
 database directly to Borg, so it's included in the backup without consuming
 additional disk space. (The exceptions are the PostgreSQL/MongoDB `directory`
@@ -107,47 +80,17 @@ sqlite_databases:
       path: /var/lib/sqlite3/mydb.sqlite
 ```
 
-See your [borgmatic configuration
-file](https://torsion.org/borgmatic/reference/configuration/) for
-additional customization of the options passed to database commands (when
-listing databases, restoring databases, etc.).
+See the [data sources
+documentation](https://torsion.org/borgmatic/reference/configuration/data-sources/)
+for details on additional options, including customizing the flags passed to
+database commands when listing databases, restoring databases, etc.
 
+<a id="runtime-directory"></a>
 
-### Runtime directory
-
-<span class="minilink minilink-addedin">New in version 1.9.0</span> To support
-streaming database dumps to Borg, borgmatic uses a runtime directory for
-temporary file storage, probing the following locations (in order) to find it:
-
- 1. The `user_runtime_directory` borgmatic configuration option.
- 2. The `XDG_RUNTIME_DIR` environment variable, usually `/run/user/$UID`
-    (where `$UID` is the current user's ID), automatically set by PAM on Linux
-    for a user with a session.
- 3. <span class="minilink minilink-addedin">New in version 1.9.2</span>The
-    `RUNTIME_DIRECTORY` environment variable, set by systemd if
-    `RuntimeDirectory=borgmatic` is added to borgmatic's systemd service file.
- 4. <span class="minilink minilink-addedin">New in version 1.9.1</span>The
-    `TMPDIR` environment variable, set on macOS for a user with a session,
-    among other operating systems.
- 5. <span class="minilink minilink-addedin">New in version 1.9.1</span>The
-    `TEMP` environment variable, set on various systems.
- 6. <span class="minilink minilink-addedin">New in version 1.9.2</span>
-    Hard-coded `/tmp`. <span class="minilink minilink-addedin">Prior to
-    version 1.9.2</span>This was instead hard-coded to `/run/user/$UID`.
-
-You can see the runtime directory path that borgmatic selects by running with
-`--verbosity 2` and looking for "Using runtime directory" in the output.
-
-Regardless of the runtime directory selected, borgmatic stores its files
-within a `borgmatic` subdirectory of the runtime directory. Additionally, in
-the case of `TMPDIR`, `TEMP`, and the hard-coded `/tmp`, borgmatic creates a
-randomly named subdirectory in an effort to reduce path collisions in shared
-system temporary directories.
-
-<span class="minilink minilink-addedin">Prior to version 1.9.0</span>
-borgmatic created temporary streaming database dumps within the `~/.borgmatic`
-directory by default. At that time, the path was configurable by the
-`borgmatic_source_directory` configuration option (now deprecated).
+To support streaming database dumps to Borg, borgmatic uses a runtime directory
+for temporary file storage. See the [runtime directory
+documentation](https://torsion.org/borgmatic/reference/configuration/runtime-directory/)
+for details.
 
 
 ### All databases
@@ -411,8 +354,6 @@ most up-to-date files and therefore the latest timestamp, run a command like:
 ```bash
 borgmatic restore --archive host-2023-01-02T04:06:07.080910
 ```
-
-(No borgmatic `restore` action? Upgrade borgmatic!)
 
 Or you can simplify this to:
 

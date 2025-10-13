@@ -2,7 +2,7 @@ FROM docker.io/alpine:3.20.1 AS borgmatic
 
 COPY . /app
 RUN apk add --no-cache py3-pip py3-ruamel.yaml py3-ruamel.yaml.clib
-RUN pip install --break-system-packages --no-cache /app && borgmatic config generate && chmod +r /etc/borgmatic/config.yaml
+RUN pip install --break-system-packages --no-cache /app && borgmatic config generate && borgmatic config generate --destination /etc/borgmatic --split && chmod +r /etc/borgmatic/*.yaml
 RUN borgmatic --help > /command-line.txt \
     && for action in repo-create transfer create prune compact check delete extract config "config bootstrap" "config generate" "config validate" export-tar mount umount repo-delete restore repo-list list repo-info info break-lock "key export" "key import" "key change-passphrase" recreate borg; do \
            echo -e "\n--------------------------------------------------------------------------------\n" >> /command-line.txt \
@@ -23,7 +23,7 @@ RUN npm install @11ty/eleventy \
     markdown-it \
     markdown-it-anchor \
     markdown-it-replace-link
-COPY --from=borgmatic /etc/borgmatic/config.yaml /source/docs/_includes/borgmatic/config.yaml
+COPY --from=borgmatic /etc/borgmatic/* /source/docs/_includes/borgmatic/
 COPY --from=borgmatic /command-line.txt /source/docs/_includes/borgmatic/command-line.txt
 COPY --from=borgmatic /contributors.html /source/docs/_includes/borgmatic/contributors.html
 COPY . /source

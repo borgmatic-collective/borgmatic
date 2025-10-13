@@ -52,3 +52,11 @@ pushover:
         expire: 600  # Used only for priority 2. Default is 600 seconds.
         retry: 30  # Used only for priority 2. Default is 30 seconds.
         device: "pixel8"
+```
+
+
+### Full configuration
+
+```yaml
+{% include borgmatic/pushover.yaml %}
+```

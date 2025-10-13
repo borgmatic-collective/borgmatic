@@ -104,3 +104,10 @@ This may be necessary for some services that reject large requests.
 See the [configuration
 reference](https://torsion.org/borgmatic/reference/configuration/) for
 details.
+
+
+### Full configuration
+
+```yaml
+{% include borgmatic/apprise.yaml %}
+```

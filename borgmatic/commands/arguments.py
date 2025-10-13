@@ -1213,15 +1213,20 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     config_generate_group.add_argument(
         '-d',
         '--destination',
-        dest='destination_filename',
+        dest='destination_path',
         default=config_paths[0],
-        help=f'Destination configuration file, default: {unexpanded_config_paths[0]}',
+        help=f'Destination configuration file (or directory if using --split), default: {unexpanded_config_paths[0]}',
     )
     config_generate_group.add_argument(
         '--overwrite',
         default=False,
         action='store_true',
         help='Whether to overwrite any existing destination file, defaults to false',
+    )
+    config_generate_group.add_argument(
+        '--split',
+        action='store_true',
+        help='Assuming the destination is a directory instead of a file, split the configuration into separate files within it, one per option, useful for documentation',
     )
     config_generate_group.add_argument(
         '-h',

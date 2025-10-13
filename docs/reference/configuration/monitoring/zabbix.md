@@ -16,7 +16,7 @@ states will trigger the hook. The value defined in the configuration of each
 state is used to populate the data of the configured Zabbix item. If none are
 provided, it defaults to a lower-case string of the state.
 
-An example configuration is shown here with all the available options.
+Here's an example configuration:
 
 ```yaml
 zabbix:
@@ -24,21 +24,13 @@ zabbix:
     
     username: myuser
     password: secret
-    api_key: b2ecba64d8beb47fc161ae48b164cfd7104a79e8e48e6074ef5b141d8a0aeeca
 
     host: "borg-server"
     key: borg.status
-    itemid: 55105
 
-    start:
-        value: "STARTED"
-    finish:
-        value: "OK"
     fail:
         value: "ERROR"
     states:
-        - start
-        - finish
         - fail
 ```
 
@@ -69,3 +61,10 @@ is used.
 
 Keep in mind that `host` refers to the "Host name" on the Zabbix server and not
 the "Visual name".
+
+
+### Full configuration
+
+```yaml
+{% include borgmatic/zabbix.yaml %}
+```

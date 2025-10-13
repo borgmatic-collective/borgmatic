@@ -2,7 +2,8 @@
     {% if page.url != '/' %}<h3><a href="https://torsion.org/borgmatic/">borgmatic</a></h3>{% endif %}
     <div class="container" id="breadcrumb">
         {% set breadcrumb = collections.all | eleventyNavigationBreadcrumb(eleventyNavigation.key, {allowMissing: true}) %}
-        {{ breadcrumb | eleventyNavigationToHtml | safe }}
+        {# The replace() is a work-around for https://github.com/11ty/eleventy-navigation/issues/56 #}
+        {{ breadcrumb | eleventyNavigationToHtml | replace('href="/reference/', 'href="/borgmatic/reference/') | safe }}
     </div>
     <h1 class="elv-hed">{{ title | safe }}</h1>
     {% if page.url == '/' %}<h3>It's your data. Keep it that way.</h3>{% endif %}

@@ -17,7 +17,7 @@ displayed
 environment variable into borgmatic's Sentry `data_source_name_url`
 configuration option. For example:
 
-```
+```yaml
 sentry:
     data_source_name_url: https://5f80ec@o294220.ingest.us.sentry.io/203069
     monitor_slug: mymonitor
@@ -32,7 +32,7 @@ finishes, or fails, but only when any of the `create`, `prune`, `compact`, or
 behavior with the `states` configuration option. For instance, to only ping
 Sentry on failure:
 
-```
+```yaml
 sentry:
     data_source_name_url: https://5f80ec@o294220.ingest.us.sentry.io/203069
     monitor_slug: mymonitor

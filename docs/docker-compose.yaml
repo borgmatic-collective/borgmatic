@@ -23,14 +23,13 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.borgmatic-docs.rule=PathPrefix(`/borgmatic`)"
-#      - "traefik.http.routers.borgmatic-docs.middlewares=borgmatic-trailing-slash-redirectregex,borgmatic-docs-redirectregex,borgmatic-stripprefix"
-      - "traefik.http.routers.borgmatic-docs.middlewares=borgmatic-trailing-slash-redirectregex,borgmatic-stripprefix"
+      - "traefik.http.routers.borgmatic-docs.middlewares=borgmatic-trailing-slash-redirectregex,borgmatic-docs-redirectregex,borgmatic-stripprefix"
       - "traefik.http.middlewares.borgmatic-trailing-slash-redirectregex.redirectregex.regex=^(.*)/borgmatic$$"
       - "traefik.http.middlewares.borgmatic-trailing-slash-redirectregex.redirectregex.replacement=$${1}/borgmatic/"
       - "traefik.http.middlewares.borgmatic-trailing-slash-redirectregex.redirectregex.permanent=true"
-#      - "traefik.http.middlewares.borgmatic-docs-redirectregex.redirectregex.regex=^(.*)/borgmatic/docs/(.*)$$"
-#      - "traefik.http.middlewares.borgmatic-docs-redirectregex.redirectregex.replacement=$${1}/borgmatic/$${2}"
-#      - "traefik.http.middlewares.borgmatic-docs-redirectregex.redirectregex.permanent=true"
+      - "traefik.http.middlewares.borgmatic-docs-redirectregex.redirectregex.regex=^(.*)/borgmatic/docs/(.*)$$"
+      - "traefik.http.middlewares.borgmatic-docs-redirectregex.redirectregex.replacement=$${1}/borgmatic/$${2}"
+      - "traefik.http.middlewares.borgmatic-docs-redirectregex.redirectregex.permanent=true"
       - "traefik.http.middlewares.borgmatic-stripprefix.stripprefix.prefixes=/borgmatic"
       - "traefik.http.routers.borgmatic-docs.entrypoints=web"
     build:
