@@ -1,7 +1,7 @@
 ---
 title: MongoDB
 eleventyNavigation:
-  key: • MongoDB
+  key: MongoDB
   parent: 🗄️ Data sources
 ---
 

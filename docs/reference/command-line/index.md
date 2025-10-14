@@ -5,12 +5,16 @@ eleventyNavigation:
   parent: Reference guides
   order: 1
 ---
-Here are all of the available borgmatic command-line flags for the [most
+Here are all of the available global borgmatic command-line flags for the [most
 recent version of
 borgmatic](https://projects.torsion.org/borgmatic-collective/borgmatic/releases),
 including the separate flags for each action (sub-command). Most of the flags
-listed here do not have equivalents in borgmatic's [configuration
+listed here have equivalents in borgmatic's [configuration
 file](https://torsion.org/borgmatic/reference/configuration/).
+
+Also see the [actions
+documentation](https://torsion.org/borgmatic/reference/command-line/actions/)
+for the command-line flags for individual actions.
 
 If you're using an older version of borgmatic, some of these flags may not be
 present in that version and you should instead use `borgmatic --help` or
@@ -18,5 +22,5 @@ present in that version and you should instead use `borgmatic --help` or
 action like `list`, `create`, etc.).
 
 ```
-{% include borgmatic/command-line.txt %}
+{% include borgmatic/command-line/global.txt %}
 ```

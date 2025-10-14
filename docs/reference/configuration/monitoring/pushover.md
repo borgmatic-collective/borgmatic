@@ -1,7 +1,7 @@
 ---
 title: Pushover
 eleventyNavigation:
-  key: • Pushover
+  key: Pushover
   parent: 🚨 Monitoring
 ---
 <span class="minilink minilink-addedin">New in version 1.9.2</span>

@@ -1,7 +1,7 @@
 ---
 title: Sentry
 eleventyNavigation:
-  key: • Sentry
+  key: Sentry
   parent: 🚨 Monitoring
 ---
 <span class="minilink minilink-addedin">New in version 1.9.7</span>

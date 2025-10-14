@@ -1,7 +1,7 @@
 ---
 title: Healthchecks
 eleventyNavigation:
-  key: • Healthchecks
+  key: Healthchecks
   parent: 🚨 Monitoring
 ---
 [Healthchecks](https://healthchecks.io/) is a service that provides "instant

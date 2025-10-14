@@ -1,7 +1,7 @@
 ---
 title: ntfy
 eleventyNavigation:
-  key: • ntfy
+  key: ntfy
   parent: 🚨 Monitoring
 ---
 <span class="minilink minilink-addedin">New in version 1.6.3</span>

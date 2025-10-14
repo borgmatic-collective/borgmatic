@@ -54,6 +54,16 @@
   display: inline-block;
 }
 
+.elv-toc-list ul ul ul > li::before {
+	content: "•";
+	margin-left: 0.4em;
+	margin-right: -0.2em;
+}
+
+.elv-toc-list ul ul ul > li > a {
+	display: inline-block;
+}
+
 /* List items */
 .elv-toc summary,
 .elv-toc-list a {

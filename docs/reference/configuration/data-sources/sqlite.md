@@ -1,7 +1,7 @@
 ---
 title: SQLite
 eleventyNavigation:
-  key: • SQLite
+  key: SQLite
   parent: 🗄️ Data sources
 ---
 <span class="minilink minilink-addedin">New in version 1.7.9</span> To backup

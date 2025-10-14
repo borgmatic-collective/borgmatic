@@ -1,7 +1,7 @@
 ---
 title: ZFS
 eleventyNavigation:
-  key: • ZFS
+  key: ZFS
   parent: 🗄️ Data sources
 ---
 <span class="minilink minilink-addedin">New in version 1.9.3</span> <span

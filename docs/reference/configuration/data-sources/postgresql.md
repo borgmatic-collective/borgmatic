@@ -1,7 +1,7 @@
 ---
 title: PostgreSQL
 eleventyNavigation:
-  key: • PostgreSQL
+  key: PostgreSQL
   parent: 🗄️ Data sources
 ---
 

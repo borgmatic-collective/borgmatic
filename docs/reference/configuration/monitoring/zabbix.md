@@ -1,7 +1,7 @@
 ---
 title: Zabbix
 eleventyNavigation:
-  key: • Zabbix
+  key: Zabbix
   parent: 🚨 Monitoring
 ---
 <span class="minilink minilink-addedin">New in version 1.9.0</span>

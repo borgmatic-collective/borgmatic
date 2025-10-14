@@ -8,6 +8,11 @@ An action in borgmatic is like a subcommand in Borg. The `create` action creates
 a backup, the `list` action shows the files in an archive, and so on.
 
 
+## Available actions
+
+{{ collections.all | eleventyNavigation: "🎬 Actions" | eleventyNavigationToHtml | replace: 'href="/reference/', 'href="/borgmatic/reference/' }}
+
+
 ## Default actions
 
 If you omit `create` and other actions from the command-line, borgmatic runs
@@ -20,6 +25,7 @@ through a set of default actions:
 
 <span class="minilink minilink-addedin">Prior to version 1.7.9</span> The
 default action ordering was `prune`, `compact`, `create`, and `check`.
+
 
 ### Disabling default actions
 

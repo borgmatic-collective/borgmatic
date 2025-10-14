@@ -1,7 +1,7 @@
 ---
 title: Uptime Kuma
 eleventyNavigation:
-  key: • Uptime Kuma
+  key: Uptime Kuma
   parent: 🚨 Monitoring
 ---
 <span class="minilink minilink-addedin">New in version 1.8.13</span> [Uptime

@@ -1,7 +1,7 @@
 ---
 title: File-based credentials
 eleventyNavigation:
-  key: • File
+  key: File
   parent: 🔒 Credentials
 ---
 <span class="minilink minilink-addedin">New in version 1.9.11</span> borgmatic

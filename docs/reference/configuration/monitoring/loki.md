@@ -1,7 +1,7 @@
 ---
 title: Loki
 eleventyNavigation:
-  key: • Loki
+  key: Loki
   parent: 🚨 Monitoring
 ---
 <span class="minilink minilink-addedin">New in version 1.8.3</span> [Grafana

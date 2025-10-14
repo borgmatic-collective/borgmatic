@@ -1,7 +1,7 @@
 ---
 title: systemd service credentials
 eleventyNavigation:
-  key: • systemd
+  key: systemd
   parent: 🔒 Credentials
 ---
 <span class="minilink minilink-addedin">New in version 1.9.10</span> borgmatic

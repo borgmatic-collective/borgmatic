@@ -1,7 +1,7 @@
 ---
 title: Cronitor
 eleventyNavigation:
-  key: • Cronitor
+  key: Cronitor
   parent: 🚨 Monitoring
 ---
 [Cronitor](https://cronitor.io/) provides "Cron monitoring and uptime healthchecks

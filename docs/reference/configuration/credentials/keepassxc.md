@@ -1,7 +1,7 @@
 ---
 title: KeePassXC passwords
 eleventyNavigation:
-  key: • KeePassXC
+  key: KeePassXC
   parent: 🔒 Credentials
 ---
 <span class="minilink minilink-addedin">New in version 1.9.11</span> borgmatic

@@ -1,7 +1,7 @@
 ---
 title: MariaDB
 eleventyNavigation:
-  key: • MariaDB
+  key: MariaDB
   parent: 🗄️ Data sources
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: Btrfs
 eleventyNavigation:
-  key: • Btrfs
+  key: Btrfs
   parent: 🗄️ Data sources
 ---
 <span class="minilink minilink-addedin">New in version 1.9.4</span> <span

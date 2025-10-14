@@ -1,7 +1,7 @@
 ---
 title: Cronhub
 eleventyNavigation:
-  key: • Cronhub
+  key: Cronhub
   parent: 🚨 Monitoring
 ---
 [Cronhub](https://cronhub.io/) provides "instant alerts when any of your

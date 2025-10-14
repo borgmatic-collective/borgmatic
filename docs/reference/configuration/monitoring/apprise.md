@@ -1,7 +1,7 @@
 ---
 title: Apprise
 eleventyNavigation:
-  key: • Apprise
+  key: Apprise
   parent: 🚨 Monitoring
 ---
 <span class="minilink minilink-addedin">New in version 1.8.4</span>

@@ -1,7 +1,7 @@
 ---
 title: MySQL
 eleventyNavigation:
-  key: • MySQL
+  key: MySQL
   parent: 🗄️ Data sources
 ---
 

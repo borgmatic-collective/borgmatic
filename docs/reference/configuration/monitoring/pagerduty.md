@@ -1,7 +1,7 @@
 ---
 title: PagerDuty
 eleventyNavigation:
-  key: • PagerDuty
+  key: PagerDuty
   parent: 🚨 Monitoring
 ---
 In case you're new here: [borgmatic](https://torsion.org/borgmatic/) is
