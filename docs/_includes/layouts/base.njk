@@ -5,7 +5,11 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <meta name="generator" content="{{ eleventy.generator }}">
 		<link rel="icon" href="https://torsion.org/borgmatic/static/borgmatic.png" type="image/x-icon">
+		{% if page.url == '/' %}
+		<title>borgmatic</title>
+		{% else %}
 		<title>borgmatic{% if subtitle or title %} - {% endif %}{{ subtitle + ' - ' if subtitle}}{{ title }}</title>
+		{% endif %}
 {%- set css %}
 {% include 'index.css' %}
 {% include 'components/lists.css' %}
