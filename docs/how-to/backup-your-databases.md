@@ -321,11 +321,17 @@ for more information.
 
 ## Supported databases
 
-As of now, borgmatic supports PostgreSQL, MariaDB, MySQL, MongoDB, and SQLite
-databases directly. But see below about general-purpose preparation and
-cleanup hooks as a work-around with other database systems. Also, please [file
-a ticket](https://torsion.org/borgmatic/#issues) for additional database
-systems that you'd like supported.
+borgmatic directly supports [several database
+systems](https://torsion.org/borgmatic/reference/configuration/data-sources/).
+But if you're looking to backup an unsupported databases system, you can use
+general-purpose [preparation and cleanup
+hooks](https://torsion.org/borgmatic/how-to/add-preparation-and-cleanup-steps-to-backups/)
+as a work-around. These hooks allows you to trigger arbitrary commands or
+scripts before and after backups to create and cleanup database dumps for any
+database system.
+
+Also, please [file a ticket](https://torsion.org/borgmatic/#issues) for
+additional database systems that you'd like borgmatic to officially support.
 
 
 ## Database restoration
@@ -608,16 +614,6 @@ borgmatic's own configuration file. So include your configuration files in
 backups to avoid getting caught without a way to restore a database. But
 starting from version 1.7.15, borgmatic includes your configuration files
 automatically.
-
-
-## Preparation and cleanup hooks
-
-If this database integration is too limited for needs, borgmatic also supports
-general-purpose [preparation and cleanup
-hooks](https://torsion.org/borgmatic/how-to/add-preparation-and-cleanup-steps-to-backups/).
-These hooks allows you to trigger arbitrary commands or scripts before and
-after backups. So if necessary, you can use these hooks to create database
-dumps with any database system.
 
 
 ## Troubleshooting
