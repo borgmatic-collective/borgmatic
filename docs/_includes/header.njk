@@ -4,6 +4,9 @@
         {% set breadcrumb = collections.all | eleventyNavigationBreadcrumb(eleventyNavigation.key, {allowMissing: true}) %}
         {# The replace() is a work-around for https://github.com/11ty/eleventy-navigation/issues/56 #}
         {{ breadcrumb | eleventyNavigationToHtml | replace('href="/reference/', 'href="/borgmatic/reference/') | safe }}
+        <div data-pagefind-meta="title" aria-hidden="true" style="display: none">
+           {% for entry in breadcrumb %}{{ entry.title }} > {% endfor %}{{ title | safe }}
+        </div>
     </div>
     <h1 class="elv-hed">{{ title | safe }}</h1>
     {% if page.url == '/' %}<h3>It's your data. Keep it that way.</h3>{% endif %}
