@@ -264,7 +264,11 @@ expectations based on your configuration.
 If you'd like to specify an alternate configuration file path, use the
 `--config` flag.
 
-See `borgmatic --help` and `borgmatic create --help` for more information.
+See [command-line
+documentation](https://torsion.org/borgmatic/reference/command-line/) and the
+[create action
+documentation](https://torsion.org/borgmatic/reference/command-line/actions/create/)
+for more information.
 
 
 <a id="default-actions"></a>

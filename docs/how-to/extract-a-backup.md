@@ -195,8 +195,9 @@ If you want to extract the configuration file from a specific archive, use the
 borgmatic config bootstrap --repository repo.borg --archive host-2023-01-02T04:06:07.080910 --destination /tmp
 ```
 
-See the output of `config bootstrap --help` for additional flags you may need
-for bootstrapping.
+See the [config bootstrap action
+documentation](https://torsion.org/borgmatic/reference/command-line/actions/config-bootstrap/)
+for additional flags you may need for bootstrapping.
 
 <span class="minilink minilink-addedin">New in version 1.9.3</span>
 If your borgmatic configuration files contain sensitive information you don't

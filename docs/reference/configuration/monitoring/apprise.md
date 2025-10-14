@@ -72,7 +72,9 @@ when a backup finishes or fails.
 
 You can customize the verbosity of the logs that are sent with borgmatic's
 `--monitoring-verbosity` flag. The `--list` and `--stats` flags may also be of
-use. See `borgmatic create --help` for more information.
+use. See [create action
+documentation](https://torsion.org/borgmatic/reference/command-line/actions/create/)
+for more information.
 
 <span class="minilink minilink-addedin">New in version 2.0.0</span>Set the
 defaults for these flags in your borgmatic configuration via the

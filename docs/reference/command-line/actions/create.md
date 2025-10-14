@@ -1,10 +1,10 @@
 ---
-title: transfer
+title: create
 eleventyNavigation:
-  key: transfer
+  key: create
   parent: 🎬 Actions
 ---
 
 ```bash
-{% include borgmatic/command-line/transfer.txt %}
+{% include borgmatic/command-line/create.txt %}
 ```

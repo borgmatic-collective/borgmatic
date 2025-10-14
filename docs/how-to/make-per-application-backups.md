@@ -48,12 +48,14 @@ Additionally, the `~/.config/borgmatic.d/` directory works the same way as
 `/etc/borgmatic.d`.
 
 If you need even more customizability, you can specify alternate configuration
-paths on the command-line with borgmatic's `--config` flag. (See `borgmatic
---help` for more information.) For instance, if you want to schedule your
-various borgmatic backups to run at different times, you'll need multiple
-entries in your [scheduling software of
-choice](https://torsion.org/borgmatic/how-to/set-up-backups/#autopilot),
-each entry using borgmatic's `--config` flag instead of relying on
+paths on the command-line with borgmatic's `--config` flag. (See the
+[command-line
+documentation](https://torsion.org/borgmatic/reference/command-line/) for more
+information.) For instance, if you want to schedule your various borgmatic
+backups to run at different times, you'll need multiple entries in your
+[scheduling software of
+choice](https://torsion.org/borgmatic/how-to/set-up-backups/#autopilot), each
+entry using borgmatic's `--config` flag instead of relying on
 `/etc/borgmatic.d`.
 
 
