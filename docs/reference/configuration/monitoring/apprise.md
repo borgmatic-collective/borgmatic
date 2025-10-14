@@ -12,7 +12,7 @@ us today such as: Telegram, Discord, Slack, Amazon SNS, Gotify, etc."
 
 Depending on how you installed borgmatic, it may not have come with Apprise.
 For instance, if you originally [installed borgmatic with
-pipx](https://torsion.org/borgmatic/how-to/set-up-backups/#installation),
+pipx](https://torsion.org/borgmatic/how-to/set-up-backups/),
 run the following to install Apprise so borgmatic can use it:
 
 ```bash

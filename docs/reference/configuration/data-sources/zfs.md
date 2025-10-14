@@ -77,7 +77,7 @@ match `/var` to a pattern like `+ fm:/v*/lib/data`.
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
 [runtime
-directory](https://torsion.org/borgmatic/how-to/backup-your-databases/#runtime-directory)
+directory](https://torsion.org/borgmatic/reference/configuration/runtime-directory/)
 in use at the time the archive was created, as Borg 1.2 and earlier do not
 support path rewriting.
 
@@ -91,7 +91,7 @@ cache](https://borgbackup.readthedocs.io/en/stable/internals/data-structures.htm
 may not get cache hits on snapshotted files. This makes backing up ZFS snapshots
 a little slower than non-snapshotted files that have consistent paths. You can
 mitigate this by setting a fixed [runtime
-directory](https://torsion.org/borgmatic/how-to/backup-your-databases/#runtime-directory)
+directory](https://torsion.org/borgmatic/reference/configuration/runtime-directory/))
 (that's not located in `/tmp`). This allows borgmatic to use a consistent
 snapshot path from one run to the next, thereby resulting in Borg files cache
 hits.

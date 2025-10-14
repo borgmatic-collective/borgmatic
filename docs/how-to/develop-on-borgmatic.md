@@ -33,7 +33,7 @@ uv tool install --editable .
 ```
 
 Or to work on the [Apprise
-hook](https://torsion.org/borgmatic/how-to/monitor-your-backups/#apprise-hook),
+hook](https://torsion.org/borgmatic/reference/configuration/monitoring/apprise/),
 change that last line to:
 
 ```bash

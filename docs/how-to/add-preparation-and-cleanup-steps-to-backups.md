@@ -188,9 +188,9 @@ borgmatic does not run `on_error` hooks if an error occurs within a
 ## Hook output
 
 Any output produced by your hooks shows up both at the console and in syslog
-(when enabled). For more information, read about <a
-href="https://torsion.org/borgmatic/how-to/inspect-your-backups/">inspecting
-your backups</a>.
+(when enabled). For more information, see the <a
+href="https://torsion.org/borgmatic/reference/command-line/logging/">logging
+documentation</a>.
 
 
 ## Security

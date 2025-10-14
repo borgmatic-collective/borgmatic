@@ -71,7 +71,7 @@ cron job).
 <span class="minilink minilink-addedin">New in version 1.8.5</span> Instead of
 (or in addition to) specifying actions on the command-line, you can configure
 borgmatic to [skip particular
-actions](https://torsion.org/borgmatic/how-to/set-up-backups/#skipping-actions).
+actions](https://torsion.org/borgmatic/reference/command-line/actions/#skipping-actions).
 
 
 ### Skipping actions

@@ -7,7 +7,7 @@ eleventyNavigation:
 <span class="minilink minilink-addedin">New in version 1.7.10</span> borgmatic
 supports defining custom configuration constants. This is similar to the
 [variable interpolation
-feature](https://torsion.org/borgmatic/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation)
+feature](https://torsion.org/borgmatic/reference/configuration/command-hooks/#variable-interpolation)
 for command hooks, but the constants feature lets you substitute your own custom
 values into any option values in the entire configuration file.
 
@@ -74,4 +74,4 @@ meaning you can define a constant and then include a separate configuration file
 that uses that constant.
 
 An alternate to constants is passing in your values via [environment
-variables](https://torsion.org/borgmatic/how-to/provide-your-passwords/).
+variables](https://torsion.org/borgmatic/reference/configuration/environment-variables/).

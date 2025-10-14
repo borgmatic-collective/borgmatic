@@ -35,7 +35,7 @@ require setting an explicit `encryption_passphrase` value in borgmatic's
 configuration file.
 
 For [database
-configuration](https://torsion.org/borgmatic/how-to/backup-your-databases/),
+configuration](https://torsion.org/borgmatic/reference/configuration/data-sources/),
 the same approach applies. For example:
 
 ```yaml
@@ -88,6 +88,6 @@ on the command-line. But please be aware of the security implications of
 specifying secrets on the command-line.
 
 Additionally, borgmatic action hooks support their own [variable
-interpolation](https://torsion.org/borgmatic/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation),
+interpolation](https://torsion.org/borgmatic/reference/configuration/command-hooks/#variable-interpolation),
 although in that case it's for particular borgmatic runtime values rather than
 (only) environment variables.

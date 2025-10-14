@@ -75,7 +75,7 @@ doesn't exist) rather than a Borg option.
 
 An alternate to command-line overrides is passing in your values via
 [environment
-variables](https://torsion.org/borgmatic/how-to/provide-your-passwords/).
+variables](https://torsion.org/borgmatic/reference/configuration/environment-variables/).
 
 
 ### Deprecated overrides

@@ -41,14 +41,15 @@ your particular infrastructure:
  * **Consistency checks:** While not strictly part of monitoring, if you want
    confidence that your backups are not only running but are restorable as well,
    you can configure particular [consistency
-   checks](https://torsion.org/borgmatic/how-to/deal-with-very-large-backups/#consistency-check-configuration)
+   checks](https://torsion.org/borgmatic/reference/configuration/consistency-checks/)
    or even script full [extract
    tests](https://torsion.org/borgmatic/how-to/extract-a-backup/).
  * **Commands run on error:** borgmatic's command hooks support running
    arbitrary commands or scripts when borgmatic itself encounters an error
    running your backups. So for instance, you can run a script to send yourself
    a text message alert. But note that if borgmatic doesn't actually run, this
-   alert won't fire. See the [documentation on command hooks](https://torsion.org/borgmatic/how-to/add-preparation-and-cleanup-steps-to-backups/)
+   alert won't fire. See the [documentation on preparation and cleanup
+   steps](https://torsion.org/borgmatic/how-to/add-preparation-and-cleanup-steps-to-backups/)
    for details.
 
 

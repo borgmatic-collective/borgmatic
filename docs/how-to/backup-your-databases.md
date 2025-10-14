@@ -298,8 +298,10 @@ hooks:
 ### External passwords
 
 If you don't want to keep your database passwords in your borgmatic
-configuration file, you can instead pass them in [from external credential
-sources](https://torsion.org/borgmatic/how-to/provide-your-passwords/).
+configuration file, you can instead pass them in from [external credential
+sources](https://torsion.org/borgmatic/reference/configuration/credentials/) or
+[environment
+variables](https://torsion.org/borgmatic/reference/configuration/environment-variables/).
 
 
 ### Configuration backups
