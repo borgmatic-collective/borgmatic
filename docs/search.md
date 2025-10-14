@@ -1,5 +1,5 @@
 ---
-title: Search documentation
+title: Search the documentation
 eleventyExcludeFromCollections: true
 ---
 <link href="/borgmatic/pagefind/pagefind-ui.css" rel="stylesheet">

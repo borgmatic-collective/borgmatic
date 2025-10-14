@@ -111,6 +111,10 @@ them:
 tox -e spell
 ```
 
+See the [code style
+documentation](https://torsion.org/borgmatic/reference/source-code/#code-style)
+for more specifics about borgmatic's own code style.
+
 
 ### End-to-end tests
 
@@ -153,36 +157,6 @@ some key points to double-check:
 
 Then you'll be able to run end-to-end tests as per normal, and the test script
 will automatically use your non-root Podman socket instead of a Docker socket.
-
-
-## Code style
-
-When writing code for borgmatic, start with [PEP
-8](https://www.python.org/dev/peps/pep-0008/). But then, apply the following
-deviations from it:
-
- * For strings, prefer single quotes over double quotes.
- * Limit all lines to a maximum of 100 characters.
- * Use trailing commas within multiline values or argument lists.
- * For multiline constructs, put opening and closing delimiters on lines
-   separate from their contents.
- * Within multiline constructs, use standard four-space indentation. Don't align
-   indentation with an opening delimiter.
- * In general, spell out words in variable names instead of shortening them.
-   So, think `index` instead of `idx`. There are some notable exceptions to
-   this though (like `config`).
- * Favor blank lines around logical code groupings, `if` statements,
-   `return`s, etc. Readability is more important than packing code tightly.
- * Import fully qualified Python modules instead of importing individual
-   functions, classes, or constants. E.g., do `import os.path` instead of
-   `from os import path`. (Some exceptions to this are made in tests.)
- * Only use classes and OOP as a last resort, such as when integrating with
-   Python libraries that require it.
- * Prefer functional code where it makes sense, e.g. when constructing a
-   command (to subsequently execute imperatively).
-
-Since borgmatic uses Ruff for code lining and formatting, many other code style
-requirements are also enforced when running automated tests.
 
 
 ## Continuous integration

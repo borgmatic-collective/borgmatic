@@ -23,6 +23,9 @@ or an offline server or a low battery—and exit gracefully? That's where the
 concept of "soft failure" come in.
 
 
+<a id="caveats-and-details"></a>
+
+
 ## Soft failure command hooks
 
 This feature leverages [borgmatic command
@@ -32,7 +35,7 @@ test in the form of a borgmatic command hook to see if backups should proceed or
 not.
 
 The way the test works is that if any of your hook commands return a special
-exit status of 75, that indicates to borgmatic that it's a temporary failure,
+exit status of 75, that indicates to borgmatic that it's a temporary failure
 and borgmatic should skip all subsequent actions for the current repository.
 
 If you return any status besides 75, then it's a standard success or error.
@@ -114,33 +117,6 @@ commands:
 
 Writing the battery script is left as an exercise to the reader.
 
-
-## Caveats and details
-
-There are some caveats you should be aware of with this feature.
-
- * You'll generally want to put a soft failure command in a `before` command
-   hook, so as to gate whether the backup action occurs. While a soft failure is
-   also supported in an `after` command hook, returning a soft failure there
-   won't prevent any actions from occurring, because they've already occurred!
-   Similarly, you can return a soft failure from an `error` command hook, but at
-   that point it's too late to prevent the error.
- * Returning a soft failure does prevent further commands in the same hook from
-   executing. So, like a standard error, it is an "early out." Unlike a standard
-   error, borgmatic does not display it in angry red text or consider it a
-   failure.
- * <span class="minilink minilink-addedin">New in version 1.9.0</span> Soft
-   failures in `action` or `before_*` command hooks only skip the current
-   repository rather than all repositories in a configuration file.
- * If you're writing a soft failure script that you want to vary based on the
-   current repository, for instance so you can have multiple repositories in a
-   single configuration file, have a look at [command hook variable
-   interpolation](https://torsion.org/borgmatic/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation).
-   And there's always still the option of putting anything that you don't want
-   soft-failed (like always-online cloud backups) in separate configuration
-   files from your soft-failing repositories.
- * The soft failure doesn't have to test anything related to a repository. You
-   can even perform a test that individual source directories are mounted and
-   available. Use your imagination!
- * Soft failures are not currently implemented for `everything`,
-   `before_everything`, or `after_everything` command hooks.
+See the [soft failure
+documentation](https://torsion.org/borgmatic/reference/configuration/command-hooks/#soft-failure)
+for additional details.

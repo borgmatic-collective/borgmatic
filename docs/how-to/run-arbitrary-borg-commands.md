@@ -26,7 +26,7 @@ arguments:
  * verbosity
 
 
-### borg action
+## borg action
 
 <span class="minilink minilink-addedin">New in version 1.5.15</span> The way
 you run Borg with borgmatic is via the `borg` action. Here's a simple example:
@@ -43,13 +43,10 @@ be preferred though for most uses.)
 You can also specify Borg options for relevant commands. For instance:
 
 ```bash
-borgmatic borg repo-list --short
+borgmatic borg list --short
 ```
 
-(No borgmatic `repo-list` action? Try `rlist` or `list` instead or upgrade
-borgmatic!)
-
-This runs Borg's `repo-list` command once on each configured borgmatic
+This runs Borg's `list` command once on each configured borgmatic
 repository.
 
 What if you only want to run Borg on a single configured borgmatic repository
@@ -76,7 +73,7 @@ the right place (which didn't always work). So your command-line in these
 older versions didn't support the `::`
 
 
-### Specifying an archive
+## Specifying an archive
 
 For borg commands that expect an archive name, you have a few approaches.
 Here's one:
@@ -117,7 +114,7 @@ borgmatic borg --archive latest list '$ARCHIVE'
 borgmatic borg list your-actual-archive-name
 ```
 
-### Limitations
+## Limitations
 
 borgmatic's `borg` action is not without limitations:
 
