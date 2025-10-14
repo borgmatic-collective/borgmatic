@@ -5,6 +5,6 @@ eleventyNavigation:
   parent: 🎬 Actions
 ---
 
-```bash
+```
 {% include borgmatic/command-line/create.txt %}
 ```
