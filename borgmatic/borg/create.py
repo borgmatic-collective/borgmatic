@@ -72,7 +72,11 @@ def validate_planned_backup_paths(
     paths_output = execute_command_and_capture_output(
         (
             *flags.omit_flag_and_value(
-                flags.omit_flag(create_command, '--exclude-nodump'), '--filter'
+                flags.omit_flag(
+                    flags.omit_flag(create_command, '--exclude-nodump'),
+                    '--log-json',
+                ),
+                '--filter',
             ),
             '--dry-run',
             '--list',
