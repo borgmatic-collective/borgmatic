@@ -8,3 +8,8 @@ eleventyNavigation:
 ```
 {% include borgmatic/command-line/config-generate.txt %}
 ```
+
+
+## Related documentation
+
+ * [Configuration](https://torsion.org/borgmatic/how-to/set-up-backups/#configuration)
