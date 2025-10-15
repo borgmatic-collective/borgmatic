@@ -73,7 +73,7 @@ properties:
                         Whether any missing parent directories of the repository
                         path should be created, only used for the repo-create
                         action. Defaults to false. (This option is supported 
-                        for Borg 1.x only)
+                        for Borg 1.x only.)
                     example: true
         description: |
             A required list of local or remote repositories with paths and
@@ -232,7 +232,8 @@ properties:
     exclude_nodump:
         type: boolean
         description: |
-            Exclude files with the NODUMP flag. Defaults to false.
+            Exclude files with the NODUMP flag. Defaults to false. (This option
+            is supported for Borg 1.x only.)
         example: true
     borgmatic_source_directory:
         type: string
