@@ -21,12 +21,22 @@ properties:
             type: string
         description: |
             List of source directories and files to back up. Globs and tildes
-            are expanded. Do not backslash spaces in path names.
+            are expanded. Do not backslash spaces in path names. Be aware that
+            by default, Borg treats missing source directories as warnings
+            rather than errors. If you'd like to change that behavior, see
+            https://torsion.org/borgmatic/how-to/customize-warnings-and-errors/
+            or the "source_directories_must_exist" option.
         example:
             - /home
             - /etc
             - /var/log/syslog*
             - /home/user/path with spaces
+    source_directories_must_exist:
+        type: boolean
+        description: |
+            If true, then source directories (and root pattern paths) must
+            exist. If they don't, an error is raised. Defaults to false.
+        example: true
     repositories:
         type: array
         items:
@@ -260,12 +270,6 @@ properties:
             create the check records again (and therefore re-run checks).
             Defaults to $XDG_STATE_HOME or ~/.local/state.
         example: /var/lib/borgmatic
-    source_directories_must_exist:
-        type: boolean
-        description: |
-            If true, then source directories (and root pattern paths) must
-            exist. If they don't, an error is raised. Defaults to false.
-        example: true
     encryption_passcommand:
         type: string
         description: |
