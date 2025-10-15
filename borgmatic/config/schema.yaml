@@ -406,13 +406,13 @@ properties:
         type: string
         description: |
             Path for Borg security and encryption nonce files. Defaults to
-            $borg_base_directory/.config/borg/security
+            $borg_config_directory/security
         example: /path/to/base/config/security
     borg_keys_directory:
         type: string
         description: |
             Path for Borg encryption key files. Defaults to
-            $borg_base_directory/.config/borg/keys
+            $borg_config_directory/keys
         example: /path/to/base/config/keys
     borg_exit_codes:
         type: array
