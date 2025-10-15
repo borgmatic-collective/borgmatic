@@ -1,7 +1,6 @@
 2.0.10.dev0
- * #942: Factor reference material out of the documentation how-to guides. This means
-   there's now a whole reference section in the docs! Check it out:
-   https://torsion.org/borgmatic/
+ * #942: Factor reference material out of the documentation how-to guides. This means there's now a
+   whole reference section in the docs! Check it out: https://torsion.org/borgmatic/
  * #1161: Fix a traceback (TypeError) in the "check" action with Python 3.14.
  * Add documentation search.
  * Change the URL of the local documentation development server to be more like the production URL.

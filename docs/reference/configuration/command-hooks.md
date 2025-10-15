@@ -5,8 +5,9 @@ eleventyNavigation:
   parent: ⚙️  Configuration
 ---
 <span class="minilink minilink-addedin">New in version 2.0.0</span> Command
-hooks are configured via a list of `commands:` in your borgmatic
-configuration file. For example:
+hooks allow you to run arbitrary prepration and cleanup commands (or external
+scripts) at various points in borgmatic's execution. You configure them via a
+list of `commands:` in your borgmatic configuration file. For example:
 
 ```yaml
 commands:
