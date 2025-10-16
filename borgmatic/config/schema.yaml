@@ -1546,6 +1546,15 @@ properties:
                         database hook implicitly enables read_special (see
                         above) to support dump and restore streaming.
                     example: users
+                skip_names:
+                    type: array
+                    items:
+                        type: string
+                    description: |
+                        Database names to skip when dumping "all" databases.
+                        Ignored when the database name is not "all".
+                    example:
+                        - cache
                 label:
                     type: string
                     description: |
@@ -1728,6 +1737,15 @@ properties:
                         database hook implicitly enables read_special (see
                         above) to support dump and restore streaming.
                     example: users
+                skip_names:
+                    type: array
+                    items:
+                        type: string
+                    description: |
+                        Database names to skip when dumping "all" databases.
+                        Ignored when the database name is not "all".
+                    example:
+                        - cache
                 label:
                     type: string
                     description: |

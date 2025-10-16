@@ -142,6 +142,23 @@ def test_database_names_to_dump_passes_through_name():
     assert names == ('foo',)
 
 
+def test_database_names_to_dump_with_non_all_name_and_skip_names_warns():
+    environment = flexmock()
+
+    flexmock(module.logger).should_receive('warning').once()
+
+    names = module.database_names_to_dump(
+        {'name': 'foo', 'skip_names': ('foo', 'bar')},
+        {},
+        'root',
+        'trustsome1',
+        environment,
+        dry_run=False,
+    )
+
+    assert names == ('foo',)
+
+
 def test_database_names_to_dump_bails_for_dry_run():
     environment = flexmock()
     flexmock(module).should_receive('execute_command_and_capture_output').never()
@@ -191,6 +208,41 @@ def test_database_names_to_dump_queries_mariadb_for_database_names():
     )
 
     assert names == ('foo', 'bar')
+
+
+def test_database_names_to_dump_with_database_name_all_and_skip_names_filters_out_unwanted_databases():
+    environment = flexmock()
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive('parse_extra_options').and_return((), None)
+    flexmock(module).should_receive('make_defaults_file_options').with_args(
+        'root',
+        'trustsome1',
+        None,
+    ).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        (
+            'mariadb',
+            '--defaults-extra-file=/dev/fd/99',
+            '--skip-column-names',
+            '--batch',
+            '--execute',
+            'show schemas',
+        ),
+        environment=environment,
+    ).and_return('foo\nbar\nbaz\nmysql\n').once()
+
+    names = module.database_names_to_dump(
+        {'name': 'all', 'skip_names': ('foo', 'bar')},
+        {},
+        'root',
+        'trustsome1',
+        environment,
+        dry_run=False,
+    )
+
+    assert names == ('baz',)
 
 
 def test_database_names_to_dump_with_environment_password_transport_skips_defaults_file_and_passes_user_flag():

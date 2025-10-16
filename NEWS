@@ -1,6 +1,8 @@
 2.0.10.dev0
  * #942: Factor reference material out of the documentation how-to guides. This means there's now a
    whole reference section in the docs! Check it out: https://torsion.org/borgmatic/
+ * #973: For the MariaDB and MySQL database hooks, add a "skip_names" option to ignore particular
+   databases when dumping "all".
  * #1150: Fix for a runtime directory error when the "create" action is used with the "--log-json"
    flag.
  * #1161: Fix a traceback (TypeError) in the "check" action with Python 3.14.

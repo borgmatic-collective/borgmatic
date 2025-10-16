@@ -112,7 +112,14 @@ def database_names_to_dump(database, config, username, password, environment, dr
     names to dump. In the case of "all", query for the names of databases on the configured host and
     return them, excluding any system databases that will cause problems during restore.
     '''
+    skip_names = database.get('skip_names')
+
     if database['name'] != 'all':
+        if skip_names:
+            logger.warning(
+                f'For MariaDB database {database["name"]}, ignoring the "skip_names" option, which is only supported for database "all"'
+            )
+
         return (database['name'],)
 
     if dry_run:
@@ -144,12 +151,16 @@ def database_names_to_dump(database, config, username, password, environment, dr
 
     logger.debug('Querying for "all" MariaDB databases to dump')
 
+    if skip_names:
+        logger.debug(f'Skipping database names: {", ".join(skip_names)}')
+
     show_output = execute_command_and_capture_output(show_command, environment=environment)
 
     return tuple(
         show_name
         for show_name in show_output.strip().splitlines()
         if show_name not in SYSTEM_DATABASE_NAMES
+        if not skip_names or show_name not in skip_names
     )
 
 
