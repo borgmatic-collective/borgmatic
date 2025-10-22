@@ -641,8 +641,8 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     repo_create_parser = action_parsers.add_parser(
         'repo-create',
         aliases=ACTION_ALIASES['repo-create'],
-        help='Create a new, empty Borg repository',
-        description='Create a new, empty Borg repository',
+        help='Create a new, empty Borg repository (also known as "init")',
+        description='Create a new, empty Borg repository (also known as "init")',
         add_help=False,
     )
     repo_create_group = repo_create_parser.add_argument_group('repo-create arguments')
