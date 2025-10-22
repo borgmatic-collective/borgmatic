@@ -47,6 +47,13 @@ def test_dump_data_sources_runs_mongodump_for_each_database():
             module.borgmatic.actions.restore.Dump('mongodb_databases', 'bar'),
         ],
     ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mongodb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -70,6 +77,7 @@ def test_dump_data_sources_with_dry_run_skips_mongodump():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').never()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
 
     assert (
         module.dump_data_sources(
@@ -117,6 +125,13 @@ def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
                 'mongodb_databases', 'foo', 'database.example.org', 27018
             ),
         ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mongodb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
     ).once()
 
     assert module.dump_data_sources(
@@ -176,6 +191,13 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
             module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
         ],
     ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mongodb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -206,6 +228,13 @@ def test_dump_data_sources_runs_mongodump_with_directory_format():
         [
             module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
         ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mongodb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
     ).once()
 
     assert (
@@ -250,6 +279,13 @@ def test_dump_data_sources_runs_mongodump_with_options():
             module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
         ],
     ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mongodb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -281,6 +317,13 @@ def test_dump_data_sources_runs_mongodumpall_for_all_databases():
         [
             module.borgmatic.actions.restore.Dump('mongodb_databases', 'all'),
         ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mongodb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
     ).once()
 
     assert module.dump_data_sources(

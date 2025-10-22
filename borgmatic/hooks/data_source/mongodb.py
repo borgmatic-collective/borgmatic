@@ -5,6 +5,7 @@ import shlex
 import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.hooks.credential.parse
+import borgmatic.hooks.data_source.config
 from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks.data_source import config as database_config
 from borgmatic.hooks.data_source import dump
@@ -100,7 +101,8 @@ def dump_data_sources(
         dump.write_data_source_dumps_metadata(
             borgmatic_runtime_directory, 'mongodb_databases', dumps_metadata
         )
-        patterns.append(
+        borgmatic.hooks.data_source.config.inject_pattern(
+            patterns,
             borgmatic.borg.pattern.Pattern(
                 os.path.join(borgmatic_runtime_directory, 'mongodb_databases'),
                 source=borgmatic.borg.pattern.Pattern_source.HOOK,

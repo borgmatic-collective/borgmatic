@@ -10,6 +10,7 @@ import subprocess
 import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.execute
+import borgmatic.hooks.data_source.config
 import borgmatic.hooks.data_source.snapshot
 
 logger = logging.getLogger(__name__)
@@ -330,14 +331,11 @@ def dump_data_sources(
 
         for pattern in subvolume.contained_patterns:
             snapshot_pattern = make_borg_snapshot_pattern(subvolume.path, pattern)
+            borgmatic.hooks.data_source.config.replace_pattern(patterns, pattern, snapshot_pattern)
 
-            # Attempt to update the pattern in place, since pattern order matters to Borg.
-            try:
-                patterns[patterns.index(pattern)] = snapshot_pattern
-            except ValueError:
-                patterns.append(snapshot_pattern)
-
-        patterns.append(make_snapshot_exclude_pattern(subvolume.path))
+        borgmatic.hooks.data_source.config.inject_pattern(
+            patterns, make_snapshot_exclude_pattern(subvolume.path)
+        )
 
     return []
 

@@ -22,6 +22,18 @@ def test_dump_data_sources_creates_manifest_file():
         {'borgmatic_version': '1.0.0', 'config_paths': ('test.yaml',)},
         manifest_file,
     ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/bootstrap', source=module.borgmatic.borg.pattern.Pattern_source.HOOK
+        ),
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            'test.yaml', source=module.borgmatic.borg.pattern.Pattern_source.HOOK
+        ),
+    ).once()
 
     module.dump_data_sources(
         hook_config=None,
@@ -36,6 +48,7 @@ def test_dump_data_sources_creates_manifest_file():
 def test_dump_data_sources_with_store_config_files_false_does_not_create_manifest_file():
     flexmock(module.os).should_receive('makedirs').never()
     flexmock(module.json).should_receive('dump').never()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
     hook_config = {'store_config_files': False}
 
     module.dump_data_sources(
@@ -51,7 +64,7 @@ def test_dump_data_sources_with_store_config_files_false_does_not_create_manifes
 def test_dump_data_sources_with_dry_run_does_not_create_manifest_file():
     flexmock(module.os).should_receive('makedirs').never()
     flexmock(module.json).should_receive('dump').never()
-
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
     module.dump_data_sources(
         hook_config=None,
         config={},

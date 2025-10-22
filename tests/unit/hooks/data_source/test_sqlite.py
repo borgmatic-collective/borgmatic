@@ -33,6 +33,13 @@ def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'database'),
         ],
     ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/sqlite_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -70,6 +77,13 @@ def test_dump_data_sources_dumps_each_database():
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'database1'),
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'database2'),
         ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/sqlite_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
     ).once()
 
     assert (
@@ -114,6 +128,13 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
         [
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'database1'),
         ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/sqlite_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
     ).once()
 
     assert (
@@ -164,6 +185,13 @@ def test_dump_data_sources_runs_non_default_sqlite_with_path_injection_attack_ge
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'database1'),
         ],
     ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/sqlite_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -198,6 +226,13 @@ def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
         [
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'database1'),
         ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/sqlite_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
     ).once()
 
     assert (
@@ -236,6 +271,13 @@ def test_dump_data_sources_with_name_all_warns_and_dumps_all_databases():
             module.borgmatic.actions.restore.Dump('sqlite_databases', 'all'),
         ],
     ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/sqlite_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -261,6 +303,7 @@ def test_dump_data_sources_does_not_dump_if_dry_run():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').never()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
 
     assert (
         module.dump_data_sources(

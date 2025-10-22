@@ -6,6 +6,7 @@ import shlex
 import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.hooks.credential.parse
+import borgmatic.hooks.data_source.config
 import borgmatic.hooks.data_source.mariadb
 from borgmatic.execute import (
     execute_command,
@@ -297,7 +298,8 @@ def dump_data_sources(
         dump.write_data_source_dumps_metadata(
             borgmatic_runtime_directory, 'mysql_databases', dumps_metadata
         )
-        patterns.append(
+        borgmatic.hooks.data_source.config.inject_pattern(
+            patterns,
             borgmatic.borg.pattern.Pattern(
                 os.path.join(borgmatic_runtime_directory, 'mysql_databases'),
                 source=borgmatic.borg.pattern.Pattern_source.HOOK,

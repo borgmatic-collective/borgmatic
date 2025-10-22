@@ -155,3 +155,116 @@ def test_get_ip_from_container_with_broken_output_errors():
         module.get_ip_from_container('yolo')
 
     assert 'Could not decode JSON output' in str(exc_info.value)
+
+
+def test_inject_pattern_prepends_pattern_in_list():
+    patterns = [
+        module.borgmatic.borg.pattern.Pattern('/etc'),
+        module.borgmatic.borg.pattern.Pattern('/var'),
+    ]
+
+    module.inject_pattern(
+        patterns,
+        module.borgmatic.borg.pattern.Pattern(
+            '/foo/bar',
+            type=module.borgmatic.borg.pattern.Pattern_type.EXCLUDE,
+        ),
+    )
+
+    assert patterns == [
+        module.borgmatic.borg.pattern.Pattern(
+            '/foo/bar',
+            type=module.borgmatic.borg.pattern.Pattern_type.EXCLUDE,
+        ),
+        module.borgmatic.borg.pattern.Pattern('/etc'),
+        module.borgmatic.borg.pattern.Pattern('/var'),
+    ]
+
+
+def test_inject_pattern_with_root_pattern_prepends_it_along_with_corresponding_include_pattern():
+    patterns = [
+        module.borgmatic.borg.pattern.Pattern('/etc'),
+        module.borgmatic.borg.pattern.Pattern('/var'),
+    ]
+
+    module.inject_pattern(
+        patterns,
+        module.borgmatic.borg.pattern.Pattern('/foo/bar'),
+    )
+
+    assert patterns == [
+        module.borgmatic.borg.pattern.Pattern('/foo/bar'),
+        module.borgmatic.borg.pattern.Pattern(
+            '/foo/bar',
+            type=module.borgmatic.borg.pattern.Pattern_type.INCLUDE,
+        ),
+        module.borgmatic.borg.pattern.Pattern('/etc'),
+        module.borgmatic.borg.pattern.Pattern('/var'),
+    ]
+
+
+def test_replace_pattern_swaps_out_pattern_in_place():
+    patterns = [
+        module.borgmatic.borg.pattern.Pattern('/etc'),
+        module.borgmatic.borg.pattern.Pattern('/var'),
+        module.borgmatic.borg.pattern.Pattern('/lib'),
+    ]
+
+    module.replace_pattern(
+        patterns,
+        module.borgmatic.borg.pattern.Pattern('/var'),
+        module.borgmatic.borg.pattern.Pattern(
+            '/foo/bar',
+            type=module.borgmatic.borg.pattern.Pattern_type.EXCLUDE,
+        ),
+    )
+
+    assert patterns == [
+        module.borgmatic.borg.pattern.Pattern('/etc'),
+        module.borgmatic.borg.pattern.Pattern(
+            '/foo/bar',
+            type=module.borgmatic.borg.pattern.Pattern_type.EXCLUDE,
+        ),
+        module.borgmatic.borg.pattern.Pattern('/lib'),
+    ]
+
+
+def test_replace_pattern_with_unknown_pattern_falls_back_to_injecting():
+    patterns = [
+        module.borgmatic.borg.pattern.Pattern('/etc'),
+        module.borgmatic.borg.pattern.Pattern('/var'),
+        module.borgmatic.borg.pattern.Pattern('/lib'),
+    ]
+    flexmock(module).should_receive('inject_pattern').with_args(
+        patterns, module.borgmatic.borg.pattern.Pattern('/foo/bar')
+    ).once()
+
+    module.replace_pattern(
+        patterns,
+        module.borgmatic.borg.pattern.Pattern('/unknown'),
+        module.borgmatic.borg.pattern.Pattern('/foo/bar'),
+    )
+
+
+def test_replace_pattern_with_root_pattern_swaps_it_in_along_with_corresponding_include_pattern():
+    patterns = [
+        module.borgmatic.borg.pattern.Pattern('/etc'),
+        module.borgmatic.borg.pattern.Pattern('/var'),
+        module.borgmatic.borg.pattern.Pattern('/lib'),
+    ]
+
+    module.replace_pattern(
+        patterns,
+        module.borgmatic.borg.pattern.Pattern('/var'),
+        module.borgmatic.borg.pattern.Pattern('/foo/bar'),
+    )
+
+    assert patterns == [
+        module.borgmatic.borg.pattern.Pattern('/etc'),
+        module.borgmatic.borg.pattern.Pattern('/foo/bar'),
+        module.borgmatic.borg.pattern.Pattern(
+            '/foo/bar',
+            type=module.borgmatic.borg.pattern.Pattern_type.INCLUDE,
+        ),
+        module.borgmatic.borg.pattern.Pattern('/lib'),
+    ]

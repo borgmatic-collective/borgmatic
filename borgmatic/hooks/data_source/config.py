@@ -3,6 +3,7 @@ import logging
 import shutil
 import subprocess
 
+import borgmatic.borg.pattern
 from borgmatic.execute import execute_command_and_capture_output
 
 IS_A_HOOK = False
@@ -102,3 +103,65 @@ def get_ip_from_container(container):
     raise ValueError(
         f"Could not determine ip address for container '{container}'; running in host mode or userspace networking?"
     )
+
+
+def inject_pattern(patterns, data_source_pattern):
+    '''
+    Given a list of borgmatic.borg.pattern.Pattern instances representing the configured patterns,
+    insert the given data source pattern at the start of the list. The idea is that borgmatic is
+    injecting its own custom pattern specific to a data source hook into the user's configured
+    patterns so that the hook's data gets included in the backup.
+
+    As part of this injection, if the data source pattern is a root pattern, also insert an
+    "include" version of the given root pattern, in an attempt to preempt any of the user's
+    configured exclude patterns that may follow.
+    '''
+    if data_source_pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT:
+        patterns.insert(
+            0,
+            borgmatic.borg.pattern.Pattern(
+                path=data_source_pattern.path,
+                type=borgmatic.borg.pattern.Pattern_type.INCLUDE,
+                style=data_source_pattern.style,
+                device=data_source_pattern.device,
+                source=borgmatic.borg.pattern.Pattern_source.HOOK,
+            ),
+        )
+
+    patterns.insert(0, data_source_pattern)
+
+
+def replace_pattern(patterns, pattern_to_replace, data_source_pattern):
+    '''
+    Given a list of borgmatic.borg.pattern.Pattern instances representing the configured patterns,
+    replace the given pattern with the given data source pattern. The idea is that borgmatic is
+    replacing a configured pattern with its own modified pattern specific to a data source hook so
+    that the hook's data gets included in the backup.
+
+    As part of this replacement, if the data source pattern is a root pattern, also insert an
+    "include" version of the given root pattern right after the replaced pattern, in an attempt to
+    preempt any of the user's configured exclude patterns that may follow.
+
+    If the pattern to replace can't be found in the given patterns, then just inject the data source
+    pattern at the start of the list.
+    '''
+    try:
+        index = patterns.index(pattern_to_replace)
+    except ValueError:
+        inject_pattern(patterns, data_source_pattern)
+
+        return
+
+    patterns[index] = data_source_pattern
+
+    if data_source_pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT:
+        patterns.insert(
+            index + 1,
+            borgmatic.borg.pattern.Pattern(
+                path=data_source_pattern.path,
+                type=borgmatic.borg.pattern.Pattern_type.INCLUDE,
+                style=data_source_pattern.style,
+                device=data_source_pattern.device,
+                source=borgmatic.borg.pattern.Pattern_source.HOOK,
+            ),
+        )

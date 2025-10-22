@@ -5,6 +5,7 @@
    databases when dumping "all".
  * #1150: Fix for a runtime directory error when the "create" action is used with the "--log-json"
    flag.
+ * #1150: Fix for a runtime directory error when the configured patterns contain a global exclude.
  * #1161: Fix a traceback (TypeError) in the "check" action with Python 3.14.
  * Add documentation search.
  * Change the URL of the local documentation development server to be more like the production URL.

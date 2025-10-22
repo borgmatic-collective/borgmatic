@@ -409,6 +409,13 @@ def test_dump_data_sources_dumps_each_database():
             module.borgmatic.actions.restore.Dump('mariadb_databases', 'bar'),
         ],
     ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mariadb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -457,6 +464,13 @@ def test_dump_data_sources_dumps_with_password():
         [
             module.borgmatic.actions.restore.Dump('mariadb_databases', 'foo'),
         ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mariadb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
     ).once()
 
     assert module.dump_data_sources(
@@ -509,6 +523,13 @@ def test_dump_data_sources_dumps_with_environment_password_transport_passes_pass
             module.borgmatic.actions.restore.Dump('mariadb_databases', 'foo'),
         ],
     ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mariadb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         [database],
@@ -546,6 +567,13 @@ def test_dump_data_sources_dumps_all_databases_at_once():
         [
             module.borgmatic.actions.restore.Dump('mariadb_databases', 'all'),
         ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mariadb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
     ).once()
 
     assert module.dump_data_sources(
@@ -589,6 +617,13 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
             module.borgmatic.actions.restore.Dump('mariadb_databases', 'bar'),
         ],
     ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mariadb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -614,6 +649,7 @@ def test_dump_data_sources_errors_for_missing_all_databases():
         'databases/localhost/all',
     )
     flexmock(module).should_receive('database_names_to_dump').and_return(())
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
 
     with pytest.raises(ValueError):
         assert module.dump_data_sources(
@@ -637,6 +673,7 @@ def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run
         'databases/localhost/all',
     )
     flexmock(module).should_receive('database_names_to_dump').and_return(())
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
 
     assert (
         module.dump_data_sources(
