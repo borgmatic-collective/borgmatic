@@ -7,6 +7,7 @@
    flag.
  * #1150: Fix for a runtime directory error when the configured patterns contain a global exclude.
  * #1161: Fix a traceback (TypeError) in the "check" action with Python 3.14.
+ * #1166: Add a "borg_key_file" option for setting the Borg repository key file path.
  * Add documentation search.
  * Change the URL of the local documentation development server to be more like the production URL.
 

@@ -419,6 +419,12 @@ properties:
             Path for Borg encryption key files. Defaults to
             $borg_config_directory/keys
         example: /path/to/base/config/keys
+    borg_key_file:
+        type: string
+        description: |
+            Path for the Borg repository key file, for use with a repository
+            created with "keyfile" encryption.
+        example: /path/to/base/config/keyfile
     borg_exit_codes:
         type: array
         items:

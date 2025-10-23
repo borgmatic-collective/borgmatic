@@ -10,6 +10,7 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
     'borg_files_cache_ttl': 'BORG_FILES_CACHE_TTL',
     'borg_security_directory': 'BORG_SECURITY_DIR',
     'borg_keys_directory': 'BORG_KEYS_DIR',
+    'borg_key_file': 'BORG_KEY_FILE',
     'ssh_command': 'BORG_RSH',
     'temporary_directory': 'TMPDIR',
 }
