@@ -1,3 +1,7 @@
+2.0.11.dev0
+ * #1165: Fix for when the systemd service directories (RuntimeDirectory and StateDirectory) each
+   contain multiple paths.
+
 2.0.10
  * #427: Expand the "borg_extra_options" option to support passing arbitrary Borg flags to every
    Borg sub-command that borgmatic uses. As part of this, deprecate the "init" option under
