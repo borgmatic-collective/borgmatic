@@ -2,8 +2,17 @@ import contextlib
 import logging
 import os
 import tempfile
+from enum import Enum
 
 logger = logging.getLogger(__name__)
+
+
+class Systemd_directories(Enum):
+    RUNTIME_DIRECTORY = 0
+    STATE_DIRECTORY = 1
+    CACHE_DIRECTORY = 2
+    LOGS_DIRECTORY = 3
+    CONFIGURATION_DIRECTORY = 4
 
 
 def expand_user_in_path(path):
@@ -14,6 +23,17 @@ def expand_user_in_path(path):
         return os.path.expanduser(path or '') or None
     except TypeError:
         return None
+
+
+def resolve_systemd_directory(directory):
+    '''
+    Given a systemd directory environment variable enum, read the value if set and return the first
+    configured directory.
+    '''
+    separator = ':'
+
+    paths = os.environ.get(directory.name)
+    return paths.split(separator)[0] if paths else None
 
 
 def get_working_directory(config):  # pragma: no cover
@@ -96,7 +116,9 @@ class Runtime_directory:
         runtime_directory = (
             config.get('user_runtime_directory')
             or os.environ.get('XDG_RUNTIME_DIR')  # Set by PAM on Linux.
-            or os.environ.get('RUNTIME_DIRECTORY')  # Set by systemd if configured.
+            or resolve_systemd_directory(
+                Systemd_directories.RUNTIME_DIRECTORY
+            )  # Set by systemd if configured.
         )
 
         if runtime_directory:
@@ -174,7 +196,9 @@ def get_borgmatic_state_directory(config):
         os.path.join(
             config.get('user_state_directory')
             or os.environ.get('XDG_STATE_HOME')
-            or os.environ.get('STATE_DIRECTORY')  # Set by systemd if configured.
+            or resolve_systemd_directory(
+                Systemd_directories.STATE_DIRECTORY
+            )  # Set by systemd if configured.
             or '~/.local/state',
             'borgmatic',
         ),
