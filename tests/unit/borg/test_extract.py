@@ -174,6 +174,23 @@ def test_extract_last_archive_dry_run_calls_borg_with_lock_wait_flags():
     )
 
 
+def test_extract_last_archive_dry_run_calls_borg_with_extra_borg_options():
+    flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
+    insert_execute_command_mock(
+        ('borg', 'extract', '--dry-run', '--extra', 'value with space', 'repo::archive'),
+    )
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',),
+    )
+
+    module.extract_last_archive_dry_run(
+        config={'extra_borg_options': {'extract': '--extra "value with space"'}},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        repository_path='repo',
+    )
+
+
 def test_extract_archive_calls_borg_with_path_flags():
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
     insert_execute_command_mock(('borg', 'extract', 'repo::archive', 'path1', 'path2'))
@@ -363,6 +380,29 @@ def test_extract_archive_calls_borg_with_lock_wait_flags():
         archive='archive',
         paths=None,
         config={'lock_wait': '5'},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+    )
+
+
+def test_extract_archive_calls_borg_with_extra_borg_options():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
+    insert_execute_command_mock(('borg', 'extract', '--extra', 'value with space', 'repo::archive'))
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',),
+    )
+    flexmock(module.borgmatic.config.validate).should_receive(
+        'normalize_repository_path',
+    ).and_return('repo')
+
+    module.extract_archive(
+        dry_run=False,
+        repository='repo',
+        archive='archive',
+        paths=None,
+        config={'extra_borg_options': {'extract': '--extra "value with space"'}},
         local_borg_version='1.2.3',
         global_arguments=flexmock(),
     )

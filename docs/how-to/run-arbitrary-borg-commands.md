@@ -134,6 +134,7 @@ borgmatic's `borg` action is not without limitations:
    not disable certain borgmatic logs to avoid interfering with JSON output.
  * The `borg` action bypasses most of borgmatic's machinery, so for instance
    monitoring hooks will not get triggered when running `borgmatic borg create`.
+ * The `borg` action does not use `extra_borg_options`.
  * <span class="minilink minilink-addedin">Prior to version 1.8.0</span>
    borgmatic implicitly injected the repository/archive arguments on the Borg
    command-line for you (based on your borgmatic configuration or the

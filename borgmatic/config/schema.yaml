@@ -525,30 +525,118 @@ properties:
         type: object
         additionalProperties: false
         properties:
-            init:
+            break_lock:
                 type: string
                 description: |
-                  Extra command-line options to pass to "borg init".
+                  Extra command-line options to pass to "borg break-lock".
                 example: "--extra-option"
-            create:
+            check:
                 type: string
                 description: |
-                  Extra command-line options to pass to "borg create".
-                example: "--extra-option"
-            prune:
-                type: string
-                description: |
-                  Extra command-line options to pass to "borg prune".
+                  Extra command-line options to pass to "borg check".
                 example: "--extra-option"
             compact:
                 type: string
                 description: |
                   Extra command-line options to pass to "borg compact".
                 example: "--extra-option"
-            check:
+            create:
                 type: string
                 description: |
-                  Extra command-line options to pass to "borg check".
+                  Extra command-line options to pass to "borg create".
+                example: "--extra-option"
+            delete:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg delete".
+                example: "--extra-option"
+            export_tar:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg export-tar".
+                example: "--extra-option"
+            extract:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg extract".
+                example: "--extra-option"
+            key_export:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg key export".
+                example: "--extra-option"
+            key_import:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg key import".
+                example: "--extra-option"
+            key_change_passphrase:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg key
+                  change-passphrase".
+                example: "--extra-option"
+            info:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg info".
+                example: "--extra-option"
+            init:
+                type: string
+                description: |
+                  Deprecated. Use "repo_create" instead. Extra command-line
+                  options to pass to "borg init" / "borg repo-create".
+                example: "--extra-option"
+            list:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg list".
+                example: "--extra-option"
+            mount:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg mount".
+                example: "--extra-option"
+            prune:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg prune".
+                example: "--extra-option"
+            recreate:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg recreate".
+                example: "--extra-option"
+            repo_create:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg init" / "borg
+                  repo-create".
+                example: "--extra-option"
+            repo_delete:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg repo-delete".
+                example: "--extra-option"
+            repo_info:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg repo-info".
+                example: "--extra-option"
+            repo_list:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg repo-list".
+                example: "--extra-option"
+            transfer:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg transfer".
+                example: "--extra-option"
+            umount:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg umount".
                 example: "--extra-option"
         description: |
             Additional options to pass directly to particular Borg commands,

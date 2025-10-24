@@ -2,6 +2,7 @@ import argparse
 import copy
 import logging
 import re
+import shlex
 
 import borgmatic.config.paths
 import borgmatic.logger
@@ -35,6 +36,8 @@ def make_list_command(
     and local and remote Borg paths, return a command as a tuple to list archives or paths within an
     archive.
     '''
+    extra_borg_options = config.get('extra_borg_options', {}).get('list', '')
+
     return (
         (local_path, 'list')
         + (
@@ -52,6 +55,7 @@ def make_list_command(
         + flags.make_flags('log-json', config.get('log_json'))
         + flags.make_flags('lock-wait', config.get('lock_wait'))
         + flags.make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + (
             flags.make_repository_archive_flags(
                 repository_path,

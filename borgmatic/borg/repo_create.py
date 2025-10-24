@@ -66,7 +66,13 @@ def create_repository(
 
     lock_wait = config.get('lock_wait')
     umask = config.get('umask')
+    extra_borg_options_from_init = config.get('extra_borg_options', {}).get('init', '')
     extra_borg_options = config.get('extra_borg_options', {}).get('repo-create', '')
+
+    if extra_borg_options_from_init:
+        logger.warning(
+            'The "init" option in "extra_borg_options" is deprecated and will be removed from a future release; use "repo_create" instead.'
+        )
 
     repo_create_command = (
         (local_path,)
@@ -88,6 +94,7 @@ def create_repository(
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
+        + (tuple(shlex.split(extra_borg_options_from_init)) if extra_borg_options_from_init else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 

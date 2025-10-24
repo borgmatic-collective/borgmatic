@@ -162,6 +162,42 @@ def test_recreate_with_lock_wait():
     )
 
 
+def test_recreate_with_extra_borg_options():
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
+    flexmock(module.borgmatic.borg.flags).should_receive(
+        'make_repository_archive_flags',
+    ).and_return(
+        (
+            '--repo',
+            'repo',
+        ),
+    )
+    insert_execute_command_mock(
+        ('borg', 'recreate', '--extra', 'value with space', '--repo', 'repo')
+    )
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={'extra_borg_options': {'recreate': '--extra "value with space"'}},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment=None,
+            timestamp=None,
+            match_archives=None,
+        ),
+        global_arguments=flexmock(dry_run=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
 def test_recreate_with_log_info():
     flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)

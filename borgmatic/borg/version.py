@@ -19,6 +19,7 @@ def local_borg_version(config, local_path='borg'):
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
     )
+
     output = execute_command_and_capture_output(
         full_command,
         environment=environment.make_environment(config),

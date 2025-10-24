@@ -145,6 +145,23 @@ def test_change_passphrase_calls_borg_with_lock_wait_flags():
     )
 
 
+def test_change_passphrase_calls_borg_with_extra_borg_options():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    config = {'extra_borg_options': {'key_change_passphrase': '--extra "value with space"'}}
+    insert_execute_command_mock(
+        ('borg', 'key', 'change-passphrase', '--extra', 'value with space', 'repo'),
+        config=config,
+    )
+
+    module.change_passphrase(
+        repository_path='repo',
+        config=config,
+        local_borg_version='1.2.3',
+        change_passphrase_arguments=flexmock(),
+        global_arguments=flexmock(dry_run=False),
+    )
+
+
 def test_change_passphrase_with_log_info_calls_borg_with_info_parameter():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'key', 'change-passphrase', '--info', 'repo'))

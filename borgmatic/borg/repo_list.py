@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import shlex
 
 import borgmatic.config.paths
 import borgmatic.logger
@@ -62,6 +63,7 @@ def get_latest_archive(
 
     Raises ValueError if there are no archives in the repository.
     '''
+    extra_borg_options = config.get('extra_borg_options', {}).get('repo_list', '')
 
     full_command = (
         local_path,
@@ -81,6 +83,7 @@ def get_latest_archive(
         ),
         *flags.make_flags('last', 1),
         '--json',
+        *(tuple(shlex.split(extra_borg_options)) if extra_borg_options else ()),
         *flags.make_repository_flags(repository_path, local_borg_version),
     )
 
@@ -121,6 +124,8 @@ def make_repo_list_command(
     arguments to the repo_list action, global arguments as an argparse.Namespace instance, and local and
     remote Borg paths, return a command as a tuple to list archives with a repository.
     '''
+    extra_borg_options = config.get('extra_borg_options', {}).get('repo_list', '')
+
     return (
         (
             local_path,
@@ -160,6 +165,7 @@ def make_repo_list_command(
             )
         )
         + flags.make_flags_from_arguments(repo_list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 

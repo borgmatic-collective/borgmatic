@@ -1,5 +1,6 @@
 import logging
 import os
+import shlex
 import subprocess
 
 import borgmatic.config.paths
@@ -23,6 +24,7 @@ def extract_last_archive_dry_run(
     Perform an extraction dry-run of the most recent archive. If there are no archives, skip the
     dry-run.
     '''
+    extra_borg_options = config.get('extra_borg_options', {}).get('extract', '')
     verbosity_flags = ()
     if logger.isEnabledFor(logging.DEBUG):
         verbosity_flags = ('--debug', '--show-rc')
@@ -51,6 +53,7 @@ def extract_last_archive_dry_run(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + verbosity_flags
         + list_flag
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_archive_flags(
             repository_path,
             last_archive_name,
@@ -92,6 +95,7 @@ def extract_archive(
     '''
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
+    extra_borg_options = config.get('extra_borg_options', {}).get('extract', '')
 
     if config.get('progress') and extract_to_stdout:
         raise ValueError('progress and extract to stdout cannot both be set')
@@ -131,6 +135,7 @@ def extract_archive(
         + (('--strip-components', str(strip_components)) if strip_components else ())
         + (('--progress',) if config.get('progress') else ())
         + (('--stdout',) if extract_to_stdout else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_archive_flags(
             # Make the repository path absolute so the destination directory used below via changing
             # the working directory doesn't prevent Borg from finding the repo. But also apply the

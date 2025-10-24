@@ -108,6 +108,18 @@ def test_break_lock_calls_borg_with_lock_wait_flags():
     )
 
 
+def test_break_lock_calls_borg_with_extra_borg_options():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_execute_command_mock(('borg', 'break-lock', '--extra', 'value with space', 'repo'))
+
+    module.break_lock(
+        repository_path='repo',
+        config={'extra_borg_options': {'break_lock': '--extra "value with space"'}},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+    )
+
+
 def test_break_lock_with_log_info_calls_borg_with_info_parameter():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'break-lock', '--info', 'repo'))

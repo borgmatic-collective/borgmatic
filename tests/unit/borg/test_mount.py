@@ -217,6 +217,26 @@ def test_mount_archive_calls_borg_with_lock_wait_flags():
     )
 
 
+def test_mount_archive_calls_borg_with_extra_borg_options():
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',),
+    )
+    insert_execute_command_mock(
+        ('borg', 'mount', '--extra', 'value with space', 'repo::archive', '/mnt')
+    )
+
+    mount_arguments = flexmock(mount_point='/mnt', options=None, paths=None, foreground=False)
+    module.mount_archive(
+        repository_path='repo',
+        archive='archive',
+        mount_arguments=mount_arguments,
+        config={'extra_borg_options': {'mount': '--extra "value with space"'}},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+    )
+
+
 def test_mount_archive_with_log_info_calls_borg_with_info_parameter():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(

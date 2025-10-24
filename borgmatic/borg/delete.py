@@ -1,5 +1,6 @@
 import argparse
 import logging
+import shlex
 
 import borgmatic.borg.environment
 import borgmatic.borg.feature
@@ -28,6 +29,8 @@ def make_delete_command(
     arguments to the delete action as an argparse.Namespace, and global arguments, return a command
     as a tuple to delete archives from the repository.
     '''
+    extra_borg_options = config.get('extra_borg_options', {}).get('delete', '')
+
     return (
         (local_path, 'delete')
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
@@ -66,6 +69,7 @@ def make_delete_command(
                 'repository',
             ),
         )
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + borgmatic.borg.flags.make_repository_flags(repository['path'], local_borg_version)
     )
 

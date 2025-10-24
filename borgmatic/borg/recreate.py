@@ -32,6 +32,7 @@ def recreate_archive(
     exclude_flags = flags.make_exclude_flags(config)
     compression = config.get('compression', None)
     chunker_params = config.get('chunker_params', None)
+    extra_borg_options = config.get('extra_borg_options', {}).get('recreate', '')
 
     # Available recompress MODES: "if-different", "always", "never" (default)
     recompress = config.get('recompress', None)
@@ -71,6 +72,7 @@ def recreate_archive(
         + (('--chunker-params', chunker_params) if chunker_params else ())
         + (('--recompress', recompress) if recompress else ())
         + exclude_flags
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + (
             (
                 flags.make_repository_flags(repository, local_borg_version)

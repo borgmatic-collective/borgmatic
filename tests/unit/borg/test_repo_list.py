@@ -412,6 +412,42 @@ def test_get_latest_archive_with_lock_wait_calls_borg_with_lock_wait_flags():
     )
 
 
+def test_get_latest_archive_calls_borg_with_extra_borg_options():
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        (
+            'borg',
+            'list',
+            *BORG_LIST_LATEST_ARGUMENTS[:-1],
+            '--extra',
+            'value with space',
+            *BORG_LIST_LATEST_ARGUMENTS[-1:],
+        ),
+        environment=None,
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ).and_return(json.dumps({'archives': [expected_archive]}))
+
+    assert (
+        module.get_latest_archive(
+            'repo',
+            config={'extra_borg_options': {'repo_list': '--extra "value with space"'}},
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+        )
+        == expected_archive
+    )
+
+
 def test_get_latest_archive_with_consider_checkpoints_calls_borg_with_consider_checkpoints_flag():
     expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
@@ -704,6 +740,33 @@ def test_make_repo_list_command_includes_lock_wait():
     )
 
     assert command == ('borg', 'list', '--lock-wait', '5', 'repo')
+
+
+def test_make_repo_list_command_includes_extra_borg_options():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None,
+        None,
+        '1.2.3',
+    ).and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+
+    command = module.make_repo_list_command(
+        repository_path='repo',
+        config={'extra_borg_options': {'repo_list': '--extra "value with space"'}},
+        local_borg_version='1.2.3',
+        repo_list_arguments=flexmock(
+            archive=None,
+            paths=None,
+            json=False,
+            prefix=None,
+            match_archives=None,
+        ),
+        global_arguments=flexmock(),
+    )
+
+    assert command == ('borg', 'list', '--extra', 'value with space', 'repo')
 
 
 def test_make_repo_list_command_includes_local_path():

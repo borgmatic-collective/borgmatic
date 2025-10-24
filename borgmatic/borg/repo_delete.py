@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.borg.environment
 import borgmatic.borg.feature
@@ -26,6 +27,8 @@ def make_repo_delete_command(
     arguments to the repo_delete action as an argparse.Namespace, and global arguments, return a command
     as a tuple to repo_delete the entire repository.
     '''
+    extra_borg_options = config.get('extra_borg_options', {}).get('repo_delete', '')
+
     return (
         (local_path,)
         + (
@@ -56,6 +59,7 @@ def make_repo_delete_command(
             repo_delete_arguments,
             excludes=('list_details', 'force', 'repository'),
         )
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + borgmatic.borg.flags.make_repository_flags(repository['path'], local_borg_version)
     )
 

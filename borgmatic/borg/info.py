@@ -1,5 +1,6 @@
 import argparse
 import logging
+import shlex
 
 import borgmatic.config.paths
 import borgmatic.logger
@@ -23,6 +24,8 @@ def make_info_command(
     arguments to the info action as an argparse.Namespace, and global arguments, return a command
     as a tuple to display summary information for archives in the repository.
     '''
+    extra_borg_options = config.get('extra_borg_options', {}).get('info', '')
+
     return (
         (local_path, 'info')
         + (
@@ -58,6 +61,7 @@ def make_info_command(
             info_arguments,
             excludes=('repository', 'archive', 'prefix', 'match_archives'),
         )
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 

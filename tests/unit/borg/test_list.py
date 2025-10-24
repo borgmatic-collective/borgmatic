@@ -129,6 +129,22 @@ def test_make_list_command_includes_lock_wait():
     assert command == ('borg', 'list', '--lock-wait', '5', 'repo')
 
 
+def test_make_list_command_includes_extra_borg_options():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+
+    command = module.make_list_command(
+        repository_path='repo',
+        config={'extra_borg_options': {'list': '--extra "value with space"'}},
+        local_borg_version='1.2.3',
+        list_arguments=flexmock(archive=None, paths=None, json=False),
+        global_arguments=flexmock(),
+    )
+
+    assert command == ('borg', 'list', '--extra', 'value with space', 'repo')
+
+
 def test_make_list_command_includes_archive():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())

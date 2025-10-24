@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.config.paths
 from borgmatic.borg import environment, flags
@@ -22,6 +23,7 @@ def break_lock(
     '''
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
+    extra_borg_options = config.get('extra_borg_options', {}).get('break_lock', '')
 
     full_command = (
         (local_path, 'break-lock')
@@ -31,6 +33,7 @@ def break_lock(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 

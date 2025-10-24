@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.config.paths
 from borgmatic.borg import environment, feature, flags
@@ -25,6 +26,7 @@ def mount_archive(
     '''
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
+    extra_borg_options = config.get('extra_borg_options', {}).get('mount', '')
 
     full_command = (
         (local_path, 'mount')
@@ -39,6 +41,7 @@ def mount_archive(
             excludes=('repository', 'archive', 'mount_point', 'paths', 'options'),
         )
         + (('-o', mount_arguments.options) if mount_arguments.options else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + (
             (
                 flags.make_repository_flags(repository_path, local_borg_version)

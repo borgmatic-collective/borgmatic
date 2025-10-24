@@ -137,6 +137,21 @@ def test_import_key_calls_borg_with_lock_wait_flags():
     )
 
 
+def test_import_key_calls_borg_with_extra_borg_options():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.os.path).should_receive('exists').never()
+    insert_execute_command_mock(('borg', 'key', 'import', '--extra', 'value with space', 'repo'))
+
+    module.import_key(
+        repository_path='repo',
+        config={'extra_borg_options': {'key_import': '--extra "value with space"'}},
+        local_borg_version='1.2.3',
+        import_arguments=flexmock(paper=False, path=None),
+        global_arguments=flexmock(dry_run=False),
+    )
+
+
 def test_import_key_with_log_info_calls_borg_with_info_parameter():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))

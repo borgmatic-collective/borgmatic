@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.config.paths
 import borgmatic.logger
@@ -34,6 +35,7 @@ def export_tar_archive(
     borgmatic.logger.add_custom_log_levels()
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
+    extra_borg_options = config.get('extra_borg_options', {}).get('export_tar', '')
 
     full_command = (
         (local_path, 'export-tar')
@@ -47,6 +49,7 @@ def export_tar_archive(
         + (('--dry-run',) if dry_run else ())
         + (('--tar-filter', tar_filter) if tar_filter else ())
         + (('--strip-components', str(strip_components)) if strip_components else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_archive_flags(
             repository_path,
             archive,

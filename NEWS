@@ -1,4 +1,7 @@
 2.0.10.dev0
+ * #427: Expand the "borg_extra_options" option to support passing arbitrary Borg flags to every
+   Borg sub-command that borgmatic uses. As part of this, deprecate the "init" option under
+   "borg_extra_options" in favor of "repo_create".
  * #942: Factor reference material out of the documentation how-to guides. This means there's now a
    whole reference section in the docs! Check it out: https://torsion.org/borgmatic/
  * #973: For the MariaDB and MySQL database hooks, add a "skip_names" option to ignore particular

@@ -44,6 +44,16 @@ def test_unmount_archive_with_log_debug_calls_borg_with_debug_parameters():
     module.unmount_archive(config={}, mount_point='/mnt')
 
 
+def test_unmount_archive_calls_borg_with_extra_borg_options():
+    insert_execute_command_mock(
+        ('borg', 'umount', '--extra', 'value with space', '/mnt'), borg_local_path='borg'
+    )
+
+    module.unmount_archive(
+        config={'extra_borg_options': {'umount': '--extra "value with space"'}}, mount_point='/mnt'
+    )
+
+
 def test_unmount_archive_calls_borg_with_local_path():
     insert_execute_command_mock(('borg1', 'umount', '/mnt'), borg_local_path='borg1')
 

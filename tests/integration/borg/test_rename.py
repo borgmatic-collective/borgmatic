@@ -118,3 +118,25 @@ def test_make_rename_command_includes_lock_wait():
     )
 
     assert command == ('borg', 'rename', '--lock-wait', '5', 'repo::old_archive', 'new_archive')
+
+
+def test_make_rename_command_includes_extra_borg_options():
+    command = module.make_rename_command(
+        dry_run=False,
+        repository_name='repo',
+        old_archive_name='old_archive',
+        new_archive_name='new_archive',
+        config={'extra_borg_options': {'rename': '--extra "value with space"'}},
+        local_borg_version='1.2.3',
+        local_path='borg',
+        remote_path=None,
+    )
+
+    assert command == (
+        'borg',
+        'rename',
+        '--extra',
+        'value with space',
+        'repo::old_archive',
+        'new_archive',
+    )

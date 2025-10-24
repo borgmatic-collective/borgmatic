@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.borg.flags
 
@@ -15,6 +16,8 @@ def make_rename_command(
     local_path,
     remote_path,
 ):
+    extra_borg_options = config.get('extra_borg_options', {}).get('rename', '')
+
     return (
         (local_path, 'rename')
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
@@ -24,6 +27,7 @@ def make_rename_command(
         + borgmatic.borg.flags.make_flags('umask', config.get('umask'))
         + borgmatic.borg.flags.make_flags('log-json', config.get('log_json'))
         + borgmatic.borg.flags.make_flags('lock-wait', config.get('lock_wait'))
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + borgmatic.borg.flags.make_repository_archive_flags(
             repository_name,
             old_archive_name,

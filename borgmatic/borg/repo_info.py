@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.config.paths
 import borgmatic.logger
@@ -24,6 +25,7 @@ def display_repository_info(
     '''
     borgmatic.logger.add_custom_log_levels()
     lock_wait = config.get('lock_wait', None)
+    extra_borg_options = config.get('extra_borg_options', {}).get('repo_info', '')
 
     full_command = (
         (local_path,)
@@ -47,6 +49,7 @@ def display_repository_info(
         + flags.make_flags('log-json', config.get('log_json'))
         + flags.make_flags('lock-wait', lock_wait)
         + (('--json',) if repo_info_arguments.json else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 

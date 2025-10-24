@@ -175,6 +175,27 @@ def test_make_delete_command_includes_lock_wait():
     assert command == ('borg', 'delete', '--lock-wait', '5', 'repo')
 
 
+def test_make_delete_command_includes_extra_borg_options():
+    flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
+    flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
+        ('repo',),
+    )
+
+    command = module.make_delete_command(
+        repository={'path': 'repo'},
+        config={'extra_borg_options': {'delete': '--extra "value with space"'}},
+        local_borg_version='1.2.3',
+        delete_arguments=flexmock(list_details=False, force=0, match_archives=None, archive=None),
+        global_arguments=flexmock(dry_run=False),
+        local_path='borg',
+        remote_path=None,
+    )
+
+    assert command == ('borg', 'delete', '--extra', 'value with space', 'repo')
+
+
 def test_make_delete_command_with_list_config_calls_borg_with_list_flag():
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(

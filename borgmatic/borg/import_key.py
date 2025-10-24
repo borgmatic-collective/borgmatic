@@ -1,5 +1,6 @@
 import logging
 import os
+import shlex
 
 import borgmatic.config.paths
 import borgmatic.logger
@@ -30,6 +31,7 @@ def import_key(
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
     working_directory = borgmatic.config.paths.get_working_directory(config)
+    extra_borg_options = config.get('extra_borg_options', {}).get('key_import', '')
 
     if import_arguments.path and import_arguments.path != '-':
         if not os.path.exists(os.path.join(working_directory or '', import_arguments.path)):
@@ -48,6 +50,7 @@ def import_key(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + flags.make_flags('paper', import_arguments.paper)
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(
             repository_path,
             local_borg_version,

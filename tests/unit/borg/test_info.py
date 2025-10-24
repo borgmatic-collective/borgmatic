@@ -300,6 +300,30 @@ def test_make_info_command_with_lock_wait_passes_through_to_command():
     assert command == ('borg', 'info', '--lock-wait', '5', '--repo', 'repo')
 
 
+def test_make_info_command_with_extra_borg_options_passes_through_to_command():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None,
+        None,
+        '2.3.4',
+    ).and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    config = {'extra_borg_options': {'info': '--extra "value with space"'}}
+
+    command = module.make_info_command(
+        repository_path='repo',
+        config=config,
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(),
+        info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives=None),
+        local_path='borg',
+        remote_path=None,
+    )
+
+    assert command == ('borg', 'info', '--extra', 'value with space', '--repo', 'repo')
+
+
 def test_make_info_command_transforms_prefix_into_match_archives_flags():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(
