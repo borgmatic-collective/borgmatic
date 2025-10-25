@@ -63,7 +63,10 @@ def get_latest_archive(
 
     Raises ValueError if there are no archives in the repository.
     '''
-    extra_borg_options = config.get('extra_borg_options', {}).get('repo_list', '')
+    extra_borg_options = config.get('extra_borg_options', {}).get(
+        'repo_list' if feature.available(feature.Feature.REPO_LIST, local_borg_version) else 'list',
+        '',
+    )
 
     full_command = (
         local_path,
@@ -124,7 +127,10 @@ def make_repo_list_command(
     arguments to the repo_list action, global arguments as an argparse.Namespace instance, and local and
     remote Borg paths, return a command as a tuple to list archives with a repository.
     '''
-    extra_borg_options = config.get('extra_borg_options', {}).get('repo_list', '')
+    extra_borg_options = config.get('extra_borg_options', {}).get(
+        'repo_list' if feature.available(feature.Feature.REPO_LIST, local_borg_version) else 'list',
+        '',
+    )
 
     return (
         (

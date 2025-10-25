@@ -27,7 +27,14 @@ def make_repo_delete_command(
     arguments to the repo_delete action as an argparse.Namespace, and global arguments, return a command
     as a tuple to repo_delete the entire repository.
     '''
-    extra_borg_options = config.get('extra_borg_options', {}).get('repo_delete', '')
+    extra_borg_options = config.get('extra_borg_options', {}).get(
+        'repo_delete'
+        if borgmatic.borg.feature.available(
+            borgmatic.borg.feature.Feature.REPO_DELETE, local_borg_version
+        )
+        else 'delete',
+        '',
+    )
 
     return (
         (local_path,)

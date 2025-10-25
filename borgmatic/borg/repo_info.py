@@ -25,7 +25,10 @@ def display_repository_info(
     '''
     borgmatic.logger.add_custom_log_levels()
     lock_wait = config.get('lock_wait', None)
-    extra_borg_options = config.get('extra_borg_options', {}).get('repo_info', '')
+    extra_borg_options = config.get('extra_borg_options', {}).get(
+        'repo_info' if feature.available(feature.Feature.REPO_INFO, local_borg_version) else 'info',
+        '',
+    )
 
     full_command = (
         (local_path,)
