@@ -607,6 +607,11 @@ properties:
                 description: |
                   Extra command-line options to pass to "borg recreate".
                 example: "--extra-option"
+            rename:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg rename".
+                example: "--extra-option"
             repo_create:
                 type: string
                 description: |

@@ -3,6 +3,8 @@
    contain multiple paths.
  * #1168: Fix for the "list", "info", and "delete" options in "extra_borg_options" being ignored
    when "--archive" is omitted with Borg 1.x.
+ * Add a "rename" option to "extra_borg_options" to support passing arbitrary flags to "borg
+   rename".
 
 2.0.10
  * #427: Expand the "extra_borg_options" option to support passing arbitrary Borg flags to every
