@@ -6,13 +6,20 @@ from borgmatic.hooks.data_source import lvm as module
 
 def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
     config = {'lvm': {}}
-    patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
+    patterns = [
+        Pattern('/mnt/lvolume1/subdir'),
+        Pattern('/mnt/lvolume1/subdir/.cache', Pattern_type.EXCLUDE),
+        Pattern('/mnt/lvolume2'),
+    ]
     logical_volumes = (
         module.Logical_volume(
             name='lvolume1',
             device_path='/dev/lvolume1',
             mount_point='/mnt/lvolume1',
-            contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
+            contained_patterns=(
+                Pattern('/mnt/lvolume1/subdir'),
+                Pattern('/mnt/lvolume1/subdir/.cache', Pattern_type.EXCLUDE),
+            ),
         ),
         module.Logical_volume(
             name='lvolume2',
@@ -75,6 +82,9 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
 
     assert patterns == [
         Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume1/subdir'),
+        Pattern(
+            '/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume1/subdir/.cache', Pattern_type.EXCLUDE
+        ),
         Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume1/subdir', Pattern_type.INCLUDE),
         Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume2'),
         Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume2', Pattern_type.INCLUDE),

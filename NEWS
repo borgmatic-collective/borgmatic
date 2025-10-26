@@ -3,6 +3,8 @@
    contain multiple paths.
  * #1168: Fix for the "list", "info", and "delete" options in "extra_borg_options" being ignored
    when "--archive" is omitted with Borg 1.x.
+ * #1169: Fix for a regression in the ZFS, LVM, and Btrfs hooks in which partial excludes of
+   snapshot paths were ignored.
  * Add a "rename" option to "extra_borg_options" to support passing arbitrary flags to "borg
    rename".
 

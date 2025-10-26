@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 import shutil
@@ -131,7 +132,23 @@ def inject_pattern(patterns, data_source_pattern):
     patterns.insert(0, data_source_pattern)
 
 
-def replace_pattern(patterns, pattern_to_replace, data_source_pattern):
+def get_last_pattern_index(patterns, patterns_subset):
+    '''
+    Given a sequence of all patterns and a subset of those patterns, find each subset pattern in the
+    all patterns sequence and return the highest (last) index.
+    '''
+    last_pattern_index = 0
+
+    for pattern in patterns_subset:
+        with contextlib.suppress(ValueError):
+            last_pattern_index = max(patterns.index(pattern), last_pattern_index)
+
+    return last_pattern_index
+
+
+def replace_pattern(
+    patterns, pattern_to_replace, data_source_pattern, last_contained_pattern_index
+):
     '''
     Given a list of borgmatic.borg.pattern.Pattern instances representing the configured patterns,
     replace the given pattern with the given data source pattern. The idea is that borgmatic is
@@ -139,8 +156,32 @@ def replace_pattern(patterns, pattern_to_replace, data_source_pattern):
     that the hook's data gets included in the backup.
 
     As part of this replacement, if the data source pattern is a root pattern, also insert an
-    "include" version of the given root pattern right after the replaced pattern, in an attempt to
-    preempt any of the user's configured exclude patterns that may follow.
+    "include" version of the given root pattern right after the given last contained pattern index
+    in an attempt to preempt any of the user's configured global exclude patterns that may follow.
+    But we don't want to preempt any intentional partial excludes of the data source pattern itself,
+    which is why the include goes after the last contained pattern index.
+
+    For instance, let's say that the patterns are effectively:
+
+       R /foo
+       R /bar
+       - /bar/.cache
+       R /baz
+       - **
+
+    ... and "R /bar" is the pattern to replace, data source pattern is "R /bar/snapshot", and the
+    last contained pattern index is 2 (corresponding to "- /bar/.cache"). The resulting patterns
+    after calling this function would be:
+
+       R /foo
+       R /bar/snapshot
+       - /bar/snapshot/.cache
+       + /bar/snapshot
+       R /baz
+       - **
+
+    Note that the positioning of "+ /bar/snapshot" means that it overrides the "- **" global exclude
+    but not the "- /bar/snapshot/.cache" contained pattern exclude.
 
     If the pattern to replace can't be found in the given patterns, then just inject the data source
     pattern at the start of the list.
@@ -156,7 +197,7 @@ def replace_pattern(patterns, pattern_to_replace, data_source_pattern):
 
     if data_source_pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT:
         patterns.insert(
-            index + 1,
+            last_contained_pattern_index + 1,
             borgmatic.borg.pattern.Pattern(
                 path=data_source_pattern.path,
                 type=borgmatic.borg.pattern.Pattern_type.INCLUDE,

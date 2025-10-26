@@ -450,6 +450,9 @@ def test_dump_data_sources_snapshots_each_subvolume_and_replaces_patterns():
         '/mnt/subvol2',
         object,
     ).and_return(Pattern('/mnt/subvol2/.borgmatic-snapshot-1234/mnt/subvol2'))
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive(
+        'get_last_pattern_index'
+    ).and_return(0)
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
         Pattern('/mnt/subvol1'),
@@ -457,6 +460,7 @@ def test_dump_data_sources_snapshots_each_subvolume_and_replaces_patterns():
             '/mnt/subvol1/.borgmatic-snapshot-1234/mnt/subvol1',
             source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
         ),
+        0,
     ).once()
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
@@ -465,6 +469,7 @@ def test_dump_data_sources_snapshots_each_subvolume_and_replaces_patterns():
             '/mnt/subvol2/.borgmatic-snapshot-1234/mnt/subvol2',
             source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
         ),
+        0,
     ).once()
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
         object,
@@ -527,6 +532,9 @@ def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
         '/mnt/subvol1',
         object,
     ).and_return(Pattern('/mnt/subvol1/.borgmatic-snapshot-1234/mnt/subvol1'))
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive(
+        'get_last_pattern_index'
+    ).and_return(0)
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
         Pattern('/mnt/subvol1'),
@@ -534,6 +542,7 @@ def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
             '/mnt/subvol1/.borgmatic-snapshot-1234/mnt/subvol1',
             source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
         ),
+        0,
     ).once()
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
         object,
@@ -594,6 +603,9 @@ def test_dump_data_sources_with_findmnt_command_warns():
         '/mnt/subvol1',
         object,
     ).and_return(Pattern('/mnt/subvol1/.borgmatic-snapshot-1234/mnt/subvol1'))
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive(
+        'get_last_pattern_index'
+    ).and_return(0)
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
         Pattern('/mnt/subvol1'),
@@ -601,6 +613,7 @@ def test_dump_data_sources_with_findmnt_command_warns():
             '/mnt/subvol1/.borgmatic-snapshot-1234/mnt/subvol1',
             source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
         ),
+        0,
     ).once()
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
         object,
@@ -641,6 +654,9 @@ def test_dump_data_sources_with_dry_run_skips_snapshot_and_patterns_update():
     )
     flexmock(module).should_receive('snapshot_subvolume').never()
     flexmock(module).should_receive('make_snapshot_exclude_pattern').never()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive(
+        'get_last_pattern_index'
+    ).never()
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').never()
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
 
@@ -666,6 +682,9 @@ def test_dump_data_sources_without_matching_subvolumes_skips_snapshot_and_patter
     flexmock(module).should_receive('make_snapshot_path').never()
     flexmock(module).should_receive('snapshot_subvolume').never()
     flexmock(module).should_receive('make_snapshot_exclude_pattern').never()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive(
+        'get_last_pattern_index'
+    ).never()
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').never()
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
 

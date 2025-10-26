@@ -5,11 +5,22 @@ from borgmatic.hooks.data_source import btrfs as module
 
 
 def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
-    patterns = [Pattern('/foo'), Pattern('/mnt/subvol1'), Pattern('/mnt/subvol2')]
+    patterns = [
+        Pattern('/foo'),
+        Pattern('/mnt/subvol1'),
+        Pattern('/mnt/subvol1/.cache', Pattern_type.EXCLUDE),
+        Pattern('/mnt/subvol2'),
+    ]
     config = {'btrfs': {}}
     flexmock(module).should_receive('get_subvolumes').and_return(
         (
-            module.Subvolume('/mnt/subvol1', contained_patterns=(Pattern('/mnt/subvol1'),)),
+            module.Subvolume(
+                '/mnt/subvol1',
+                contained_patterns=(
+                    Pattern('/mnt/subvol1'),
+                    Pattern('/mnt/subvol1/.cache', Pattern_type.EXCLUDE),
+                ),
+            ),
             module.Subvolume('/mnt/subvol2', contained_patterns=(Pattern('/mnt/subvol2'),)),
         ),
     )
@@ -50,6 +61,7 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
         ),
         Pattern('/foo'),
         Pattern('/mnt/subvol1/.borgmatic-snapshot-1234/./mnt/subvol1'),
+        Pattern('/mnt/subvol1/.borgmatic-snapshot-1234/./mnt/subvol1/.cache', Pattern_type.EXCLUDE),
         Pattern('/mnt/subvol1/.borgmatic-snapshot-1234/./mnt/subvol1', Pattern_type.INCLUDE),
         Pattern('/mnt/subvol2/.borgmatic-snapshot-1234/./mnt/subvol2'),
         Pattern('/mnt/subvol2/.borgmatic-snapshot-1234/./mnt/subvol2', Pattern_type.INCLUDE),

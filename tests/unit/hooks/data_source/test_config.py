@@ -203,6 +203,52 @@ def test_inject_pattern_with_root_pattern_prepends_it_along_with_corresponding_i
     ]
 
 
+def test_get_last_pattern_index_with_ordered_subset_patterns_finds_last_one():
+    patterns = [
+        module.borgmatic.borg.pattern.Pattern('/foo'),
+        module.borgmatic.borg.pattern.Pattern('/bar'),
+        module.borgmatic.borg.pattern.Pattern('/baz'),
+        module.borgmatic.borg.pattern.Pattern('/quux'),
+    ]
+    patterns_subset = [
+        module.borgmatic.borg.pattern.Pattern('/bar'),
+        module.borgmatic.borg.pattern.Pattern('/baz'),
+    ]
+
+    assert module.get_last_pattern_index(patterns, patterns_subset) == 2
+
+
+def test_get_last_pattern_index_with_unordered_subset_patterns_finds_last_one():
+    patterns = [
+        module.borgmatic.borg.pattern.Pattern('/foo'),
+        module.borgmatic.borg.pattern.Pattern('/bar'),
+        module.borgmatic.borg.pattern.Pattern('/baz'),
+        module.borgmatic.borg.pattern.Pattern('/quux'),
+    ]
+    patterns_subset = [
+        module.borgmatic.borg.pattern.Pattern('/baz'),
+        module.borgmatic.borg.pattern.Pattern('/bar'),
+    ]
+
+    assert module.get_last_pattern_index(patterns, patterns_subset) == 2
+
+
+def test_get_last_pattern_index_with_unknown_subset_patterns_skips_it():
+    patterns = [
+        module.borgmatic.borg.pattern.Pattern('/foo'),
+        module.borgmatic.borg.pattern.Pattern('/bar'),
+        module.borgmatic.borg.pattern.Pattern('/baz'),
+        module.borgmatic.borg.pattern.Pattern('/quux'),
+    ]
+    patterns_subset = [
+        module.borgmatic.borg.pattern.Pattern('/baz'),
+        module.borgmatic.borg.pattern.Pattern('/unknown'),
+        module.borgmatic.borg.pattern.Pattern('/bar'),
+    ]
+
+    assert module.get_last_pattern_index(patterns, patterns_subset) == 2
+
+
 def test_replace_pattern_swaps_out_pattern_in_place():
     patterns = [
         module.borgmatic.borg.pattern.Pattern('/etc'),
@@ -217,6 +263,7 @@ def test_replace_pattern_swaps_out_pattern_in_place():
             '/foo/bar',
             type=module.borgmatic.borg.pattern.Pattern_type.EXCLUDE,
         ),
+        0,
     )
 
     assert patterns == [
@@ -243,6 +290,7 @@ def test_replace_pattern_with_unknown_pattern_falls_back_to_injecting():
         patterns,
         module.borgmatic.borg.pattern.Pattern('/unknown'),
         module.borgmatic.borg.pattern.Pattern('/foo/bar'),
+        0,
     )
 
 
@@ -251,20 +299,23 @@ def test_replace_pattern_with_root_pattern_swaps_it_in_along_with_corresponding_
         module.borgmatic.borg.pattern.Pattern('/etc'),
         module.borgmatic.borg.pattern.Pattern('/var'),
         module.borgmatic.borg.pattern.Pattern('/lib'),
+        module.borgmatic.borg.pattern.Pattern('/run'),
     ]
 
     module.replace_pattern(
         patterns,
         module.borgmatic.borg.pattern.Pattern('/var'),
         module.borgmatic.borg.pattern.Pattern('/foo/bar'),
+        2,
     )
 
     assert patterns == [
         module.borgmatic.borg.pattern.Pattern('/etc'),
         module.borgmatic.borg.pattern.Pattern('/foo/bar'),
+        module.borgmatic.borg.pattern.Pattern('/lib'),
         module.borgmatic.borg.pattern.Pattern(
             '/foo/bar',
             type=module.borgmatic.borg.pattern.Pattern_type.INCLUDE,
         ),
-        module.borgmatic.borg.pattern.Pattern('/lib'),
+        module.borgmatic.borg.pattern.Pattern('/run'),
     ]

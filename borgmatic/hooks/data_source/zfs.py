@@ -300,6 +300,10 @@ def dump_data_sources(
             snapshot_mount_path,
         )
 
+        last_contained_pattern_index = borgmatic.hooks.data_source.config.get_last_pattern_index(
+            patterns, dataset.contained_patterns
+        )
+
         for pattern in dataset.contained_patterns:
             snapshot_pattern = make_borg_snapshot_pattern(
                 pattern,
@@ -307,7 +311,9 @@ def dump_data_sources(
                 normalized_runtime_directory,
             )
 
-            borgmatic.hooks.data_source.config.replace_pattern(patterns, pattern, snapshot_pattern)
+            borgmatic.hooks.data_source.config.replace_pattern(
+                patterns, pattern, snapshot_pattern, last_contained_pattern_index
+            )
 
     return []
 
