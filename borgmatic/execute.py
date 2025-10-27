@@ -158,8 +158,8 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                     if not line or not ready_process:
                         break
 
-                    # Keep the last few lines of output in case the process errors, and we need the output for
-                    # the exception below.
+                    # Keep the last few lines of output in case the process errors, and we need the
+                    # output for the exception below.
                     append_last_lines(
                         buffer_last_lines[ready_buffer],
                         captured_outputs[ready_process],
@@ -199,7 +199,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                         last_lines,
                         captured_outputs[process],
                         line,
-                        output_log_level=logging.ERROR,
+                        output_log_level,
                     )
 
                 if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
