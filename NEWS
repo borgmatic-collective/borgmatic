@@ -1,4 +1,7 @@
 2.0.11.dev0
+ * #957: Document borgmatic's limitations around parallelism—both its own and Borg's. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/how-to/make-per-application-backups/#limitations
  * #1165: Fix for when the systemd service directories (RuntimeDirectory and StateDirectory) each
    contain multiple paths.
  * #1168: Fix for the "list", "info", and "delete" options in "extra_borg_options" being ignored
