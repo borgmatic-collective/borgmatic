@@ -173,9 +173,11 @@ properties:
             type: string
         description: |
             Any paths matching these patterns are included/excluded from
-            backups. Globs are expanded. (Tildes are not.) See the output of
-            "borg help patterns" for more details. Quote any value if it
-            contains leading punctuation, so it parses correctly.
+            backups. Recursion root patterns ("R ...") are effectively the same
+            as "source_directories"; they tell Borg which paths to backup
+            (modulo any excludes). Globs are expanded. (Tildes are not.) See
+            the output of "borg help patterns" for more details. Quote any value
+            if it contains leading punctuation, so it parses correctly.
         example:
             - 'R /'
             - '- /home/*/.cache'
