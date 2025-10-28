@@ -3022,6 +3022,12 @@ properties:
                     project monitor. Used along with the data source name URL to
                     construct a cron URL.
                 example: mymonitor
+            environment:
+                type: string
+                description: |
+                    Sentry monitor environment to specify. Used in the call
+                    to sentry of set.
+                example: production
             states:
                 type: array
                 items:
