@@ -261,7 +261,7 @@ properties:
             Path for storing temporary runtime data like streaming database
             dumps and bootstrap metadata. borgmatic automatically creates and
             uses a "borgmatic" subdirectory here. Defaults to $XDG_RUNTIME_DIR
-            or or $TMPDIR or $TEMP or /run/user/$UID.
+            or $TMPDIR or $TEMP or /run/user/$UID.
         example: /run/user/1001
     user_state_directory:
         type: string
