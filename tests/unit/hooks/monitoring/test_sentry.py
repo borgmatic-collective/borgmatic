@@ -13,14 +13,16 @@ from borgmatic.hooks.monitoring import sentry as module
             borgmatic.hooks.monitoring.monitor.State.START,
             ['start', 'finish', 'fail'],
             None,
-            'in_progress'
+            'in_progress',
         ),
         (borgmatic.hooks.monitoring.monitor.State.START, None, 'production', 'in_progress'),
         (borgmatic.hooks.monitoring.monitor.State.FINISH, ['finish'], 'development', 'ok'),
         (borgmatic.hooks.monitoring.monitor.State.FAIL, ['fail'], 'another-environment', 'error'),
     ),
 )
-def test_ping_monitor_constructs_cron_url_and_pings_it(state, configured_states, configured_environment, expected_status):
+def test_ping_monitor_constructs_cron_url_and_pings_it(
+    state, configured_states, configured_environment, expected_status
+):
     hook_config = {
         'data_source_name_url': 'https://5f80ec@o294220.ingest.us.sentry.io/203069',
         'monitor_slug': 'test',

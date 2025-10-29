@@ -1,5 +1,6 @@
 import logging
 import re
+import urllib
 
 import requests
 
@@ -66,9 +67,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     if dry_run:
         return
 
-    environment_query = ''
-    if environment:
-        environment_query = f'&environment={environment}'
+    environment_query = f'&environment={urllib.parse.quote(environment)}' if environment else ''
 
     logging.getLogger('urllib3').setLevel(logging.ERROR)
     try:
