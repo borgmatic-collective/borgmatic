@@ -75,12 +75,16 @@ with `sudo`. If that doesn't work, you may need to update your [sudoers
 Besides the approaches described above, there are several other options for
 installing borgmatic:
 
- * [container image with scheduled backups](https://hub.docker.com/r/b3vis/borgmatic/) (+ Docker Compose files)
- * [container image with multi-arch and Docker CLI support](https://hub.docker.com/r/modem7/borgmatic-docker/)
+#### <span data-pagefind-weight="7.0">Docker / Podman</span>
+
+ * [container image with scheduled backups](https://github.com/borgmatic-collective/docker-borgmatic) (+ Docker Compose files)
+ * [container image with multi-arch and Docker CLI support](https://github.com/modem7/docker-borgmatic)
+
+#### Operating system packages
+
  * [Debian](https://tracker.debian.org/pkg/borgmatic)
  * [Ubuntu](https://launchpad.net/ubuntu/+source/borgmatic)
- * [Fedora official](https://bodhi.fedoraproject.org/updates/?search=borgmatic)
- * [Fedora unofficial](https://copr.fedorainfracloud.org/coprs/heffer/borgmatic/)
+ * [Fedora](https://bodhi.fedoraproject.org/updates/?search=borgmatic)
  * [Gentoo](https://packages.gentoo.org/packages/app-backup/borgmatic)
  * [Arch Linux](https://archlinux.org/packages/extra/any/borgmatic/)
  * [Alpine Linux](https://pkgs.alpinelinux.org/packages?name=borgmatic)
@@ -88,9 +92,11 @@ installing borgmatic:
  * [openSUSE](https://software.opensuse.org/package/borgmatic)
  * [macOS (via Homebrew)](https://formulae.brew.sh/formula/borgmatic)
  * [macOS (via MacPorts)](https://ports.macports.org/port/borgmatic/)
- * [NixOS](https://search.nixos.org/packages?show=borgmatic&sort=relevance&type=packages&query=borgmatic)
+ * [NixOS](https://search.nixos.org/packages?channel=unstable&show=borgmatic&query=borgmatic)
+
+#### Etc.
+
  * [Ansible role](https://github.com/borgbase/ansible-role-borgbackup)
- * [Unraid](https://unraid.net/community/apps?q=borgmatic#r)
  * [uv tool install](https://docs.astral.sh/uv/)
 
 

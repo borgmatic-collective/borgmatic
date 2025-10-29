@@ -5,6 +5,8 @@ eleventyNavigation:
   parent: How-to guides
   order: 15
 ---
+<span data-pagefind-weight="0.25">
+
 To get set up to develop on borgmatic, first [`install
 uv`](https://docs.astral.sh/uv/) to make managing your borgmatic environment
 easier without impacting other Python applications on your system.
@@ -205,3 +207,5 @@ borgmatic's developer build for documentation optionally supports using
 Setting up Podman is outside the scope of this documentation. But once you
 install and configure Podman, then `scripts/dev-docs` should automatically use
 Podman instead of Docker.
+
+</span>

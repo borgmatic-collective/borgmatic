@@ -5,11 +5,14 @@ eleventyNavigation:
   parent: 🔒 Credentials
 ---
 <span class="minilink minilink-addedin">New in version 1.9.11</span> When
-running inside a container, borgmatic can read [Docker
-secrets](https://docs.docker.com/compose/how-tos/use-secrets/) and [Podman
+running inside a container, borgmatic can read [<span
+data-pagefind-weight="0.5">Docker</span>
+secrets](https://docs.docker.com/compose/how-tos/use-secrets/) and [<span
+data-pagefind-weight="0.5">Podman</span>
 secrets](https://www.redhat.com/en/blog/new-podman-secrets-command). Creating
 those secrets and passing them into your borgmatic container is outside the
-scope of this documentation, but here's a simple example of that with [Docker
+scope of this documentation, but here's a simple example of that with [<span
+data-pagefind-weight="0.5">Docker</span>
 Compose](https://docs.docker.com/compose/):
 
 ```yaml
@@ -25,9 +28,9 @@ secrets:
 ```
 
 This assumes there's a file on the host at `/etc/borgmatic/passphrase.txt`
-containing your passphrase. Docker or Podman mounts the contents of that file
-into a secret named `borgmatic_passphrase` in the borgmatic container at
-`/run/secrets/`.
+containing your passphrase. <span data-pagefind-weight="0.5">Docker or
+Podman</span> mounts the contents of that file into a secret named
+`borgmatic_passphrase` in the borgmatic container at `/run/secrets/`.
 
 Once your container secret is in place, you can consume it within your borgmatic
 configuration file:
