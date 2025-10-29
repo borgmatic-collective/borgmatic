@@ -3025,8 +3025,8 @@ properties:
             environment:
                 type: string
                 description: |
-                    Sentry monitor environment used in the call to sentry. If not set,
-                    the Sentry default is used.
+                    Sentry monitor environment used in the call to sentry. If
+                    not set, the Sentry default is used.
                 example: production
             states:
                 type: array
