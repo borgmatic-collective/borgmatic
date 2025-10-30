@@ -9,6 +9,7 @@
  * #1169: Fix for a regression in the ZFS, LVM, and Btrfs hooks in which partial excludes of
    snapshot paths were ignored.
  * #1170: Fix for an inconsistent log level for Borg's last output line before exiting.
+ * #1172: Add an "environment" option to the Sentry monitoring hook.
  * Add a "rename" option to "extra_borg_options" to support passing arbitrary flags to "borg
    rename".
 
