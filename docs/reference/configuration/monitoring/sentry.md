@@ -26,6 +26,9 @@ sentry:
 The `monitor_slug` value comes from the "Monitor Slug" under "Cron Details" on
 the same Sentry monitor page.
 
+The `environment` value optionally specifies the environment that is used in
+Sentry.
+
 With this configuration, borgmatic pings Sentry whenever borgmatic starts,
 finishes, or fails, but only when any of the `create`, `prune`, `compact`, or
 `check` actions are run. You can optionally override the start/finish/fail
@@ -36,6 +39,7 @@ Sentry on failure:
 sentry:
     data_source_name_url: https://5f80ec@o294220.ingest.us.sentry.io/203069
     monitor_slug: mymonitor
+    environment: myenvironment
     states:
       - fail
 ```

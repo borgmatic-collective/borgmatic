@@ -6,20 +6,23 @@ from borgmatic.hooks.monitoring import sentry as module
 
 
 @pytest.mark.parametrize(
-    'state,configured_states,expected_status',
+    'state,configured_states,configured_environment,expected_status',
     (
-        (borgmatic.hooks.monitoring.monitor.State.START, ['start'], 'in_progress'),
+        (borgmatic.hooks.monitoring.monitor.State.START, ['start'], None, 'in_progress'),
         (
             borgmatic.hooks.monitoring.monitor.State.START,
             ['start', 'finish', 'fail'],
+            None,
             'in_progress',
         ),
-        (borgmatic.hooks.monitoring.monitor.State.START, None, 'in_progress'),
-        (borgmatic.hooks.monitoring.monitor.State.FINISH, ['finish'], 'ok'),
-        (borgmatic.hooks.monitoring.monitor.State.FAIL, ['fail'], 'error'),
+        (borgmatic.hooks.monitoring.monitor.State.START, None, 'production', 'in_progress'),
+        (borgmatic.hooks.monitoring.monitor.State.FINISH, ['finish'], 'development', 'ok'),
+        (borgmatic.hooks.monitoring.monitor.State.FAIL, ['fail'], 'another-environment', 'error'),
     ),
 )
-def test_ping_monitor_constructs_cron_url_and_pings_it(state, configured_states, expected_status):
+def test_ping_monitor_constructs_cron_url_and_pings_it(
+    state, configured_states, configured_environment, expected_status
+):
     hook_config = {
         'data_source_name_url': 'https://5f80ec@o294220.ingest.us.sentry.io/203069',
         'monitor_slug': 'test',
@@ -28,8 +31,13 @@ def test_ping_monitor_constructs_cron_url_and_pings_it(state, configured_states,
     if configured_states:
         hook_config['states'] = configured_states
 
+    environment_query = ''
+    if configured_environment:
+        hook_config['environment'] = configured_environment
+        environment_query = f'&environment={configured_environment}'
+
     flexmock(module.requests).should_receive('post').with_args(
-        f'https://o294220.ingest.us.sentry.io/api/203069/cron/test/5f80ec/?status={expected_status}',
+        f'https://o294220.ingest.us.sentry.io/api/203069/cron/test/5f80ec/?status={expected_status}{environment_query}',
         timeout=int,
         headers={'User-Agent': 'borgmatic'},
     ).and_return(flexmock(ok=True)).once()
