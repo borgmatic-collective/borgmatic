@@ -79,7 +79,7 @@ patterns:
 ```
 
 You can also add excludes and includes to your patterns. Excludes are prefixed
-with "`- `". If you're defining these directly in the borgmatic's configuration
+with "`- `". If you're defining these directly in borgmatic's configuration
 file, use quotes around the pattern. For example:
 
 ```yaml
@@ -151,7 +151,7 @@ R /tmp/borgmatic-xzwb6s07/./borgmatic/sqlite_databases
 + /tmp/borgmatic-xzwb6s07/./borgmatic/sqlite_databases
 R /home
 R /etc
-! fm:/home/.cache
+! fm:/home/user/.cache
 ```
 
 You'll notice that borgmatic prepends your patterns with its own to support
