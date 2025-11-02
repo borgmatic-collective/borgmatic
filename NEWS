@@ -12,6 +12,8 @@
  * #1172: Add an "environment" option to the Sentry monitoring hook.
  * Add a "rename" option to "extra_borg_options" to support passing arbitrary flags to "borg
    rename".
+ * Add documentation on patterns and excludes:
+   https://torsion.org/borgmatic/reference/configuration/patterns-and-excludes/
 
 2.0.10
  * #427: Expand the "extra_borg_options" option to support passing arbitrary Borg flags to every

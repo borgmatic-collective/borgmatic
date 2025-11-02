@@ -156,6 +156,9 @@ added new options since you originally created your configuration file. Also
 check out how to [upgrade your
 configuration](https://torsion.org/borgmatic/how-to/upgrade/#upgrading-your-configuration).
 
+And see the documentation on [patterns and
+excludes](https://torsion.org/borgmatic/reference/configuration/patterns-and-excludes/).
+
 
 ### Encryption
 
