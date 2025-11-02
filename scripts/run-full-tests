@@ -25,5 +25,5 @@ export PATH="/root/.local/bin:$PATH"
 uv tool install tox --with tox-uv
 export COVERAGE_FILE=/tmp/.coverage
 
-tox --workdir /tmp/.tox -e py39,py313 --sitepackages
+tox --workdir /tmp/.tox -e py311,py314 --sitepackages
 tox --workdir /tmp/.tox --sitepackages -e end-to-end

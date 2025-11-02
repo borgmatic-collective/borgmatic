@@ -14,6 +14,7 @@
    rename".
  * Add documentation on patterns and excludes:
    https://torsion.org/borgmatic/reference/configuration/patterns-and-excludes/
+ * Drop support for Python 3.9, which has been end-of-lifed.
 
 2.0.10
  * #427: Expand the "extra_borg_options" option to support passing arbitrary Borg flags to every
