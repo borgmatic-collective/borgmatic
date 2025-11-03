@@ -214,15 +214,20 @@ edits are valid.
 
 Before you can create backups with borgmatic, you first need to create a Borg
 repository so you have a destination for your backup archives. (But skip this
-step if you already have a Borg repository.) To create a repository, run a
-command like the following with Borg 1.x:
+step if you already have a Borg repository.) To create a repository, assuming
+it's already [specified in borgmatic's
+configuration](https://torsion.org/borgmatic/reference/configuration/repositories/),
+run a command like the following with Borg 1.x:
 
 ```bash
-sudo borgmatic init --encryption repokey
+sudo borgmatic repo-create --encryption repokey
 ```
 
-<span class="minilink minilink-addedin">New in borgmatic version 1.9.0</span>
-Or, with Borg 2.x:
+<span class="minilink minilink-addedin">Prior to borgmatic version 1.9.0</span>
+The `repo-create` action was called `init`.
+
+<span class="minilink minilink-addedin">With Borg version 2.x</span> Borg 2.x
+uses more specific encryption modes like `repokey-aes-ocb`. For example:
 
 ```bash
 sudo borgmatic repo-create --encryption repokey-aes-ocb
