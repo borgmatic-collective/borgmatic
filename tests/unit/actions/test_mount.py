@@ -5,7 +5,6 @@ from borgmatic.actions import mount as module
 
 def test_run_mount_does_not_raise():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.mount).should_receive('mount_archive')
     mount_arguments = flexmock(
         repository=flexmock(),

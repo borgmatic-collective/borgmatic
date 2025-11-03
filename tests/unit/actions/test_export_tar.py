@@ -5,7 +5,6 @@ from borgmatic.actions import export_tar as module
 
 def test_run_export_tar_does_not_raise():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.export_tar).should_receive('export_tar_archive')
     export_tar_arguments = flexmock(
         repository=flexmock(),
@@ -31,7 +30,6 @@ def test_run_export_tar_does_not_raise():
 
 def test_run_export_tar_favors_flags_over_config():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.export_tar).should_receive('export_tar_archive').with_args(
         object,
         object,
@@ -70,7 +68,6 @@ def test_run_export_tar_favors_flags_over_config():
 
 def test_run_export_tar_defaults_to_config():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.export_tar).should_receive('export_tar_archive').with_args(
         object,
         object,

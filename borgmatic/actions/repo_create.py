@@ -1,7 +1,6 @@
 import logging
 
 import borgmatic.borg.repo_create
-import borgmatic.config.validate
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +17,6 @@ def run_repo_create(
     '''
     Run the "repo-create" action for the given repository.
     '''
-    if repo_create_arguments.repository and not borgmatic.config.validate.repositories_match(
-        repository,
-        repo_create_arguments.repository,
-    ):
-        return
-
     logger.info('Creating repository')
 
     encryption_mode = repo_create_arguments.encryption_mode or repository.get('encryption')

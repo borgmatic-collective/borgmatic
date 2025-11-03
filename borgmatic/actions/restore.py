@@ -11,7 +11,6 @@ import borgmatic.borg.list
 import borgmatic.borg.mount
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
-import borgmatic.config.validate
 import borgmatic.hooks.data_source.dump
 import borgmatic.hooks.dispatch
 
@@ -524,18 +523,11 @@ def run_restore(
     remote_path,
 ):
     '''
-    Run the "restore" action for the given repository, but only if the repository matches the
-    requested repository in restore arguments.
+    Run the "restore" action for the given repository.
 
     Raise ValueError if a configured data source could not be found to restore or there's no
     matching dump in the archive.
     '''
-    if restore_arguments.repository and not borgmatic.config.validate.repositories_match(
-        repository,
-        restore_arguments.repository,
-    ):
-        return
-
     logger.info(f'Restoring data sources from archive {restore_arguments.archive}')
     working_directory = borgmatic.config.paths.get_working_directory(config)
 

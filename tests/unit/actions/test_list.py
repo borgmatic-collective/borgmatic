@@ -5,7 +5,6 @@ from borgmatic.actions import list as module
 
 def test_run_list_does_not_raise():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         flexmock(),
     )
@@ -35,7 +34,6 @@ def test_run_list_does_not_raise():
 
 def test_run_list_produces_json():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         flexmock(),
     )

@@ -5,7 +5,6 @@ import os
 import borgmatic.borg.extract
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
-import borgmatic.config.validate
 import borgmatic.hooks.command
 
 logger = logging.getLogger(__name__)

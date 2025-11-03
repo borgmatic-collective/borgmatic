@@ -22,7 +22,6 @@ import borgmatic.borg.pattern
 import borgmatic.borg.repo_list
 import borgmatic.borg.state
 import borgmatic.config.paths
-import borgmatic.config.validate
 import borgmatic.execute
 import borgmatic.hooks.command
 
@@ -750,12 +749,6 @@ def run_check(
 
     Raise ValueError if the Borg repository ID cannot be determined.
     '''
-    if check_arguments.repository and not borgmatic.config.validate.repositories_match(
-        repository,
-        check_arguments.repository,
-    ):
-        return
-
     logger.info('Running consistency checks')
 
     repository_id = borgmatic.borg.check.get_repository_id(

@@ -340,7 +340,7 @@ def run_actions(  # noqa: PLR0912, PLR0915
     '''
     Given parsed command-line arguments as an argparse.ArgumentParser instance, the configuration
     filename, a configuration dict, a sequence of loaded configuration paths, local and remote paths
-    to Borg, a local Borg version string, and a repository name, run all actions from the
+    to Borg, a local Borg version string, and a repository dict, run all actions from the
     command-line arguments on the given repository.
 
     Yield JSON output strings from executing any actions that produce JSON.
@@ -362,6 +362,22 @@ def run_actions(  # noqa: PLR0912, PLR0915
         'repository': repository_path,
     }
     skip_actions = set(get_skip_actions(config, arguments))
+    requested_repository = next(
+        (
+            repository
+            for action_arguments in arguments.values()
+            for repository in (getattr(action_arguments, 'repository', None),)
+            if repository is not None
+        ),
+        None,
+    )
+
+    if requested_repository and not borgmatic.config.validate.repositories_match(
+        repository,
+        requested_repository,
+    ):
+        logger.debug('Skipping actions because the requested --repository does not match')
+        return
 
     with borgmatic.hooks.command.Before_after_hooks(
         command_hooks=config.get('commands'),

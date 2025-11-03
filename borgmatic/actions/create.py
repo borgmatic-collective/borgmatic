@@ -6,7 +6,6 @@ import borgmatic.borg.feature
 import borgmatic.borg.rename
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
-import borgmatic.config.validate
 import borgmatic.hooks.dispatch
 from borgmatic.actions import pattern
 
@@ -30,12 +29,6 @@ def run_create(
 
     If create_arguments.json is True, yield the JSON output from creating the archive.
     '''
-    if create_arguments.repository and not borgmatic.config.validate.repositories_match(
-        repository,
-        create_arguments.repository,
-    ):
-        return
-
     if config.get('list_details') and config.get('progress'):
         raise ValueError(
             'With the create action, only one of --list/--files/list_details and --progress/progress can be used.',
