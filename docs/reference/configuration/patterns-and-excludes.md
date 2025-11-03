@@ -142,7 +142,7 @@ resulting processed patterns to Borg.
 
 To see the combined patterns that borgmatic passes to Borg, run borgmatic with
 [`--verbosity 2`](https://torsion.org/borgmatic/reference/command-line/logging/)
-(and optionally `--dry-run`) and look for `Writing patterns to ...` in the
+(and optionally `--dry-run`) and look for "`Writing patterns to ...`" in the
 output. For instance:
 
 ```
