@@ -1,5 +1,5 @@
 ---
-title: Repositories
+title: 🗃️ Repositories
 eleventyNavigation:
   key: 🗃️ Repositories
   parent: ⚙️  Configuration

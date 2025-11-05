@@ -1,5 +1,5 @@
 ---
-title: Monitoring
+title: 🚨 Monitoring
 eleventyNavigation:
   key: 🚨 Monitoring
   parent: ⚙️  Configuration

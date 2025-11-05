@@ -1,5 +1,5 @@
 ---
-title: How to customize warnings and errors
+title: 💥 How to customize warnings and errors
 eleventyNavigation:
   key: 💥 Customize warnings/errors
   parent: How-to guides

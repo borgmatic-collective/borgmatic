@@ -1,5 +1,5 @@
 ---
-title: How to make per-application backups
+title: 🗂️ How to make per-application backups
 eleventyNavigation:
   key: 🗂️ Make per-application backups
   parent: How-to guides

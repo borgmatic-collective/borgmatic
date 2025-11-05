@@ -1,5 +1,5 @@
 ---
-title: Configuration
+title: ⚙️  Configuration
 eleventyNavigation:
   key: ⚙️  Configuration
   parent: Reference guides

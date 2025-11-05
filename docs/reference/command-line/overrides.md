@@ -1,5 +1,5 @@
 ---
-title: Overrides
+title: 🔄 Overrides
 eleventyNavigation:
   key: 🔄 Overrides
   parent: 💻 Command-line

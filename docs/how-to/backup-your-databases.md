@@ -1,5 +1,5 @@
 ---
-title: How to backup your databases
+title: 🗄️ How to backup your databases
 eleventyNavigation:
   key: 🗄️ Backup your databases
   parent: How-to guides

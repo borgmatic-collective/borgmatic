@@ -1,5 +1,5 @@
 ---
-title: How to snapshot your filesystems
+title: 📸 How to snapshot your filesystems
 eleventyNavigation:
   key: 📸 Snapshot your filesystems
   parent: How-to guides

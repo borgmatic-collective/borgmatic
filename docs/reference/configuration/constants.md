@@ -1,5 +1,5 @@
 ---
-title: Constants
+title: 🟰 Constants
 eleventyNavigation:
   key: 🟰 Constants
   parent: ⚙️  Configuration

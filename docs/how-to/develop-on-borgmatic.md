@@ -1,5 +1,5 @@
 ---
-title: How to develop on borgmatic
+title: 🏗️ How to develop on borgmatic
 eleventyNavigation:
   key: 🏗️ Develop on borgmatic
   parent: How-to guides

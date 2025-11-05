@@ -1,5 +1,5 @@
 ---
-title: Archive name format
+title: 📛 Archive name format
 eleventyNavigation:
   key: 📛 Archive name format
   parent: ⚙️  Configuration

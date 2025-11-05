@@ -1,5 +1,5 @@
 ---
-title: How to provide your passwords
+title: 🔒 How to provide your passwords
 eleventyNavigation:
   key: 🔒 Provide your passwords
   parent: How-to guides

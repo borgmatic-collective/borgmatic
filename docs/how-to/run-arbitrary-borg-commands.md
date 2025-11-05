@@ -1,5 +1,5 @@
 ---
-title: How to run arbitrary Borg commands
+title: 🔧 How to run arbitrary Borg commands
 eleventyNavigation:
   key: 🔧 Run arbitrary Borg commands
   parent: How-to guides

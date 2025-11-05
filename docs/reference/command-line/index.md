@@ -1,5 +1,5 @@
 ---
-title: Command-line
+title: 💻 Command-line
 eleventyNavigation:
   key: 💻 Command-line
   parent: Reference guides

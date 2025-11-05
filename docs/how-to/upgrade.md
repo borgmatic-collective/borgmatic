@@ -1,5 +1,5 @@
 ---
-title: How to upgrade borgmatic and Borg
+title: 📦 How to upgrade borgmatic and Borg
 eleventyNavigation:
   key: 📦 Upgrade borgmatic/Borg
   parent: How-to guides

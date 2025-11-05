@@ -1,5 +1,5 @@
 ---
-title: Logging
+title: 🪵 Logging
 eleventyNavigation:
   key: 🪵 Logging
   parent: 💻 Command-line

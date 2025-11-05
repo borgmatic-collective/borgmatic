@@ -1,5 +1,5 @@
 ---
-title: Environment variables
+title: 💲 Environment variables
 eleventyNavigation:
   key: 💲 Environment variables
   parent: ⚙️  Configuration

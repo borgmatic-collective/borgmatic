@@ -1,5 +1,5 @@
 ---
-title: Command hooks
+title: 🪝 Command hooks
 eleventyNavigation:
   key: 🪝 Command hooks
   parent: ⚙️  Configuration

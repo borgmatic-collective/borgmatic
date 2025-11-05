@@ -1,5 +1,5 @@
 ---
-title: Consistency checks
+title: ✅ Consistency checks
 eleventyNavigation:
   key: ✅ Consistency checks
   parent: ⚙️  Configuration

@@ -1,5 +1,5 @@
 ---
-title: Source code
+title: 🐍 Source code
 eleventyNavigation:
   key: 🐍 Source code
   parent: Reference guides

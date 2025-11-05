@@ -1,5 +1,5 @@
 ---
-title: Includes
+title: ❗ Includes
 eleventyNavigation:
   key: ❗ Includes
   parent: ⚙️  Configuration

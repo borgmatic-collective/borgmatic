@@ -1,5 +1,5 @@
 ---
-title: How to make backups redundant
+title: ☁️  How to make backups redundant
 eleventyNavigation:
   key: ☁️  Make backups redundant
   parent: How-to guides
@@ -40,9 +40,10 @@ Here's a way of visualizing what borgmatic does with the above configuration:
 This gives you redundancy of your data across repositories and even
 potentially across providers.
 
-See [Borg repository URLs
-documentation](https://borgbackup.readthedocs.io/en/stable/usage/general.html#repository-urls)
+See [repositories
+documentation](https://torsion.org/borgmatic/reference/configuration/repositories/)
 for more information on how to specify local and remote repository paths.
+
 
 ### Different options per repository
 

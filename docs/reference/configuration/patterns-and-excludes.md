@@ -1,5 +1,5 @@
 ---
-title: Patterns and excludes
+title: ⛔ Patterns and excludes
 eleventyNavigation:
   key: ⛔ Patterns and excludes
   parent: ⚙️  Configuration

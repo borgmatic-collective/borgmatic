@@ -1,5 +1,5 @@
 ---
-title: Credentials
+title: 🔒 Credentials
 eleventyNavigation:
   key: 🔒 Credentials
   parent: ⚙️  Configuration

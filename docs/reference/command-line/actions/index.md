@@ -1,5 +1,5 @@
 ---
-title: Actions
+title: 🎬 Actions
 eleventyNavigation:
   key: 🎬 Actions
   parent: 💻 Command-line

@@ -1,5 +1,5 @@
 ---
-title: Data sources
+title: 🗄️ Data sources
 eleventyNavigation:
   key: 🗄️ Data sources
   parent: ⚙️  Configuration

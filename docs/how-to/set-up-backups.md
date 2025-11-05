@@ -1,5 +1,5 @@
 ---
-title: How to set up backups
+title: 📥 How to set up backups
 eleventyNavigation:
   key: 📥 Set up backups
   parent: How-to guides

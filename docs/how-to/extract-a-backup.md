@@ -1,5 +1,5 @@
 ---
-title: How to extract a backup
+title: 📤 How to extract a backup
 eleventyNavigation:
   key: 📤 Extract a backup
   parent: How-to guides

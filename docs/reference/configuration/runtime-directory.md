@@ -1,5 +1,5 @@
 ---
-title: Runtime directory
+title: 📁 Runtime directory
 eleventyNavigation:
   key: 📁 Runtime directory
   parent: ⚙️  Configuration

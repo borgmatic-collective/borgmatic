@@ -1,5 +1,5 @@
 ---
-title: How to inspect your backups
+title: 🔎 How to inspect your backups
 eleventyNavigation:
   key: 🔎 Inspect your backups
   parent: How-to guides
