@@ -24,6 +24,7 @@ RUN npm install @11ty/eleventy \
     markdown-it-anchor \
     markdown-it-replace-link
 COPY --from=borgmatic /etc/borgmatic/* /source/docs/_includes/borgmatic/
+COPY --from=borgmatic /etc/borgmatic/options.json /source/docs/reference/configuration/index.json
 COPY --from=borgmatic /command-line/* /source/docs/_includes/borgmatic/command-line/
 COPY --from=borgmatic /contributors.html /source/docs/_includes/borgmatic/contributors.html
 COPY . /source

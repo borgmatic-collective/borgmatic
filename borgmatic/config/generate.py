@@ -1,6 +1,7 @@
 import collections
 import contextlib
 import io
+import json
 import os
 import re
 
@@ -316,6 +317,24 @@ def merge_source_configuration_into_destination(destination_config, source_confi
     return destination_config
 
 
+def get_configuration_subset(config, option_name):  # pragma: no cover
+    '''
+    Given configuration as a ruamel.yaml.CommentedMap and an option name found within it at the top
+    level, return a new CommentedMap containing a subset of the configuration with only the given
+    option and no other top-level options.
+
+    This is useful when generating the sample configuration for a single option instead of a whole
+    configuration file.
+    '''
+    option_config = ruamel.yaml.CommentedMap({option_name: config[option_name]})
+
+    # Due to a quirk of ruamel.yaml, the comment right before a top-level key is not on that key and
+    # needs to get copied separately.
+    option_config.ca.items[option_name] = config.ca.items[option_name]
+
+    return option_config
+
+
 def generate_sample_configuration(
     dry_run,
     source_filename,
@@ -359,15 +378,21 @@ def generate_sample_configuration(
 
         os.makedirs(destination_path, exist_ok=True)
 
-        for option_name, option_config in destination_config.items():
+        for option_name in destination_config:
             write_configuration(
                 os.path.join(destination_path, f'{option_name}.yaml'),
                 transform_optional_configuration(
-                    render_configuration({option_name: option_config}),
+                    render_configuration(get_configuration_subset(destination_config, option_name)),
                     comment_out=False,
-                ),
+                ).strip(),
                 overwrite=overwrite,
             )
+
+        # Also dump a manifest listing all the options we've written.
+        json.dump(
+            {'option_names': list(destination_config.keys())},
+            open(os.path.join(destination_path, 'options.json'), 'w', encoding='utf-8'),
+        )
 
         return
 

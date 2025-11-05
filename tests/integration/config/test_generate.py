@@ -512,6 +512,12 @@ def test_generate_sample_configuration_with_dry_run_does_not_write_file():
 def test_generate_sample_configuration_with_split_writes_each_option_to_file():
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('schema.yaml', encoding='utf-8').and_return('')
+    builtins.should_receive('open').with_args(
+        'dest/options.json', 'w', encoding='utf-8'
+    ).and_return(flexmock())
+    flexmock(module.json).should_receive('dump').with_args(
+        {'option_names': ['foo', 'bar']}, object
+    ).once()
     flexmock(module.ruamel.yaml).should_receive('YAML').and_return(
         flexmock(load=lambda filename: {})
     )
@@ -520,17 +526,18 @@ def test_generate_sample_configuration_with_split_writes_each_option_to_file():
         {'foo': 1, 'bar': 2}
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module).should_receive('get_configuration_subset')
     flexmock(module).should_receive('render_configuration')
-    flexmock(module).should_receive('transform_optional_configuration')
+    flexmock(module).should_receive('transform_optional_configuration').and_return(' ')
     flexmock(module.os).should_receive('makedirs')
     flexmock(module).should_receive('write_configuration').with_args(
         'dest/foo.yaml',
-        None,
+        '',
         overwrite=False,
     ).once()
     flexmock(module).should_receive('write_configuration').with_args(
         'dest/bar.yaml',
-        None,
+        '',
         overwrite=False,
     ).once()
 
@@ -549,6 +556,7 @@ def test_generate_sample_configuration_with_split_and_file_destination_errors():
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module.os.path).should_receive('isdir').and_return(False)
+    flexmock(module).should_receive('get_configuration_subset').never()
     flexmock(module).should_receive('render_configuration').never()
     flexmock(module).should_receive('transform_optional_configuration').never()
     flexmock(module.os).should_receive('makedirs').never()
