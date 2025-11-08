@@ -86,6 +86,7 @@ def dump_data_sources(
         )
         command = (
             *sqlite_command,
+            '-bail',
             shlex.quote(database_path),
             '.dump',
             '>',
@@ -196,7 +197,7 @@ def restore_data_source_dump(
         shlex.quote(part)
         for part in shlex.split(data_source.get('sqlite_restore_command') or 'sqlite3')
     )
-    restore_command = (*sqlite_restore_command, shlex.quote(database_path))
+    restore_command = (*sqlite_restore_command, '-bail', shlex.quote(database_path))
     # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
     # if the restore paths don't exist in the archive.
     execute_command_with_processes(

@@ -114,6 +114,7 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
     flexmock(module).should_receive('execute_command').with_args(
         (
             'sqlite3',
+            '-bail',
             "'/path/to/database1; naughty-command'",
             '.dump',
             '>',
@@ -170,6 +171,7 @@ def test_dump_data_sources_runs_non_default_sqlite_with_path_injection_attack_ge
         (
             'custom_sqlite',  # custom sqlite command
             "'*'",  # Should get shell escaped to prevent injection attacks.
+            '-bail',
             "'/path/to/database1; naughty-command'",
             '.dump',
             '>',
@@ -325,6 +327,7 @@ def test_restore_data_source_dump_restores_database():
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'sqlite3',
+            '-bail',
             '/path/to/database',
         ),
         processes=[extract_process],
@@ -360,6 +363,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_restores_database():
         (
             'custom_sqlite',
             "'*'",  # Should get shell escaped to prevent injection attacks.
+            '-bail',
             '/path/to/database',
         ),
         processes=[extract_process],
@@ -393,6 +397,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'sqlite3',
+            '-bail',
             'cli/path/to/database',
         ),
         processes=[extract_process],
@@ -426,6 +431,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_with_connection_params
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'custom_sqlite',
+            '-bail',
             'cli/path/to/database',
         ),
         processes=[extract_process],
@@ -462,6 +468,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'sqlite3',
+            '-bail',
             'config/path/to/database',
         ),
         processes=[extract_process],
@@ -496,6 +503,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_without_connection_par
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'custom_sqlite',
+            '-bail',
             'config/path/to/database',
         ),
         processes=[extract_process],

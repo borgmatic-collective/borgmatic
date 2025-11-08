@@ -1,4 +1,6 @@
 2.0.12.dev0
+ * In the SQLite database hook, run SQLite such that it exits upon encountering an error instead of,
+   you know, not doing that.
  * Add documentation on repositories, including SSH, Rclone, S3, and B2:
    https://torsion.org/borgmatic/reference/configuration/repositories/
  * Improve documentation search results for individual configuration options.
