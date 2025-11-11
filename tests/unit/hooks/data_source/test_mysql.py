@@ -68,6 +68,7 @@ def test_database_names_to_dump_queries_mysql_for_database_names():
     flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mysql',
@@ -108,6 +109,7 @@ def test_database_names_to_dump_with_database_name_all_and_skip_names_filters_ou
         'trustsome1',
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mysql',
@@ -144,6 +146,7 @@ def test_database_names_to_dump_with_environment_password_transport_skips_defaul
     flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
         'make_defaults_file_options',
     ).never()
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mysql',
@@ -181,6 +184,7 @@ def test_database_names_to_dump_runs_mysql_with_tls():
     flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mysql',
@@ -218,6 +222,7 @@ def test_database_names_to_dump_runs_mysql_without_tls():
     flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mysql',
@@ -589,6 +594,7 @@ def test_database_names_to_dump_runs_mysql_with_list_options():
     flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', 'my.cnf').and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mysql',
@@ -621,6 +627,7 @@ def test_database_names_to_dump_runs_non_default_mysql_with_list_options():
     flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', 'my.cnf').and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         environment=None,
         full_command=(
@@ -655,6 +662,7 @@ def test_execute_dump_command_runs_mysqldump():
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -701,6 +709,7 @@ def test_execute_dump_command_with_environment_password_transport_skips_defaults
         'make_defaults_file_options',
     ).never()
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -748,6 +757,7 @@ def test_execute_dump_command_runs_mysqldump_without_add_drop_database():
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -793,6 +803,7 @@ def test_execute_dump_command_runs_mysqldump_with_hostname_and_port():
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -845,6 +856,7 @@ def test_execute_dump_command_runs_mysqldump_with_tls():
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -892,6 +904,7 @@ def test_execute_dump_command_runs_mysqldump_without_tls():
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -939,6 +952,7 @@ def test_execute_dump_command_runs_mysqldump_with_username_and_password():
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -985,6 +999,7 @@ def test_execute_dump_command_runs_mysqldump_with_options():
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -1032,6 +1047,7 @@ def test_execute_dump_command_runs_non_default_mysqldump():
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -1141,6 +1157,7 @@ def test_restore_data_source_dump_runs_mysql_to_restore():
         'make_defaults_file_options',
     ).with_args(None, None, None).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mysql', '--batch'),
         processes=[extract_process],
@@ -1180,6 +1197,7 @@ def test_restore_data_source_dump_runs_mysql_with_options():
         'make_defaults_file_options',
     ).with_args(None, None, None).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mysql', '--harder', '--batch'),
         processes=[extract_process],
@@ -1219,6 +1237,7 @@ def test_restore_data_source_dump_runs_non_default_mysql_with_options():
         'make_defaults_file_options',
     ).with_args(None, None, None).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('custom_mysql', '--harder', '--batch'),
         processes=[extract_process],
@@ -1258,6 +1277,7 @@ def test_restore_data_source_dump_runs_mysql_with_hostname_and_port():
         'make_defaults_file_options',
     ).with_args(None, None, None).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mysql',
@@ -1306,6 +1326,7 @@ def test_restore_data_source_dump_runs_mysql_with_tls():
         'make_defaults_file_options',
     ).with_args(None, None, None).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mysql',
@@ -1349,6 +1370,7 @@ def test_restore_data_source_dump_runs_mysql_without_tls():
         'make_defaults_file_options',
     ).with_args(None, None, None).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mysql',
@@ -1392,6 +1414,7 @@ def test_restore_data_source_dump_runs_mysql_with_username_and_password():
         'make_defaults_file_options',
     ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mysql', '--defaults-extra-file=/dev/fd/99', '--batch'),
         processes=[extract_process],
@@ -1440,6 +1463,7 @@ def test_restore_data_source_with_environment_password_transport_skips_defaults_
     flexmock(module.os).should_receive('environ').and_return(
         {'USER': 'root', 'MYSQL_PWD': 'trustsome1'},
     )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mysql', '--batch', '--user', 'root'),
         processes=[extract_process],
@@ -1491,6 +1515,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         ('--defaults-extra-file=/dev/fd/99',),
     )
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mysql',
@@ -1556,6 +1581,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         ('--defaults-extra-file=/dev/fd/99',),
     )
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mysql',

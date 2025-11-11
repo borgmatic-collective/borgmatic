@@ -111,6 +111,9 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        '/path/to/working/dir'
+    )
     flexmock(module).should_receive('execute_command').with_args(
         (
             'sqlite3',
@@ -122,7 +125,7 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
         ),
         shell=True,
         run_to_completion=False,
-        working_directory=None,
+        working_directory='/path/to/working/dir',
     ).and_return(processes[0])
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
         '/run/borgmatic',
@@ -168,6 +171,7 @@ def test_dump_data_sources_runs_non_default_sqlite_with_path_injection_attack_ge
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
         (
             'custom_sqlite',  # custom sqlite command
@@ -326,6 +330,7 @@ def test_restore_data_source_dump_restores_database():
     hook_config = [{'path': '/path/to/database', 'name': 'database'}, {'name': 'other'}]
     extract_process = flexmock(stdout=flexmock())
 
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'sqlite3',
@@ -362,6 +367,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_restores_database():
     ]
     extract_process = flexmock(stdout=flexmock())
 
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'custom_sqlite',
@@ -398,6 +404,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     ]
     extract_process = flexmock(stdout=flexmock())
 
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'sqlite3',
@@ -433,6 +440,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_with_connection_params
     ]
     extract_process = flexmock(stdout=flexmock())
 
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'custom_sqlite',
@@ -507,6 +515,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_without_connection_par
     ]
     extract_process = flexmock(stdout=flexmock())
 
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'custom_sqlite',
