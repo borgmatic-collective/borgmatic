@@ -355,48 +355,18 @@ Access](https://projects.torsion.org/borgmatic-collective/borgmatic/issues/293).
 
 ## Niceties
 
+<a id="shell-completion"></a>
+<a id="bash"></a>
+<a id="fish"></a>
 
-### Shell completion
 
-borgmatic includes a shell completion script (currently only for Bash and Fish) to
-support tab-completing borgmatic command-line actions and flags. Depending on
-how you installed borgmatic, this may be enabled by default.
+### Command-line autocompletion
 
-#### Bash
+borgmatic includes autocompletion scripts for various command-line shells to
+support tab-completing command-line actions and flags. See the [autocompletion
+documentation](https://torsion.org/borgmatic/reference/command-line/autocompletion/)
+for details.
 
-If completions aren't enabled, start by installing the `bash-completion` Linux package or the
-[`bash-completion@2`](https://formulae.brew.sh/formula/bash-completion@2)
-macOS Homebrew formula. Then, install the shell completion script globally:
-
-```bash
-sudo su -c "borgmatic --bash-completion > $(pkg-config --variable=completionsdir bash-completion)/borgmatic"
-```
-
-If you don't have `pkg-config` installed, you can try the following path
-instead:
-
-```bash
-sudo su -c "borgmatic --bash-completion > /usr/share/bash-completion/completions/borgmatic"
-```
-
-Or, if you'd like to install the script for only the current user:
-
-```bash
-mkdir --parents ~/.local/share/bash-completion/completions
-borgmatic --bash-completion > ~/.local/share/bash-completion/completions/borgmatic
-```
-
-Finally, restart your shell (`exit` and open a new shell) so the completions
-take effect.
-
-#### fish
-
-To add completions for fish, install the completions file globally:
-
-```fish
-borgmatic --fish-completion | sudo tee /usr/share/fish/vendor_completions.d/borgmatic.fish
-source /usr/share/fish/vendor_completions.d/borgmatic.fish
-```
 
 ### Colored output
 
