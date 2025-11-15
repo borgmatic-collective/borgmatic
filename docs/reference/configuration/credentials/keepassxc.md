@@ -62,7 +62,8 @@ keepassxc:
 
 ### Key file
 
-KeePassXC supports unlocking a database with a separate [key
+<span class="minilink minilink-addedin">New in version 2.0.0</span>KeePassXC
+supports unlocking a database with a separate [key
 file](https://keepassxc.org/docs/#faq-keyfile-howto) instead of or in addition
 to a password. To configure borgmatic for that, use the `key_file` option:
 
@@ -71,10 +72,10 @@ keepassxc:
     key_file: /path/to/keyfile
 ```
 
-By default, keepassxc-cli prompts the user for the password to unlock a
-database. But if you only want to provide a key file to unlock your database and
-not a password, for instance to support unattended backups, use the
-`ask_for_password` option:
+<span class="minilink minilink-addedin">New in version 2.0.12</span>By default,
+keepassxc-cli prompts the user for the password to unlock a database. But if you
+only want to provide a key file to unlock your database and not a password, for
+instance to support unattended backups, use the `ask_for_password` option:
 
 ```yaml
 keepassxc:
@@ -84,7 +85,8 @@ keepassxc:
 
 ### YubiKey
 
-KeePassXC also supports unlocking a database with the help of [a
+<span class="minilink minilink-addedin">New in version 2.0.0</span>KeePassXC
+also supports unlocking a database with the help of [a
 YubiKey](https://keepassxc.org/docs/#faq-yubikey-2fa). To configure borgmatic
 for that, use the `yubikey` option:
 
