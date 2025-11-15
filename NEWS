@@ -1,4 +1,6 @@
 2.0.12.dev0
+ * #1181: Add an "ask_for_password" option to the KeePassXC credential hook for disabling
+   KeePassXC's password prompt, e.g. if you're only using a key file to decrypt your database.
  * In the SQLite database hook, run SQLite such that it exits upon encountering an error instead of,
    you know, not doing that.
  * Add documentation on repositories, including SSH, Rclone, S3, and B2:

@@ -3172,6 +3172,14 @@ properties:
                 description: |
                     Command to use instead of "keepassxc-cli".
                 example: /usr/local/bin/keepassxc-cli
+            ask_for_password:
+                type: boolean
+                description: |
+                    Whether keepassxc-cli should prompt the user for a password.
+                    Disabling this is only really useful if you're unlocking
+                    your KeePassXC database with a key file instead of a
+                    password. Defaults to true.
+                example: false
             key_file:
                 type: string
                 description: |
