@@ -581,7 +581,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         '--config',
         dest='config_paths',
         action='append',
-        help='Configuration filename or directory, can specify flag multiple times, defaults to "-c \'/etc/borgmatic/config.yaml\' -c \'/etc/borgmatic.d\' -c \'$XDG_CONFIG_HOME/borgmatic/config.yaml\' -c \'$XDG_CONFIG_HOME/borgmatic.d\'", where $XDG_CONFIG_HOME defaults to "$HOME/.config"',
+        help='Configuration filename or directory, can specify flag multiple times, defaults to /etc/borgmatic/config.yaml, /etc/borgmatic.d, $XDG_CONFIG_HOME/borgmatic/config.yaml, and $XDG_CONFIG_HOME/borgmatic.d, where $XDG_CONFIG_HOME defaults to $HOME/.config',
     )
     global_group.add_argument(
         '-n',
