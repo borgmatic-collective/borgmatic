@@ -1,4 +1,5 @@
 2.0.12.dev0
+ * #1127: Fix for the database hooks not respecting the "working_directory" option.
  * #1181: Add an "ask_for_password" option to the KeePassXC credential hook for disabling
    KeePassXC's password prompt, e.g. if you're only using a key file to decrypt your database.
  * #1184: Fix the fish shell completion's detection of version mismatches.
