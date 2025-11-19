@@ -103,7 +103,11 @@ def database_names_to_dump(database, config, environment, dry_run):
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
     )
     logger.debug('Querying for "all" PostgreSQL databases to dump')
-    list_output = execute_command_and_capture_output(list_command, environment=environment)
+    list_output = execute_command_and_capture_output(
+        list_command,
+        environment=environment,
+        working_directory=borgmatic.config.paths.get_working_directory(config),
+    )
 
     return tuple(
         row[0]
@@ -245,6 +249,7 @@ def dump_data_sources(
                     command,
                     shell=True,
                     environment=environment,
+                    working_directory=borgmatic.config.paths.get_working_directory(config),
                 )
             else:
                 dump.create_named_pipe_for_dump(dump_filename)
@@ -254,6 +259,7 @@ def dump_data_sources(
                         shell=True,
                         environment=environment,
                         run_to_completion=False,
+                        working_directory=borgmatic.config.paths.get_working_directory(config),
                     ),
                 )
 
@@ -422,5 +428,10 @@ def restore_data_source_dump(
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout if extract_process else None,
         environment=environment,
+        working_directory=borgmatic.config.paths.get_working_directory(config),
     )
-    execute_command(analyze_command, environment=environment)
+    execute_command(
+        analyze_command,
+        environment=environment,
+        working_directory=borgmatic.config.paths.get_working_directory(config),
+    )

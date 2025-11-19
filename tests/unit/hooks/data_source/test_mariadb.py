@@ -186,6 +186,9 @@ def test_database_names_to_dump_queries_mariadb_for_database_names():
         'trustsome1',
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        '/path/to/working/dir'
+    )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mariadb',
@@ -196,6 +199,7 @@ def test_database_names_to_dump_queries_mariadb_for_database_names():
             'show schemas',
         ),
         environment=environment,
+        working_directory='/path/to/working/dir',
     ).and_return('foo\nbar\nmysql\n').once()
 
     names = module.database_names_to_dump(
@@ -221,6 +225,7 @@ def test_database_names_to_dump_with_database_name_all_and_skip_names_filters_ou
         'trustsome1',
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mariadb',
@@ -231,6 +236,7 @@ def test_database_names_to_dump_with_database_name_all_and_skip_names_filters_ou
             'show schemas',
         ),
         environment=environment,
+        working_directory=None,
     ).and_return('foo\nbar\nbaz\nmysql\n').once()
 
     names = module.database_names_to_dump(
@@ -252,6 +258,7 @@ def test_database_names_to_dump_with_environment_password_transport_skips_defaul
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').never()
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mariadb',
@@ -263,6 +270,7 @@ def test_database_names_to_dump_with_environment_password_transport_skips_defaul
             'show schemas',
         ),
         environment=environment,
+        working_directory=None,
     ).and_return('foo\nbar\nmysql\n').once()
 
     names = module.database_names_to_dump(
@@ -288,6 +296,7 @@ def test_database_names_to_dump_runs_mariadb_with_tls():
         'trustsome1',
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mariadb',
@@ -299,6 +308,7 @@ def test_database_names_to_dump_runs_mariadb_with_tls():
             'show schemas',
         ),
         environment=environment,
+        working_directory=None,
     ).and_return('foo\nbar\nmysql\n').once()
 
     names = module.database_names_to_dump(
@@ -324,6 +334,7 @@ def test_database_names_to_dump_runs_mariadb_without_tls():
         'trustsome1',
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mariadb',
@@ -335,6 +346,7 @@ def test_database_names_to_dump_runs_mariadb_without_tls():
             'show schemas',
         ),
         environment=environment,
+        working_directory=None,
     ).and_return('foo\nbar\nmysql\n').once()
 
     names = module.database_names_to_dump(
@@ -699,6 +711,7 @@ def test_database_names_to_dump_runs_mariadb_with_list_options():
         'trustsome1',
         'mariadb.cnf',
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mariadb',
@@ -710,6 +723,7 @@ def test_database_names_to_dump_runs_mariadb_with_list_options():
             'show schemas',
         ),
         environment=None,
+        working_directory=None,
     ).and_return('foo\nbar').once()
 
     assert module.database_names_to_dump(database, {}, 'root', 'trustsome1', None, '') == (
@@ -733,6 +747,7 @@ def test_database_names_to_dump_runs_non_default_mariadb_with_list_options():
         'trustsome1',
         'mariadb.cnf',
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         environment=None,
         full_command=(
@@ -744,6 +759,7 @@ def test_database_names_to_dump_runs_non_default_mariadb_with_list_options():
             '--execute',
             'show schemas',
         ),
+        working_directory=None,
     ).and_return('foo\nbar').once()
 
     assert module.database_names_to_dump(database, {}, 'root', 'trustsome1', None, '') == (
@@ -766,6 +782,7 @@ def test_execute_dump_command_runs_mariadb_dump():
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -779,6 +796,7 @@ def test_execute_dump_command_runs_mariadb_dump():
         ),
         environment=None,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
 
     assert (
@@ -807,6 +825,7 @@ def test_execute_dump_command_with_environment_password_transport_skips_defaults
     flexmock(module).should_receive('parse_extra_options').and_return((), None)
     flexmock(module).should_receive('make_defaults_file_options').never()
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -821,6 +840,7 @@ def test_execute_dump_command_with_environment_password_transport_skips_defaults
         ),
         environment=None,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
 
     assert (
@@ -853,6 +873,7 @@ def test_execute_dump_command_runs_mariadb_dump_without_add_drop_database():
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -865,6 +886,7 @@ def test_execute_dump_command_runs_mariadb_dump_without_add_drop_database():
         ),
         environment=None,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
 
     assert (
@@ -897,6 +919,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_hostname_and_port():
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -916,6 +939,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_hostname_and_port():
         ),
         environment=None,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
 
     assert (
@@ -948,6 +972,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_tls():
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -962,6 +987,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_tls():
         ),
         environment=None,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
 
     assert (
@@ -994,6 +1020,7 @@ def test_execute_dump_command_runs_mariadb_dump_without_tls():
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -1008,6 +1035,7 @@ def test_execute_dump_command_runs_mariadb_dump_without_tls():
         ),
         environment=None,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
 
     assert (
@@ -1040,6 +1068,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_username_and_password():
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -1053,6 +1082,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_username_and_password():
         ),
         environment={},
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
 
     assert (
@@ -1085,6 +1115,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_options():
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -1099,6 +1130,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_options():
         ),
         environment=None,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
 
     assert (
@@ -1131,6 +1163,7 @@ def test_execute_dump_command_runs_non_default_mariadb_dump_with_options():
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -1145,6 +1178,7 @@ def test_execute_dump_command_runs_non_default_mariadb_dump_with_options():
         ),
         environment=None,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
 
     assert (
@@ -1241,12 +1275,14 @@ def test_restore_data_source_dump_runs_mariadb_to_restore():
         None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mariadb', '--batch'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1279,12 +1315,14 @@ def test_restore_data_source_dump_runs_mariadb_with_options():
         None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mariadb', '--harder', '--batch'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1319,12 +1357,14 @@ def test_restore_data_source_dump_runs_non_default_mariadb_with_options():
         None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('custom_mariadb', '--harder', '--batch'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1357,6 +1397,7 @@ def test_restore_data_source_dump_runs_mariadb_with_hostname_and_port():
         None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mariadb',
@@ -1372,6 +1413,7 @@ def test_restore_data_source_dump_runs_mariadb_with_hostname_and_port():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1404,6 +1446,7 @@ def test_restore_data_source_dump_runs_mariadb_with_tls():
         None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mariadb',
@@ -1414,6 +1457,7 @@ def test_restore_data_source_dump_runs_mariadb_with_tls():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1446,6 +1490,7 @@ def test_restore_data_source_dump_runs_mariadb_without_tls():
         None,
     ).and_return(())
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mariadb',
@@ -1456,6 +1501,7 @@ def test_restore_data_source_dump_runs_mariadb_without_tls():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1488,12 +1534,14 @@ def test_restore_data_source_dump_runs_mariadb_with_username_and_password():
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mariadb', '--defaults-extra-file=/dev/fd/99', '--batch'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1531,12 +1579,14 @@ def test_restore_data_source_with_environment_password_transport_skips_defaults_
     flexmock(module.os).should_receive('environ').and_return(
         {'USER': 'root', 'MYSQL_PWD': 'trustsome1'},
     )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mariadb', '--batch', '--user', 'root'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'USER': 'root', 'MYSQL_PWD': 'trustsome1'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1579,6 +1629,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mariadb',
@@ -1595,6 +1646,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1641,6 +1693,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         None,
     ).and_return(('--defaults-extra-file=/dev/fd/99',))
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mariadb',
@@ -1658,6 +1711,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
