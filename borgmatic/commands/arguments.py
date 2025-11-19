@@ -568,8 +568,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     ignoring actions, and the combined parser is handy for displaying help that includes everything:
     global flags, a list of actions, etc.
     '''
-    config_paths = collect.get_default_config_paths(expand_home=True)
-    unexpanded_config_paths = collect.get_default_config_paths(expand_home=False)
+    config_paths = collect.get_default_config_paths()
 
     # Using allow_abbrev=False here prevents the global parser from erroring about "ambiguous"
     # options like --encryption. Such options are intended for an action parser rather than the
@@ -582,7 +581,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         '--config',
         dest='config_paths',
         action='append',
-        help=f"Configuration filename or directory, can specify flag multiple times, defaults to: -c {' -c '.join(unexpanded_config_paths)}",
+        help='Configuration filename or directory, can specify flag multiple times, defaults to /etc/borgmatic/config.yaml, /etc/borgmatic.d, $XDG_CONFIG_HOME/borgmatic/config.yaml, and $XDG_CONFIG_HOME/borgmatic.d, where $XDG_CONFIG_HOME defaults to $HOME/.config',
     )
     global_group.add_argument(
         '-n',
@@ -1215,7 +1214,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         '--destination',
         dest='destination_path',
         default=config_paths[0],
-        help=f'Destination configuration file (or directory if using --split), default: {unexpanded_config_paths[0]}',
+        help='Destination configuration file (or directory if using --split), default: /etc/borgmatic/config.yaml',
     )
     config_generate_group.add_argument(
         '--overwrite',
@@ -2015,7 +2014,7 @@ def parse_arguments(schema, *unparsed_arguments):
     )
 
     if not arguments['global'].config_paths:
-        arguments['global'].config_paths = collect.get_default_config_paths(expand_home=True)
+        arguments['global'].config_paths = collect.get_default_config_paths()
 
     for action_name in ('bootstrap', 'generate', 'validate'):
         if action_name in arguments and len(arguments) > HIGHLANDER_ACTION_ARGUMENTS_COUNT:
