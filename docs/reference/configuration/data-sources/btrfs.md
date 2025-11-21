@@ -76,6 +76,14 @@ next, the [Borg file
 cache](https://borgbackup.readthedocs.io/en/stable/internals/data-structures.html#cache)
 will never get cache hits on snapshotted files. This makes backing up Btrfs
 snapshots a little slower than non-snapshotted files that have consistent paths.
+**It is also not possible to mitigate cache misses**, as the Btrfs hook uses
+snapshot paths which change between borgmatic invocations, and the snapshots
+are located outside the [runtime
+directory](https://torsion.org/borgmatic/reference/configuration/runtime-directory/),
+contrary to
+[ZFS](https://torsion.org/borgmatic/reference/configuration/data-sources/zfs/#performance)
+and
+[LVM](https://torsion.org/borgmatic/reference/configuration/data-sources/lvm/#performance).
 
 <span class="minilink minilink-addedin">With Borg version 2.x</span> Even
 snapshotted files should get cache hits, because Borg 2.x is smarter about how

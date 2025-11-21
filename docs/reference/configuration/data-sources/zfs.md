@@ -91,7 +91,7 @@ cache](https://borgbackup.readthedocs.io/en/stable/internals/data-structures.htm
 may not get cache hits on snapshotted files. This makes backing up ZFS snapshots
 a little slower than non-snapshotted files that have consistent paths. You can
 mitigate this by setting a fixed [runtime
-directory](https://torsion.org/borgmatic/reference/configuration/runtime-directory/))
+directory](https://torsion.org/borgmatic/reference/configuration/runtime-directory/)
 (that's not located in `/tmp`). This allows borgmatic to use a consistent
 snapshot path from one run to the next, thereby resulting in Borg files cache
 hits.
