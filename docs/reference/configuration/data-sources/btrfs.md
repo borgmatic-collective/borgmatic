@@ -70,6 +70,10 @@ temporary snapshot directory in use at the time the archive was created, as Borg
 
 ## Performance
 
+<span class="minilink minilink-addedin">With Borg version 1.x, New in version
+2.0.12</span> borgmatic uses consistent snapshot paths between invocations,
+so backups will be cached correctly. No configuration is necessary.
+
 <span class="minilink minilink-addedin">With Borg version 1.x</span> Because of
 the way that Btrfs snapshot paths change from one borgmatic invocation to the
 next, the [Borg file
