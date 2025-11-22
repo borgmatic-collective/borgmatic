@@ -734,7 +734,6 @@ def test_remove_data_source_dumps_deletes_snapshots():
     ).and_return(
         (
             '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
-            '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
         ),
     )
     flexmock(module.glob).should_receive('glob').with_args(
@@ -742,25 +741,14 @@ def test_remove_data_source_dumps_deletes_snapshots():
     ).and_return(
         (
             '/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2',
-            '/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2',
         ),
     )
     flexmock(module.os.path).should_receive('isdir').with_args(
         '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
     ).and_return(True)
     flexmock(module.os.path).should_receive('isdir').with_args(
-        '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
-    ).and_return(True)
-    flexmock(module.os.path).should_receive('isdir').with_args(
         '/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2',
     ).and_return(True)
-    flexmock(module.os.path).should_receive('isdir').with_args(
-        '/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2',
-    ).and_return(False)
-    flexmock(module).should_receive('delete_snapshot').with_args(
-        'btrfs',
-        '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
-    ).once()
     flexmock(module).should_receive('delete_snapshot').with_args(
         'btrfs',
         '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
@@ -769,18 +757,8 @@ def test_remove_data_source_dumps_deletes_snapshots():
         'btrfs',
         '/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2',
     ).once()
-    flexmock(module).should_receive('delete_snapshot').with_args(
-        'btrfs',
-        '/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2',
-    ).never()
     flexmock(module.os.path).should_receive('isdir').with_args(
         '/mnt/subvol1/.borgmatic-snapshot',
-    ).and_return(True)
-    flexmock(module.os.path).should_receive('isdir').with_args(
-        '/mnt/subvol1/.borgmatic-snapshot',
-    ).and_return(True)
-    flexmock(module.os.path).should_receive('isdir').with_args(
-        '/mnt/subvol2/.borgmatic-snapshot',
     ).and_return(True)
     flexmock(module.os.path).should_receive('isdir').with_args(
         '/mnt/subvol2/.borgmatic-snapshot',
@@ -789,14 +767,8 @@ def test_remove_data_source_dumps_deletes_snapshots():
         '/mnt/subvol1/.borgmatic-snapshot',
     ).once()
     flexmock(module.shutil).should_receive('rmtree').with_args(
-        '/mnt/subvol1/.borgmatic-snapshot',
-    ).once()
-    flexmock(module.shutil).should_receive('rmtree').with_args(
         '/mnt/subvol2/.borgmatic-snapshot',
     ).once()
-    flexmock(module.shutil).should_receive('rmtree').with_args(
-        '/mnt/subvol2/.borgmatic-snapshot',
-    ).never()
 
     module.remove_data_source_dumps(
         hook_config=config['btrfs'],
