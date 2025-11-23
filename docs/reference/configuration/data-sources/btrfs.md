@@ -70,13 +70,13 @@ temporary snapshot directory in use at the time the archive was created, as Borg
 
 ## Performance
 
-<span class="minilink minilink-addedin">With Borg version 1.x, New in version
-2.0.12</span> borgmatic uses consistent snapshot paths between invocations,
-so backups will be cached correctly. No configuration is necessary.
+<span class="minilink minilink-addedin">New in borgmatic version 2.0.12, with Borg version
+1.x</span> borgmatic uses consistent snapshot paths between invocations, so
+backups will be cached correctly. No configuration is necessary.
 
-<span class="minilink minilink-addedin">With Borg version 1.x</span> Because of
-the way that Btrfs snapshot paths change from one borgmatic invocation to the
-next, the [Borg file
+<span class="minilink minilink-addedin">Prior to borgmatic version 2.0.12, with
+Borg version 1.x</span> Because of the way that Btrfs snapshot paths change from
+one borgmatic invocation to the next, the [Borg file
 cache](https://borgbackup.readthedocs.io/en/stable/internals/data-structures.html#cache)
 will never get cache hits on snapshotted files. This makes backing up Btrfs
 snapshots a little slower than non-snapshotted files that have consistent paths.
