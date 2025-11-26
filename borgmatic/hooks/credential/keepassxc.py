@@ -29,7 +29,7 @@ def load_credential(hook_config, config, credential_parameters):
     command = (
         tuple(shlex.split((hook_config or {}).get('keepassxc_cli_command', 'keepassxc-cli')))
         + ('show', '--show-protected', '--attributes', 'Password')
-        + (('--no-password',) if not hook_config.get('ask_for_password', True) else ())
+        + (('--no-password',) if not (hook_config or {}).get('ask_for_password', True) else ())
         + (
             ('--key-file', hook_config['key_file'])
             if hook_config and hook_config.get('key_file')

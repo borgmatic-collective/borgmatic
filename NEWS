@@ -10,7 +10,7 @@
  * Improve documentation search results for individual configuration options.
  * Add borgmatic release artifacts (wheel and tarball) to each release on the releases page:
    https://projects.torsion.org/borgmatic-collective/borgmatic/releases
- * Move the tarball of borgmatic's HTML documentation from the packages page to the releases pages.
+ * Move the tarball of borgmatic's HTML documentation from the packages page to the releases page.
 
 2.0.11
  * #957: Document borgmatic's limitations around parallelism—both its own and Borg's. See the
