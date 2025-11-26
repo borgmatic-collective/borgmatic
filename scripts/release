@@ -34,18 +34,40 @@ git push github $version
 # Build borgmatic and publish to pypi.
 rm -fr dist
 uv build
-twine upload -r pypi --username __token__ dist/borgmatic-*.tar.gz
-twine upload -r pypi --username __token__ dist/borgmatic-*-py3-none-any.whl
+tarball_path=$(ls dist/borgmatic-*.tar.gz)
+wheel_path=$(ls dist/borgmatic-*-py3-none-any.whl)
+twine upload -r pypi --username __token__ "$tarball_path"
+twine upload -r pypi --username __token__ "$wheel_path"
+
+# Build docs and extract HTML.
+scripts/export-docs-from-image
+docs_path=dist/borgmatic-docs.tar.gz
 
 # Set release changelogs on projects.torsion.org and GitHub.
 release_changelog="$(cat NEWS | sed '/^$/q' | grep -v '^\S')"
 escaped_release_changelog="$(echo "$release_changelog" | sed -z 's/\n/\\n/g' | sed -z 's/\"/\\"/g')"
-curl --silent --request POST \
+release_id=$(curl --silent --request POST \
     "https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/releases" \
     --header "Authorization: token $projects_token" \
     --header "Accept: application/json" \
     --header "Content-Type: application/json" \
     --data "{\"body\": \"$escaped_release_changelog\", \"draft\": false, \"name\": \"borgmatic $version\", \"prerelease\": false, \"tag_name\": \"$version\"}"
+    | jq ".id")
+curl --silent --request POST \
+    "https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/releases/$release_id/assets?name=$(basename $wheel_path)" \
+    --header "Authorization: token $projects_token" \
+    --header "Accept: application/json" \
+    --form attachment=@"$wheel_path"
+curl --silent --request POST \
+    "https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/releases/$release_id/assets?name=$(basename $tarball_path)" \
+    --header "Authorization: token $projects_token" \
+    --header "Accept: application/json" \
+    --form attachment=@"$tarball_path"
+curl --silent --request POST \
+    "https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/releases/$release_id/assets?name=$(basename $docs_path)" \
+    --header "Authorization: token $projects_token" \
+    --header "Accept: application/json" \
+    --form attachment=@"$docs_path"
 
 github-release create --token="$github_token" --owner=witten --repo=borgmatic --tag="$version" --target_commit="main" \
     --name="borgmatic $version" --body="$release_changelog"

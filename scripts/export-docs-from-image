@@ -2,10 +2,19 @@
 
 set -e
 
-docs_container_id=$(podman create "$IMAGE_NAME")
-podman cp $docs_container_id:/usr/share/nginx/html - > borgmatic-docs-dump.tar
+USER_PODMAN_SOCKET_PATH=/run/user/$UID/podman/podman.sock
+
+if [ -e "$USER_PODMAN_SOCKET_PATH" ]; then
+    export DOCKER_HOST="unix://$USER_PODMAN_SOCKET_PATH"
+    export CONTAINER_SOCKET_PATH="$USER_PODMAN_SOCKET_PATH"
+fi
+
+podman build --tag borgmatic-release-docs --file docs/Dockerfile .
+docs_container_id=$(podman create borgmatic-release-docs)
+podman cp "$docs_container_id":/usr/share/nginx/html - > borgmatic-docs-dump.tar
 tar xf borgmatic-docs-dump.tar
 rm borgmatic-docs-dump.tar
 mv html borgmatic-docs
-tar cfz borgmatic-docs.tar.gz borgmatic-docs
-podman rm --volumes $docs_container_id
+rm -f dist/borgmatic-docs.tar.gz
+tar cfz dist/borgmatic-docs.tar.gz borgmatic-docs
+podman rm --volumes "$docs_container_id"
