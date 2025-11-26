@@ -34,7 +34,7 @@ git push github $version
 # Build borgmatic and publish to pypi.
 rm -fr dist
 uv build
-tarball_path=$(ls dist/borgmatic-*.tar.gz)
+tarball_path="dist/borgmatic-$version.tar.gz"
 wheel_path=$(ls dist/borgmatic-*-py3-none-any.whl)
 twine upload -r pypi --username __token__ "$tarball_path"
 twine upload -r pypi --username __token__ "$wheel_path"
@@ -51,7 +51,7 @@ release_id=$(curl --silent --request POST \
     --header "Authorization: token $projects_token" \
     --header "Accept: application/json" \
     --header "Content-Type: application/json" \
-    --data "{\"body\": \"$escaped_release_changelog\", \"draft\": false, \"name\": \"borgmatic $version\", \"prerelease\": false, \"tag_name\": \"$version\"}"
+    --data "{\"body\": \"$escaped_release_changelog\", \"draft\": false, \"name\": \"borgmatic $version\", \"prerelease\": false, \"tag_name\": \"$version\"}" \
     | jq ".id")
 curl --silent --request POST \
     "https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/releases/$release_id/assets?name=$(basename $wheel_path)" \

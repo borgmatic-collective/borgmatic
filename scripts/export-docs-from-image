@@ -17,4 +17,5 @@ rm borgmatic-docs-dump.tar
 mv html borgmatic-docs
 rm -f dist/borgmatic-docs.tar.gz
 tar cfz dist/borgmatic-docs.tar.gz borgmatic-docs
+rm -fr borgmatic-docs
 podman rm --volumes "$docs_container_id"
