@@ -49,12 +49,13 @@ def run_create(
             working_directory,
             borgmatic_runtime_directory,
         )
+        original_patterns = list(patterns)
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',
             config,
             borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             borgmatic_runtime_directory,
-            patterns,
+            original_patterns,
             global_arguments.dry_run,
         )
         active_dumps = borgmatic.hooks.dispatch.call_hooks(
@@ -129,12 +130,14 @@ def run_create(
 
             yield output
 
+        # Use the original patterns so as to disregard any modifications made by any data source
+        # hooks, e.g. via dump_data_sources() above.
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',
             config,
             borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             borgmatic_runtime_directory,
-            patterns,
+            original_patterns,
             global_arguments.dry_run,
         )
 

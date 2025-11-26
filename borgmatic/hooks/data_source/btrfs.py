@@ -146,8 +146,8 @@ Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_patterns'), 
 def get_subvolumes(btrfs_command, patterns):
     '''
     Given a Btrfs command to run and a sequence of configured patterns, find the intersection
-    between the current Btrfs filesystem and subvolume paths and the paths of any patterns. The
-    idea is that these pattern paths represent the requested subvolumes to snapshot.
+    between the current Btrfs filesystem/subvolume paths and the paths of any patterns. The idea is
+    that these pattern paths represent the requested subvolumes to snapshot.
 
     Only include subvolumes that contain at least one root pattern sourced from borgmatic
     configuration (as opposed to generated elsewhere in borgmatic).
