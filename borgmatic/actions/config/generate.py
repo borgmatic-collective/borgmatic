@@ -36,12 +36,12 @@ def run_generate(generate_arguments, global_arguments):
     if generate_arguments.source_filename:
         logger.answer(
             f'''
-Merged in the contents of configuration file at: {generate_arguments.source_filename}'''
+Merged the contents of the source configuration file: {generate_arguments.source_filename}'''
         )
 
         if not generate_arguments.split:
             logger.answer(
-                '''To review the changes made, run:
+                f'''To review the changes made, run:
 
     diff --unified {generate_arguments.source_filename} {generate_arguments.destination_path}''',
             )

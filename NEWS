@@ -1,3 +1,7 @@
+2.0.13.dev0
+ * #1194: Fix for an incorrect diff command shown when running the "generate config" action with a
+   source configuration file. 
+
 2.0.12
  * #1127: Fix for the database hooks not respecting the "working_directory" option.
  * #1181: Add an "ask_for_password" option to the KeePassXC credential hook for disabling
