@@ -1,6 +1,7 @@
 2.0.13.dev0
  * #1194: Fix for an incorrect diff command shown when running the "generate config" action with a
    source configuration file. 
+ * Update the sample systemd timer with a shorter random delay when catching up on a missed run.
 
 2.0.12
  * #1127: Fix for the database hooks not respecting the "working_directory" option.
