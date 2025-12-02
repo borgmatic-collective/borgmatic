@@ -544,11 +544,12 @@ Or from the configuration file:
 postgresql_databases:
     - name: users
         hostname: database1.example.org
-        restore_hostname: database1.example.org
+        restore_hostname: database2.example.org
         restore_port: 5433
         restore_username: postgres
         restore_password: trustsome1
 ```
+
 
 ### Manual restoration
 
