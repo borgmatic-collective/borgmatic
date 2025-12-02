@@ -85,7 +85,5 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
         Pattern(
             '/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume1/subdir/.cache', Pattern_type.EXCLUDE
         ),
-        Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume1/subdir', Pattern_type.INCLUDE),
         Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume2'),
-        Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume2', Pattern_type.INCLUDE),
     ]

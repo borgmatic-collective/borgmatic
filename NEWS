@@ -4,6 +4,8 @@
    snapshotting these source directories.
  * #1194: Fix for an incorrect diff command shown when running the "generate config" action with a
    source configuration file. 
+ * #1195: Fix a regression in the ZFS, LVM, and Btrfs hooks in which snapshotted paths ignored
+   global excludes.
  * Update the sample systemd timer with a shorter random delay when catching up on a missed run.
 
 2.0.12

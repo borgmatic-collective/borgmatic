@@ -62,9 +62,7 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
         Pattern('/foo'),
         Pattern('/mnt/subvol1/.borgmatic-snapshot-1234/./mnt/subvol1'),
         Pattern('/mnt/subvol1/.borgmatic-snapshot-1234/./mnt/subvol1/.cache', Pattern_type.EXCLUDE),
-        Pattern('/mnt/subvol1/.borgmatic-snapshot-1234/./mnt/subvol1', Pattern_type.INCLUDE),
         Pattern('/mnt/subvol2/.borgmatic-snapshot-1234/./mnt/subvol2'),
-        Pattern('/mnt/subvol2/.borgmatic-snapshot-1234/./mnt/subvol2', Pattern_type.INCLUDE),
     ]
     assert config == {
         'btrfs': {},

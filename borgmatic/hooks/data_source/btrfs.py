@@ -329,15 +329,9 @@ def dump_data_sources(
 
         snapshot_subvolume(btrfs_command, subvolume.path, snapshot_path)
 
-        last_contained_pattern_index = borgmatic.hooks.data_source.config.get_last_pattern_index(
-            patterns, subvolume.contained_patterns
-        )
-
         for pattern in subvolume.contained_patterns:
             snapshot_pattern = make_borg_snapshot_pattern(subvolume.path, pattern)
-            borgmatic.hooks.data_source.config.replace_pattern(
-                patterns, pattern, snapshot_pattern, last_contained_pattern_index
-            )
+            borgmatic.hooks.data_source.config.replace_pattern(patterns, pattern, snapshot_pattern)
 
         borgmatic.hooks.data_source.config.inject_pattern(
             patterns, make_snapshot_exclude_pattern(subvolume.path)

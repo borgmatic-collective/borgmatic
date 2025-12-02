@@ -328,9 +328,6 @@ def test_dump_data_sources_snapshots_and_mounts_and_replaces_patterns():
         '/run/borgmatic',
     ).and_return(Pattern('/run/borgmatic/zfs_snapshots/b33f/./mnt/dataset/subdir'))
     patterns = [Pattern('/mnt/dataset/subdir')]
-    flexmock(module.borgmatic.hooks.data_source.config).should_receive(
-        'get_last_pattern_index'
-    ).and_return(0)
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
         Pattern('/mnt/dataset/subdir'),
@@ -338,7 +335,6 @@ def test_dump_data_sources_snapshots_and_mounts_and_replaces_patterns():
             '/run/borgmatic/zfs_snapshots/b33f/./mnt/dataset/subdir',
             source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
         ),
-        0,
     ).once()
 
     assert (
@@ -359,9 +355,6 @@ def test_dump_data_sources_with_no_datasets_skips_snapshots():
     flexmock(module.os).should_receive('getpid').and_return(1234)
     flexmock(module).should_receive('snapshot_dataset').never()
     flexmock(module).should_receive('mount_snapshot').never()
-    flexmock(module.borgmatic.hooks.data_source.config).should_receive(
-        'get_last_pattern_index'
-    ).never()
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').never()
     patterns = [Pattern('/mnt/dataset')]
 
@@ -407,9 +400,6 @@ def test_dump_data_sources_uses_custom_commands():
         dataset,
         '/run/borgmatic',
     ).and_return(Pattern('/run/borgmatic/zfs_snapshots/b33f/./mnt/dataset/subdir'))
-    flexmock(module.borgmatic.hooks.data_source.config).should_receive(
-        'get_last_pattern_index'
-    ).and_return(0)
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
         Pattern('/mnt/dataset/subdir'),
@@ -417,7 +407,6 @@ def test_dump_data_sources_uses_custom_commands():
             '/run/borgmatic/zfs_snapshots/b33f/./mnt/dataset/subdir',
             source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
         ),
-        0,
     ).once()
     patterns = [Pattern('/mnt/dataset/subdir')]
     hook_config = {
@@ -448,9 +437,6 @@ def test_dump_data_sources_with_dry_run_skips_commands_and_does_not_touch_patter
     flexmock(module.os).should_receive('getpid').and_return(1234)
     flexmock(module).should_receive('snapshot_dataset').never()
     flexmock(module).should_receive('mount_snapshot').never()
-    flexmock(module.borgmatic.hooks.data_source.config).should_receive(
-        'get_last_pattern_index'
-    ).and_return(0)
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').never()
     patterns = [Pattern('/mnt/dataset')]
 
@@ -494,9 +480,6 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
         dataset,
         '/run/borgmatic',
     ).and_return(Pattern('/run/borgmatic/zfs_snapshots/b33f/./mnt/dataset/subdir'))
-    flexmock(module.borgmatic.hooks.data_source.config).should_receive(
-        'get_last_pattern_index'
-    ).and_return(0)
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
         Pattern('/mnt/dataset/subdir'),
@@ -504,7 +487,6 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
             '/run/borgmatic/zfs_snapshots/b33f/./mnt/dataset/subdir',
             source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
         ),
-        0,
     ).once()
     patterns = [Pattern('/hmm')]
 

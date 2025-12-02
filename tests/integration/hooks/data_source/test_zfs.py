@@ -2,7 +2,7 @@ import os
 
 from flexmock import flexmock
 
-from borgmatic.borg.pattern import Pattern, Pattern_type
+from borgmatic.borg.pattern import Pattern
 from borgmatic.hooks.data_source import zfs as module
 
 
@@ -44,5 +44,4 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
 
     assert patterns == [
         Pattern(os.path.join(snapshot_mount_path, 'subdir')),
-        Pattern(os.path.join(snapshot_mount_path, 'subdir'), Pattern_type.INCLUDE),
     ]
