@@ -1,7 +1,7 @@
 2.0.13.dev0
  * #1192: Fix for over-aggressive deduplication of source directories that contain the borgmatic
-   runtime directory, potentially resulting in data loss (data not getting backed up) when using
-   filesystem snapshots.
+   runtime directory, potentially resulting in data loss (data not getting backed up) when
+   snapshotting these source directories.
  * #1194: Fix for an incorrect diff command shown when running the "generate config" action with a
    source configuration file. 
  * Update the sample systemd timer with a shorter random delay when catching up on a missed run.
