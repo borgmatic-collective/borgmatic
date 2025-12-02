@@ -49,6 +49,7 @@ def run_create(
             working_directory,
             borgmatic_runtime_directory,
         )
+
         original_patterns = list(patterns)
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',

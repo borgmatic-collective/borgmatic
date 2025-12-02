@@ -403,6 +403,12 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
             False,
         ),
         (
+            (Pattern('/', device=1), Pattern('/other', device=1)),
+            '/root',
+            (Pattern('/', device=1), Pattern('/other', device=1)),
+            False,
+        ),
+        (
             (Pattern('/', device=1), Pattern('/root', device=2)),
             None,
             (Pattern('/', device=1), Pattern('/root', device=2)),

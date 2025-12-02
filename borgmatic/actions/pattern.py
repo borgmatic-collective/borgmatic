@@ -259,31 +259,37 @@ def deduplicate_runtime_directory_patterns(patterns, config, borgmatic_runtime_d
         return patterns
 
     deduplicated = {}  # Use just the keys as an ordered set.
+    runtime_directory_parents = set(pathlib.PurePath(borgmatic_runtime_directory).parents).union(
+        {pathlib.PurePath(borgmatic_runtime_directory)}
+    )
 
     for pattern in patterns:
         if pattern.type != borgmatic.borg.pattern.Pattern_type.ROOT:
             deduplicated[pattern] = True
             continue
 
-        parents = pathlib.PurePath(pattern.path).parents
+        pattern_parents = pathlib.PurePath(pattern.path).parents
 
-        # If another directory in the given list is a parent of current directory (even n levels up)
-        # and both are on the same filesystem (or one_file_system is not set), then the current
-        # directory is a duplicate.
+        # If:
+        #
+        #   1. another pattern is a parent of the current pattern (even n levels up),
+        #   2. both patterns are parents of the runtime directory (even n levels up),
+        #   3. and both patterns are on the same filesystem (or one_file_system is not set)
+        #
+        # ... then consider the current pattern as a duplicate.
         for other_pattern in patterns:
             if other_pattern.type != borgmatic.borg.pattern.Pattern_type.ROOT:
                 continue
 
-            if any(
-                pathlib.PurePath(other_pattern.path) == parent
-                and pathlib.PurePosixPath(other_pattern.path)
-                in pathlib.PurePath(borgmatic_runtime_directory).parents
-                and pattern.device is not None
-                and (
-                    other_pattern.device == pattern.device
-                    or config.get('one_file_system') is not True
-                )
-                for parent in parents
+            device_matches = pattern.device is not None and (
+                other_pattern.device == pattern.device or config.get('one_file_system') is not True
+            )
+
+            if (
+                pathlib.PurePath(other_pattern.path) in pattern_parents
+                and pathlib.PurePosixPath(other_pattern.path) in runtime_directory_parents
+                and pathlib.PurePosixPath(pattern.path) in runtime_directory_parents
+                and device_matches
             ):
                 break
         else:
