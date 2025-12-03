@@ -114,6 +114,15 @@ the cache key with the path *as it's seen in the archive* (which is consistent
 across runs) rather than the full absolute source path (which can change).
 
 
+## systemd settings
+
+If you're using [systemd to run
+borgmatic](https://torsion.org/borgmatic/how-to/set-up-backups/#systemd), you
+may need to disable particular security settings like `ProtectKernelModules`,
+`CapabilityBoundingSet`, and/or `PrivateDevices` to allow the LVM feature to
+work. See the comments in the sample systemd service file for details.
+
+
 ## Full configuration
 
 ```yaml

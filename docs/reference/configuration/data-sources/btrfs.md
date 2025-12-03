@@ -92,6 +92,15 @@ it looks up file paths in its cache—it constructs the cache key with the path
 full absolute source path (which changes).
 
 
+## systemd settings
+
+If you're using [systemd to run
+borgmatic](https://torsion.org/borgmatic/how-to/set-up-backups/#systemd), you
+may need to disable particular security settings like `CapabilityBoundingSet` to
+allow the Btrfs feature to work. See the comments in the sample systemd service
+file for details.
+
+
 ## Full configuration
 
 ```yaml

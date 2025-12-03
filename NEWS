@@ -2,6 +2,8 @@
  * #1192: Fix for over-aggressive deduplication of source directories that contain the borgmatic
    runtime directory, potentially resulting in data loss (data not getting backed up) when
    snapshotting these source directories.
+ * #1192, #1163: Document potential interactions between security settings in borgmatic's sample
+   systemd service file and the ZFS, LVM, and Btrfs hooks.
  * #1194: Fix for an incorrect diff command shown when running the "generate config" action with a
    source configuration file. 
  * #1195: Fix a regression in the ZFS, LVM, and Btrfs hooks in which snapshotted paths ignored

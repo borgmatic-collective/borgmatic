@@ -26,13 +26,16 @@ LockPersonality=true
 # But you can try setting it to "yes" for improved security if you don't use those features.
 MemoryDenyWriteExecute=no
 NoNewPrivileges=yes
-# Filesystem hooks like ZFS may not work unless PrivateDevices is disabled.
+# Filesystem hooks like ZFS and LVM may not work unless PrivateDevices is disabled.
 PrivateDevices=yes
 PrivateTmp=yes
 ProtectClock=yes
 ProtectControlGroups=yes
 ProtectHostname=yes
 ProtectKernelLogs=yes
+# You may need to disable this if you're using the LVM hook. But an alternative
+# might be to leave this enabled and preload the necessary kernel modules like
+# "dm_snapshot" at boot, so this service doesn't need to load them on demand.
 ProtectKernelModules=yes
 ProtectKernelTunables=yes
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
@@ -54,7 +57,9 @@ ProtectSystem=full
 # BindReadOnlyPaths=-/root/.ssh
 
 # May interfere with running external programs within borgmatic hooks. This
-# includes, for instance, programs to snapshot filesystems (e.g. ZFS).
+# includes, for instance, programs to snapshot filesystems (e.g. ZFS, LVM, and
+# Btrfs). But rather than commenting this out entirely, one workaround may be to
+# add "CAP_SYS_ADMIN".
 CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_NET_RAW
 
 # Lower CPU and I/O priority.
