@@ -1757,18 +1757,21 @@ properties:
                 mariadb_dump_command:
                     type: string
                     description: |
-                        Command to use instead of "mariadb-dump". This can be
-                        used to run a specific mariadb_dump version (e.g., one
-                        inside a running container). If you run it from within a
-                        container, make sure to mount the path in the
-                        "user_runtime_directory" option from the host into the
-                        container at the same location. Defaults to
-                        "mariadb-dump".
+                        Command to use instead of "mariadb-dump". But set any
+                        additional command-line flags in "options", not here.
+                        This command can be used to run a specific mariadb_dump
+                        version (e.g., one inside a running container). If you
+                        run it from within a container, make sure to mount the
+                        path in the "user_runtime_directory" option from the
+                        host into the container at the same location. Defaults
+                        to "mariadb-dump".
                     example: docker exec mariadb_container mariadb-dump
                 mariadb_command:
                     type: string
                     description: |
-                        Command to run instead of "mariadb". This can be used to
+                        Command to run instead of "mariadb". But set any
+                        additional command-line flags in "list_options" or
+                        "restore_options", not here. This command can be used to
                         run a specific mariadb version (e.g., one inside a
                         running container). Defaults to "mariadb".
                     example: docker exec mariadb_container mariadb           
@@ -1948,17 +1951,21 @@ properties:
                 mysql_dump_command:
                     type: string
                     description: |
-                        Command to use instead of "mysqldump". This can be used
-                        to run a specific mysql_dump version (e.g., one inside a
-                        running container). If you run it from within a
-                        container, make sure to mount the path in the
-                        "user_runtime_directory" option from the host into the
-                        container at the same location. Defaults to "mysqldump".
+                        Command to use instead of "mysqldump". But set any
+                        additional command-line flags in "options", not here.
+                        This command can be used to run a specific mysql_dump
+                        version (e.g., one inside a running container). If you
+                        run it from within a container, make sure to mount the
+                        path in the "user_runtime_directory" option from the
+                        host into the container at the same location. Defaults
+                        to "mysqldump".
                     example: docker exec mysql_container mysqldump
                 mysql_command:
                     type: string
                     description: |
-                        Command to run instead of "mysql". This can be used to
+                        Command to run instead of "mysql". But set any
+                        additional command-line flags in "list_options" or
+                        "restore_options", not here. This command can be used to
                         run a specific mysql version (e.g., one inside a running
                         container). Defaults to "mysql".
                     example: docker exec mysql_container mysql

@@ -249,6 +249,10 @@ container separate from borgmatic.
 A similar approach can work with MySQL, using `mysql_dump_command` instead of
 `mariadb_dump_command` to run `mysqldump` in a container.
 
+Note: With MariaDB and MySQL, use `options`, `list_options`, and/or
+`restore_options` to override command-line flags rather than putting flags into
+`mariadb_dump_command`, `mysql_dump_command`, etc.
+
 
 #### Database client in a temporary container
 
