@@ -2,7 +2,6 @@ import logging
 
 import borgmatic.actions.arguments
 import borgmatic.borg.delete
-import borgmatic.borg.repo_delete
 import borgmatic.borg.repo_list
 
 logger = logging.getLogger(__name__)

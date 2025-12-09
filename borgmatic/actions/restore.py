@@ -8,7 +8,6 @@ import tempfile
 import borgmatic.actions.pattern
 import borgmatic.borg.extract
 import borgmatic.borg.list
-import borgmatic.borg.mount
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
 import borgmatic.hooks.data_source.dump

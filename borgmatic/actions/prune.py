@@ -1,7 +1,6 @@
 import logging
 
 import borgmatic.borg.prune
-import borgmatic.hooks.command
 
 logger = logging.getLogger(__name__)
 
