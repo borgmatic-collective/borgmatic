@@ -24,4 +24,4 @@ requests-oauthlib==2.0.0
 rpds-py==0.28.0
 ruamel-yaml>0.15.0
 typing-extensions==4.15.0
-urllib3==2.5.0
+urllib3==2.6.1
