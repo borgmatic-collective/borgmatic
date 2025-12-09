@@ -20,10 +20,8 @@ import borgmatic.borg.extract
 import borgmatic.borg.list
 import borgmatic.borg.pattern
 import borgmatic.borg.repo_list
-import borgmatic.borg.state
 import borgmatic.config.paths
 import borgmatic.execute
-import borgmatic.hooks.command
 
 DEFAULT_CHECKS = (
     {'name': 'repository', 'frequency': '1 month'},

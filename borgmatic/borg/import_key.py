@@ -3,7 +3,6 @@ import os
 import shlex
 
 import borgmatic.config.paths
-import borgmatic.logger
 from borgmatic.borg import environment, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 

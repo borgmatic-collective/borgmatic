@@ -2,7 +2,6 @@ import logging
 
 import borgmatic.borg.extract
 import borgmatic.borg.repo_list
-import borgmatic.hooks.command
 
 logger = logging.getLogger(__name__)
 
