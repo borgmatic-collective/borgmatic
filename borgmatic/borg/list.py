@@ -18,6 +18,7 @@ MAKE_FLAGS_EXCLUDES = (
     'archive',
     'paths',
     'find_paths',
+    'format',
     *ARCHIVE_FILTER_FLAGS_MOVED_TO_REPO_LIST,
 )
 
@@ -54,6 +55,7 @@ def make_list_command(
         + flags.make_flags('umask', config.get('umask'))
         + flags.make_flags('log-json', config.get('log_json'))
         + flags.make_flags('lock-wait', config.get('lock_wait'))
+        + flags.make_flags('format', list_arguments.format or config.get('file_list_format'))
         + flags.make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
         + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + (

@@ -297,7 +297,14 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     )
 
 
-OMITTED_FLAG_NAMES = {'match-archives', 'progress', 'statistics', 'list-details'}
+OMITTED_FLAG_NAMES = {
+    'match-archives',
+    'progress',
+    'statistics',
+    'list-details',
+    'file-list-format',
+    'archive-list-format',
+}
 
 
 def make_argument_description(schema, flag_name):
@@ -1541,7 +1548,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         action='store_true',
         help='Output only archive names',
     )
-    repo_list_group.add_argument('--format', help='Format for archive listing')
+    repo_list_group.add_argument('--format', help='Borg format for the archive listing')
     repo_list_group.add_argument(
         '--json',
         default=False,
@@ -1644,7 +1651,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         action='store_true',
         help='Output only path names',
     )
-    list_group.add_argument('--format', help='Format for file listing')
+    list_group.add_argument('--format', help='Borg format for the file listing')
     list_group.add_argument(
         '--json',
         default=False,

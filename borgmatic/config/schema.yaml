@@ -492,6 +492,27 @@ properties:
             If match_archives is not specified, borgmatic defaults to deriving
             the match_archives value from archive_name_format.
         example: "sh:{hostname}-*"
+    file_list_format:
+        type: string
+        description: |
+            Borg format for the files listing of the "list" action. Corresponds
+            to the "--format" flag. Defaults to "{mode} {user:6} {group:6}
+            {size:8} {mtime} {path}{extra}{NL}". With "--json", the form of the
+            format is ignored, but the keys used in it are added to the JSON
+            output. See
+            https://borgbackup.readthedocs.io/en/stable/usage/list.html for
+            details.
+        example: "{path}{extra}{NL}"
+    archive_list_format:
+        type: string
+        description: |
+            Borg format for the archives listing of the "repo-list" action.
+            Corresponds to the "--format" flag. Defaults to "{archive:<36}
+            {time} [{id}]{NL}". With "--json", the form of the format is
+            ignored, but the keys used in it are added to the JSON output. See
+            https://borgbackup.readthedocs.io/en/stable/usage/list.html for
+            details.
+        example: "{archive}{NL}"
     relocated_repo_access_is_ok:
         type: boolean
         description: |
@@ -998,6 +1019,8 @@ properties:
         type: string
         description: |
             Python format string used for log messages written to the log file.
+            See https://docs.python.org/3/library/logging.html (and specifically
+            the LogRecord attributes with "{}-formatting") for details.
         example: "[{asctime}] {levelname}: {prefix}{message}"
     monitoring_verbosity:
         type: integer

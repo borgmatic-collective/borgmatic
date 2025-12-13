@@ -110,7 +110,7 @@ def get_latest_archive(
     return latest_archive
 
 
-MAKE_FLAGS_EXCLUDES = ('repository', 'prefix', 'match_archives')
+MAKE_FLAGS_EXCLUDES = ('repository', 'format', 'prefix', 'match_archives')
 
 
 def make_repo_list_command(
@@ -169,6 +169,9 @@ def make_repo_list_command(
                     local_borg_version,
                 )
             )
+        )
+        + flags.make_flags(
+            'format', repo_list_arguments.format or config.get('archive_list_format')
         )
         + flags.make_flags_from_arguments(repo_list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
         + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())

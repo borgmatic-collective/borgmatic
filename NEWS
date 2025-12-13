@@ -1,4 +1,6 @@
 2.0.13.dev0
+ * #1179: Add a "file_list_format" option for setting the "list" action's output format and an
+   "archive_list_format" option for setting the "repo-list" action's format.
  * #1192: Fix for over-aggressive deduplication of source directories that contain the borgmatic
    runtime directory, potentially resulting in data loss (data not getting backed up) when
    snapshotting these source directories.
