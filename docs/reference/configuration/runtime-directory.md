@@ -49,7 +49,7 @@ automatically delete `/tmp` files on a periodic basis, e.g. via
 
 One sign that this is happening is borgmatic erroring during cleanup with "No
 such file or directory" on the runtime directory path, indicating that
-borgmatic's runtime diectory is getting deleted out from under it.
+borgmatic's runtime directory is getting deleted out from under it.
 
 You can work around this by either excluding borgmatic's runtime directory from
 automatic systemd-tmpfiles management—or you can change borgmatic's runtime
