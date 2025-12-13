@@ -39,3 +39,28 @@ system temporary directories.
 borgmatic created temporary streaming database dumps within the `~/.borgmatic`
 directory by default. At that time, the path was configurable by the
 `borgmatic_source_directory` configuration option (now deprecated).
+
+
+## systemd-tmpfiles
+
+If borgmatic's runtime directory is in `/tmp`, be aware that some systems may
+automatically delete `/tmp` files on a periodic basis, e.g. via
+[systemd-tmpfiles](https://www.freedesktop.org/software/systemd/man/251/systemd-tmpfiles.html).
+
+One sign that this is happening is borgmatic erroring during cleanup with "No
+such file or directory" on the runtime directory path, indicating that
+borgmatic's runtime diectory is getting deleted out from under it.
+
+You can work around this by either excluding borgmatic's runtime directory from
+automatic systemd-tmpfiles management—or you can change borgmatic's runtime
+directory to not be in `/tmp` as described above.
+
+Here's what a systemd-tmpfiles exclude for borgmatic might look like, for
+instance in an `/etc/tmpfiles.d/borgmatic.conf` file:
+
+```
+x /tmp/borgmatic-*
+```
+
+That tells systemd-tmpfiles to ignore borgmatic's runtime directory when
+automatically deleting paths in `/tmp`.

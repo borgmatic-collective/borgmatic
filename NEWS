@@ -12,6 +12,8 @@
    source configuration file. 
  * #1195: Fix a regression in the ZFS, LVM, and Btrfs hooks in which snapshotted paths ignored
    global excludes.
+ * #1201: Document a problematic interaction between borgmatic and systemd-tmpfiles:
+   https://torsion.org/borgmatic/reference/configuration/runtime-directory/#systemd-tmpfiles
  * Update the sample systemd timer with a shorter random delay when catching up on a missed run.
 
 2.0.12
