@@ -132,6 +132,8 @@ def database_names_to_dump(database, config, username, password, environment, dr
     extra_options, defaults_extra_filename = parse_extra_options(database.get('list_options'))
     password_transport = database.get('password_transport', 'pipe')
     hostname = database_config.resolve_database_option('hostname', database)
+    socket_path = database.get('socket_path')
+
     show_command = (
         mariadb_show_command
         + (
@@ -143,6 +145,7 @@ def database_names_to_dump(database, config, username, password, environment, dr
         + (('--host', hostname) if hostname else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if hostname or 'port' in database else ())
+        + (('--socket', socket_path) if socket_path else ())
         + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if database.get('tls') is True else ())
         + (('--skip-ssl',) if database.get('tls') is False else ())
@@ -213,6 +216,8 @@ def execute_dump_command(
     extra_options, defaults_extra_filename = parse_extra_options(database.get('options'))
     password_transport = database.get('password_transport', 'pipe')
     hostname = database_config.resolve_database_option('hostname', database)
+    socket_path = database.get('socket_path')
+
     dump_command = (
         mariadb_dump_command
         + (
@@ -225,6 +230,7 @@ def execute_dump_command(
         + (('--host', hostname) if hostname else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if hostname or 'port' in database else ())
+        + (('--socket', socket_path) if socket_path else ())
         + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if database.get('tls') is True else ())
         + (('--skip-ssl',) if database.get('tls') is False else ())
@@ -448,6 +454,7 @@ def restore_data_source_dump(
     port = database_config.resolve_database_option(
         'port', data_source, connection_params, restore=True
     )
+    socket_path = database_config.resolve_database_option('socket_path', data_source, restore=True)
     tls = database_config.resolve_database_option('tls', data_source, restore=True)
     username = borgmatic.hooks.credential.parse.resolve_credential(
         database_config.resolve_database_option(
@@ -467,6 +474,7 @@ def restore_data_source_dump(
     )
     extra_options, defaults_extra_filename = parse_extra_options(data_source.get('restore_options'))
     password_transport = data_source.get('password_transport', 'pipe')
+
     restore_command = (
         mariadb_restore_command
         + (
@@ -479,6 +487,7 @@ def restore_data_source_dump(
         + (('--host', hostname) if hostname else ())
         + (('--port', str(port)) if port else ())
         + (('--protocol', 'tcp') if hostname or port else ())
+        + (('--socket', socket_path) if socket_path else ())
         + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if tls is True else ())
         + (('--skip-ssl',) if tls is False else ())

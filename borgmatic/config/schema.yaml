@@ -1717,6 +1717,20 @@ properties:
                     description: |
                         Port to restore to. Defaults to the "port" option.
                     example: 5433
+                socket_path:
+                    type: string
+                    description: |
+                        Path of a Unix socket to connect to instead of a remote
+                        hostname. Ignored when "hostname" is set and not
+                        "localhost". Defaults to "/run/mysqld/mysqld.sock".
+                    example: database.example.org
+                restore_socket_path:
+                    type: string
+                    description: |
+                        Path of a Unix socket to connect to instead of a remote
+                        hostname. Ignored when "hostname" is set and not
+                        "localhost". Defaults to the "socket_path" option.
+                    example: database.example.org
                 username:
                     type: string
                     description: |
@@ -1911,6 +1925,20 @@ properties:
                     description: |
                         Port to restore to. Defaults to the "port" option.
                     example: 5433
+                socket_path:
+                    type: string
+                    description: |
+                        Path of a Unix socket to connect to instead of a remote
+                        hostname. Ignored when "hostname" is set and not
+                        "localhost". Defaults to "/run/mysqld/mysqld.sock".
+                    example: database.example.org
+                restore_socket_path:
+                    type: string
+                    description: |
+                        Path of a Unix socket to connect to instead of a remote
+                        hostname. Ignored when "hostname" is set and not
+                        "localhost". Defaults to the "socket_path" option.
+                    example: database.example.org
                 username:
                     type: string
                     description: |
