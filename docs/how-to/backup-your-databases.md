@@ -659,8 +659,13 @@ configuration. Here's an example with MariaDB:
 ```yaml
 mariadb_databases:
     - name: posts
-      options: "--single-transaction --quick"
+      options: "--single-transaction"
 ```
+
+<span class="minilink minilink-addedin">New in version 2.0.13</span> borgmatic
+passes `--single-transaction` to MariaDB/MySQL by default, and you no longer
+need to set that in `options:`.
+
 
 ### borgmatic hangs during backup
 

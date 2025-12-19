@@ -10,6 +10,8 @@
    command-line flags for database commands.
  * #1193: For the MariaDB and MySQL database hooks, add a "socket_path" option for Unix socket
    database connections.
+ * #1193: For the MariaDB and MySQL database hooks, creates a consistent snapshot by dumping all
+   tables in a single transaction.
  * #1194: Fix for an incorrect diff command shown when running the "generate config" action with a
    source configuration file. 
  * #1195: Fix a regression in the ZFS, LVM, and Btrfs hooks in which snapshotted paths ignored

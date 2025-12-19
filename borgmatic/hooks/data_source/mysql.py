@@ -158,6 +158,7 @@ def execute_dump_command(
         )
         + extra_options
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
+        + ('--single-transaction',)
         + (('--host', hostname) if hostname else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if hostname or 'port' in database else ())
