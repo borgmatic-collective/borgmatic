@@ -177,7 +177,9 @@ properties:
             as "source_directories"; they tell Borg which paths to backup
             (modulo any excludes). Globs are expanded. (Tildes are not.) See
             the output of "borg help patterns" for more details. Quote any value
-            if it contains leading punctuation, so it parses correctly.
+            if it contains leading punctuation, so it parses correctly. Also use
+            leading slashes in absolute paths, or data source hooks may be
+            unable to rewrite patterns as needed.
         example:
             - 'R /'
             - '- /home/*/.cache'

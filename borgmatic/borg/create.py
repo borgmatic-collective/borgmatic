@@ -96,32 +96,29 @@ def validate_planned_backup_paths(
         if path_line and path_line.startswith(('- ', '+ '))
     )
 
-    # These are the subset of output paths contained within the borgmatic runtime directory.
-    paths_inside_runtime_directory = {
-        path for path in paths if any_parent_directories(path, (borgmatic_runtime_directory,))
-    }
-
-    # If the runtime directory isn't present in the source patterns, then we shouldn't expect it to
-    # be in the paths output from the Borg dry run.
-    runtime_directory_present_in_patterns = any(
+    runtime_directory_root_patterns = tuple(
         pattern
         for pattern in patterns
         if any_parent_directories(pattern.path, (borgmatic_runtime_directory,))
         if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
     )
 
-    # If no paths to backup are inside the runtime directory, it must've been excluded.
-    if (
-        not paths_inside_runtime_directory
-        and runtime_directory_present_in_patterns
-        and not dry_run
-        and os.path.exists(borgmatic_runtime_directory)
-    ):
-        raise ValueError(
-            f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.',
-        )
+    if not dry_run and os.path.exists(borgmatic_runtime_directory):
+        # If there are any root patterns in the runtime directory that are missing from the paths
+        # Borg is planning to backup, then they must've gotten excluded, e.g. by user-configured
+        # excludes. Error accordingly.
+        for pattern in runtime_directory_root_patterns:
+            if not any(any_parent_directories(path, (pattern.path,)) for path in paths):
+                raise ValueError(
+                    f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.',
+                )
 
-    return tuple(path for path in paths if path not in paths_inside_runtime_directory)
+    # Return the subset of output paths *not* contained within the borgmatic runtime directory. The
+    # intent is that any downstream checks using these paths should skip runtime paths that
+    # borgmatic uses for its own bookkeeping, instead focusing on user-configured paths.
+    return tuple(
+        path for path in paths if not any_parent_directories(path, (borgmatic_runtime_directory,))
+    )
 
 
 MAX_SPECIAL_FILE_PATHS_LENGTH = 1000

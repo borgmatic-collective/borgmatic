@@ -16,6 +16,11 @@
    global excludes.
  * #1201: Document a problematic interaction between borgmatic and systemd-tmpfiles:
    https://torsion.org/borgmatic/reference/configuration/runtime-directory/#systemd-tmpfiles
+ * #1203: Fix that errors and exits when the borgmatic runtime directory is partially excluded by
+   configured excludes. Previously, borgmatic only errored when the runtime directory was completely
+   excluded.
+ * #1122: To prevent the user from inadvertently excluding the "bootstrap" action's manifest, always
+   error and exit when the borgmatic runtime directory overlaps with the configured excludes.
  * Update the sample systemd timer with a shorter random delay when catching up on a missed run.
 
 2.0.12

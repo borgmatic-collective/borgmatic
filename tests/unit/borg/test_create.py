@@ -101,7 +101,7 @@ def test_validate_planned_backup_paths_skips_borgmatic_runtime_directory():
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module).should_receive('any_parent_directories').replace_with(
-        lambda path, _: path == '/run/borgmatic/bar'
+        lambda path, candidates: any(path.startswith(parent) for parent in candidates)
     )
 
     assert module.validate_planned_backup_paths(
@@ -134,7 +134,7 @@ def test_validate_planned_backup_paths_with_borgmatic_runtime_directory_missing_
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module).should_receive('any_parent_directories').replace_with(
-        lambda path, _: path == '/run/borgmatic/bar'
+        lambda path, candidates: any(path.startswith(parent) for parent in candidates)
     )
 
     with pytest.raises(ValueError):
@@ -155,6 +155,45 @@ def test_validate_planned_backup_paths_with_borgmatic_runtime_directory_missing_
         )
 
 
+def test_validate_planned_backup_paths_with_borgmatic_runtime_directory_partially_excluded_from_paths_output_errors():
+    flexmock(module.flags).should_receive('omit_flag').replace_with(
+        lambda arguments, flag: arguments,
+    )
+    flexmock(module.flags).should_receive('omit_flag_and_value').replace_with(
+        lambda arguments, flag: arguments,
+    )
+    flexmock(module.environment).should_receive('make_environment').and_return(None)
+
+    # /run/borgmatic/bar is present, but /run/borgmatic/quux is missing.
+    flexmock(module).should_receive('execute_command_and_capture_output').and_return(
+        '+ /foo\n- /run/borgmatic/bar\n- /baz',
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module).should_receive('any_parent_directories').replace_with(
+        lambda path, candidates: any(path.startswith(parent) for parent in candidates)
+    )
+
+    with pytest.raises(ValueError):
+        module.validate_planned_backup_paths(
+            dry_run=False,
+            create_command=('borg', 'create'),
+            config={},
+            patterns=(
+                module.borgmatic.borg.pattern.Pattern('/foo'),
+                module.borgmatic.borg.pattern.Pattern(
+                    '/run/borgmatic/bar', module.borgmatic.borg.pattern.Pattern_type.ROOT
+                ),
+                module.borgmatic.borg.pattern.Pattern('/baz'),
+                module.borgmatic.borg.pattern.Pattern(
+                    '/run/borgmatic/quux', module.borgmatic.borg.pattern.Pattern_type.ROOT
+                ),
+            ),
+            local_path=None,
+            working_directory=None,
+            borgmatic_runtime_directory='/run/borgmatic',
+        )
+
+
 def test_validate_planned_backup_paths_with_borgmatic_runtime_directory_missing_from_patterns_does_not_raise():
     flexmock(module.flags).should_receive('omit_flag').replace_with(
         lambda arguments, flag: arguments,
@@ -168,7 +207,7 @@ def test_validate_planned_backup_paths_with_borgmatic_runtime_directory_missing_
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module).should_receive('any_parent_directories').replace_with(
-        lambda path, _: path == '/run/borgmatic/bar'
+        lambda path, candidates: any(path.startswith(parent) for parent in candidates)
     )
 
     assert module.validate_planned_backup_paths(
