@@ -16,7 +16,6 @@ def parse_arguments(*unparsed_arguments):
     show_parser.add_argument('subvolume_path')
 
     snapshot_parser = subvolume_subparser.add_parser('snapshot')
-    snapshot_parser.add_argument('-r', dest='read_only', action='store_true')
     snapshot_parser.add_argument('subvolume_path')
     snapshot_parser.add_argument('snapshot_path')
 
