@@ -5,36 +5,37 @@ from borgmatic.borg.pattern import Pattern, Pattern_source, Pattern_style, Patte
 from borgmatic.hooks.data_source import btrfs as module
 
 
-def test_path_is_a_subvolume_with_btrfs_success_call_returns_true():
+def test_path_is_a_subvolume_with_btrfs_inode_returns_true():
     module.path_is_a_subvolume.cache_clear()
-    flexmock(module.borgmatic.execute).should_receive(
-        'execute_command',
-    ).with_args(('btrfs', 'subvolume', 'show', '/mnt0'), output_log_level=None, close_fds=True)
-
-    assert module.path_is_a_subvolume('btrfs', '/mnt0') is True
-
-
-def test_path_is_a_subvolume_with_btrfs_error_returns_false():
-    module.path_is_a_subvolume.cache_clear()
-    flexmock(module.borgmatic.execute).should_receive(
-        'execute_command',
-    ).with_args(
-        ('btrfs', 'subvolume', 'show', '/mnt0'), output_log_level=None, close_fds=True
-    ).and_raise(
-        module.subprocess.CalledProcessError(1, 'btrfs'),
+    flexmock(module.os).should_receive('stat').and_return(
+        flexmock(st_ino=module.BTRFS_SUBVOLUME_INODE_NUMBER)
     )
 
-    assert module.path_is_a_subvolume('btrfs', '/mnt0') is False
+    assert module.path_is_a_subvolume('/mnt0') is True
+
+
+def test_path_is_a_subvolume_with_non_btrfs_inode_returns_false():
+    module.path_is_a_subvolume.cache_clear()
+    flexmock(module.os).should_receive('stat').and_return(flexmock(st_ino=12345))
+
+    assert module.path_is_a_subvolume('/mnt0') is False
 
 
 def test_path_is_a_subvolume_caches_result_after_first_call():
     module.path_is_a_subvolume.cache_clear()
-    flexmock(module.borgmatic.execute).should_receive(
-        'execute_command',
+    flexmock(module.os).should_receive('stat').and_return(
+        flexmock(st_ino=module.BTRFS_SUBVOLUME_INODE_NUMBER)
     ).once()
 
-    assert module.path_is_a_subvolume('btrfs', '/mnt0') is True
-    assert module.path_is_a_subvolume('btrfs', '/mnt0') is True
+    assert module.path_is_a_subvolume('/mnt0') is True
+    assert module.path_is_a_subvolume('/mnt0') is True
+
+
+def test_path_is_a_subvolume_with_missing_path_returns_false():
+    module.path_is_a_subvolume.cache_clear()
+    flexmock(module.os).should_receive('stat').and_raise(FileNotFoundError)
+
+    assert module.path_is_a_subvolume('/mnt0') is False
 
 
 def test_get_subvolume_property_with_invalid_btrfs_output_errors():
@@ -85,76 +86,66 @@ def test_get_subvolume_property_caches_result_after_first_call():
 
 
 def test_get_containing_subvolume_path_with_subvolume_self_returns_it():
-    flexmock(module).should_receive('path_is_a_subvolume').with_args(
-        'btrfs', '/foo/bar/baz'
-    ).and_return(True)
-    flexmock(module).should_receive('path_is_a_subvolume').with_args('btrfs', '/foo/bar').never()
-    flexmock(module).should_receive('path_is_a_subvolume').with_args('btrfs', '/foo').never()
-    flexmock(module).should_receive('path_is_a_subvolume').with_args('btrfs', '/').never()
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo/bar/baz').and_return(
+        True
+    )
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo/bar').never()
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo').never()
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/').never()
     flexmock(module).should_receive('get_subvolume_property').and_return(False)
 
     assert module.get_containing_subvolume_path('btrfs', '/foo/bar/baz') == '/foo/bar/baz'
 
 
 def test_get_containing_subvolume_path_with_subvolume_parent_returns_it():
-    flexmock(module).should_receive('path_is_a_subvolume').with_args(
-        'btrfs', '/foo/bar/baz'
-    ).and_return(False)
-    flexmock(module).should_receive('path_is_a_subvolume').with_args(
-        'btrfs', '/foo/bar'
-    ).and_return(True)
-    flexmock(module).should_receive('path_is_a_subvolume').with_args('btrfs', '/foo').never()
-    flexmock(module).should_receive('path_is_a_subvolume').with_args('btrfs', '/').never()
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo/bar/baz').and_return(
+        False
+    )
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo/bar').and_return(True)
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo').never()
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/').never()
     flexmock(module).should_receive('get_subvolume_property').and_return(False)
 
     assert module.get_containing_subvolume_path('btrfs', '/foo/bar/baz') == '/foo/bar'
 
 
 def test_get_containing_subvolume_path_with_subvolume_grandparent_returns_it():
-    flexmock(module).should_receive('path_is_a_subvolume').with_args(
-        'btrfs', '/foo/bar/baz'
-    ).and_return(False)
-    flexmock(module).should_receive('path_is_a_subvolume').with_args(
-        'btrfs', '/foo/bar'
-    ).and_return(False)
-    flexmock(module).should_receive('path_is_a_subvolume').with_args('btrfs', '/foo').and_return(
-        True
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo/bar/baz').and_return(
+        False
     )
-    flexmock(module).should_receive('path_is_a_subvolume').with_args('btrfs', '/').never()
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo/bar').and_return(False)
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo').and_return(True)
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/').never()
     flexmock(module).should_receive('get_subvolume_property').and_return(False)
 
     assert module.get_containing_subvolume_path('btrfs', '/foo/bar/baz') == '/foo'
 
 
 def test_get_containing_subvolume_path_without_subvolume_ancestor_returns_none():
-    flexmock(module).should_receive('path_is_a_subvolume').with_args(
-        'btrfs', '/foo/bar/baz'
-    ).and_return(False)
-    flexmock(module).should_receive('path_is_a_subvolume').with_args(
-        'btrfs', '/foo/bar'
-    ).and_return(False)
-    flexmock(module).should_receive('path_is_a_subvolume').with_args('btrfs', '/foo').and_return(
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo/bar/baz').and_return(
         False
     )
-    flexmock(module).should_receive('path_is_a_subvolume').with_args('btrfs', '/').and_return(False)
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo/bar').and_return(False)
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo').and_return(False)
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/').and_return(False)
     flexmock(module).should_receive('get_subvolume_property').and_return(False)
 
     assert module.get_containing_subvolume_path('btrfs', '/foo/bar/baz') is None
 
 
 def test_get_containing_subvolume_path_with_read_only_subvolume_returns_none():
-    flexmock(module).should_receive('path_is_a_subvolume').with_args(
-        'btrfs', '/foo/bar/baz'
-    ).and_return(True)
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo/bar/baz').and_return(
+        True
+    )
     flexmock(module).should_receive('get_subvolume_property').and_return(True)
 
     assert module.get_containing_subvolume_path('btrfs', '/foo/bar/baz') is None
 
 
 def test_get_containing_subvolume_path_with_read_only_error_returns_none():
-    flexmock(module).should_receive('path_is_a_subvolume').with_args(
-        'btrfs', '/foo/bar/baz'
-    ).and_return(True)
+    flexmock(module).should_receive('path_is_a_subvolume').with_args('/foo/bar/baz').and_return(
+        True
+    )
     flexmock(module).should_receive('get_subvolume_property').and_raise(
         module.subprocess.CalledProcessError(1, 'wtf')
     )

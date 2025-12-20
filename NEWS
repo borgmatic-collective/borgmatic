@@ -1,4 +1,7 @@
 2.0.13.dev0
+ * #1054: Allow the Btrfs hook to create and delete snapshots even when running
+   as a non-root user. See the documentation for more information:
+   https://torsion.org/borgmatic/reference/configuration/data-sources/btrfs/#non-root-user
  * #1179: Add a "file_list_format" option for setting the "list" action's output format and an
    "archive_list_format" option for setting the "repo-list" action's format.
  * #1192: Fix for over-aggressive deduplication of source directories that contain the borgmatic

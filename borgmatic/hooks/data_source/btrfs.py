@@ -23,32 +23,20 @@ def use_streaming(hook_config, config):  # pragma: no cover
     return False
 
 
-@functools.cache
-def path_is_a_subvolume(btrfs_command, path):
-    '''
-    Given a btrfs command and a path, return whether the path is a Btrfs subvolume. Return False if
-    the btrfs command errors, which probably indicates there isn't a containing Btrfs subvolume for
-    the given path.
+BTRFS_SUBVOLUME_INODE_NUMBER = 256
 
-    As a performance optimization, multiple calls to this function with the same arguments are
-    cached.
+
+@functools.cache
+def path_is_a_subvolume(path):
+    '''
+    Given a path, return whether it is a Btrfs subvolume. Return False if the path doesn't exist.
+
+    As a performance optimization, multiple calls to this function with the same path are cached.
     '''
     try:
-        borgmatic.execute.execute_command(
-            (
-                *btrfs_command.split(' '),
-                'subvolume',
-                'show',
-                path,
-            ),
-            output_log_level=None,
-            close_fds=True,
-        )
-    # An error from the command (probably) indicates that the path is not actually a subvolume.
-    except subprocess.CalledProcessError:
+        return os.stat(path).st_ino == BTRFS_SUBVOLUME_INODE_NUMBER
+    except FileNotFoundError:
         return False
-
-    return True
 
 
 @functools.cache
@@ -99,7 +87,7 @@ def get_containing_subvolume_path(btrfs_command, path):
         path,
         *tuple(str(ancestor) for ancestor in pathlib.PurePath(path).parents),
     ):
-        if not path_is_a_subvolume(btrfs_command, candidate_path):
+        if not path_is_a_subvolume(candidate_path):
             continue
 
         try:
@@ -274,7 +262,6 @@ def snapshot_subvolume(btrfs_command, subvolume_path, snapshot_path):  # pragma:
             *btrfs_command.split(' '),
             'subvolume',
             'snapshot',
-            '-r',  # Read-only.
             subvolume_path,
             snapshot_path,
         ),

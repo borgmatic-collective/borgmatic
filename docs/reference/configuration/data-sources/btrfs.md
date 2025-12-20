@@ -101,6 +101,19 @@ allow the Btrfs feature to work. See the comments in the sample systemd service
 file for details.
 
 
+## non-root user
+
+<span class="minilink minilink-addedin">New in version 2.0.13</span> If you'd
+like borgmatic to snapshot a Btrfs subvolume when running as a non-root user,
+make the following changes to the subvolume in question:
+
+1. `chown` the subvolume to be owned by your non-root user.
+2. Mount the subvolume with the `user_subvol_rm_allowed` mount option.
+
+These changes allow the non-root user to create and delete snapshots of the
+subvolume, which is necessary for the borgmatic Btrfs hook to work.
+
+
 ## Full configuration
 
 ```yaml
