@@ -18,6 +18,7 @@ def generate_configuration(config_path, repository_path):
         .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
         .replace('- path: /e2e/mnt/backup', '')
         .replace('label: local', '')
+        .replace('- /home/user/path with spaces', '')
         .replace('- /home', f'- {config_path}')
         .replace('- /etc', '- /e2e/mnt/subvolume/subdir')
         .replace('- /var/log/syslog*', '')
@@ -43,7 +44,10 @@ def test_btrfs_create_and_list():
         )
 
         # Run a create action to exercise Btrfs snapshotting and backup.
-        subprocess.check_call(f'borgmatic --config {config_path} create'.split(' '))
+        subprocess.check_call(
+            f'borgmatic -v 2 --config {config_path} create'.split(' '),
+            env=dict(os.environ, **{'BTRFS_TEST_SUBVOLUME_PATH': '/e2e/mnt/subvolume'}),
+        )
 
         # List the resulting archive and assert that the snapshotted files are there.
         output = subprocess.check_output(

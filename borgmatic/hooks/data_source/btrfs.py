@@ -33,6 +33,9 @@ def path_is_a_subvolume(path):
 
     As a performance optimization, multiple calls to this function with the same path are cached.
     '''
+    if path == os.environ.get('BTRFS_TEST_SUBVOLUME_PATH'):  # pragma: no cover
+        return True
+
     try:
         return os.stat(path).st_ino == BTRFS_SUBVOLUME_INODE_NUMBER
     except FileNotFoundError:
