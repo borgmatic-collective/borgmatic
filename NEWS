@@ -1,4 +1,4 @@
-2.0.13.dev0
+2.0.13
  * #1054: Allow the Btrfs hook to create and delete snapshots even when running
    as a non-root user. See the documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/data-sources/btrfs/#non-root-user
