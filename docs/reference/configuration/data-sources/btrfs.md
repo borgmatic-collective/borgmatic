@@ -60,7 +60,7 @@ Additionally, borgmatic rewrites the snapshot file paths so that they appear at
 their original subvolume locations in a Borg archive. For instance, if your
 subvolume path is `/var/subvolume`, then the snapshotted files will appear in an
 archive at `/var/subvolume` as well—even if borgmatic has to mount the snapshot
-somewhere in `/var/subvolume/.borgmatic-snapshot-1234/` to perform the backup.
+somewhere in `/var/subvolume/.borgmatic-snapshot/` to perform the backup.
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
