@@ -171,7 +171,7 @@ def get_subvolumes(btrfs_command, patterns):
     return tuple(sorted(subvolumes, key=lambda subvolume: subvolume.path))
 
 
-BORGMATIC_SNAPSHOT_PREFIX = '.borgmatic-snapshot-'
+BORGMATIC_SNAPSHOT_PREFIX = '.borgmatic-snapshot'
 
 
 def make_snapshot_path(subvolume_path):
@@ -180,7 +180,7 @@ def make_snapshot_path(subvolume_path):
     '''
     return os.path.join(
         subvolume_path,
-        f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}',
+        f'{BORGMATIC_SNAPSHOT_PREFIX}',
         # Included so that the snapshot ends up in the Borg archive at the "original" subvolume path.
     ) + subvolume_path.rstrip(os.path.sep)
 
@@ -193,16 +193,16 @@ def make_snapshot_exclude_pattern(subvolume_path):  # pragma: no cover
     directory within the snapshot itself. For instance, if you have a Btrfs subvolume at /mnt and
     make a snapshot of it at:
 
-        /mnt/.borgmatic-snapshot-1234/mnt
+        /mnt/.borgmatic-snapshot/mnt
 
     ... then the snapshot itself will have an empty directory at:
 
-        /mnt/.borgmatic-snapshot-1234/mnt/.borgmatic-snapshot-1234
+        /mnt/.borgmatic-snapshot/mnt/.borgmatic-snapshot
 
     So to prevent that from ending up in the Borg archive, this function produces an exclude pattern
     to exclude that path.
     '''
-    snapshot_directory = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
+    snapshot_directory = f'{BORGMATIC_SNAPSHOT_PREFIX}'
 
     return borgmatic.borg.pattern.Pattern(
         os.path.join(
@@ -235,7 +235,7 @@ def make_borg_snapshot_pattern(subvolume_path, pattern):
 
     rewritten_path = initial_caret + os.path.join(
         subvolume_path,
-        f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}',
+        f'{BORGMATIC_SNAPSHOT_PREFIX}',
         # Use the Borg 1.4+ "slashdot" hack to prevent the snapshot path prefix from getting
         # included in the archive—but only if there's not already a slashdot hack present in the
         # pattern.
