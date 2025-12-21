@@ -24,7 +24,6 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
             module.Subvolume('/mnt/subvol2', contained_patterns=(Pattern('/mnt/subvol2'),)),
         ),
     )
-    flexmock(module.os).should_receive('getpid').and_return(1234)
     flexmock(module).should_receive('snapshot_subvolume').with_args(
         'btrfs',
         '/mnt/subvol1',

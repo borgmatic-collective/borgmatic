@@ -2,6 +2,8 @@
  * #1054: Allow the Btrfs hook to create and delete snapshots even when running
    as a non-root user. See the documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/data-sources/btrfs/#non-root-user
+ * #1122: To prevent the user from inadvertently excluding the "bootstrap" action's manifest, always
+   error and exit when the borgmatic runtime directory overlaps with the configured excludes.
  * #1179: Add a "file_list_format" option for setting the "list" action's output format and an
    "archive_list_format" option for setting the "repo-list" action's format.
  * #1192: Fix for over-aggressive deduplication of source directories that contain the borgmatic
@@ -24,8 +26,8 @@
  * #1203: Fix that errors and exits when the borgmatic runtime directory is partially excluded by
    configured excludes. Previously, borgmatic only errored when the runtime directory was completely
    excluded.
- * #1122: To prevent the user from inadvertently excluding the "bootstrap" action's manifest, always
-   error and exit when the borgmatic runtime directory overlaps with the configured excludes.
+ * #1206: Adjust Btrfs snapshot paths so that Borg 1.x gets file cache hits when backing them up,
+   improving performance.
  * Update the sample systemd timer with a shorter random delay when catching up on a missed run.
 
 2.0.12

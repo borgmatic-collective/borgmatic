@@ -193,16 +193,16 @@ def make_snapshot_exclude_pattern(subvolume_path):  # pragma: no cover
     directory within the snapshot itself. For instance, if you have a Btrfs subvolume at /mnt and
     make a snapshot of it at:
 
-        /mnt/.borgmatic-snapshot-1234/mnt
+        /mnt/.borgmatic-snapshot/mnt
 
     ... then the snapshot itself will have an empty directory at:
 
-        /mnt/.borgmatic-snapshot-1234/mnt/.borgmatic-snapshot-1234
+        /mnt/.borgmatic-snapshot/mnt/.borgmatic-snapshot
 
     So to prevent that from ending up in the Borg archive, this function produces an exclude pattern
     to exclude that path.
     '''
-    snapshot_directory = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
+    snapshot_directory = f'{BORGMATIC_SNAPSHOT_PREFIX}'
 
     return borgmatic.borg.pattern.Pattern(
         os.path.join(
