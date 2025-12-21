@@ -28,12 +28,12 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
     flexmock(module).should_receive('snapshot_subvolume').with_args(
         'btrfs',
         '/mnt/subvol1',
-        '/mnt/subvol1/.borgmatic-snapshot-1234/mnt/subvol1',
+        '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
     ).once()
     flexmock(module).should_receive('snapshot_subvolume').with_args(
         'btrfs',
         '/mnt/subvol2',
-        '/mnt/subvol2/.borgmatic-snapshot-1234/mnt/subvol2',
+        '/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2',
     ).once()
 
     assert (
@@ -50,19 +50,19 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
 
     assert patterns == [
         Pattern(
-            '/mnt/subvol2/.borgmatic-snapshot-1234/mnt/subvol2/.borgmatic-snapshot-1234',
+            '/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2/.borgmatic-snapshot',
             Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         ),
         Pattern(
-            '/mnt/subvol1/.borgmatic-snapshot-1234/mnt/subvol1/.borgmatic-snapshot-1234',
+            '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1/.borgmatic-snapshot',
             Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         ),
         Pattern('/foo'),
-        Pattern('/mnt/subvol1/.borgmatic-snapshot-1234/./mnt/subvol1'),
-        Pattern('/mnt/subvol1/.borgmatic-snapshot-1234/./mnt/subvol1/.cache', Pattern_type.EXCLUDE),
-        Pattern('/mnt/subvol2/.borgmatic-snapshot-1234/./mnt/subvol2'),
+        Pattern('/mnt/subvol1/.borgmatic-snapshot/./mnt/subvol1'),
+        Pattern('/mnt/subvol1/.borgmatic-snapshot/./mnt/subvol1/.cache', Pattern_type.EXCLUDE),
+        Pattern('/mnt/subvol2/.borgmatic-snapshot/./mnt/subvol2'),
     ]
     assert config == {
         'btrfs': {},

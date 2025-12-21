@@ -70,26 +70,24 @@ temporary snapshot directory in use at the time the archive was created, as Borg
 
 ## Performance
 
-<span class="minilink minilink-addedin">With Borg version 1.x</span> Because of
-the way that Btrfs snapshot paths change from one borgmatic invocation to the
-next, the [Borg file
+<span class="minilink minilink-addedin">New in borgmatic version 2.0.13, with
+Borg version 1.x</span> borgmatic uses consistent snapshot paths between
+invocations, so Btrfs snapshots are cached correctly. No configuration is
+necessary.
+
+<span class="minilink minilink-addedin">Prior to borgmatic version 2.0.13, with
+Borg version 1.x</span> Because of the way that Btrfs snapshot paths change from
+one borgmatic invocation to the next, the [Borg file
 cache](https://borgbackup.readthedocs.io/en/stable/internals/data-structures.html#cache)
-will never get cache hits on snapshotted files. This makes backing up Btrfs
+never gets cache hits on snapshotted files. This makes backing up Btrfs
 snapshots a little slower than non-snapshotted files that have consistent paths.
-**It is also not possible to mitigate cache misses**, as the Btrfs hook uses
-snapshot paths which change between borgmatic invocations, and the snapshots
-are located outside the [runtime
-directory](https://torsion.org/borgmatic/reference/configuration/runtime-directory/),
-contrary to
-[ZFS](https://torsion.org/borgmatic/reference/configuration/data-sources/zfs/#performance)
-and
-[LVM](https://torsion.org/borgmatic/reference/configuration/data-sources/lvm/#performance).
+If this is an issue for you, upgrade to borgmatic to 2.0.13+.
 
 <span class="minilink minilink-addedin">With Borg version 2.x</span> Even
-snapshotted files should get cache hits, because Borg 2.x is smarter about how
-it looks up file paths in its cache—it constructs the cache key with the path
-*as it's seen in the archive* (which is consistent across runs) rather than the
-full absolute source path (which changes).
+snapshotted files get cache hits, because Borg 2.x is smarter about how it looks
+up file paths in its cache—it constructs the cache key with the path *as it's
+seen in the archive* (which is consistent across runs) rather than the full
+absolute source path (which changes).
 
 
 ## systemd settings
