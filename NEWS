@@ -1,3 +1,7 @@
+2.0.14.dev0
+ * #1208: Fix for the database "restore" action restoring more databases than the "--database" flag
+   specifies.
+
 2.0.13
  * #1054: Allow the Btrfs hook to create and delete snapshots even when running
    as a non-root user. See the documentation for more information:

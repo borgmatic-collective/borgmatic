@@ -124,6 +124,6 @@ def convert_glob_patterns_to_borg_pattern(patterns):
     # longer than the pattern. E.g., a pattern of "borgmatic/*/foo_databases/test" should also match
     # paths like "borgmatic/*/foo_databases/test/toc.dat"
     return 're:' + '|'.join(
-        fnmatch.translate(pattern.lstrip('/')).replace('\\z', '').replace('\\Z', '')
+        fnmatch.translate(pattern.lstrip('/')).replace('\\z', '').replace('\\Z', '') + '$'
         for pattern in patterns
     )

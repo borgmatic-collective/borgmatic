@@ -200,6 +200,10 @@ def restore_single_dump(
         borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
         borgmatic_runtime_directory,
         data_source['name'],
+        data_source.get('hostname'),
+        data_source.get('port'),
+        data_source.get('container'),
+        data_source.get('label'),
     )[hook_name.split('_databases', 1)[0]]
 
     destination_path = (

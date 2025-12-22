@@ -315,6 +315,10 @@ def test_restore_single_dump_extracts_and_restores_single_file_dump():
         object,
         object,
         object,
+        object,
+        object,
+        object,
+        object,
     ).and_return({'postgresql': flexmock()})
     flexmock(module.tempfile).should_receive('mkdtemp').never()
     flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
@@ -355,6 +359,10 @@ def test_restore_single_dump_extracts_and_restores_directory_dump():
     flexmock(module).should_receive('render_dump_metadata').and_return('test')
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
         'make_data_source_dump_patterns',
+        object,
+        object,
+        object,
+        object,
         object,
         object,
         object,
@@ -405,6 +413,10 @@ def test_restore_single_dump_with_directory_dump_error_cleans_up_temporary_direc
         object,
         object,
         object,
+        object,
+        object,
+        object,
+        object,
     ).and_return({'postgresql': flexmock()})
     flexmock(module.tempfile).should_receive('mkdtemp').once().and_return(
         '/run/user/0/borgmatic/tmp1234',
@@ -448,6 +460,10 @@ def test_restore_single_dump_with_directory_dump_and_dry_run_skips_directory_mov
     flexmock(module).should_receive('render_dump_metadata').and_return('test')
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
         'make_data_source_dump_patterns',
+        object,
+        object,
+        object,
+        object,
         object,
         object,
         object,
