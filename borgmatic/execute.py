@@ -431,15 +431,16 @@ def execute_command_and_capture_output(
 
         return error.output.decode() if error.output is not None else None
 
-    outputs = log_outputs(
-        (process,),
-        (input_file,),
-        None,
-        borg_local_path,
-        borg_exit_codes,
-    )
+    with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
+        captured_outputs = log_outputs(
+            (process,),
+            (input_file,),
+            None,
+            borg_local_path,
+            borg_exit_codes,
+        )
 
-    return outputs[process]
+    return captured_outputs.get(process)
 
 
 def execute_command_with_processes(
