@@ -355,7 +355,7 @@ def make_data_source_dump_patterns(
 
     return (
         dump.make_data_source_dump_filename(
-            make_dump_path('borgmatic'), name, name, hostname, port, container, label
+            make_dump_path('borgmatic'), name, hostname, port, container, label
         ),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
