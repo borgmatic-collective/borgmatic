@@ -295,6 +295,7 @@ def test_strip_path_prefix_from_extracted_dump_destination_renames_first_matchin
         ],
     )
 
+    flexmock(module.shutil).should_receive('rmtree')
     flexmock(module.shutil).should_receive('move').with_args(
         '/foo/bar/postgresql_databases',
         '/run/user/0/borgmatic/postgresql_databases',

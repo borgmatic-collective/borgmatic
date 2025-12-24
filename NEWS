@@ -1,6 +1,7 @@
 2.0.14.dev0
  * #1208: Fix for the database "restore" action restoring more databases than the "--database" flag
    specifies.
+ * #1212: Fix an error when restoring multiple directory-format database dumps at once.
 
 2.0.13
  * #1054: Allow the Btrfs hook to create and delete snapshots even when running
