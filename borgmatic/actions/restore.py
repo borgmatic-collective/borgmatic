@@ -129,14 +129,14 @@ def get_configured_data_source(config, restore_dump):
 
 
 def strip_path_prefix_from_extracted_dump_destination(
-    destination_path,
+    extract_path,
     borgmatic_runtime_directory,
 ):
     '''
     Directory-format dump files get extracted into a temporary directory containing a path prefix
-    that depends how the files were stored in the archive. So, given the destination path where the
-    dump was extracted and the borgmatic runtime directory, move the dump files such that the
-    restore doesn't have to deal with that varying path prefix.
+    that depends how the files were stored in the archive. So, given the path where the dump was
+    extracted and the borgmatic runtime directory, move the dump files such that the restore doesn't
+    have to deal with that varying path prefix.
 
     For instance, if the dump was extracted to:
 
@@ -150,16 +150,16 @@ def strip_path_prefix_from_extracted_dump_destination(
 
       /run/user/0/borgmatic/postgresql_databases/test/...
     '''
-    for subdirectory_path, _, _ in os.walk(destination_path):
+    for subdirectory_path, _, _ in os.walk(extract_path):
         databases_directory = os.path.basename(subdirectory_path)
 
         if not databases_directory.endswith('_databases'):
             continue
 
-        shutil.move(
-            subdirectory_path,
-            os.path.join(borgmatic_runtime_directory, databases_directory),
-        )
+        destination_path = os.path.join(borgmatic_runtime_directory, databases_directory)
+        shutil.rmtree(destination_path, ignore_errors=True)
+        shutil.move(subdirectory_path, destination_path)
+
         break
 
 
