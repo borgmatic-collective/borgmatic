@@ -273,7 +273,7 @@ def collect_dumps_from_archive(
     borgmatic runtime directory, query the archive for the names of data sources dumps it contains
     and return them as a set of Dump instances.
     '''
-    dumps_from_archive = set()
+    dumps_from_archive = {}  # Use a dict as an ordered set.
 
     # There is (at most) one dump metadata file per data source hook. Load each.
     for dumps_metadata_path in borgmatic.borg.list.capture_archive_listing(
@@ -302,33 +302,30 @@ def collect_dumps_from_archive(
         if not dumps_metadata_path:
             continue
 
-        dumps_from_archive.update(
-            set(
-                borgmatic.hooks.data_source.dump.parse_data_source_dumps_metadata(
-                    borgmatic.borg.extract.extract_archive(
-                        global_arguments.dry_run,
-                        repository,
-                        archive,
-                        [dumps_metadata_path],
-                        config,
-                        local_borg_version,
-                        global_arguments,
-                        local_path=local_path,
-                        remote_path=remote_path,
-                        extract_to_stdout=True,
-                    )
-                    .stdout.read()
-                    .decode(),
-                    dumps_metadata_path,
-                )
+        for dump in borgmatic.hooks.data_source.dump.parse_data_source_dumps_metadata(
+            borgmatic.borg.extract.extract_archive(
+                global_arguments.dry_run,
+                repository,
+                archive,
+                [dumps_metadata_path],
+                config,
+                local_borg_version,
+                global_arguments,
+                local_path=local_path,
+                remote_path=remote_path,
+                extract_to_stdout=True,
             )
-        )
+            .stdout.read()
+            .decode(),
+            dumps_metadata_path,
+        ):
+            dumps_from_archive[dump] = None
 
     # If we've successfully loaded any dumps metadata, we're done.
     if dumps_from_archive:
         logger.debug('Collecting database dumps from archive data source dumps metadata files')
 
-        return dumps_from_archive
+        return tuple(dumps_from_archive.keys())
 
     # No dumps metadata files were found, so for backwards compatibility, fall back to parsing the
     # paths of dumps found in the archive to get their respective dump metadata.
@@ -392,11 +389,11 @@ def collect_dumps_from_archive(
             except (ValueError, TypeError):
                 port = None
 
-            dumps_from_archive.add(
+            dumps_from_archive[
                 Dump(
                     hook_name, data_source_name, None if hostname == 'localhost' else hostname, port
                 )
-            )
+            ] = None
 
             # We've successfully parsed the dump path, so need to probe any further.
             break
@@ -405,13 +402,13 @@ def collect_dumps_from_archive(
                 f'Ignoring invalid data source dump path "{dump_path}" in archive {archive}',
             )
 
-    return dumps_from_archive
+    return tuple(dumps_from_archive.keys())
 
 
 def get_dumps_to_restore(restore_arguments, dumps_from_archive):
     '''
     Given restore arguments as an argparse.Namespace instance indicating which dumps to restore and
-    a set of Dump instances representing the dumps found in an archive, return a set of specific
+    a tuple of Dump instances representing the dumps found in an archive, return a tuple of specific
     Dump instances from the archive to restore. As part of this, replace any Dump having a data
     source name of "all" with multiple named Dump instances as appropriate.
 
@@ -456,11 +453,12 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
         }
     )
     missing_dumps = set()
-    dumps_to_restore = set()
+    dumps_to_restore = {}  # Use a dict as an ordered set.
 
     # If there's a requested "all" dump, add every dump from the archive to the dumps to restore.
     if any(dump for dump in requested_dumps if dump.data_source_name == 'all'):
-        dumps_to_restore.update(dumps_from_archive)
+        for dump in dumps_from_archive:
+            dumps_to_restore[dump] = None
 
     # If any archive dump matches a requested dump, add the archive dump to the dumps to restore.
     for requested_dump in requested_dumps:
@@ -476,7 +474,7 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
         if len(matching_dumps) == 0:
             missing_dumps.add(requested_dump)
         elif len(matching_dumps) == 1:
-            dumps_to_restore.add(matching_dumps[0])
+            dumps_to_restore[matching_dumps[0]] = None
         else:
             raise ValueError(
                 f'Cannot restore data source {render_dump_metadata(requested_dump)} because there are multiple matching dumps in the archive. Try adding flags to disambiguate.',
@@ -491,20 +489,20 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
             f"Cannot restore data source dump{'s' if len(missing_dumps) > 1 else ''} {rendered_dumps} missing from archive",
         )
 
-    return dumps_to_restore
+    return tuple(dumps_to_restore.keys())
 
 
 def ensure_requested_dumps_restored(dumps_to_restore, dumps_actually_restored):
     '''
-    Given a set of requested dumps to restore and a set of dumps actually restored, raise ValueError
-    if any requested dumps to restore weren't restored, indicating that they were missing from the
-    configuration.
+    Given a tuple of requested dumps to restore and a set of dumps actually restored, raise
+    ValueError if any requested dumps to restore weren't restored, indicating that they were missing
+    from the configuration.
     '''
     if not dumps_actually_restored:
         raise ValueError('No data source dumps were found to restore')
 
     missing_dumps = sorted(
-        dumps_to_restore - dumps_actually_restored,
+        set(dumps_to_restore) - dumps_actually_restored,
         key=lambda dump: dump.data_source_name,
     )
 
