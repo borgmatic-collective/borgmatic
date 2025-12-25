@@ -116,6 +116,10 @@ def make_data_source_dump_patterns(
     config,
     borgmatic_runtime_directory,
     name=None,
+    hostname=None,
+    port=None,
+    container=None,
+    label=None,
 ):  # pragma: no cover
     '''
     Restores are implemented via the separate, purpose-specific "bootstrap" action rather than the

@@ -1,4 +1,6 @@
 2.0.14.dev0
+ * #1208: Fix for the "restore" action incorrectly extracting more database dumps than the
+   "--database" flag specifies.
  * #1212: Fix an error when restoring multiple directory-format database dumps at once.
 
 2.0.13

@@ -452,6 +452,10 @@ def make_data_source_dump_patterns(
     config,
     borgmatic_runtime_directory,
     name=None,
+    hostname=None,
+    port=None,
+    container=None,
+    label=None,
 ):  # pragma: no cover
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".

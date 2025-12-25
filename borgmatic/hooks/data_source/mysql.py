@@ -341,6 +341,10 @@ def make_data_source_dump_patterns(
     config,
     borgmatic_runtime_directory,
     name=None,
+    hostname=None,
+    port=None,
+    container=None,
+    label=None,
 ):  # pragma: no cover
     '''
     Given a sequence of configurations dicts, a configuration dict, the borgmatic runtime directory,
@@ -350,16 +354,24 @@ def make_data_source_dump_patterns(
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
     return (
-        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, label='*'),
+        dump.make_data_source_dump_filename(
+            make_dump_path('borgmatic'), name, hostname, port, container, label
+        ),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
             name,
-            label='*',
+            hostname,
+            port,
+            container,
+            label,
         ),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_source_directory),
             name,
-            label='*',
+            hostname,
+            port,
+            container,
+            label,
         ),
     )
 
