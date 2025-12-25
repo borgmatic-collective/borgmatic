@@ -271,7 +271,7 @@ def collect_dumps_from_archive(
     Given a local or remote repository path, a resolved archive name, a configuration dict, the
     local Borg version, global arguments an argparse.Namespace, local and remote Borg paths, and the
     borgmatic runtime directory, query the archive for the names of data sources dumps it contains
-    and return them as a set of Dump instances.
+    and return them as a tuple of Dump instances.
     '''
     dumps_from_archive = {}  # Use a dict as an ordered set.
 
@@ -415,7 +415,8 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
     Raise ValueError if any of the requested data source names cannot be found in the archive or if
     there are multiple archive dump matches for a given requested dump.
     '''
-    requested_dumps = (
+    requested_dumps = tuple(
+        # Use a dict comprehension as an ordered set.
         {
             Dump(
                 hook_name=(
@@ -432,16 +433,16 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
                 port=restore_arguments.original_port,
                 label=restore_arguments.original_label or UNSPECIFIED,
                 container=restore_arguments.original_container or UNSPECIFIED,
-            )
+            ): None
             for name in restore_arguments.data_sources or (UNSPECIFIED,)
-        }
+        }.keys()
         if restore_arguments.hook
         or restore_arguments.data_sources
         or restore_arguments.original_hostname
         or restore_arguments.original_port
         or restore_arguments.original_label
         or restore_arguments.original_container
-        else {
+        else (
             Dump(
                 hook_name=UNSPECIFIED,
                 data_source_name='all',
@@ -450,7 +451,7 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
                 label=UNSPECIFIED,
                 container=UNSPECIFIED,
             ),
-        }
+        )
     )
     missing_dumps = set()
     dumps_to_restore = {}  # Use a dict as an ordered set.
