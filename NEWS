@@ -1,4 +1,6 @@
 2.0.14.dev0
+ * #1208: Fix for the "restore" action incorrectly extracting more database dumps than the
+   "--database" flag specifies.
  * #1210: Fix an error when running the "spot" check or "extract" action with the "progress" option
    or "--progress" flag.
  * #1212: Fix an error when restoring multiple directory-format database dumps at once.
