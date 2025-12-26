@@ -380,10 +380,7 @@ def collect_spot_check_source_paths(
         dry_run=True,
         repository_path=repository['path'],
         # Omit "progress" because it interferes with "list_details".
-        config=dict(
-            {option: value for option, value in config.items() if option != 'progress'},
-            list_details=True,
-        ),
+        config=dict(config, progress=False, list_details=True),
         patterns=borgmatic.actions.pattern.process_patterns(
             borgmatic.actions.pattern.collect_patterns(config)
             + tuple(

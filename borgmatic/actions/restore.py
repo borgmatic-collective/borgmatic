@@ -496,7 +496,7 @@ def ensure_requested_dumps_restored(dumps_to_restore, dumps_actually_restored):
     if any requested dumps to restore weren't restored, indicating that they were missing from the
     configuration.
     '''
-    if not dumps_actually_restored:
+    if not dumps_to_restore:
         raise ValueError('No data source dumps were found to restore')
 
     missing_dumps = sorted(

@@ -1144,8 +1144,8 @@ def test_ensure_requested_dumps_restored_with_all_dumps_restored_does_not_raise(
 def test_ensure_requested_dumps_restored_with_no_dumps_raises():
     with pytest.raises(ValueError):
         module.ensure_requested_dumps_restored(
-            dumps_to_restore={},
-            dumps_actually_restored={},
+            dumps_to_restore=set(),
+            dumps_actually_restored=set(),
         )
 
 

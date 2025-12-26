@@ -651,7 +651,7 @@ def test_collect_spot_check_source_paths_omits_progress_from_create_dry_run_comm
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
         repository_path='repo',
-        config={'working_directory': '/', 'list_details': True},
+        config={'working_directory': '/', 'progress': False, 'list_details': True},
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version=object,
         global_arguments=object,
@@ -941,7 +941,7 @@ def test_collect_spot_check_source_paths_uses_working_directory():
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
         repository_path='repo',
-        config={'working_directory': '/working/dir', 'list_details': True},
+        config={'working_directory': '/working/dir', 'progress': False, 'list_details': True},
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version=object,
         global_arguments=object,

@@ -1,4 +1,6 @@
 2.0.14.dev0
+ * #1210: Fix an error when running the "spot" check or "extract" action with the "progress" option
+   or "--progress" flag.
  * #1212: Fix an error when restoring multiple directory-format database dumps at once.
 
 2.0.13
