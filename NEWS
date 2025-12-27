@@ -3,6 +3,8 @@
    "--database" flag specifies.
  * #1210: Fix an error when running the "spot" check or "extract" action with the "progress" option
    or "--progress" flag.
+ * #1211: Fix an error about the runtime directory getting excluded by tweaking its logic and
+   lowering the error to a warning.
  * #1212: Fix an error when restoring multiple directory-format database dumps at once.
 
 2.0.13
