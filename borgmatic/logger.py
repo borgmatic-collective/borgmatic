@@ -98,6 +98,7 @@ class JournaldHandler(logging.Handler):
 
         self.journald_socket_path = journald_socket_path
         self.log_level_to_journald_priority = {
+            logging.CRITICAL: 2,
             logging.ERROR: 3,
             logging.WARNING: 4,
             logging.ANSWER: 5,

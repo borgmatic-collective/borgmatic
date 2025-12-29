@@ -132,7 +132,7 @@ def log_line(last_lines, captured_output, line, default_log_level, came_from_std
             log_message = line_data['message']
             log_level = logging._nameToLevel.get(borg_level_name)
     elif came_from_stderr:
-        log_level = logging.WARN if line.lower().startswith('warning:') else logging.ERROR
+        log_level = logging.WARNING if line.lower().startswith('warning:') else logging.ERROR
 
     last_lines.append(log_message)
 
