@@ -74,7 +74,7 @@ def prune_archives(
         + make_prune_flags(config, prune_arguments, local_borg_version)
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if config.get('log_json') else ())
+        + ('--log-json',)
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (
             ('--stats',)

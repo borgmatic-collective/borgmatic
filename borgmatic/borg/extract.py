@@ -49,7 +49,7 @@ def extract_last_archive_dry_run(
     full_extract_command = (
         (local_path, 'extract', '--dry-run')
         + (('--remote-path', remote_path) if remote_path else ())
-        + (('--log-json',) if config.get('log_json') else ())
+        + ('--log-json',)
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + verbosity_flags
         + list_flag
@@ -127,7 +127,7 @@ def extract_archive(
         + (('--remote-path', remote_path) if remote_path else ())
         + numeric_ids_flags
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if config.get('log_json') else ())
+        + ('--log-json',)
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())

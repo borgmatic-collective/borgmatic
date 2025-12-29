@@ -1,5 +1,7 @@
 import collections
+import contextlib
 import enum
+import json
 import logging
 import select
 import subprocess
@@ -89,44 +91,62 @@ def output_buffers_for_process(process, exclude_stdouts):
     )
 
 
-def determine_log_level(output_log_level, came_from_stderr, borg_local_path, command, line):
+def borg_log_data_to_log_record(log_data):
     '''
-    Given the requested output log level, whether the this log line came from stderr, the Borg local
-    path, the command as a sequence, and the line to be logged, return the log level that should be
-    used.
-
-    Borg happens to log everything to stderr (except JSON output), so if this is a Borg command, use
-    the requested log level regardless of whether this is for stdout or stderr. (Otherwise, all Borg
-    logs would show up at ERROR level even if there's no error!)
-
-    But for other commands, elevate stderr logs to ERROR while using the requested log level for
-    stdout. The one exception is if the log came from stderr and the string "warning" appears at the
-    start of the log line. In that case, just elevate the log level to a WARN.
+    Given a log data dict for a single Borg log entry, return it converted to a logging.LogRecord
+    instance.
     '''
+    return logging.makeLogRecord(
+        dict(
+            levelno=logging._nameToLevel.get(log_data.get('levelname')),
+            created=log_data.get('time'),
+            msg=log_data.get('message'),
+            levelname=log_data.get('levelname'),
+            name=log_data.get('name'),
+        )
+    )
+
+
+def log_line(last_lines, captured_output, line, default_log_level, came_from_stderr, borg_local_path, command):
+    '''
+    Given a rolling list of last lines, a list of captured output, the line to be logged, a default
+    log level, whether the this log line came from stderr, the Borg local path, and the command as a
+    sequence, append the line to the last lines and (if the log level is None) the captured output.
+    Then log the line at the requested log level.
+
+    If the command being run is Borg, and the log line is JSON-formatted log data, then grab the log
+    level from it and log the parsed JSON to be consumed later by a Python logging.Formatter.
+
+    But for non-Borg commands, elevate stderr-sourced logs to ERROR. The one exception is if the log
+    came from stderr and the string "warning:" appears at the start of the log line. In that case,
+    just elevate the log level to a WARN.
+    '''
+    log_message = line
+    log_level = default_log_level
+    line_data = None
+
     if borg_local_path and command[0] == borg_local_path:
-        return output_log_level
+        with contextlib.suppress(json.JSONDecodeError, TypeError, KeyError):
+            line_data = json.loads(line)
+            borg_level_name = line_data['levelname']
+            log_message = line_data['message']
+            log_level = logging._nameToLevel.get(borg_level_name)
+    elif came_from_stderr:
+        log_level = logging.WARN if line.lower().startswith('warning:') else logging.ERROR
 
-    if came_from_stderr:
-        return logging.WARN if line.lower().startswith('warning:') else logging.ERROR
-
-    return output_log_level
-
-
-def append_last_lines(last_lines, captured_output, line, log_level):
-    '''
-    Given a rolling list of last lines, a list of captured output, a line to append, and an output
-    log level, append the line to the last lines and (if necessary) the captured output. Then log
-    the line at the requested log level.
-    '''
-    last_lines.append(line)
+    last_lines.append(log_message)
 
     if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
         last_lines.pop(0)
 
     if log_level is None:
-        captured_output.append(line)
+        captured_output.append(log_message)
+        return
+
+    if line_data:
+        logger.handle(borg_log_data_to_log_record(line_data))
     else:
-        logger.log(log_level, line)
+        logger.log(log_level, log_message)
 
 
 def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, borg_exit_codes):  # noqa: PLR0912
@@ -190,17 +210,14 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
 
                     # Keep the last few lines of output in case the process errors, and we need the
                     # output for the exception below.
-                    append_last_lines(
-                        buffer_last_lines[ready_buffer],
-                        captured_outputs[ready_process],
-                        line,
-                        determine_log_level(
-                            output_log_level,
-                            (ready_buffer == ready_process.stderr),
-                            borg_local_path,
-                            command,
-                            line,
-                        ),
+                    log_line(
+                        last_lines=buffer_last_lines[ready_buffer],
+                        captured_output=captured_outputs[ready_process],
+                        line=line,
+                        default_log_level=output_log_level,
+                        came_from_stderr=(ready_buffer == ready_process.stderr),
+                        borg_local_path=borg_local_path,
+                        command=command,
                     )
 
         if not still_running:
@@ -231,17 +248,14 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                         if not line:
                             break
 
-                        append_last_lines(
-                            last_lines,
-                            captured_outputs[process],
-                            line,
-                            determine_log_level(
-                                output_log_level,
-                                (output_buffer == process.stderr),
-                                borg_local_path,
-                                command,
-                                line,
-                            ),
+                        log_line(
+                            last_lines=last_lines,
+                            captured_output=captured_outputs[process],
+                            line=line,
+                            default_log_level=output_log_level,
+                            came_from_stderr=(output_buffer == process.stderr),
+                            borg_local_path=borg_local_path,
+                            command=command,
                         )
 
                 if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:

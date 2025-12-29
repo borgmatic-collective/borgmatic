@@ -1,6 +1,10 @@
 2.0.14.dev0
  * #485: When running commands (database clients, command hooks, etc.), elevate stderr output to
    borgmatic error logs.
+ * #858: With the "--log-json" flag, log borgmatic's own logs as JSON, not just Borg's.
+ * #1204: When verbosity levels differ between console/monitoring/syslog/file, log Borg's output to
+   each one at a different level.
+ * When syslog verbosity is enabled, log to systemd's journal (if present) with structured data.
 
 2.0.13
  * #1054: Allow the Btrfs hook to create and delete snapshots even when running

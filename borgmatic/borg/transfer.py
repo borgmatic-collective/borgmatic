@@ -33,7 +33,7 @@ def transfer_archives(
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
-        + flags.make_flags('log-json', config.get('log_json'))
+        + ('--log-json',)
         + flags.make_flags('lock-wait', config.get('lock_wait'))
         + flags.make_flags('progress', config.get('progress'))
         + (
