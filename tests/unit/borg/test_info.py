@@ -566,6 +566,8 @@ def test_make_info_command_with_date_based_matching_passes_through_to_command():
 
 
 def test_display_archives_info_calls_two_commands():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_info_command')
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
@@ -583,6 +585,8 @@ def test_display_archives_info_calls_two_commands():
 
 
 def test_display_archives_info_with_json_calls_json_command_only():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_info_command')
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
@@ -604,6 +608,8 @@ def test_display_archives_info_with_json_calls_json_command_only():
 
 
 def test_display_archives_info_calls_borg_with_working_directory():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_info_command')
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(

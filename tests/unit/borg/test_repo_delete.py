@@ -301,7 +301,8 @@ def test_make_repo_delete_command_includes_force_twice():
 
 
 def test_delete_repository_with_defaults_does_not_capture_output():
-    module.borgmatic.logger.add_custom_log_levels()
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     command = flexmock()
     flexmock(module).should_receive('make_repo_delete_command').and_return(command)
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -330,7 +331,8 @@ def test_delete_repository_with_defaults_does_not_capture_output():
 
 
 def test_delete_repository_with_force_captures_output():
-    module.borgmatic.logger.add_custom_log_levels()
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     command = flexmock()
     flexmock(module).should_receive('make_repo_delete_command').and_return(command)
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -359,7 +361,8 @@ def test_delete_repository_with_force_captures_output():
 
 
 def test_delete_repository_with_cache_only_captures_output():
-    module.borgmatic.logger.add_custom_log_levels()
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     command = flexmock()
     flexmock(module).should_receive('make_repo_delete_command').and_return(command)
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -388,7 +391,8 @@ def test_delete_repository_with_cache_only_captures_output():
 
 
 def test_delete_repository_calls_borg_with_working_directory():
-    module.borgmatic.logger.add_custom_log_levels()
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     command = flexmock()
     flexmock(module).should_receive('make_repo_delete_command').and_return(command)
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(

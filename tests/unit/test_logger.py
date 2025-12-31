@@ -447,6 +447,7 @@ def test_flush_delayed_logging_flushes_delayed_logging_handler():
 def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    flexmock(module.logging).DISABLED = module.DISABLED
     fake_formatter = flexmock()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
@@ -458,8 +459,15 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux(
         level=logging.DEBUG,
         handlers=list,
     )
+    flexmock(module.os.path).should_receive('exists').with_args(
+        module.JOURNALD_SOCKET_PATH
+    ).and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
-    syslog_handler = logging.handlers.SysLogHandler()
+    syslog_handler = flexmock(
+        level=module.logging.DEBUG,
+        setLevel=lambda log_level: None,
+        setFormatter=lambda formatter: None,
+    )
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
         address='/dev/log',
     ).and_return(syslog_handler).once()
@@ -470,6 +478,7 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux(
 def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_macos():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    flexmock(module.logging).DISABLED = module.DISABLED
     fake_formatter = flexmock()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
@@ -481,9 +490,16 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_macos(
         level=logging.DEBUG,
         handlers=list,
     )
+    flexmock(module.os.path).should_receive('exists').with_args(
+        module.JOURNALD_SOCKET_PATH
+    ).and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/var/run/syslog').and_return(True)
-    syslog_handler = logging.handlers.SysLogHandler()
+    syslog_handler = flexmock(
+        level=module.logging.DEBUG,
+        setLevel=lambda log_level: None,
+        setFormatter=lambda formatter: None,
+    )
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
         address='/var/run/syslog',
     ).and_return(syslog_handler).once()
@@ -494,6 +510,7 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_macos(
 def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_freebsd():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    flexmock(module.logging).DISABLED = module.DISABLED
     fake_formatter = flexmock()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
@@ -505,13 +522,48 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_freebs
         level=logging.DEBUG,
         handlers=list,
     )
+    flexmock(module.os.path).should_receive('exists').with_args(
+        module.JOURNALD_SOCKET_PATH
+    ).and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/var/run/syslog').and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/var/run/log').and_return(True)
-    syslog_handler = logging.handlers.SysLogHandler()
+    syslog_handler = flexmock(
+        level=module.logging.DEBUG,
+        setLevel=lambda log_level: None,
+        setFormatter=lambda formatter: None,
+    )
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
         address='/var/run/log',
     ).and_return(syslog_handler).once()
+
+    module.configure_logging(logging.INFO, syslog_log_level=logging.DEBUG)
+
+
+def test_configure_logging_with_journald_probes_for_log_socket():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
+    flexmock(module.logging).DISABLED = module.DISABLED
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
+    multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
+    flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
+    flexmock(module).should_receive('interactive_console').and_return(False)
+    flexmock(module).should_receive('flush_delayed_logging')
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.DEBUG,
+        handlers=list,
+    )
+    flexmock(module.os.path).should_receive('exists').with_args(
+        module.JOURNALD_SOCKET_PATH
+    ).and_return(True)
+    journald_handler = flexmock(level=module.logging.DEBUG, setLevel=lambda log_level: None)
+    flexmock(module).should_receive('JournaldHandler').with_args(
+        module.JOURNALD_SOCKET_PATH
+    ).and_return(journald_handler).once()
+    flexmock(module.os.path).should_receive('exists').with_args('/dev/log').never()
+    flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
 
     module.configure_logging(logging.INFO, syslog_log_level=logging.DEBUG)
 
@@ -622,6 +674,9 @@ def test_configure_logging_to_both_log_file_and_syslog():
         level=logging.DEBUG,
         handlers=list,
     )
+    flexmock(module.os.path).should_receive('exists').with_args(
+        module.JOURNALD_SOCKET_PATH
+    ).and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
     syslog_handler = logging.handlers.SysLogHandler()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(

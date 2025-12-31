@@ -15,7 +15,9 @@ def test_log_outputs_logs_each_line_separately():
         levelname='INFO',
         getMessage=lambda: 'hi',
     )
-    flexmock(module).should_receive('line_to_log_record').with_args('hi', logging.INFO).and_return(hi_record)
+    flexmock(module).should_receive('line_to_log_record').with_args('hi', logging.INFO).and_return(
+        hi_record
+    )
     flexmock(module.logger).should_receive('handle').with_args(hi_record).once()
     there_record = flexmock(
         msg='there',
@@ -23,7 +25,9 @@ def test_log_outputs_logs_each_line_separately():
         levelname='INFO',
         getMessage=lambda: 'there',
     )
-    flexmock(module).should_receive('line_to_log_record').with_args('there', logging.INFO).and_return(there_record)
+    flexmock(module).should_receive('line_to_log_record').with_args(
+        'there', logging.INFO
+    ).and_return(there_record)
     flexmock(module.logger).should_receive('handle').with_args(there_record).once()
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
 
@@ -56,7 +60,9 @@ def test_log_outputs_skips_logs_for_process_with_none_stdout():
         levelname='INFO',
         getMessage=lambda: 'there',
     )
-    flexmock(module).should_receive('line_to_log_record').with_args('there', logging.INFO).and_return(there_record)
+    flexmock(module).should_receive('line_to_log_record').with_args(
+        'there', logging.INFO
+    ).and_return(there_record)
     flexmock(module.logger).should_receive('handle').with_args(there_record).once()
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
 
