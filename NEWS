@@ -1,4 +1,4 @@
-2.0.14.dev0
+2.1.0.dev0
  * #485: When running commands (database clients, command hooks, etc.), elevate stderr output to
    borgmatic error logs.
  * #858: With the "--log-json" flag, log borgmatic's own logs as JSON, not just Borg's.

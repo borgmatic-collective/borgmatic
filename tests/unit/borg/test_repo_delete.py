@@ -25,7 +25,7 @@ def test_make_repo_delete_command_with_feature_available_runs_borg_repo_delete()
         remote_path=None,
     )
 
-    assert command == ('borg', 'repo-delete', 'repo')
+    assert command == ('borg', 'repo-delete', '--log-json', 'repo')
 
 
 def test_make_repo_delete_command_without_feature_available_runs_borg_delete():
@@ -46,7 +46,7 @@ def test_make_repo_delete_command_without_feature_available_runs_borg_delete():
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', 'repo')
+    assert command == ('borg', 'delete', '--log-json', 'repo')
 
 
 def test_make_repo_delete_command_includes_log_info():
@@ -68,7 +68,7 @@ def test_make_repo_delete_command_includes_log_info():
         remote_path=None,
     )
 
-    assert command == ('borg', 'repo-delete', '--info', 'repo')
+    assert command == ('borg', 'repo-delete', '--info', '--log-json', 'repo')
 
 
 def test_make_repo_delete_command_includes_log_debug():
@@ -90,7 +90,7 @@ def test_make_repo_delete_command_includes_log_debug():
         remote_path=None,
     )
 
-    assert command == ('borg', 'repo-delete', '--debug', '--show-rc', 'repo')
+    assert command == ('borg', 'repo-delete', '--debug', '--show-rc', '--log-json', 'repo')
 
 
 def test_make_repo_delete_command_includes_dry_run():
@@ -115,7 +115,7 @@ def test_make_repo_delete_command_includes_dry_run():
         remote_path=None,
     )
 
-    assert command == ('borg', 'repo-delete', '--dry-run', 'repo')
+    assert command == ('borg', 'repo-delete', '--dry-run', '--log-json', 'repo')
 
 
 def test_make_repo_delete_command_includes_remote_path():
@@ -140,7 +140,7 @@ def test_make_repo_delete_command_includes_remote_path():
         remote_path='borg1',
     )
 
-    assert command == ('borg', 'repo-delete', '--remote-path', 'borg1', 'repo')
+    assert command == ('borg', 'repo-delete', '--remote-path', 'borg1', '--log-json', 'repo')
 
 
 def test_make_repo_delete_command_includes_umask():
@@ -163,32 +163,7 @@ def test_make_repo_delete_command_includes_umask():
         remote_path=None,
     )
 
-    assert command == ('borg', 'repo-delete', '--umask', '077', 'repo')
-
-
-def test_make_repo_delete_command_includes_log_json():
-    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
-    flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
-    flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(
-        'log-json',
-        True,
-    ).and_return(('--log-json',))
-    flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
-    flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
-        ('repo',),
-    )
-
-    command = module.make_repo_delete_command(
-        repository={'path': 'repo'},
-        config={'log_json': True},
-        local_borg_version='1.2.3',
-        repo_delete_arguments=flexmock(list_details=False, force=0),
-        global_arguments=flexmock(dry_run=False),
-        local_path='borg',
-        remote_path=None,
-    )
-
-    assert command == ('borg', 'repo-delete', '--log-json', 'repo')
+    assert command == ('borg', 'repo-delete', '--umask', '077', '--log-json', 'repo')
 
 
 def test_make_repo_delete_command_includes_lock_wait():
@@ -213,7 +188,7 @@ def test_make_repo_delete_command_includes_lock_wait():
         remote_path=None,
     )
 
-    assert command == ('borg', 'repo-delete', '--lock-wait', '5', 'repo')
+    assert command == ('borg', 'repo-delete', '--log-json', '--lock-wait', '5', 'repo')
 
 
 def test_make_repo_delete_command_without_feature_available_includes_delete_extra_borg_options():
@@ -234,7 +209,7 @@ def test_make_repo_delete_command_without_feature_available_includes_delete_extr
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', '--extra', 'value with space', 'repo')
+    assert command == ('borg', 'delete', '--log-json', '--extra', 'value with space', 'repo')
 
 
 def test_make_repo_delete_command_with_feature_available_includes_delete_extra_borg_options():
@@ -255,7 +230,7 @@ def test_make_repo_delete_command_with_feature_available_includes_delete_extra_b
         remote_path=None,
     )
 
-    assert command == ('borg', 'repo-delete', '--extra', 'value with space', 'repo')
+    assert command == ('borg', 'repo-delete', '--log-json', '--extra', 'value with space', 'repo')
 
 
 def test_make_repo_delete_command_includes_list():
@@ -280,7 +255,7 @@ def test_make_repo_delete_command_includes_list():
         remote_path=None,
     )
 
-    assert command == ('borg', 'repo-delete', '--list', 'repo')
+    assert command == ('borg', 'repo-delete', '--log-json', '--list', 'repo')
 
 
 def test_make_repo_delete_command_includes_force():
@@ -301,7 +276,7 @@ def test_make_repo_delete_command_includes_force():
         remote_path=None,
     )
 
-    assert command == ('borg', 'repo-delete', '--force', 'repo')
+    assert command == ('borg', 'repo-delete', '--log-json', '--force', 'repo')
 
 
 def test_make_repo_delete_command_includes_force_twice():
@@ -322,11 +297,11 @@ def test_make_repo_delete_command_includes_force_twice():
         remote_path=None,
     )
 
-    assert command == ('borg', 'repo-delete', '--force', '--force', 'repo')
+    assert command == ('borg', 'repo-delete', '--log-json', '--force', '--force', 'repo')
 
 
 def test_delete_repository_with_defaults_does_not_capture_output():
-    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    module.borgmatic.logger.add_custom_log_levels()
     command = flexmock()
     flexmock(module).should_receive('make_repo_delete_command').and_return(command)
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -355,7 +330,7 @@ def test_delete_repository_with_defaults_does_not_capture_output():
 
 
 def test_delete_repository_with_force_captures_output():
-    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    module.borgmatic.logger.add_custom_log_levels()
     command = flexmock()
     flexmock(module).should_receive('make_repo_delete_command').and_return(command)
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -384,7 +359,7 @@ def test_delete_repository_with_force_captures_output():
 
 
 def test_delete_repository_with_cache_only_captures_output():
-    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    module.borgmatic.logger.add_custom_log_levels()
     command = flexmock()
     flexmock(module).should_receive('make_repo_delete_command').and_return(command)
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -413,7 +388,7 @@ def test_delete_repository_with_cache_only_captures_output():
 
 
 def test_delete_repository_calls_borg_with_working_directory():
-    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    module.borgmatic.logger.add_custom_log_levels()
     command = flexmock()
     flexmock(module).should_receive('make_repo_delete_command').and_return(command)
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(

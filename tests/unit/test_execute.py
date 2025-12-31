@@ -86,45 +86,45 @@ def test_output_buffer_for_process_returns_stdout_when_not_excluded():
     )
 
 
-def test_append_last_lines_under_max_line_count_appends():
+def test_log_line_under_max_line_count_appends():
     last_lines = ['last']
     flexmock(module.logger).should_receive('log').once()
 
-    module.append_last_lines(
+    module.log_line(
         last_lines,
         captured_output=flexmock(),
         line='line',
-        log_level=flexmock(),
+        default_log_level=flexmock(),
     )
 
     assert last_lines == ['last', 'line']
 
 
-def test_append_last_lines_over_max_line_count_trims_and_appends():
+def test_log_line_over_max_line_count_trims_and_appends():
     original_last_lines = [str(number) for number in range(module.ERROR_OUTPUT_MAX_LINE_COUNT)]
     last_lines = list(original_last_lines)
     flexmock(module.logger).should_receive('log').once()
 
-    module.append_last_lines(
+    module.log_line(
         last_lines,
         captured_output=flexmock(),
         line='line',
-        log_level=flexmock(),
+        default_log_level=flexmock(),
     )
 
     assert last_lines == [*original_last_lines[1:], 'line']
 
 
-def test_append_last_lines_with_output_log_level_none_appends_captured_output():
+def test_log_line_with_output_log_level_none_appends_captured_output():
     last_lines = ['last']
     captured_output = ['captured']
     flexmock(module.logger).should_receive('log').never()
 
-    module.append_last_lines(
+    module.log_line(
         last_lines,
         captured_output=captured_output,
         line='line',
-        log_level=None,
+        default_log_level=None,
     )
 
     assert captured_output == ['captured', 'line']

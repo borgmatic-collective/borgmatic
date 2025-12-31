@@ -114,7 +114,9 @@ class JournaldHandler(logging.Handler):
             entry = dict(
                 LOGGER_NAME=record.name,
                 MESSAGE=record.getMessage(),
-                PRIORITY=self.log_level_to_journald_priority.get(record.levelno, DEFAULT_JOURNALD_PRIORITY),
+                PRIORITY=self.log_level_to_journald_priority.get(
+                    record.levelno, DEFAULT_JOURNALD_PRIORITY
+                ),
                 SYSLOG_IDENTIFIER='borgmatic',
                 SYSLOG_PID=os.getpid(),
                 UNIT=record.name,
@@ -462,11 +464,7 @@ def configure_logging(
             handlers.append(journald_handler)
         else:
             syslog_path = next(
-                (
-                    path
-                    for path in SYSLOG_PATHS
-                    if os.path.exists(path)
-                ),
+                (path for path in SYSLOG_PATHS if os.path.exists(path)),
                 None,
             )
 
@@ -483,8 +481,9 @@ def configure_logging(
     if log_file and log_file_log_level != logging.DISABLED:
         file_handler = logging.handlers.WatchedFileHandler(log_file)
         file_handler.setFormatter(
-            Json_formatter() if log_json else
-            Log_prefix_formatter(
+            Json_formatter()
+            if log_json
+            else Log_prefix_formatter(
                 log_file_format or '[{asctime}] {levelname}: {prefix}{message}',
             ),
         )

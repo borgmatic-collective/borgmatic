@@ -700,7 +700,12 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
                         ),
                     ),
                     logging.makeLogRecord(
-                        dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=str(error), name=logger.name),
+                        dict(
+                            levelno=logging.CRITICAL,
+                            levelname='CRITICAL',
+                            msg=str(error),
+                            name=logger.name,
+                        ),
                     ),
                 ],
             )

@@ -1,6 +1,7 @@
 import logging
 import shlex
 
+import borgmatic.borg.environment
 import borgmatic.borg.flags
 
 logger = logging.getLogger(__name__)

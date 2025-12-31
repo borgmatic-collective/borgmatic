@@ -176,7 +176,13 @@ def check_archives(
             + make_check_name_flags(checks_subset, archive_filter_flags)
             + (('--remote-path', remote_path) if remote_path else ())
             + (('--umask', str(umask)) if umask else ())
-            + ('--log-json',)
+            + (
+                ('--log-json',)
+                if (
+                    config.get('log_json') or not (check_arguments.repair or config.get('progress'))
+                )
+                else ()
+            )
             + (('--lock-wait', str(lock_wait)) if lock_wait else ())
             + verbosity_flags
             + (('--progress',) if config.get('progress') else ())

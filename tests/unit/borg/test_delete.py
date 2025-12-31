@@ -27,7 +27,7 @@ def test_make_delete_command_includes_log_info():
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', '--info', 'repo')
+    assert command == ('borg', 'delete', '--info', '--log-json', 'repo')
 
 
 def test_make_delete_command_includes_log_debug():
@@ -49,7 +49,7 @@ def test_make_delete_command_includes_log_debug():
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', '--debug', '--show-rc', 'repo')
+    assert command == ('borg', 'delete', '--debug', '--show-rc', '--log-json', 'repo')
 
 
 def test_make_delete_command_includes_dry_run():
@@ -74,7 +74,7 @@ def test_make_delete_command_includes_dry_run():
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', '--dry-run', 'repo')
+    assert command == ('borg', 'delete', '--dry-run', '--log-json', 'repo')
 
 
 def test_make_delete_command_includes_remote_path():
@@ -99,7 +99,7 @@ def test_make_delete_command_includes_remote_path():
         remote_path='borg1',
     )
 
-    assert command == ('borg', 'delete', '--remote-path', 'borg1', 'repo')
+    assert command == ('borg', 'delete', '--remote-path', 'borg1', '--log-json', 'repo')
 
 
 def test_make_delete_command_includes_umask():
@@ -122,32 +122,7 @@ def test_make_delete_command_includes_umask():
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', '--umask', '077', 'repo')
-
-
-def test_make_delete_command_includes_log_json():
-    flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
-    flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(
-        'log-json',
-        True,
-    ).and_return(('--log-json',))
-    flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
-    flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
-    flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
-        ('repo',),
-    )
-
-    command = module.make_delete_command(
-        repository={'path': 'repo'},
-        config={'log_json': True},
-        local_borg_version='1.2.3',
-        delete_arguments=flexmock(list_details=False, force=0, match_archives=None, archive=None),
-        global_arguments=flexmock(dry_run=False),
-        local_path='borg',
-        remote_path=None,
-    )
-
-    assert command == ('borg', 'delete', '--log-json', 'repo')
+    assert command == ('borg', 'delete', '--umask', '077', '--log-json', 'repo')
 
 
 def test_make_delete_command_includes_lock_wait():
@@ -172,7 +147,7 @@ def test_make_delete_command_includes_lock_wait():
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', '--lock-wait', '5', 'repo')
+    assert command == ('borg', 'delete', '--log-json', '--lock-wait', '5', 'repo')
 
 
 def test_make_delete_command_includes_extra_borg_options():
@@ -193,7 +168,7 @@ def test_make_delete_command_includes_extra_borg_options():
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', '--extra', 'value with space', 'repo')
+    assert command == ('borg', 'delete', '--log-json', '--extra', 'value with space', 'repo')
 
 
 def test_make_delete_command_with_list_config_calls_borg_with_list_flag():
@@ -218,7 +193,7 @@ def test_make_delete_command_with_list_config_calls_borg_with_list_flag():
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', '--list', 'repo')
+    assert command == ('borg', 'delete', '--log-json', '--list', 'repo')
 
 
 def test_make_delete_command_includes_force():
@@ -239,7 +214,7 @@ def test_make_delete_command_includes_force():
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', '--force', 'repo')
+    assert command == ('borg', 'delete', '--log-json', '--force', 'repo')
 
 
 def test_make_delete_command_includes_force_twice():
@@ -260,7 +235,7 @@ def test_make_delete_command_includes_force_twice():
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', '--force', '--force', 'repo')
+    assert command == ('borg', 'delete', '--log-json', '--force', '--force', 'repo')
 
 
 def test_make_delete_command_includes_archive():
@@ -288,7 +263,7 @@ def test_make_delete_command_includes_archive():
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', '--match-archives', 'archive', 'repo')
+    assert command == ('borg', 'delete', '--log-json', '--match-archives', 'archive', 'repo')
 
 
 def test_make_delete_command_includes_match_archives():
@@ -316,7 +291,7 @@ def test_make_delete_command_includes_match_archives():
         remote_path=None,
     )
 
-    assert command == ('borg', 'delete', '--match-archives', 'sh:foo*', 'repo')
+    assert command == ('borg', 'delete', '--log-json', '--match-archives', 'sh:foo*', 'repo')
 
 
 LOGGING_ANSWER = flexmock()

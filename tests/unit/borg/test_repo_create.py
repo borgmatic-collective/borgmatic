@@ -9,7 +9,7 @@ from borgmatic.borg import repo_create as module
 from ..test_verbosity import insert_logging_mock
 
 REPO_INFO_SOME_UNKNOWN_EXIT_CODE = -999
-REPO_CREATE_COMMAND = ('borg', 'repo-create', '--encryption', 'repokey')
+REPO_CREATE_COMMAND = ('borg', 'repo-create', '--log-json', '--encryption', 'repokey')
 
 
 def insert_repo_info_command_found_mock():
@@ -346,27 +346,6 @@ def test_create_repository_with_log_debug_calls_borg_with_debug_flag():
         dry_run=False,
         repository_path='repo',
         config={},
-        local_borg_version='2.3.4',
-        global_arguments=flexmock(),
-        encryption_mode='repokey',
-    )
-
-
-def test_create_repository_with_log_json_calls_borg_with_log_json_flag():
-    insert_repo_info_command_not_found_mock()
-    insert_repo_create_command_mock((*REPO_CREATE_COMMAND, '--log-json', '--repo', 'repo'))
-    flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(
-        (
-            '--repo',
-            'repo',
-        ),
-    )
-
-    module.create_repository(
-        dry_run=False,
-        repository_path='repo',
-        config={'log_json': True},
         local_borg_version='2.3.4',
         global_arguments=flexmock(),
         encryption_mode='repokey',
