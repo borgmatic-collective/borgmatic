@@ -91,26 +91,34 @@ def output_buffers_for_process(process, exclude_stdouts):
     )
 
 
-def borg_log_data_to_log_record(log_data):
+def borg_log_line_to_record(line, log_level):
     '''
-    Given a log data dict for a single Borg log entry, return it converted to a logging.LogRecord
+    Given a single Borg log entry and a log level, return the line converted to a logging.LogRecord
     instance.
+
+    If it can't be parsed, then fall back to making a record out of the raw line and the given log
+    level.
     '''
-    return logging.makeLogRecord(
-        dict(
-            levelno=logging._nameToLevel.get(log_data.get('levelname')),
-            created=log_data.get('time'),
-            msg=log_data.get('message'),
-            levelname=log_data.get('levelname'),
-            name=log_data.get('name'),
+    with contextlib.suppress(json.JSONDecodeError, TypeError, KeyError, AttributeError):
+        log_data = json.loads(line)
+
+        return logging.makeLogRecord(
+            dict(
+                levelno=logging._nameToLevel.get(log_data.get('levelname')),
+                created=log_data.get('time'),
+                msg=log_data.get('message'),
+                levelname=log_data.get('levelname'),
+                name=log_data.get('name'),
+            )
         )
-    )
+
+    return log_line_to_record(line, log_level)
 
 
-def line_to_log_record(line, log_level):
+def log_line_to_record(line, log_level):
     '''
-    Given a log data dict for a single Borg log entry, return it converted to a logging.LogRecord
-    instance.
+    Given a log data dict for a single Borg log entry and a log level, return it converted to a
+    logging.LogRecord instance.
     '''
     return logging.makeLogRecord(
         dict(
@@ -121,7 +129,7 @@ def line_to_log_record(line, log_level):
     )
 
 
-def parse_line(line, log_level, came_from_stderr, borg_local_path, command):
+def parse_log_line(line, log_level, came_from_stderr, borg_local_path, command):
     '''
     Given a raw output line from an external program, whether this line came from stderr, the Borg
     local path, and the command as a sequence, return a logging.LogRecord instance containing its
@@ -135,14 +143,14 @@ def parse_line(line, log_level, came_from_stderr, borg_local_path, command):
     just elevate the log level to a WARN.
     '''
     if borg_local_path and command[0] == borg_local_path:
-        with contextlib.suppress(json.JSONDecodeError, TypeError, KeyError):
-            return borg_log_data_to_log_record(json.loads(line))
-    elif came_from_stderr:
-        return line_to_log_record(
+        return borg_log_line_to_record(line, log_level)
+
+    if came_from_stderr:
+        return log_line_to_record(
             line, logging.WARNING if line.lower().startswith('warning:') else logging.ERROR
         )
 
-    return line_to_log_record(line, log_level)
+    return log_line_to_record(line, log_level)
 
 
 def handle_log_record(log_record, last_lines, captured_output):
@@ -226,7 +234,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                     # Keep the last few lines of output in case the process errors and we need the
                     # output for the exception below.
                     handle_log_record(
-                        parse_line(
+                        parse_log_line(
                             line=line,
                             log_level=output_log_level,
                             came_from_stderr=(ready_buffer == ready_process.stderr),
@@ -266,7 +274,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                             break
 
                         handle_log_record(
-                            parse_line(
+                            parse_log_line(
                                 line=line,
                                 log_level=output_log_level,
                                 came_from_stderr=(output_buffer == process.stderr),
