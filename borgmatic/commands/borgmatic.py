@@ -1080,6 +1080,23 @@ def get_singular_option_value(configs, option_name):
         return None
 
 
+def display_summary(summary_logs, log_json):  # pragma: no cover
+    summary_logs_max_level = max(log.levelno for log in summary_logs)
+
+    for message in ('summary:',) if log_json else ('', 'summary:'):
+        log_record(
+            levelno=summary_logs_max_level,
+            levelname=logging.getLevelName(summary_logs_max_level),
+            msg=message,
+        )
+
+    for log in summary_logs:
+        logger.handle(log)
+
+    if summary_logs_max_level >= logging.CRITICAL:
+        exit_with_help_link()
+
+
 def main(extra_summary_logs=()):  # pragma: no cover
     configure_signals()
     configure_delayed_logging()
@@ -1178,17 +1195,5 @@ def main(extra_summary_logs=()):  # pragma: no cover
             )
         )
     )
-    summary_logs_max_level = max(log.levelno for log in summary_logs)
 
-    for message in ('summary:',) if log_json else ('', 'summary:'):
-        log_record(
-            levelno=summary_logs_max_level,
-            levelname=logging.getLevelName(summary_logs_max_level),
-            msg=message,
-        )
-
-    for log in summary_logs:
-        logger.handle(log)
-
-    if summary_logs_max_level >= logging.CRITICAL:
-        exit_with_help_link()
+    display_summary(summary_logs, log_json)

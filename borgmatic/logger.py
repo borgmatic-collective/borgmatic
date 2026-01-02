@@ -112,26 +112,26 @@ class JournaldHandler(logging.Handler):
         try:
             message_parts = []
             entry = dict(
-                LOGGER_NAME=record.name,
                 MESSAGE=record.getMessage(),
                 PRIORITY=self.log_level_to_journald_priority.get(
                     record.levelno, DEFAULT_JOURNALD_PRIORITY
                 ),
                 SYSLOG_IDENTIFIER='borgmatic',
                 SYSLOG_PID=os.getpid(),
-                UNIT=record.name,
             )
 
             for key, value in entry.items():
-                key = key.upper().encode('utf-8')
-                value = str(value).encode('utf-8')
+                encoded_key = key.upper().encode('utf-8')
+                encoded_value = str(value).encode('utf-8')
 
                 # Multi-line and single-line values use different formats on the wire.
-                if b'\n' in value:
-                    message_parts.extend((key, b'\n'))
-                    message_parts.extend((len(value).to_bytes(8, 'little'), value, b'\n'))
+                if b'\n' in encoded_value:
+                    message_parts.extend((encoded_key, b'\n'))
+                    message_parts.extend(
+                        (len(encoded_value).to_bytes(8, 'little'), encoded_value, b'\n')
+                    )
                 else:
-                    message_parts.extend((key, b'=', value, b'\n'))
+                    message_parts.extend((encoded_key, b'=', encoded_value, b'\n'))
 
             sock.sendto(b''.join(message_parts), self.journald_socket_path)
         finally:
@@ -150,10 +150,9 @@ class Log_prefix_formatter(logging.Formatter):
         return super().format(record)
 
 
-def log_record_to_json(record, **extra):
+def log_record_to_json(record):
     '''
     Given a logging.LogRecord, return it as a JSON-encoded string containing relevant attributes.
-    Add in any extra kwargs that are given.
     '''
     return json.dumps(
         dict(
@@ -162,7 +161,6 @@ def log_record_to_json(record, **extra):
             message=record.getMessage(),
             levelname=record.levelname,
             name=record.name,
-            **extra,
         )
     )
 
@@ -171,7 +169,7 @@ class Json_formatter(logging.Formatter):
     def __init__(self, fmt='{message}', *args, style='{', **kwargs):
         super().__init__(*args, fmt=fmt, style=style, **kwargs)
 
-    def format(self, record):
+    def format(self, record):  # noqa: PLR6301
         return log_record_to_json(record)
 
 
