@@ -179,13 +179,14 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
     log level. Additionally, raise a CalledProcessError if a process exits with an error (or a
     warning for exit code 1, if that process does not match the Borg local path).
 
-    If output log level is None, then instead of logging, capture output for each process and return
-    it as a dict from the process to its output. Use the given Borg local path and exit code
-    configuration to decide what's an error and what's a warning.
+    If the output log level is None, then instead of logging, capture output for each process and
+    return it as a dict from the process to its output. If the output log level is not None, return
+    an empty dict.
 
-    If any stdouts are given to exclude, then for any matching processes, ignore those buffers. Also
-    note that stdout for a process can be None if output is intentionally not captured, in which
-    case it won't be logged.
+    Use the given Borg local path and exit code configuration to decide what's an error and what's a
+    warning. If any stdouts are given to exclude, then for any matching processes, ignore those
+    buffers. Also note that stdout for a process can be None if output is intentionally not
+    captured, in which case it won't be logged.
     '''
     # Map from output buffer to sequence of last lines.
     buffer_last_lines = collections.defaultdict(list)
@@ -262,7 +263,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
             exit_status = interpret_exit_code(command, exit_code, borg_local_path, borg_exit_codes)
 
             if exit_status in {Exit_status.ERROR, Exit_status.WARNING}:
-                # execute_command_and_capture_output If an error occurs, include its output in the raised exception so that we don't
+                # If an error occurs, include its output in the raised exception so that we don't
                 # inadvertently hide error output.
                 for output_buffer in output_buffers_for_process(process, exclude_stdouts):
                     last_lines = buffer_last_lines[output_buffer] if output_buffer else []
@@ -305,12 +306,12 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                 still_running = False
                 break
 
-    if captured_outputs:
+    if output_log_level is None:
         return {
             process: '\n'.join(output_lines) for process, output_lines in captured_outputs.items()
         }
 
-    return None
+    return {}
 
 
 SECRET_COMMAND_FLAG_NAMES = {'--password'}
@@ -438,14 +439,14 @@ def execute_command_and_capture_output(
 ):
     '''
     Execute the given command (a sequence of command/argument strings), capturing and returning its
-    output (stdout). If an input file descriptor is given, then pipe it to the command's stdin. If
-    capture stderr is True, then capture and return stderr in addition to stdout. If shell is True,
-    execute the command within a shell. If an environment variables dict is given, then pass it into
-    the command. If a working directory is given, use that as the present working directory when
-    running the command. If a Borg local path is given, and the command matches it (regardless of
-    arguments), treat exit code 1 as a warning instead of an error. But if Borg exit codes are given
-    as a sequence of exit code configuration dicts, then use that configuration to decide what's an
-    error and what's a warning.
+    output (stdout) as a string. If an input file descriptor is given, then pipe it to the command's
+    stdin. If capture stderr is True, then capture and return stderr in addition to stdout. If shell
+    is True, execute the command within a shell. If an environment variables dict is given, then
+    pass it into the command. If a working directory is given, use that as the present working
+    directory when running the command. If a Borg local path is given, and the command matches it
+    (regardless of arguments), treat exit code 1 as a warning instead of an error. But if Borg exit
+    codes are given as a sequence of exit code configuration dicts, then use that configuration to
+    decide what's an error and what's a warning.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
@@ -481,7 +482,7 @@ def execute_command_and_capture_output(
             borg_exit_codes,
         )
 
-    return captured_outputs.get(process)
+    return captured_outputs.get(process, '')
 
 
 def execute_command_with_processes(
@@ -551,6 +552,6 @@ def execute_command_with_processes(
         )
 
     if output_log_level is None:
-        return captured_outputs.get(command_process)
+        return captured_outputs.get(command_process, '')
 
     return None

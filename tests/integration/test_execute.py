@@ -43,12 +43,15 @@ def test_log_outputs_logs_each_line_separately():
         (),
     ).and_return((there_process.stdout,))
 
-    module.log_outputs(
-        (hi_process, there_process),
-        exclude_stdouts=(),
-        output_log_level=logging.INFO,
-        borg_local_path='borg',
-        borg_exit_codes=None,
+    assert (
+        module.log_outputs(
+            (hi_process, there_process),
+            exclude_stdouts=(),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
+        )
+        == {}
     )
 
 
@@ -78,12 +81,15 @@ def test_log_outputs_skips_logs_for_process_with_none_stdout():
         (),
     ).and_return((there_process.stdout,))
 
-    module.log_outputs(
-        (hi_process, there_process),
-        exclude_stdouts=(),
-        output_log_level=logging.INFO,
-        borg_local_path='borg',
-        borg_exit_codes=None,
+    assert (
+        module.log_outputs(
+            (hi_process, there_process),
+            exclude_stdouts=(),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
+        )
+        == {}
     )
 
 
@@ -268,12 +274,15 @@ def test_log_outputs_kills_other_processes_and_returns_when_one_exits_with_warni
     ).and_return((other_process.stdout,))
     flexmock(other_process).should_receive('kill').once()
 
-    module.log_outputs(
-        (process, other_process),
-        exclude_stdouts=(),
-        output_log_level=logging.INFO,
-        borg_local_path='borg',
-        borg_exit_codes=None,
+    assert (
+        module.log_outputs(
+            (process, other_process),
+            exclude_stdouts=(),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
+        )
+        == {}
     )
 
 
@@ -312,12 +321,15 @@ def test_log_outputs_vents_other_processes_when_one_exits():
     ).and_return((other_process.stdout,))
     flexmock(process.stdout).should_call('readline').at_least().once()
 
-    module.log_outputs(
-        (process, other_process),
-        exclude_stdouts=(process.stdout,),
-        output_log_level=logging.INFO,
-        borg_local_path='borg',
-        borg_exit_codes=None,
+    assert (
+        module.log_outputs(
+            (process, other_process),
+            exclude_stdouts=(process.stdout,),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
+        )
+        == {}
     )
 
 
@@ -349,12 +361,15 @@ def test_log_outputs_does_not_error_when_one_process_exits():
         (process.stdout,),
     ).and_return((other_process.stdout,))
 
-    module.log_outputs(
-        (process, other_process),
-        exclude_stdouts=(process.stdout,),
-        output_log_level=logging.INFO,
-        borg_local_path='borg',
-        borg_exit_codes=None,
+    assert (
+        module.log_outputs(
+            (process, other_process),
+            exclude_stdouts=(process.stdout,),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
+        )
+        == {}
     )
 
 
@@ -397,12 +412,15 @@ def test_log_outputs_with_no_output_logs_nothing():
     process = subprocess.Popen(['true'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     flexmock(module).should_receive('output_buffers_for_process').and_return((process.stdout,))
 
-    module.log_outputs(
-        (process,),
-        exclude_stdouts=(),
-        output_log_level=logging.INFO,
-        borg_local_path='borg',
-        borg_exit_codes=None,
+    assert (
+        module.log_outputs(
+            (process,),
+            exclude_stdouts=(),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
+        )
+        == {}
     )
 
 
@@ -414,10 +432,13 @@ def test_log_outputs_with_unfinished_process_re_polls():
     flexmock(process).should_receive('poll').and_return(None).and_return(0).times(3)
     flexmock(module).should_receive('output_buffers_for_process').and_return((process.stdout,))
 
-    module.log_outputs(
-        (process,),
-        exclude_stdouts=(),
-        output_log_level=logging.INFO,
-        borg_local_path='borg',
-        borg_exit_codes=None,
+    assert (
+        module.log_outputs(
+            (process,),
+            exclude_stdouts=(),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
+        )
+        == {}
     )
