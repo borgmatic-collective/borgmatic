@@ -227,7 +227,7 @@ def test_journald_handler_serializes_multi_line_log_record_to_socket():
     )
 
 
-def test_log_record_to_json_formats_record_at_json():
+def test_log_record_to_json_formats_record_as_json():
     assert (
         module.log_record_to_json(
             flexmock(
