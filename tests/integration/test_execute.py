@@ -55,6 +55,39 @@ def test_log_outputs_logs_each_line_separately():
     )
 
 
+def test_log_outputs_logs_stderr_as_error():
+    flexmock(module).should_receive('log_line_to_record').with_args(str, logging.INFO).never()
+    error_record = flexmock(
+        msg='error',
+        levelno=logging.ERROR,
+        levelname='ERROR',
+        getMessage=lambda: 'error',
+    )
+    flexmock(module).should_receive('log_line_to_record').with_args(
+        'error', logging.ERROR
+    ).and_return(error_record)
+    flexmock(module.logger).should_receive('handle').with_args(error_record).once()
+
+    echo_process = subprocess.Popen(
+        'echo error >&2', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+    )
+    flexmock(module).should_receive('output_buffers_for_process').with_args(
+        echo_process,
+        (),
+    ).and_return((echo_process.stdout, echo_process.stderr))
+
+    assert (
+        module.log_outputs(
+            (echo_process,),
+            exclude_stdouts=(),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
+        )
+        == {}
+    )
+
+
 def test_log_outputs_skips_logs_for_process_with_none_stdout():
     flexmock(module).should_receive('log_line_to_record').with_args('hi', logging.INFO).never()
     there_record = flexmock(
