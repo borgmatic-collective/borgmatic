@@ -97,9 +97,6 @@ def extract_archive(
     lock_wait = config.get('lock_wait', None)
     extra_borg_options = config.get('extra_borg_options', {}).get('extract', '')
 
-    if config.get('progress') and extract_to_stdout:
-        raise ValueError('progress and extract to stdout cannot both be set')
-
     if feature.available(feature.Feature.NUMERIC_IDS, local_borg_version):
         numeric_ids_flags = ('--numeric-ids',) if config.get('numeric_ids') else ()
     else:
@@ -133,7 +130,7 @@ def extract_archive(
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--strip-components', str(strip_components)) if strip_components else ())
-        + (('--progress',) if config.get('progress') else ())
+        + (('--progress',) if config.get('progress') and not extract_to_stdout else ())
         + (('--stdout',) if extract_to_stdout else ())
         + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_archive_flags(
@@ -152,6 +149,17 @@ def extract_archive(
         os.path.join(working_directory or '', destination_path) if destination_path else None
     )
 
+    if extract_to_stdout:
+        return execute_command(
+            full_command,
+            output_file=subprocess.PIPE,
+            run_to_completion=False,
+            environment=environment.make_environment(config),
+            working_directory=full_destination_path,
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
+        )
+
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
     if config.get('progress'):
@@ -164,17 +172,6 @@ def extract_archive(
             borg_exit_codes=borg_exit_codes,
         )
         return None
-
-    if extract_to_stdout:
-        return execute_command(
-            full_command,
-            output_file=subprocess.PIPE,
-            run_to_completion=False,
-            environment=environment.make_environment(config),
-            working_directory=full_destination_path,
-            borg_local_path=local_path,
-            borg_exit_codes=borg_exit_codes,
-        )
 
     # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
     # if the restore paths don't exist in the archive.

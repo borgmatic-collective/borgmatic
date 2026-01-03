@@ -157,6 +157,6 @@ def test_remove_data_source_dumps_without_dump_path_present_skips_removal():
 
 def test_convert_glob_patterns_to_borg_pattern_makes_multipart_regular_expression():
     assert (
-        module.convert_glob_patterns_to_borg_pattern(('/etc/foo/bar', '/bar/*/baz'))
-        == 're:(?s:etc/foo/bar)|(?s:bar/.*/baz)'
+        module.convert_glob_patterns_to_borg_pattern(('/etc/foo/bar', '/bar/baz/quux'))
+        == 're:(?s:etc/foo/bar)$|(?s:etc/foo/bar/.*)$|(?s:bar/baz/quux)$|(?s:bar/baz/quux/.*)$'
     )

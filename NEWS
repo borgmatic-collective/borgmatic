@@ -4,6 +4,13 @@
  * #858: With the "--log-json" flag, log borgmatic's own logs as JSON, not just Borg's.
  * #1204: When verbosity levels differ between console/monitoring/syslog/file, log Borg's output to
    each one at a different level.
+ * #1208: Fix for the "restore" action incorrectly extracting more database dumps than the
+   "--database" flag specifies.
+ * #1210: Fix an error when running the "spot" check or "extract" action with the "progress" option
+   or "--progress" flag.
+ * #1211: Fix an error about the runtime directory getting excluded by tweaking its logic and
+   lowering the error to a warning.
+ * #1212: Fix an error when restoring multiple directory-format database dumps at once.
  * When syslog verbosity is enabled, log to systemd's journal (if present) with structured data.
 
 2.0.13
