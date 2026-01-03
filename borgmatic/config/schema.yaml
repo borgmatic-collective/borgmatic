@@ -144,6 +144,22 @@ properties:
             false. But when a database hook is used, the setting here is ignored
             and read_special is considered true.
         example: true
+    unsafe_create_without_precheck:
+        type: boolean
+        description: |
+            Skip pre-backup safety checks: (1) runtime directory exclusion
+            detection, and (2) special file exclusion for database streaming.
+            Can significantly improve performance for large filesystems.
+
+            UNSAFE because if using database hooks: Borg may hang on special
+            files (named pipes, devices), and database dumps may be silently
+            excluded if your exclude_patterns match the runtime directory
+            (see "user_runtime_directory" option, defaults to $XDG_RUNTIME_DIR
+            or $TMPDIR/borgmatic-*).
+
+            Only enable if not using database hooks, or after manually verifying
+            your excludes don't affect the runtime directory. Defaults to false.
+        example: true
     flags:
         type: boolean
         description: |
