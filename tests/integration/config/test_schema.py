@@ -17,6 +17,7 @@ def test_schema_line_length_stays_under_limit():
 ACTIONS_MODULE_NAMES_TO_OMIT = {
     'arguments',
     'change_passphrase',
+    'dump',
     'export_key',
     'import_key',
     'json',

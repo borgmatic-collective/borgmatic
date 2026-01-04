@@ -1,5 +1,6 @@
 import logging
 
+import borgmatic.actions.dump
 import borgmatic.actions.json
 import borgmatic.borg.create
 import borgmatic.borg.feature
@@ -51,96 +52,85 @@ def run_create(
         )
 
         original_patterns = list(patterns)
-        borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
-            'remove_data_source_dumps',
-            config,
-            borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
-            borgmatic_runtime_directory,
-            original_patterns,
-            global_arguments.dry_run,
-        )
-        active_dumps = borgmatic.hooks.dispatch.call_hooks(
-            'dump_data_sources',
-            config,
-            borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
-            config_paths,
-            borgmatic_runtime_directory,
-            patterns,
-            global_arguments.dry_run,
-        )
 
-        # Process the patterns again in case any data source hooks updated them. Without this step,
-        # we could end up with duplicate paths that cause Borg to hang when it tries to read from
-        # the same named pipe twice.
-        patterns = pattern.process_patterns(
-            patterns,
-            config,
-            working_directory,
-            borgmatic_runtime_directory,
-            skip_expand_paths=config_paths,
-        )
-        stream_processes = [process for processes in active_dumps.values() for process in processes]
-
-        # If we have stream processes, we first create an archive with .checkpoint suffix. This is
-        # to make sure we only create a real archive if all the streaming processes completed
-        # successfully (create_archive will fail if a streaming process fails, but the archive might
-        # have already been created at this point).
-        use_checkpoint = bool(stream_processes)
-
-        json_output = borgmatic.borg.create.create_archive(
-            global_arguments.dry_run,
-            repository['path'],
-            config,
-            patterns,
-            local_borg_version,
-            global_arguments,
-            borgmatic_runtime_directory,
-            archive_suffix='.checkpoint' if use_checkpoint else '',
-            local_path=local_path,
-            remote_path=remote_path,
-            json=create_arguments.json,
-            comment=create_arguments.comment,
-            stream_processes=stream_processes,
-        )
-
-        if use_checkpoint:
-            rename_checkpoint_archive(
-                repository['path'],
-                global_arguments,
+        # Use the original patterns so as to disregard any modifications made by any data source
+        # hooks, e.g. via dump_data_sources() below.
+        with borgmatic.actions.dump.Dump_cleanup(
+            config, borgmatic_runtime_directory, original_patterns, global_arguments.dry_run
+        ):
+            active_dumps = borgmatic.hooks.dispatch.call_hooks(
+                'dump_data_sources',
                 config,
-                local_borg_version,
-                local_path,
-                remote_path,
+                borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
+                config_paths,
+                borgmatic_runtime_directory,
+                patterns,
+                global_arguments.dry_run,
             )
 
-        if json_output:
-            output = borgmatic.actions.json.parse_json(json_output, repository.get('label'))
+            # Process the patterns again in case any data source hooks updated them. Without this step,
+            # we could end up with duplicate paths that cause Borg to hang when it tries to read from
+            # the same named pipe twice.
+            patterns = pattern.process_patterns(
+                patterns,
+                config,
+                working_directory,
+                borgmatic_runtime_directory,
+                skip_expand_paths=config_paths,
+            )
+            stream_processes = [
+                process for processes in active_dumps.values() for process in processes
+            ]
+
+            # If we have stream processes, we first create an archive with .checkpoint suffix. This is
+            # to make sure we only create a real archive if all the streaming processes completed
+            # successfully (create_archive will fail if a streaming process fails, but the archive might
+            # have already been created at this point).
+            use_checkpoint = bool(stream_processes)
+
+            json_output = borgmatic.borg.create.create_archive(
+                global_arguments.dry_run,
+                repository['path'],
+                config,
+                patterns,
+                local_borg_version,
+                global_arguments,
+                borgmatic_runtime_directory,
+                archive_suffix='.checkpoint' if use_checkpoint else '',
+                local_path=local_path,
+                remote_path=remote_path,
+                json=create_arguments.json,
+                comment=create_arguments.comment,
+                stream_processes=stream_processes,
+            )
+
             if use_checkpoint:
-                # Patch archive name and ID
-                renamed_archive = borgmatic.borg.repo_list.get_latest_archive(
+                rename_checkpoint_archive(
                     repository['path'],
+                    global_arguments,
                     config,
                     local_borg_version,
-                    global_arguments,
                     local_path,
                     remote_path,
                 )
 
-                output['archive']['name'] = renamed_archive['name']
-                output['archive']['id'] = renamed_archive['id']
+            if json_output:
+                output = borgmatic.actions.json.parse_json(json_output, repository.get('label'))
+                if use_checkpoint:
+                    # Patch archive name and ID
+                    renamed_archive = borgmatic.borg.repo_list.get_latest_archive(
+                        repository['path'],
+                        config,
+                        local_borg_version,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
 
-            yield output
+                    output['archive']['name'] = renamed_archive['name']
+                    output['archive']['id'] = renamed_archive['id']
 
-        # Use the original patterns so as to disregard any modifications made by any data source
-        # hooks, e.g. via dump_data_sources() above.
-        borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
-            'remove_data_source_dumps',
-            config,
-            borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
-            borgmatic_runtime_directory,
-            original_patterns,
-            global_arguments.dry_run,
-        )
+                yield output
 
 
 def rename_checkpoint_archive(

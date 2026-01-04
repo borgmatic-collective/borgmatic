@@ -12,6 +12,8 @@
  * #1211: Fix an error about the runtime directory getting excluded by tweaking its logic and
    lowering the error to a warning.
  * #1212: Fix an error when restoring multiple directory-format database dumps at once.
+ * #1220: Cleanup snapshots immediately after ZFS, LVM, or Btrfs hooks error—rather than waiting
+   until the next time borgmatic runs.
  * When syslog verbosity is enabled, log to systemd's journal (if present) with
    structured data. See the documentation for more information:
    https://torsion.org/borgmatic/reference/command-line/logging/#systemd-journal

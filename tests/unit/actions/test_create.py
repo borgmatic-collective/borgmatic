@@ -1,3 +1,4 @@
+import contextlib
 import json
 import os
 
@@ -15,9 +16,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
     )
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return({})
-    flexmock(module.borgmatic.hooks.dispatch).should_receive(
-        'call_hooks_even_if_unconfigured',
-    ).and_return({})
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
@@ -121,9 +120,7 @@ def test_run_create_produces_json():
     parsed_json = flexmock()
     flexmock(module.borgmatic.actions.json).should_receive('parse_json').and_return(parsed_json)
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return({})
-    flexmock(module.borgmatic.hooks.dispatch).should_receive(
-        'call_hooks_even_if_unconfigured',
-    ).and_return({})
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
@@ -166,9 +163,7 @@ def test_run_create_with_active_dumps_roundtrips_via_checkpoint_archive():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'dump': mock_dump_process},
     )
-    flexmock(module.borgmatic.hooks.dispatch).should_receive(
-        'call_hooks_even_if_unconfigured',
-    ).and_return({})
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
@@ -249,9 +244,7 @@ def test_run_create_with_active_dumps_json_updates_archive_info():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'dump': mock_dump_process},
     )
-    flexmock(module.borgmatic.hooks.dispatch).should_receive(
-        'call_hooks_even_if_unconfigured',
-    ).and_return({})
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
@@ -311,15 +304,14 @@ def mock_call_hooks(
     return {'dump': mock_dump_process}
 
 
-def mock_call_hooks_even_if_unconfigured(
-    function_name, config, hook_type, borgmatic_runtime_directory, patterns, dry_run
-):
+@contextlib.contextmanager
+def mock_dump_cleanup(config, borgmatic_runtime_directory, patterns, dry_run):
     '''
     Assert that we're dealing with the original patterns here, not the mutated patterns.
     '''
     assert patterns[0].path == 'foo'
 
-    return {}
+    yield
 
 
 def test_run_create_with_active_dumps_removes_data_source_dumps_with_original_patterns():
@@ -331,9 +323,9 @@ def test_run_create_with_active_dumps_removes_data_source_dumps_with_original_pa
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').replace_with(
         mock_call_hooks
     )
-    flexmock(module.borgmatic.hooks.dispatch).should_receive(
-        'call_hooks_even_if_unconfigured',
-    ).replace_with(mock_call_hooks_even_if_unconfigured)
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').replace_with(
+        mock_dump_cleanup
+    )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(
         (borgmatic.borg.pattern.Pattern('foo'), borgmatic.borg.pattern.Pattern('bar'))
