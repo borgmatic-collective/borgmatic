@@ -17,6 +17,7 @@
  * When syslog verbosity is enabled, log to systemd's journal (if present) with
    structured data. See the documentation for more information:
    https://torsion.org/borgmatic/reference/command-line/logging/#systemd-journal
+ * Promote the ZFS, LVM, and Btrfs hooks from beta features to stable.
 
 2.0.13
  * #1054: Allow the Btrfs hook to create and delete snapshots even when running

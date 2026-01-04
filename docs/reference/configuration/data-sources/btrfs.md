@@ -4,10 +4,10 @@ eleventyNavigation:
   key: Btrfs
   parent: 🗄️ Data sources
 ---
-<span class="minilink minilink-addedin">New in version 1.9.4</span> <span
-class="minilink minilink-addedin">Beta feature</span> borgmatic supports taking
-snapshots with the [Btrfs filesystem](https://btrfs.readthedocs.io/) and sending
-those snapshots to Borg for backup.
+<span class="minilink minilink-addedin">New in version 1.9.4</span> borgmatic
+supports taking snapshots with the [Btrfs
+filesystem](https://btrfs.readthedocs.io/) and sending those snapshots to Borg
+for backup.
 
 The minimum configuration to enable Btrfs support is:
 

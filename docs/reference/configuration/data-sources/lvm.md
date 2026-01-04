@@ -4,12 +4,11 @@ eleventyNavigation:
   key: LVM
   parent: 🗄️ Data sources
 ---
-<span class="minilink minilink-addedin">New in version 1.9.4</span> <span
-class="minilink minilink-addedin">Beta feature</span> borgmatic supports
-taking snapshots with [LVM](https://sourceware.org/lvm2/) (Linux Logical
-Volume Manager) and sending those snapshots to Borg for backup. LVM isn't
-itself a filesystem, but it can take snapshots at the layer right below your
-filesystem.
+<span class="minilink minilink-addedin">New in version 1.9.4</span> borgmatic
+supports taking snapshots with [LVM](https://sourceware.org/lvm2/) (Linux
+Logical Volume Manager) and sending those snapshots to Borg for backup. LVM
+isn't itself a filesystem, but it can take snapshots at the layer right below
+your filesystem.
 
 The minimum configuration to enable LVM support is:
 
