@@ -32,7 +32,7 @@ COMPACT_COMMAND = ('borg', 'compact')
 
 def test_compact_segments_calls_borg_with_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock((*COMPACT_COMMAND, 'repo'), logging.INFO)
+    insert_execute_command_mock((*COMPACT_COMMAND, '--log-json', 'repo'), logging.INFO)
 
     module.compact_segments(
         dry_run=False,
@@ -45,7 +45,7 @@ def test_compact_segments_calls_borg_with_flags():
 
 def test_compact_segments_with_log_info_calls_borg_with_info_flag():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock((*COMPACT_COMMAND, '--info', 'repo'), logging.INFO)
+    insert_execute_command_mock((*COMPACT_COMMAND, '--log-json', '--info', 'repo'), logging.INFO)
     insert_logging_mock(logging.INFO)
 
     module.compact_segments(
@@ -59,7 +59,9 @@ def test_compact_segments_with_log_info_calls_borg_with_info_flag():
 
 def test_compact_segments_with_log_debug_calls_borg_with_debug_flag():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock((*COMPACT_COMMAND, '--debug', '--show-rc', 'repo'), logging.INFO)
+    insert_execute_command_mock(
+        (*COMPACT_COMMAND, '--log-json', '--debug', '--show-rc', 'repo'), logging.INFO
+    )
     insert_logging_mock(logging.DEBUG)
 
     module.compact_segments(
@@ -112,7 +114,7 @@ def test_compact_segments_with_dry_run_executes_borg_call_when_feature_available
 
 def test_compact_segments_with_local_path_calls_borg_via_local_path():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock(('borg1', *COMPACT_COMMAND[1:], 'repo'), logging.INFO)
+    insert_execute_command_mock(('borg1', *COMPACT_COMMAND[1:], '--log-json', 'repo'), logging.INFO)
 
     module.compact_segments(
         dry_run=False,
@@ -128,7 +130,7 @@ def test_compact_segments_with_exit_codes_calls_borg_using_them():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     borg_exit_codes = flexmock()
     insert_execute_command_mock(
-        (*COMPACT_COMMAND, 'repo'),
+        (*COMPACT_COMMAND, '--log-json', 'repo'),
         logging.INFO,
         borg_exit_codes=borg_exit_codes,
     )
@@ -144,7 +146,9 @@ def test_compact_segments_with_exit_codes_calls_borg_using_them():
 
 def test_compact_segments_with_remote_path_calls_borg_with_remote_path_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock((*COMPACT_COMMAND, '--remote-path', 'borg1', 'repo'), logging.INFO)
+    insert_execute_command_mock(
+        (*COMPACT_COMMAND, '--remote-path', 'borg1', '--log-json', 'repo'), logging.INFO
+    )
 
     module.compact_segments(
         dry_run=False,
@@ -169,9 +173,26 @@ def test_compact_segments_with_progress_calls_borg_with_progress_flag():
     )
 
 
+def test_compact_segments_with_log_json_and_progress_calls_borg_with_both_flags():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_execute_command_mock(
+        (*COMPACT_COMMAND, '--log-json', '--progress', 'repo'), logging.INFO
+    )
+
+    module.compact_segments(
+        dry_run=False,
+        repository_path='repo',
+        config={'log_json': True, 'progress': True},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+    )
+
+
 def test_compact_segments_with_cleanup_commits_calls_borg_with_cleanup_commits_flag():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock((*COMPACT_COMMAND, '--cleanup-commits', 'repo'), logging.INFO)
+    insert_execute_command_mock(
+        (*COMPACT_COMMAND, '--log-json', '--cleanup-commits', 'repo'), logging.INFO
+    )
 
     module.compact_segments(
         dry_run=False,
@@ -185,7 +206,9 @@ def test_compact_segments_with_cleanup_commits_calls_borg_with_cleanup_commits_f
 
 def test_compact_segments_with_threshold_calls_borg_with_threshold_flag():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock((*COMPACT_COMMAND, '--threshold', '20', 'repo'), logging.INFO)
+    insert_execute_command_mock(
+        (*COMPACT_COMMAND, '--log-json', '--threshold', '20', 'repo'), logging.INFO
+    )
 
     module.compact_segments(
         dry_run=False,
@@ -199,7 +222,9 @@ def test_compact_segments_with_threshold_calls_borg_with_threshold_flag():
 def test_compact_segments_with_umask_calls_borg_with_umask_flags():
     config = {'umask': '077'}
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock((*COMPACT_COMMAND, '--umask', '077', 'repo'), logging.INFO)
+    insert_execute_command_mock(
+        (*COMPACT_COMMAND, '--umask', '077', '--log-json', 'repo'), logging.INFO
+    )
 
     module.compact_segments(
         dry_run=False,
@@ -210,23 +235,12 @@ def test_compact_segments_with_umask_calls_borg_with_umask_flags():
     )
 
 
-def test_compact_segments_with_log_json_calls_borg_with_log_json_flags():
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock((*COMPACT_COMMAND, '--log-json', 'repo'), logging.INFO)
-
-    module.compact_segments(
-        dry_run=False,
-        repository_path='repo',
-        config={'log_json': True},
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-    )
-
-
 def test_compact_segments_with_lock_wait_calls_borg_with_lock_wait_flags():
     config = {'lock_wait': 5}
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock((*COMPACT_COMMAND, '--lock-wait', '5', 'repo'), logging.INFO)
+    insert_execute_command_mock(
+        (*COMPACT_COMMAND, '--log-json', '--lock-wait', '5', 'repo'), logging.INFO
+    )
 
     module.compact_segments(
         dry_run=False,
@@ -240,7 +254,7 @@ def test_compact_segments_with_lock_wait_calls_borg_with_lock_wait_flags():
 def test_compact_segments_with_extra_borg_options_calls_borg_with_extra_options():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(
-        (*COMPACT_COMMAND, '--extra', '--options', 'value with space', 'repo'),
+        (*COMPACT_COMMAND, '--log-json', '--extra', '--options', 'value with space', 'repo'),
         logging.INFO,
     )
 
@@ -256,7 +270,7 @@ def test_compact_segments_with_extra_borg_options_calls_borg_with_extra_options(
 def test_compact_segments_calls_borg_with_working_directory():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(
-        (*COMPACT_COMMAND, 'repo'),
+        (*COMPACT_COMMAND, '--log-json', 'repo'),
         logging.INFO,
         working_directory='/working/dir',
     )

@@ -68,63 +68,178 @@ def test_command_for_process_passes_through_string_command():
     assert module.command_for_process(process) == 'foo bar baz'
 
 
-def test_output_buffer_for_process_returns_stderr_when_stdout_excluded():
+def test_output_buffers_for_process_returns_stdout_and_stderr_by_default():
     stdout = flexmock()
     stderr = flexmock()
     process = flexmock(stdout=stdout, stderr=stderr)
 
-    assert module.output_buffer_for_process(process, exclude_stdouts=[flexmock(), stdout]) == stderr
-
-
-def test_output_buffer_for_process_returns_stdout_when_not_excluded():
-    stdout = flexmock()
-    process = flexmock(stdout=stdout)
-
-    assert (
-        module.output_buffer_for_process(process, exclude_stdouts=[flexmock(), flexmock()])
-        == stdout
+    assert module.output_buffers_for_process(process, exclude_stdouts=[flexmock(), flexmock()]) == (
+        stdout,
+        stderr,
     )
 
 
-def test_append_last_lines_under_max_line_count_appends():
-    last_lines = ['last']
-    flexmock(module.logger).should_receive('log').once()
+def test_output_buffers_for_process_returns_stderr_only_when_stdout_excluded():
+    stdout = flexmock()
+    stderr = flexmock()
+    process = flexmock(stdout=stdout, stderr=stderr)
 
-    module.append_last_lines(
+    assert module.output_buffers_for_process(process, exclude_stdouts=[flexmock(), stdout]) == (
+        stderr,
+    )
+
+
+def test_borg_log_line_to_record_parses_line():
+    flexmock(module).should_receive('log_line_to_record').never()
+    line = '{"levelname": "INFO", "time": 12345, "message": "All done", "name": "borg.something"}'
+
+    record = module.borg_log_line_to_record(line, module.logging.INFO)
+
+    assert record.levelno == module.logging.INFO
+    assert record.created == 12345
+    assert record.msg == 'All done'
+    assert record.levelname == 'INFO'
+    assert record.name == 'borg.something'
+
+
+def test_borg_log_line_to_record_with_invalid_json_falls_back_to_raw_line():
+    record = flexmock()
+    line = '{invalid'
+    flexmock(module).should_receive('log_line_to_record').with_args(
+        line, module.logging.INFO
+    ).and_return(record).once()
+
+    assert module.borg_log_line_to_record(line, module.logging.INFO) == record
+
+
+def test_borg_log_line_to_record_with_non_dict_json_falls_back_to_raw_line():
+    record = flexmock()
+    line = '[]'
+    flexmock(module).should_receive('log_line_to_record').with_args(
+        line, module.logging.INFO
+    ).and_return(record).once()
+
+    assert module.borg_log_line_to_record(line, module.logging.INFO) == record
+
+
+def test_log_line_to_record_makes_log_record():
+    line = 'All done'
+
+    record = module.log_line_to_record(line, module.logging.INFO)
+
+    assert record.msg == line
+    assert record.levelno == module.logging.INFO
+    assert record.levelname == 'INFO'
+
+
+def test_parse_log_line_with_borg_command_parses_borg_log_line():
+    record = flexmock()
+    flexmock(module).should_receive('borg_log_line_to_record').and_return(record).once()
+    flexmock(module).should_receive('log_line_to_record').never()
+
+    assert (
+        module.parse_log_line(
+            'All done',
+            module.logging.INFO,
+            came_from_stderr=False,
+            borg_local_path='borg',
+            command=['borg', 'do-stuff'],
+        )
+        == record
+    )
+
+
+def test_parse_log_line_without_borg_command_parses_plain_log_line():
+    record = flexmock()
+    flexmock(module).should_receive('borg_log_line_to_record').never()
+    flexmock(module).should_receive('log_line_to_record').and_return(record).once()
+
+    assert (
+        module.parse_log_line(
+            'All done',
+            module.logging.INFO,
+            came_from_stderr=False,
+            borg_local_path='borg',
+            command=['totally-not-borg', 'do-stuff'],
+        )
+        == record
+    )
+
+
+def test_parse_log_line_with_came_from_stderr_makes_error_record():
+    record = flexmock()
+    flexmock(module).should_receive('borg_log_line_to_record').never()
+    flexmock(module).should_receive('log_line_to_record').with_args(
+        'All done', module.logging.ERROR
+    ).and_return(record).once()
+
+    assert (
+        module.parse_log_line(
+            'All done',
+            module.logging.INFO,
+            came_from_stderr=True,
+            borg_local_path='borg',
+            command=['totally-not-borg', 'do-stuff'],
+        )
+        == record
+    )
+
+
+def test_parse_log_line_with_came_from_stderr_and_warning_prefix_makes_warning_record():
+    record = flexmock()
+    flexmock(module).should_receive('borg_log_line_to_record').never()
+    flexmock(module).should_receive('log_line_to_record').with_args(
+        'warning: All done', module.logging.WARNING
+    ).and_return(record).once()
+
+    assert (
+        module.parse_log_line(
+            'warning: All done',
+            module.logging.INFO,
+            came_from_stderr=True,
+            borg_local_path='borg',
+            command=['totally-not-borg', 'do-stuff'],
+        )
+        == record
+    )
+
+
+def test_handle_log_record_under_max_line_count_appends():
+    last_lines = ['last']
+    flexmock(module.logger).should_receive('handle').once()
+
+    module.handle_log_record(
+        flexmock(levelno=module.logging.INFO, getMessage=lambda: 'line'),
         last_lines,
         captured_output=flexmock(),
-        line='line',
-        output_log_level=flexmock(),
     )
 
     assert last_lines == ['last', 'line']
 
 
-def test_append_last_lines_over_max_line_count_trims_and_appends():
+def test_handle_log_record_over_max_line_count_trims_and_appends():
     original_last_lines = [str(number) for number in range(module.ERROR_OUTPUT_MAX_LINE_COUNT)]
     last_lines = list(original_last_lines)
-    flexmock(module.logger).should_receive('log').once()
+    flexmock(module.logger).should_receive('handle').once()
 
-    module.append_last_lines(
+    module.handle_log_record(
+        flexmock(levelno=module.logging.INFO, getMessage=lambda: 'line'),
         last_lines,
         captured_output=flexmock(),
-        line='line',
-        output_log_level=flexmock(),
     )
 
     assert last_lines == [*original_last_lines[1:], 'line']
 
 
-def test_append_last_lines_with_output_log_level_none_appends_captured_output():
+def test_handle_log_record_with_output_log_level_none_appends_captured_output():
     last_lines = ['last']
     captured_output = ['captured']
-    flexmock(module.logger).should_receive('log').never()
+    flexmock(module.logger).should_receive('handle').never()
 
-    module.append_last_lines(
+    module.handle_log_record(
+        flexmock(levelno=None, getMessage=lambda: 'line'),
         last_lines,
         captured_output=captured_output,
-        line='line',
-        output_log_level=None,
     )
 
     assert captured_output == ['captured', 'line']
@@ -204,7 +319,7 @@ def test_execute_command_calls_full_command():
         full_command,
         stdin=None,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=False,
         env=None,
         cwd=None,
@@ -270,7 +385,7 @@ def test_execute_command_calls_full_command_with_input_file():
         full_command,
         stdin=input_file,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=False,
         env=None,
         cwd=None,
@@ -291,7 +406,7 @@ def test_execute_command_calls_full_command_with_shell():
         ' '.join(full_command),
         stdin=None,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=True,
         env=None,
         cwd=None,
@@ -312,7 +427,7 @@ def test_execute_command_calls_full_command_with_environment():
         full_command,
         stdin=None,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=False,
         env={'a': 'b'},
         cwd=None,
@@ -333,7 +448,7 @@ def test_execute_command_calls_full_command_with_working_directory():
         full_command,
         stdin=None,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=False,
         env=None,
         cwd='/working',
@@ -355,65 +470,70 @@ def test_execute_command_without_run_to_completion_returns_process():
         full_command,
         stdin=None,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=False,
         env=None,
         cwd=None,
         close_fds=False,
     ).and_return(process).once()
     flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
-    flexmock(module).should_receive('log_outputs')
+    flexmock(module).should_receive('log_outputs').and_return({process: 'out'})
 
     assert module.execute_command(full_command, run_to_completion=False) == process
 
 
 def test_execute_command_and_capture_output_returns_stdout():
     full_command = ['foo', 'bar']
-    expected_output = '[]'
     flexmock(module).should_receive('log_command')
-    flexmock(module.subprocess).should_receive('check_output').with_args(
+    process = flexmock()
+    flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
         stdin=None,
-        stderr=None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         shell=False,
         env=None,
         cwd=None,
         close_fds=False,
-    ).and_return(flexmock(decode=lambda: expected_output)).once()
+    ).and_return(process).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module).should_receive('log_outputs').and_return({process: 'out'})
 
     output = module.execute_command_and_capture_output(full_command)
 
-    assert output == expected_output
+    assert output == 'out'
 
 
 def test_execute_command_and_capture_output_with_capture_stderr_returns_stderr():
     full_command = ['foo', 'bar']
-    expected_output = '[]'
-    flexmock(module).should_receive('log_command')
-    flexmock(module.subprocess).should_receive('check_output').with_args(
+    process = flexmock()
+    flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
         stdin=None,
-        stderr=module.subprocess.STDOUT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         shell=False,
         env=None,
         cwd=None,
         close_fds=False,
-    ).and_return(flexmock(decode=lambda: expected_output)).once()
+    ).and_return(process).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module).should_receive('log_outputs').and_return({process: 'out'})
 
     output = module.execute_command_and_capture_output(full_command, capture_stderr=True)
 
-    assert output == expected_output
+    assert output == 'out'
 
 
 def test_execute_command_and_capture_output_returns_output_when_process_error_is_not_considered_an_error():
     full_command = ['foo', 'bar']
-    expected_output = '[]'
     err_output = b'[]'
     flexmock(module).should_receive('log_command')
-    flexmock(module.subprocess).should_receive('check_output').with_args(
+    flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
         stdin=None,
-        stderr=None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         shell=False,
         env=None,
         cwd=None,
@@ -425,22 +545,22 @@ def test_execute_command_and_capture_output_returns_output_when_process_error_is
 
     output = module.execute_command_and_capture_output(full_command)
 
-    assert output == expected_output
+    assert output == '[]'
 
 
 def test_execute_command_and_capture_output_raises_when_command_errors():
     full_command = ['foo', 'bar']
-    expected_output = '[]'
     flexmock(module).should_receive('log_command')
-    flexmock(module.subprocess).should_receive('check_output').with_args(
+    flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
         stdin=None,
-        stderr=None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         shell=False,
         env=None,
         cwd=None,
         close_fds=False,
-    ).and_raise(subprocess.CalledProcessError(2, full_command, expected_output)).once()
+    ).and_raise(subprocess.CalledProcessError(2, full_command, 'error')).once()
     flexmock(module).should_receive('interpret_exit_code').and_return(
         module.Exit_status.ERROR,
     ).once()
@@ -451,36 +571,42 @@ def test_execute_command_and_capture_output_raises_when_command_errors():
 
 def test_execute_command_and_capture_output_returns_output_with_shell():
     full_command = ['foo', 'bar']
-    expected_output = '[]'
     flexmock(module).should_receive('log_command')
-    flexmock(module.subprocess).should_receive('check_output').with_args(
+    process = flexmock()
+    flexmock(module.subprocess).should_receive('Popen').with_args(
         'foo bar',
         stdin=None,
-        stderr=None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         shell=True,
         env=None,
         cwd=None,
         close_fds=False,
-    ).and_return(flexmock(decode=lambda: expected_output)).once()
+    ).and_return(process).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module).should_receive('log_outputs').and_return({process: 'out'})
 
     output = module.execute_command_and_capture_output(full_command, shell=True)
 
-    assert output == expected_output
+    assert output == 'out'
 
 
 def test_execute_command_and_capture_output_returns_output_with_environment():
     full_command = ['foo', 'bar']
-    expected_output = '[]'
     flexmock(module).should_receive('log_command')
-    flexmock(module.subprocess).should_receive('check_output').with_args(
+    process = flexmock()
+    flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
         stdin=None,
-        stderr=None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         shell=False,
         env={'a': 'b'},
         cwd=None,
         close_fds=False,
-    ).and_return(flexmock(decode=lambda: expected_output)).once()
+    ).and_return(process).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module).should_receive('log_outputs').and_return({process: 'out'})
 
     output = module.execute_command_and_capture_output(
         full_command,
@@ -488,22 +614,25 @@ def test_execute_command_and_capture_output_returns_output_with_environment():
         environment={'a': 'b'},
     )
 
-    assert output == expected_output
+    assert output == 'out'
 
 
 def test_execute_command_and_capture_output_returns_output_with_working_directory():
     full_command = ['foo', 'bar']
-    expected_output = '[]'
     flexmock(module).should_receive('log_command')
-    flexmock(module.subprocess).should_receive('check_output').with_args(
+    process = flexmock()
+    flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
         stdin=None,
-        stderr=None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         shell=False,
         env=None,
         cwd='/working',
         close_fds=False,
-    ).and_return(flexmock(decode=lambda: expected_output)).once()
+    ).and_return(process).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module).should_receive('log_outputs').and_return({process: 'out'})
 
     output = module.execute_command_and_capture_output(
         full_command,
@@ -511,7 +640,7 @@ def test_execute_command_and_capture_output_returns_output_with_working_director
         working_directory='/working',
     )
 
-    assert output == expected_output
+    assert output == 'out'
 
 
 def test_execute_command_with_processes_calls_full_command():
@@ -522,7 +651,7 @@ def test_execute_command_with_processes_calls_full_command():
         full_command,
         stdin=None,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=False,
         env=None,
         cwd=None,
@@ -545,7 +674,7 @@ def test_execute_command_with_processes_returns_output_with_output_log_level_non
         full_command,
         stdin=None,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=False,
         env=None,
         cwd=None,
@@ -618,7 +747,7 @@ def test_execute_command_with_processes_calls_full_command_with_input_file():
         full_command,
         stdin=input_file,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=False,
         env=None,
         cwd=None,
@@ -640,7 +769,7 @@ def test_execute_command_with_processes_calls_full_command_with_shell():
         ' '.join(full_command),
         stdin=None,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=True,
         env=None,
         cwd=None,
@@ -662,7 +791,7 @@ def test_execute_command_with_processes_calls_full_command_with_environment():
         full_command,
         stdin=None,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=False,
         env={'a': 'b'},
         cwd=None,
@@ -684,7 +813,7 @@ def test_execute_command_with_processes_calls_full_command_with_working_director
         full_command,
         stdin=None,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=False,
         env=None,
         cwd='/working',
@@ -713,7 +842,7 @@ def test_execute_command_with_processes_kills_processes_on_error():
         full_command,
         stdin=None,
         stdout=module.subprocess.PIPE,
-        stderr=module.subprocess.STDOUT,
+        stderr=module.subprocess.PIPE,
         shell=False,
         env=None,
         cwd=None,

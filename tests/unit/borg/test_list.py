@@ -23,7 +23,7 @@ def test_make_list_command_includes_log_info():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--info', 'repo')
+    assert command == ('borg', 'list', '--info', '--log-json', 'repo')
 
 
 def test_make_list_command_includes_json_but_not_info():
@@ -40,7 +40,7 @@ def test_make_list_command_includes_json_but_not_info():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--json', 'repo')
+    assert command == ('borg', 'list', '--log-json', '--json', 'repo')
 
 
 def test_make_list_command_includes_log_debug():
@@ -57,7 +57,7 @@ def test_make_list_command_includes_log_debug():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--debug', '--show-rc', 'repo')
+    assert command == ('borg', 'list', '--debug', '--show-rc', '--log-json', 'repo')
 
 
 def test_make_list_command_includes_json_but_not_debug():
@@ -74,7 +74,7 @@ def test_make_list_command_includes_json_but_not_debug():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--json', 'repo')
+    assert command == ('borg', 'list', '--log-json', '--json', 'repo')
 
 
 def test_make_list_command_includes_json():
@@ -90,25 +90,7 @@ def test_make_list_command_includes_json():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--json', 'repo')
-
-
-def test_make_list_command_includes_log_json():
-    flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
-        ('--log-json',),
-    ).and_return(())
-    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-
-    command = module.make_list_command(
-        repository_path='repo',
-        config={'log_json': True},
-        local_borg_version='1.2.3',
-        list_arguments=flexmock(archive=None, paths=None, format=None, json=False),
-        global_arguments=flexmock(),
-    )
-
-    assert command == ('borg', 'list', '--log-json', 'repo')
+    assert command == ('borg', 'list', '--log-json', '--json', 'repo')
 
 
 def test_make_list_command_includes_lock_wait():
@@ -126,7 +108,7 @@ def test_make_list_command_includes_lock_wait():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--lock-wait', '5', 'repo')
+    assert command == ('borg', 'list', '--log-json', '--lock-wait', '5', 'repo')
 
 
 def test_make_list_command_includes_format():
@@ -144,7 +126,7 @@ def test_make_list_command_includes_format():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--format', 'stuff', 'repo')
+    assert command == ('borg', 'list', '--log-json', '--format', 'stuff', 'repo')
 
 
 def test_make_list_command_includes_extra_borg_options():
@@ -160,7 +142,7 @@ def test_make_list_command_includes_extra_borg_options():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--extra', 'value with space', 'repo')
+    assert command == ('borg', 'list', '--log-json', '--extra', 'value with space', 'repo')
 
 
 def test_make_list_command_includes_archive():
@@ -178,7 +160,7 @@ def test_make_list_command_includes_archive():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', 'repo::archive')
+    assert command == ('borg', 'list', '--log-json', 'repo::archive')
 
 
 def test_make_list_command_includes_archive_and_path():
@@ -196,7 +178,7 @@ def test_make_list_command_includes_archive_and_path():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', 'repo::archive', 'var/lib')
+    assert command == ('borg', 'list', '--log-json', 'repo::archive', 'var/lib')
 
 
 def test_make_list_command_includes_local_path():
@@ -213,7 +195,7 @@ def test_make_list_command_includes_local_path():
         local_path='borg2',
     )
 
-    assert command == ('borg2', 'list', 'repo')
+    assert command == ('borg2', 'list', '--log-json', 'repo')
 
 
 def test_make_list_command_includes_remote_path():
@@ -237,7 +219,7 @@ def test_make_list_command_includes_remote_path():
         remote_path='borg2',
     )
 
-    assert command == ('borg', 'list', '--remote-path', 'borg2', 'repo')
+    assert command == ('borg', 'list', '--remote-path', 'borg2', '--log-json', 'repo')
 
 
 def test_make_list_command_includes_umask():
@@ -255,7 +237,7 @@ def test_make_list_command_includes_umask():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--umask', '077', 'repo')
+    assert command == ('borg', 'list', '--umask', '077', '--log-json', 'repo')
 
 
 def test_make_list_command_includes_short():
@@ -271,7 +253,7 @@ def test_make_list_command_includes_short():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--short', 'repo')
+    assert command == ('borg', 'list', '--log-json', '--short', 'repo')
 
 
 @pytest.mark.parametrize(
@@ -310,7 +292,14 @@ def test_make_list_command_includes_additional_flags(argument_name):
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--' + argument_name.replace('_', '-'), 'value', 'repo')
+    assert command == (
+        'borg',
+        'list',
+        '--log-json',
+        '--' + argument_name.replace('_', '-'),
+        'value',
+        'repo',
+    )
 
 
 def test_make_find_paths_considers_none_as_empty_paths():
@@ -382,12 +371,12 @@ def test_list_archive_calls_borg_with_flags():
         global_arguments=global_arguments,
         local_path='borg',
         remote_path=None,
-    ).and_return(('borg', 'list', 'repo::archive'))
+    ).and_return(('borg', 'list', '--log-json', 'repo::archive'))
     flexmock(module).should_receive('make_find_paths').and_return(())
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo::archive'),
+        ('borg', 'list', '--log-json', 'repo::archive'),
         output_log_level=module.borgmatic.logger.ANSWER,
         environment=None,
         working_directory=None,
@@ -449,12 +438,12 @@ def test_list_archive_calls_borg_with_local_path():
         global_arguments=global_arguments,
         local_path='borg2',
         remote_path=None,
-    ).and_return(('borg2', 'list', 'repo::archive'))
+    ).and_return(('borg2', 'list', '--log-json', 'repo::archive'))
     flexmock(module).should_receive('make_find_paths').and_return(())
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg2', 'list', 'repo::archive'),
+        ('borg2', 'list', '--log-json', 'repo::archive'),
         output_log_level=module.borgmatic.logger.ANSWER,
         environment=None,
         working_directory=None,
@@ -499,12 +488,12 @@ def test_list_archive_calls_borg_using_exit_codes():
         global_arguments=global_arguments,
         local_path='borg',
         remote_path=None,
-    ).and_return(('borg', 'list', 'repo::archive'))
+    ).and_return(('borg', 'list', '--log-json', 'repo::archive'))
     flexmock(module).should_receive('make_find_paths').and_return(())
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo::archive'),
+        ('borg', 'list', '--log-json', 'repo::archive'),
         output_log_level=module.borgmatic.logger.ANSWER,
         environment=None,
         working_directory=None,
@@ -539,23 +528,23 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
 
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.repo_list).should_receive('make_repo_list_command').and_return(
-        ('borg', 'list', 'repo'),
+        ('borg', 'list', '--log-json', 'repo'),
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'list', 'repo'),
+        ('borg', 'list', '--log-json', 'repo'),
         environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_return('archive1\narchive2').once()
     flexmock(module).should_receive('make_list_command').and_return(
-        ('borg', 'list', 'repo::archive1'),
-    ).and_return(('borg', 'list', 'repo::archive2'))
+        ('borg', 'list', '--log-json', 'repo::archive1'),
+    ).and_return(('borg', 'list', '--log-json', 'repo::archive2'))
     flexmock(module).should_receive('make_find_paths').and_return(glob_paths)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo::archive1', *glob_paths),
+        ('borg', 'list', '--log-json', 'repo::archive1', *glob_paths),
         output_log_level=module.borgmatic.logger.ANSWER,
         environment=None,
         working_directory=None,
@@ -563,7 +552,7 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
         borg_exit_codes=None,
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo::archive2', *glob_paths),
+        ('borg', 'list', '--log-json', 'repo::archive2', *glob_paths),
         output_log_level=module.borgmatic.logger.ANSWER,
         environment=None,
         working_directory=None,
@@ -606,12 +595,12 @@ def test_list_archive_calls_borg_with_archive():
         global_arguments=global_arguments,
         local_path='borg',
         remote_path=None,
-    ).and_return(('borg', 'list', 'repo::archive'))
+    ).and_return(('borg', 'list', '--log-json', 'repo::archive'))
     flexmock(module).should_receive('make_find_paths').and_return(())
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo::archive'),
+        ('borg', 'list', '--log-json', 'repo::archive'),
         output_log_level=module.borgmatic.logger.ANSWER,
         environment=None,
         working_directory=None,
@@ -734,12 +723,12 @@ def test_list_archive_with_archive_ignores_archive_filter_flag(
         global_arguments=global_arguments,
         local_path='borg',
         remote_path=None,
-    ).and_return(('borg', 'list', 'repo::archive'))
+    ).and_return(('borg', 'list', '--log-json', 'repo::archive'))
     flexmock(module).should_receive('make_find_paths').and_return(())
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo::archive'),
+        ('borg', 'list', '--log-json', 'repo::archive'),
         output_log_level=module.borgmatic.logger.ANSWER,
         environment=None,
         working_directory=None,
@@ -832,7 +821,7 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
         global_arguments=global_arguments,
         local_path='borg',
         remote_path=None,
-    ).and_return(('borg', 'list', '--repo', 'repo', 'archive1'))
+    ).and_return(('borg', 'list', '--log-json', '--repo', 'repo', 'archive1'))
 
     flexmock(module).should_receive('make_list_command').with_args(
         repository_path='repo',
@@ -851,12 +840,12 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
         global_arguments=global_arguments,
         local_path='borg',
         remote_path=None,
-    ).and_return(('borg', 'list', '--repo', 'repo', 'archive2'))
+    ).and_return(('borg', 'list', '--log-json', '--repo', 'repo', 'archive2'))
 
     flexmock(module).should_receive('make_find_paths').and_return(glob_paths)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', '--repo', 'repo', 'archive1', *glob_paths),
+        ('borg', 'list', '--log-json', '--repo', 'repo', 'archive1', *glob_paths),
         output_log_level=module.borgmatic.logger.ANSWER,
         environment=None,
         working_directory=None,
@@ -864,7 +853,7 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
         borg_exit_codes=None,
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', '--repo', 'repo', 'archive2', *glob_paths),
+        ('borg', 'list', '--log-json', '--repo', 'repo', 'archive2', *glob_paths),
         output_log_level=module.borgmatic.logger.ANSWER,
         environment=None,
         working_directory=None,
@@ -916,14 +905,14 @@ def test_list_archive_calls_borg_with_working_directory():
         global_arguments=global_arguments,
         local_path='borg',
         remote_path=None,
-    ).and_return(('borg', 'list', 'repo::archive'))
+    ).and_return(('borg', 'list', '--log-json', 'repo::archive'))
     flexmock(module).should_receive('make_find_paths').and_return(())
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working/dir',
     )
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo::archive'),
+        ('borg', 'list', '--log-json', 'repo::archive'),
         output_log_level=module.borgmatic.logger.ANSWER,
         environment=None,
         working_directory='/working/dir',

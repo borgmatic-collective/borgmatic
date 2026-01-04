@@ -221,7 +221,17 @@ def test_make_prune_flags_ignores_keep_exclude_tags_in_config():
     assert result == ('--keep-daily', '1')
 
 
-PRUNE_COMMAND = ('borg', 'prune', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly', '3')
+PRUNE_COMMAND = (
+    'borg',
+    'prune',
+    '--keep-daily',
+    '1',
+    '--keep-weekly',
+    '2',
+    '--keep-monthly',
+    '3',
+    '--log-json',
+)
 
 
 def test_prune_archives_calls_borg_with_flags():
@@ -454,28 +464,6 @@ def test_prune_archives_with_umask_calls_borg_with_umask_flags():
     )
 
 
-def test_prune_archives_with_log_json_calls_borg_with_log_json_flag():
-    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-    flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.NO_PRUNE_STATS,
-        '1.2.3',
-    ).and_return(False)
-    insert_execute_command_mock((*PRUNE_COMMAND, '--log-json', 'repo'), logging.INFO)
-
-    prune_arguments = flexmock(statistics=False, list_details=False)
-    module.prune_archives(
-        dry_run=False,
-        repository_path='repo',
-        config={'log_json': True},
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        prune_arguments=prune_arguments,
-    )
-
-
 def test_prune_archives_with_lock_wait_calls_borg_with_lock_wait_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
@@ -561,6 +549,7 @@ def test_prune_archives_with_date_based_matching_calls_borg_with_date_based_flag
             '2',
             '--keep-monthly',
             '3',
+            '--log-json',
             '--newer',
             '1d',
             '--newest',

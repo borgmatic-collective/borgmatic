@@ -15,6 +15,7 @@ def unmount_archive(config, mount_point, local_path='borg'):
     extra_borg_options = config.get('extra_borg_options', {}).get('umount', '')
     full_command = (
         (local_path, 'umount')
+        + ('--log-json',)
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
