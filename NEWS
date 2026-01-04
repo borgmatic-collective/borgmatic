@@ -1,9 +1,10 @@
 2.1.0.dev0
  * #485: When running commands (database clients, command hooks, etc.), elevate stderr output to
-   borgmatic error logs.
+   show up as borgmatic error logs.
  * #858: With the "--log-json" flag, log borgmatic's own logs as JSON, not just Borg's.
  * #1204: When verbosity levels differ between console/monitoring/syslog/file, log Borg's output to
-   each one at a different level.
+   each one at a different level. Previously, it was logged at the maximum level of all the
+   verbosities.
  * #1208: Fix for the "restore" action incorrectly extracting more database dumps than the
    "--database" flag specifies.
  * #1210: Fix an error when running the "spot" check or "extract" action with the "progress" option
