@@ -249,12 +249,9 @@ def make_base_create_command(  # noqa: PLR0912
     )
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    if config.get('unsafe_create_without_precheck'):
+    if config.get('unsafe_skip_path_validation_before_create'):
         logger.warning(
-            'Skipping pre-backup safety checks due to "unsafe_create_without_precheck" option. '
-            'If using database hooks: (1) Borg may hang on special files, and (2) database dumps '
-            'may be silently excluded if your excludes match the runtime directory '
-            f'({borgmatic_runtime_directory}). Verify your exclude patterns manually.'
+            'Skipping pre-backup path validation due to "unsafe_skip_path_validation_before_create" option.'
         )
         planned_backup_paths = ()
     else:

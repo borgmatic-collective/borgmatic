@@ -1019,7 +1019,7 @@ def test_make_base_create_command_includes_extra_borg_options_in_borg_command():
     assert not pattern_file
 
 
-def test_make_base_create_command_with_unsafe_create_without_precheck_skips_validation():
+def test_make_base_create_command_with_unsafe_skip_path_validation_before_create_skips_validation():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -1040,7 +1040,7 @@ def test_make_base_create_command_with_unsafe_create_without_precheck_skips_vali
         config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
-            'unsafe_create_without_precheck': True,
+            'unsafe_skip_path_validation_before_create': True,
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
@@ -1049,7 +1049,7 @@ def test_make_base_create_command_with_unsafe_create_without_precheck_skips_vali
     )
 
 
-def test_make_base_create_command_without_unsafe_create_without_precheck_calls_validation():
+def test_make_base_create_command_without_unsafe_skip_path_validation_before_create_calls_validation():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
