@@ -97,7 +97,7 @@ The fields borgmatic sends are:
  * `SYSLOG_IDENTIFIER`: `borgmatic`
  * `SYSLOG_PID`: borgmatic's process ID
 
-You can also output these stuctured logs as JSON:
+You can also output these structured logs as JSON:
 
 ```bash
 journalctl --output=json SYSLOG_IDENTIFIER=borgmatic
