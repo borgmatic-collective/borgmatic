@@ -34,6 +34,13 @@ Additionally, for the `create` action in particular, you can include the
 that are new or changed since the last backup.
 
 
+### JSON logging
+
+<span class="minilink minilink-addedin">New in version 2.1.0</span>With the
+`--log-json` flag, borgmatic logs both its own logs and Borg's output as JSON.
+The `--log-json` flag applies to console output and any log file (see below).
+
+
 ## Logging to syslog
 
 By default, borgmatic only logs its output to the console. You can enable
@@ -64,6 +71,40 @@ systemd, try running `journalctl -xe`. Otherwise, try viewing
 
 <span class="minilink minilink-addedin">Prior to version 1.8.3</span>borgmatic
 logged to syslog by default whenever run at a non-interactive console.
+
+
+### Systemd journal
+
+<span class="minilink minilink-addedin">New in version 2.1.0</span>If the syslog
+verbosity is set and systemd's journal is present, then borgmatic sends
+structured logs to the journal instead of plain text. This allows you to query
+logs by particular fields. For instance:
+
+```bash
+journalctl --catalog --pager-end SYSLOG_IDENTIFIER=borgmatic
+```
+
+Or to view just borgmatic warning and error logs:
+
+```bash
+journalctl --catalog --pager-end SYSLOG_IDENTIFIER=borgmatic --priority warning..alert
+```
+
+The fields borgmatic sends are:
+
+ * `MESSAGE`: the log message
+ * `PRIORITY`: the [numeric priority level](https://wiki.archlinux.org/title/Systemd/Journal#Priority_level) for the log entry
+ * `SYSLOG_IDENTIFIER`: `borgmatic`
+ * `SYSLOG_PID`: borgmatic's process ID
+
+You can also output these structured logs as JSON:
+
+```bash
+journalctl --output=json SYSLOG_IDENTIFIER=borgmatic
+```
+
+Note that systemd's journal adds its own fields to the JSON on top of the fields
+that borgmatic logs.
 
 
 ### Rate limiting

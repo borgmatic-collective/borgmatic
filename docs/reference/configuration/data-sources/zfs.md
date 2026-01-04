@@ -4,10 +4,9 @@ eleventyNavigation:
   key: ZFS
   parent: 🗄️ Data sources
 ---
-<span class="minilink minilink-addedin">New in version 1.9.3</span> <span
-class="minilink minilink-addedin">Beta feature</span> borgmatic supports
-taking snapshots with the [ZFS filesystem](https://openzfs.org/) and sending
-those snapshots to Borg for backup.
+<span class="minilink minilink-addedin">New in version 1.9.3</span> borgmatic
+supports taking snapshots with the [ZFS filesystem](https://openzfs.org/) and
+sending those snapshots to Borg for backup.
 
 The minimum configuration to enable ZFS support is:
 

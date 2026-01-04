@@ -660,6 +660,7 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
                         levelno=logging.DEBUG,
                         levelname='DEBUG',
                         msg=f'{config_filename}: Loading configuration file',
+                        name=logger.name,
                     ),
                 ),
             ],
@@ -682,6 +683,7 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
                             levelno=logging.CRITICAL,
                             levelname='CRITICAL',
                             msg=f'{config_filename}: Insufficient permissions to read configuration file',
+                            name=logger.name,
                         ),
                     ),
                 ],
@@ -694,10 +696,16 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
                             levelno=logging.CRITICAL,
                             levelname='CRITICAL',
                             msg=f'{config_filename}: Error parsing configuration file',
+                            name=logger.name,
                         ),
                     ),
                     logging.makeLogRecord(
-                        dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=str(error)),
+                        dict(
+                            levelno=logging.CRITICAL,
+                            levelname='CRITICAL',
+                            msg=str(error),
+                            name=logger.name,
+                        ),
                     ),
                 ],
             )
@@ -710,7 +718,7 @@ def log_record(suppress_log=False, **kwargs):
     Create a log record based on the given makeLogRecord() arguments, one of which must be
     named "levelno". Log the record (unless suppress log is set) and return it.
     '''
-    record = logging.makeLogRecord(kwargs)
+    record = logging.makeLogRecord(dict(kwargs, name=logger.name))
     if suppress_log:
         return record
 
@@ -823,6 +831,7 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
                     levelno=logging.ANSWER,
                     levelname='ANSWER',
                     msg='Bootstrap successful',
+                    name=logger.name,
                 ),
             )
         except (
@@ -845,6 +854,7 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
                     levelno=logging.ANSWER,
                     levelname='ANSWER',
                     msg='Generate successful',
+                    name=logger.name,
                 ),
             )
         except (
@@ -863,6 +873,7 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
                     levelno=logging.CRITICAL,
                     levelname='CRITICAL',
                     msg='Configuration validation failed',
+                    name=logger.name,
                 ),
             )
 
@@ -876,6 +887,7 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
                     levelno=logging.ANSWER,
                     levelname='ANSWER',
                     msg='All configuration files are valid',
+                    name=logger.name,
                 ),
             )
         except (
@@ -968,6 +980,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments, log
                         levelno=logging.INFO,
                         levelname='INFO',
                         msg=f'{config_filename}: Successfully ran configuration file',
+                        name=logger.name,
                     ),
                 )
                 if results:
@@ -1067,6 +1080,23 @@ def get_singular_option_value(configs, option_name):
         return None
 
 
+def display_summary(summary_logs, log_json):  # pragma: no cover
+    summary_logs_max_level = max(log.levelno for log in summary_logs)
+
+    for message in ('summary:',) if log_json else ('', 'summary:'):
+        log_record(
+            levelno=summary_logs_max_level,
+            levelname=logging.getLevelName(summary_logs_max_level),
+            msg=message,
+        )
+
+    for log in summary_logs:
+        logger.handle(log)
+
+    if summary_logs_max_level >= logging.CRITICAL:
+        exit_with_help_link()
+
+
 def main(extra_summary_logs=()):  # pragma: no cover
     configure_signals()
     configure_delayed_logging()
@@ -1126,6 +1156,7 @@ def main(extra_summary_logs=()):  # pragma: no cover
         getattr(sub_arguments, 'json', False) for sub_arguments in arguments.values()
     )
     log_file_path = get_singular_option_value(configs, 'log_file')
+    log_json = get_singular_option_value(configs, 'log_json')
 
     try:
         configure_logging(
@@ -1135,7 +1166,8 @@ def main(extra_summary_logs=()):  # pragma: no cover
             verbosity_to_log_level(get_verbosity(configs, 'monitoring_verbosity')),
             log_file_path,
             get_singular_option_value(configs, 'log_file_format'),
-            color_enabled=should_do_markup(configs, any_json_flags),
+            log_json,
+            color_enabled=should_do_markup(configs, any_json_flags or log_json),
         )
     except (FileNotFoundError, PermissionError) as error:
         configure_logging(logging.CRITICAL)
@@ -1163,17 +1195,5 @@ def main(extra_summary_logs=()):  # pragma: no cover
             )
         )
     )
-    summary_logs_max_level = max(log.levelno for log in summary_logs)
 
-    for message in ('', 'summary:'):
-        log_record(
-            levelno=summary_logs_max_level,
-            levelname=logging.getLevelName(summary_logs_max_level),
-            msg=message,
-        )
-
-    for log in summary_logs:
-        logger.handle(log)
-
-    if summary_logs_max_level >= logging.CRITICAL:
-        exit_with_help_link()
+    display_summary(summary_logs, log_json)

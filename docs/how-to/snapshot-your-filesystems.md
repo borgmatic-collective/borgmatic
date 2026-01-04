@@ -20,10 +20,9 @@ snapshots.
 
 ### ZFS
 
-<span class="minilink minilink-addedin">New in version 1.9.3</span> <span
-class="minilink minilink-addedin">Beta feature</span> borgmatic supports
-taking snapshots with the [ZFS filesystem](https://openzfs.org/) and sending
-those snapshots to Borg for backup.
+<span class="minilink minilink-addedin">New in version 1.9.3</span> borgmatic
+supports taking snapshots with the [ZFS filesystem](https://openzfs.org/) and
+sending those snapshots to Borg for backup.
 
 To use this feature, add one or more ZFS dataset paths to your
 `source_directories`. Then, enable borgmatic's ZFS snapshotting of those
@@ -62,10 +61,10 @@ extract them.
 
 ### Btrfs
 
-<span class="minilink minilink-addedin">New in version 1.9.4</span> <span
-class="minilink minilink-addedin">Beta feature</span> borgmatic supports taking
-snapshots with the [Btrfs filesystem](https://btrfs.readthedocs.io/) and sending
-those snapshots to Borg for backup.
+<span class="minilink minilink-addedin">New in version 1.9.4</span> borgmatic
+supports taking snapshots with the [Btrfs
+filesystem](https://btrfs.readthedocs.io/) and sending those snapshots to Borg
+for backup.
 
 To use this feature, add one or more subvolume paths to your
 `source_directories`. Then, enable Btrfs within borgmatic by adding the
@@ -104,12 +103,11 @@ them.
 
 ### LVM
 
-<span class="minilink minilink-addedin">New in version 1.9.4</span> <span
-class="minilink minilink-addedin">Beta feature</span> borgmatic supports
-taking snapshots with [LVM](https://sourceware.org/lvm2/) (Linux Logical
-Volume Manager) and sending those snapshots to Borg for backup. LVM isn't
-itself a filesystem, but it can take snapshots at the layer right below your
-filesystem.
+<span class="minilink minilink-addedin">New in version 1.9.4</span> borgmatic
+supports taking snapshots with [LVM](https://sourceware.org/lvm2/) (Linux
+Logical Volume Manager) and sending those snapshots to Borg for backup. LVM
+isn't itself a filesystem, but it can take snapshots at the layer right below
+your filesystem.
 
 Note that, due to Borg being a file-level backup, this feature is really only
 suitable for filesystems, not whole disk or raw images containing multiple

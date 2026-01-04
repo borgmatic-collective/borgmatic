@@ -1183,7 +1183,7 @@ def test_run_restore_restores_each_data_source():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks_even_if_unconfigured')
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         flexmock(),
     )
@@ -1257,7 +1257,7 @@ def test_run_restore_restores_data_source_by_falling_back_to_all_name():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks_even_if_unconfigured')
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         flexmock(),
     )
@@ -1319,7 +1319,7 @@ def test_run_restore_restores_data_source_configured_with_all_name():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks_even_if_unconfigured')
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         flexmock(),
     )
@@ -1403,7 +1403,7 @@ def test_run_restore_skips_missing_data_source():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks_even_if_unconfigured')
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         flexmock(),
     )
@@ -1487,7 +1487,7 @@ def test_run_restore_restores_data_sources_from_different_hooks():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks_even_if_unconfigured')
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         flexmock(),
     )

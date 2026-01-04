@@ -231,8 +231,8 @@ def make_base_create_command(  # noqa: PLR0912
         + (('--files-cache', files_cache) if files_cache else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if config.get('log_json') else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
+        + (('--log-json',) if (config.get('log_json') or not config.get('progress')) else ())
         + (
             ('--list', '--filter', list_filter_flags)
             if config.get('list_details') and not json and not config.get('progress')
