@@ -75,3 +75,22 @@ that uses that constant.
 
 An alternate to constants is passing in your values via [environment
 variables](https://torsion.org/borgmatic/reference/configuration/environment-variables/).
+
+
+## Disabling constants
+
+<span class="minilink minilink-addedin">New in version 2.1.0</span> To prevent
+borgmatic from attempting constant interpolation on a specific would-be
+constant name, you can backslash its curly brackets. For instance:
+
+```yaml
+constants:
+    name: foo
+
+source_directories:
+    - /home/user/\{name\}
+```
+
+This tells borgmatic to skip constant interpolation for `{name}` and instead use
+the `{name}` literal. This is handy if you've got a filename that has literal
+curly brackets around a name that happens to match a constant.

@@ -12,6 +12,9 @@
  * #1211: Fix an error about the runtime directory getting excluded by tweaking its logic and
    lowering the error to a warning.
  * #1212: Fix an error when restoring multiple directory-format database dumps at once.
+ * #1213: BREAKING: Support disabling both constant and variable interpolation by escaping with
+   backslashes. For instance, interpret "\{name\}" as literally "{name}" instead of trying to
+   resolve it as a constant/variable.
  * #1220: Cleanup snapshots immediately after ZFS, LVM, or Btrfs hooks error—rather than waiting
    until the next time borgmatic runs.
  * #1221: Add an "unsafe_skip_path_validation_before_create" option to skip pre-backup safety checks

@@ -135,6 +135,12 @@ don't run in the context of a single repository. But the deprecated command
 hooks (`before_backup`, `on_error`, etc.) do generally support variable
 interpolation.
 
+Note that you can also interpolate [arbitrary environment
+variables](https://torsion.org/borgmatic/reference/configuration/environment-variables/).
+
+
+### Shell escaping
+
 borgmatic automatically escapes these interpolated values to prevent shell
 injection attacks. One implication is that you shouldn't wrap the interpolated
 values in your own quotes, as that will interfere with the quoting performed by
@@ -158,8 +164,26 @@ commands:
           - send-text-message.sh {error}
 ```
 
-Note that you can also interpolate [arbitrary environment
-variables](https://torsion.org/borgmatic/reference/configuration/environment-variables/).
+
+### Disabling variable interpolation
+
+<span class="minilink minilink-addedin">New in version 2.1.0</span> To prevent
+borgmatic from attempting variable interpolation on a specific would-be variable
+name—or warning about unknown variables—you can backslash its curly brackets.
+For instance:
+
+```yaml
+commands:
+    - after: action
+      when: [prune]
+      run:
+          - record-prune.sh \{name\}
+```
+
+This tells borgmatic to skip variable interpolation for `{name}` and instead
+pass the `{name}` literal to the command. This is handy if you've got a command
+containing literal curly brackets around a name that appears to reference a
+variable—but actually doesn't.
 
 
 ## Soft failure

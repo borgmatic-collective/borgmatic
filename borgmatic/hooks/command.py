@@ -13,20 +13,60 @@ logger = logging.getLogger(__name__)
 
 
 SOFT_FAIL_EXIT_CODE = 75
-BORG_PLACEHOLDERS = {
-    '{hostname}',
-    '{fqdn}',
-    '{reverse-fqdn}',
-    '{now}',
-    '{utcnow}',
-    '{unixtime}',
-    '{user}',
-    '{pid}',
-    '{borgversion}',
-    '{borgmajor}',
-    '{borgminor}',
-    '{borgpatch}',
+BORG_PLACEHOLDER_NAMES = {
+    'hostname',
+    'fqdn',
+    'reverse-fqdn',
+    'now',
+    'utcnow',
+    'unixtime',
+    'user',
+    'pid',
+    'borgversion',
+    'borgmajor',
+    'borgminor',
+    'borgpatch',
 }
+
+
+VARIABLE_PATTERN = re.compile(r'(?P<left_escape>\\)?\{(?P<name>[\w]+)(?P<right_escape>\\)?\}')
+
+
+def resolve_variable(match, context, hook_description):
+    '''
+    Given a re.Match instance of VARIABLE_PATTERN representing a matched variable name to be
+    interpolated, a context dict, and a description of the current command hook, lookup the matched
+    variable name within the given context and return its value.
+
+    If the match is escaped with backslashes, then instead of resolving the variable's value, strip
+    off the backslashing and return the literal value.
+
+    If the variable name isn't found in the given context (and isn't a Borg placeholder), then
+    warn and return the literal value.
+    '''
+    name = match.group('name')
+
+    # The would-be variable is escaped, so strip off the escaping and return the result without
+    # resolving the name.
+    if match.group('left_escape') and match.group('right_escape'):
+        return '{' + name + '}'
+
+    value = context.get(name)
+
+    # The matched variable is in the context, so return its value.
+    if value is not None:
+        return shlex.quote(str(value))
+
+    # The matched variable name isn't in the context. Warn about variables unknown to borgmatic, but
+    # don't warn if the variable name happens to be a Borg placeholder, as Borg should hopefully
+    # consume it.
+    if name not in BORG_PLACEHOLDER_NAMES:
+        logger.warning(
+            f'Variable "{name}" is not supported in the {hook_description} hook',
+        )
+
+    # Return the whole string unaltered.
+    return match.group(0)
 
 
 def interpolate_context(hook_description, command, context):
@@ -34,18 +74,10 @@ def interpolate_context(hook_description, command, context):
     Given a config filename, a hook description, a single hook command, and a dict of context
     names/values, interpolate the values by "{name}" into the command and return the result.
     '''
-    for name, value in context.items():
-        command = command.replace(f'{{{name}}}', shlex.quote(str(value)))
-
-    for unsupported_variable in re.findall(r'\{\w+\}', command):
-        # Warn about variables unknown to borgmatic, but don't warn if the variable name happens to
-        # be a Borg placeholder, as Borg should hopefully consume it.
-        if unsupported_variable not in BORG_PLACEHOLDERS:
-            logger.warning(
-                f'Variable "{unsupported_variable}" is not supported in the {hook_description} hook',
-            )
-
-    return command
+    return VARIABLE_PATTERN.sub(
+        functools.partial(resolve_variable, context=context, hook_description=hook_description),
+        command,
+    )
 
 
 def make_environment(current_environment, sys_module=sys):
