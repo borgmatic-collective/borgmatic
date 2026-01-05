@@ -58,7 +58,7 @@ def apply_constants(value, constants, shell_escape=False):
                 shell_escape=(
                     shell_escape
                     or option_name.startswith(('before_', 'after_'))
-                    or option_name == 'on_error'
+                    or option_name in {'on_error', 'run'}
                 ),
             )
 

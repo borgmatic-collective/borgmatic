@@ -50,6 +50,7 @@ def test_apply_constants_with_empty_constants_passes_through_value():
         ({'before_backup': '{inject}'}, {'before_backup': "'echo hi; naughty-command'"}),
         ({'after_backup': '{inject}'}, {'after_backup': "'echo hi; naughty-command'"}),
         ({'on_error': '{inject}'}, {'on_error': "'echo hi; naughty-command'"}),
+        ({'run': '{inject}'}, {'run': "'echo hi; naughty-command'"}),
         (
             {
                 'before_backup': '{env_pass}',
