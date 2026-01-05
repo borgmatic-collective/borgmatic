@@ -95,6 +95,30 @@ def test_extract_last_archive_dry_run_with_log_debug_calls_borg_with_debug_param
     )
 
 
+def test_extract_last_archive_dry_run_calls_borg_with_progress_flag():
+    flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'extract', '--dry-run', '--progress', 'repo::archive'),
+        output_file=module.DO_NOT_CAPTURE,
+        environment=None,
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ).once()
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',),
+    )
+
+    module.extract_last_archive_dry_run(
+        config={'progress': True},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        repository_path='repo',
+        lock_wait=None,
+    )
+
+
 def test_extract_last_archive_dry_run_calls_borg_via_local_path():
     flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
     insert_execute_command_mock(('borg1', 'extract', '--dry-run', '--log-json', 'repo::archive'))

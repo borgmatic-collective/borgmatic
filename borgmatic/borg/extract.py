@@ -49,9 +49,10 @@ def extract_last_archive_dry_run(
     full_extract_command = (
         (local_path, 'extract', '--dry-run')
         + (('--remote-path', remote_path) if remote_path else ())
-        + ('--log-json',)
+        + (('--log-json',) if not config.get('progress') else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + verbosity_flags
+        + (('--progress',) if config.get('progress') else ())
         + list_flag
         + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_archive_flags(
@@ -61,13 +62,23 @@ def extract_last_archive_dry_run(
         )
     )
 
-    execute_command(
-        full_extract_command,
-        environment=environment.make_environment(config),
-        working_directory=borgmatic.config.paths.get_working_directory(config),
-        borg_local_path=local_path,
-        borg_exit_codes=config.get('borg_exit_codes'),
-    )
+    if config.get('progress'):
+        execute_command(
+            full_extract_command,
+            output_file=DO_NOT_CAPTURE,
+            environment=environment.make_environment(config),
+            working_directory=borgmatic.config.paths.get_working_directory(config),
+            borg_local_path=local_path,
+            borg_exit_codes=config.get('borg_exit_codes'),
+        )
+    else:
+        execute_command(
+            full_extract_command,
+            environment=environment.make_environment(config),
+            working_directory=borgmatic.config.paths.get_working_directory(config),
+            borg_local_path=local_path,
+            borg_exit_codes=config.get('borg_exit_codes'),
+        )
 
 
 def extract_archive(
