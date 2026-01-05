@@ -1076,6 +1076,64 @@ def test_make_base_create_command_includes_extra_borg_options_in_borg_command():
     assert not pattern_file
 
 
+def test_make_base_create_command_with_unsafe_skip_path_validation_before_create_skips_validation():
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}',
+    )
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{module.flags.get_default_archive_name_format()}',),
+    )
+    flexmock(module).should_receive('validate_planned_backup_paths').never()
+    flexmock(module.logger).should_receive('warning').once()
+
+    module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'unsafe_skip_path_validation_before_create': True,
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        borgmatic_runtime_directory='/run/borgmatic',
+    )
+
+
+def test_make_base_create_command_without_unsafe_skip_path_validation_before_create_calls_validation():
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}',
+    )
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{module.flags.get_default_archive_name_format()}',),
+    )
+    flexmock(module).should_receive('validate_planned_backup_paths').once().and_return(())
+
+    module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        borgmatic_runtime_directory='/run/borgmatic',
+    )
+
+
 def test_make_base_create_command_with_non_existent_directory_and_source_directories_must_exist_raises():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive(

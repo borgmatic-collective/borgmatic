@@ -144,6 +144,22 @@ properties:
             false. But when a database hook is used, the setting here is ignored
             and read_special is considered true.
         example: true
+    unsafe_skip_path_validation_before_create:
+        type: boolean
+        description: |
+            Skip pre-backup safety checks: (1) runtime directory exclusion
+            detection, and (2) special file exclusion for database streaming.
+            Can significantly improve performance for large filesystems.
+
+            UNSAFE because if using data source hooks: Borg may hang on special
+            files (named pipes, devices), and data from borgmatic data source
+            hooks may be silently excluded if your exclude_patterns match the
+            runtime directory (see "user_runtime_directory" option).
+
+            Only enable if not using data source hooks, or after manually
+            verifying your excludes don't affect the runtime directory. Defaults
+            to false.
+        example: true
     flags:
         type: boolean
         description: |

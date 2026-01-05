@@ -138,7 +138,7 @@ def validate_planned_backup_paths(
 MAX_SPECIAL_FILE_PATHS_LENGTH = 1000
 
 
-def make_base_create_command(
+def make_base_create_command(  # noqa: PLR0912
     dry_run,
     repository_path,
     config,
@@ -249,16 +249,22 @@ def make_base_create_command(
     )
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    logger.debug('Checking file paths Borg plans to include')
-    planned_backup_paths = validate_planned_backup_paths(
-        dry_run,
-        create_flags + create_positional_arguments,
-        config,
-        patterns,
-        local_path,
-        working_directory,
-        borgmatic_runtime_directory=borgmatic_runtime_directory,
-    )
+    if config.get('unsafe_skip_path_validation_before_create'):
+        logger.warning(
+            'Skipping pre-backup path validation due to "unsafe_skip_path_validation_before_create" option.'
+        )
+        planned_backup_paths = ()
+    else:
+        logger.debug('Checking file paths Borg plans to include')
+        planned_backup_paths = validate_planned_backup_paths(
+            dry_run,
+            create_flags + create_positional_arguments,
+            config,
+            patterns,
+            local_path,
+            working_directory,
+            borgmatic_runtime_directory=borgmatic_runtime_directory,
+        )
 
     # If database hooks are enabled (as indicated by streaming processes), exclude files that might
     # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
