@@ -268,6 +268,7 @@ def make_base_create_command(  # noqa: PLR0912
 
     logger.debug('Checking file paths Borg plans to include')
 
+    find_special_files = bool(stream_processes and config.get('read_special') is False)
     special_file_paths = validate_planned_backup_paths(
         dry_run,
         create_flags + create_positional_arguments,
@@ -276,16 +277,17 @@ def make_base_create_command(  # noqa: PLR0912
         local_path,
         working_directory,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
-        find_special_files=bool(stream_processes and not config.get('read_special')),
+        find_special_files=find_special_files,
     )
 
-    # If database hooks are enabled (as indicated by streaming processes), exclude files that might
-    # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
-    if special_file_paths:
+    if find_special_files:
         logger.warning(
             'Ignoring configured "read_special" value of false, as true is needed for database hooks.',
         )
 
+    # If database hooks are enabled (as indicated by streaming processes), exclude files that might
+    # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
+    if special_file_paths:
         truncated_special_file_paths = textwrap.shorten(
             ', '.join(special_file_paths),
             width=MAX_SPECIAL_FILE_PATHS_LENGTH,

@@ -103,17 +103,15 @@ def database_names_to_dump(database, config, environment, dry_run):
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
     )
     logger.debug('Querying for "all" PostgreSQL databases to dump')
-    list_output = '\n'.join(
-        execute_command_and_capture_output(
-            list_command,
-            environment=environment,
-            working_directory=borgmatic.config.paths.get_working_directory(config),
-        )
+    list_lines = execute_command_and_capture_output(
+        list_command,
+        environment=environment,
+        working_directory=borgmatic.config.paths.get_working_directory(config),
     )
 
     return tuple(
         row[0]
-        for row in csv.reader(list_output.splitlines(), delimiter=',', quotechar='"')
+        for row in csv.reader(list_lines, delimiter=',', quotechar='"')
         if row[0] not in EXCLUDED_DATABASE_NAMES
     )
 

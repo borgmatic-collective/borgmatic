@@ -44,7 +44,7 @@ def get_logical_volumes(lsblk_command, patterns=None):
     '''
     try:
         devices_info = json.loads(
-            ''.join(
+            '\n'.join(
                 borgmatic.execute.execute_command_and_capture_output(
                     # Use lsblk instead of lvs here because lvs can't show active mounts.
                     (

@@ -158,17 +158,15 @@ def database_names_to_dump(database, config, username, password, environment, dr
     if skip_names:
         logger.debug(f'Skipping database names: {", ".join(skip_names)}')
 
-    show_output = '\n'.join(
-        execute_command_and_capture_output(
-            show_command,
-            environment=environment,
-            working_directory=borgmatic.config.paths.get_working_directory(config),
-        )
+    show_lines = execute_command_and_capture_output(
+        show_command,
+        environment=environment,
+        working_directory=borgmatic.config.paths.get_working_directory(config),
     )
 
     return tuple(
-        show_name
-        for show_name in show_output.strip().splitlines()
+        show_name.strip()
+        for show_name in show_lines
         if show_name not in SYSTEM_DATABASE_NAMES
         if not skip_names or show_name not in skip_names
     )
