@@ -20,6 +20,7 @@
  * #1221: Add an "unsafe_skip_path_validation_before_create" option to skip pre-backup safety checks
    so as to reduce backup times on large filesystems.
  * #1224: When running an "extract" check with the "--progress" flag, show file extraction progress.
+ * #1225: Greatly reduce memory usage during pre-backup safety checks on large filesystems.
  * When syslog verbosity is enabled, log to systemd's journal (if present) with
    structured data. See the documentation for more information:
    https://torsion.org/borgmatic/reference/command-line/logging/#systemd-journal
