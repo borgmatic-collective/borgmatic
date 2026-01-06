@@ -116,27 +116,29 @@ def capture_archive_listing(
     output of listing that archive and return it as a list of file paths.
     '''
     return tuple(
-        execute_command_and_capture_output(
-            make_list_command(
-                repository_path,
-                config,
-                local_borg_version,
-                argparse.Namespace(
-                    repository=repository_path,
-                    archive=archive,
-                    paths=list(list_paths) if list_paths else None,
-                    find_paths=None,
-                    json=None,
-                    format=path_format or '{path}{NUL}',
+        ''.join(
+            execute_command_and_capture_output(
+                make_list_command(
+                    repository_path,
+                    config,
+                    local_borg_version,
+                    argparse.Namespace(
+                        repository=repository_path,
+                        archive=archive,
+                        paths=list(list_paths) if list_paths else None,
+                        find_paths=None,
+                        json=None,
+                        format=path_format or '{path}{NUL}',
+                    ),
+                    global_arguments,
+                    local_path,
+                    remote_path,
                 ),
-                global_arguments,
-                local_path,
-                remote_path,
-            ),
-            environment=environment.make_environment(config),
-            working_directory=borgmatic.config.paths.get_working_directory(config),
-            borg_local_path=local_path,
-            borg_exit_codes=config.get('borg_exit_codes'),
+                environment=environment.make_environment(config),
+                working_directory=borgmatic.config.paths.get_working_directory(config),
+                borg_local_path=local_path,
+                borg_exit_codes=config.get('borg_exit_codes'),
+            )
         )
         .strip('\0')
         .split('\0'),
@@ -235,8 +237,6 @@ def list_archive(
                 borg_local_path=local_path,
                 borg_exit_codes=borg_exit_codes,
             )
-            .strip('\n')
-            .splitlines(),
         )
     else:
         archive_lines = (list_arguments.archive,)

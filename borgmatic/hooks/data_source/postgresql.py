@@ -103,10 +103,12 @@ def database_names_to_dump(database, config, environment, dry_run):
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
     )
     logger.debug('Querying for "all" PostgreSQL databases to dump')
-    list_output = execute_command_and_capture_output(
-        list_command,
-        environment=environment,
-        working_directory=borgmatic.config.paths.get_working_directory(config),
+    list_output = '\n'.join(
+        execute_command_and_capture_output(
+            list_command,
+            environment=environment,
+            working_directory=borgmatic.config.paths.get_working_directory(config),
+        )
     )
 
     return tuple(

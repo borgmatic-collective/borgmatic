@@ -48,7 +48,9 @@ def load_credential(hook_config, config, credential_parameters):
             ),
         )
 
-        return borgmatic.execute.execute_command_and_capture_output(command).rstrip(os.linesep)
+        return '\n'.join(
+            borgmatic.execute.execute_command_and_capture_output(command).rstrip(os.linesep)
+        )
 
     try:
         with open(

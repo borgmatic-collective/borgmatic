@@ -44,17 +44,19 @@ def get_logical_volumes(lsblk_command, patterns=None):
     '''
     try:
         devices_info = json.loads(
-            borgmatic.execute.execute_command_and_capture_output(
-                # Use lsblk instead of lvs here because lvs can't show active mounts.
-                (
-                    *lsblk_command.split(' '),
-                    '--output',
-                    'name,path,mountpoint,type',
-                    '--json',
-                    '--list',
+            ''.join(
+                borgmatic.execute.execute_command_and_capture_output(
+                    # Use lsblk instead of lvs here because lvs can't show active mounts.
+                    (
+                        *lsblk_command.split(' '),
+                        '--output',
+                        'name,path,mountpoint,type',
+                        '--json',
+                        '--list',
+                    ),
+                    close_fds=True,
                 ),
-                close_fds=True,
-            ),
+            )
         )
     except json.JSONDecodeError as error:
         raise ValueError(f'Invalid {lsblk_command} JSON output: {error}')
@@ -321,19 +323,21 @@ def get_snapshots(lvs_command, snapshot_name=None):
     '''
     try:
         snapshot_info = json.loads(
-            borgmatic.execute.execute_command_and_capture_output(
-                # Use lvs instead of lsblk here because lsblk can't filter to just snapshots.
-                (
-                    *lvs_command.split(' '),
-                    '--report-format',
-                    'json',
-                    '--options',
-                    'lv_name,lv_path',
-                    '--select',
-                    'lv_attr =~ ^s',  # Filter to just snapshots.
+            '\n'.join(
+                borgmatic.execute.execute_command_and_capture_output(
+                    # Use lvs instead of lsblk here because lsblk can't filter to just snapshots.
+                    (
+                        *lvs_command.split(' '),
+                        '--report-format',
+                        'json',
+                        '--options',
+                        'lv_name,lv_path',
+                        '--select',
+                        'lv_attr =~ ^s',  # Filter to just snapshots.
+                    ),
+                    close_fds=True,
                 ),
-                close_fds=True,
-            ),
+            )
         )
     except json.JSONDecodeError as error:
         raise ValueError(f'Invalid {lvs_command} JSON output: {error}')
