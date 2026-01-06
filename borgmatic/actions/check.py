@@ -529,9 +529,7 @@ def compare_spot_check_hashes(
                 for part in shlex.split(spot_check_config.get('xxh64sum_command', 'xxh64sum'))
             )
             + tuple(
-                path
-                for path in source_sample_paths_subset
-                if path in hashable_source_sample_path
+                path for path in source_sample_paths_subset if path in hashable_source_sample_path
             ),
             working_directory=working_directory,
         )

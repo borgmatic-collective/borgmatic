@@ -453,11 +453,13 @@ def restore_data_source_dump(
 
     # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
     # if the restore paths don't exist in the archive.
-    execute_command_with_processes(
-        restore_command,
-        [extract_process],
-        output_log_level=logging.DEBUG,
-        input_file=extract_process.stdout,
-        environment=environment,
-        working_directory=borgmatic.config.paths.get_working_directory(config),
+    tuple(
+        execute_command_with_processes(
+            restore_command,
+            [extract_process],
+            output_log_level=logging.DEBUG,
+            input_file=extract_process.stdout,
+            environment=environment,
+            working_directory=borgmatic.config.paths.get_working_directory(config),
+        )
     )

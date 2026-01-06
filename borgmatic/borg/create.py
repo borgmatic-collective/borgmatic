@@ -383,15 +383,17 @@ def create_archive(
     borg_exit_codes = config.get('borg_exit_codes')
 
     if stream_processes:
-        return execute_command_with_processes(
-            create_flags + create_positional_arguments,
-            stream_processes,
-            output_log_level,
-            output_file,
-            working_directory=working_directory,
-            environment=environment.make_environment(config),
-            borg_local_path=local_path,
-            borg_exit_codes=borg_exit_codes,
+        return '\n'.join(
+            execute_command_with_processes(
+                create_flags + create_positional_arguments,
+                stream_processes,
+                output_log_level,
+                output_file,
+                working_directory=working_directory,
+                environment=environment.make_environment(config),
+                borg_local_path=local_path,
+                borg_exit_codes=borg_exit_codes,
+            )
         )
 
     if output_log_level is None:

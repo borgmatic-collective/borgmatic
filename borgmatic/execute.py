@@ -440,7 +440,7 @@ def execute_command_and_capture_output(
 ):
     '''
     Execute the given command (a sequence of command/argument strings), capturing and returning its
-    output (stdout) as a generator that yields a line at a time. The generator must be consumed in
+    output (stdout) as a generator that yields one line at a time. The generator must be consumed in
     order for the called command to execute.
 
     If an input file descriptor is given, then pipe it to the command's stdin. If capture stderr is
@@ -509,13 +509,16 @@ def execute_command_with_processes(
 
     If an open output file object is given, then write stdout to the file and only log stderr. But
     if output log level is None, instead suppress logging and return the captured output for (only)
-    the given command. If an open input file object is given, then read stdin from the file. If
-    shell is True, execute the command within a shell. If an environment variables dict is given,
-    then pass it into the command. If a working directory is given, use that as the present working
-    directory when running the command. If a Borg local path is given, then for any matching command
-    or process (regardless of arguments), treat exit code 1 as a warning instead of an error. But if
-    Borg exit codes are given as a sequence of exit code configuration dicts, then use that
-    configuration to decide what's an error and what's a warning.
+    the given command as a generator that yields one line at a time. The generator must be consumed
+    in order for the called command to execute—regardless of the output log level.
+
+    If an open input file object is given, then read stdin from the file. If shell is True, execute
+    the command within a shell. If an environment variables dict is given, then pass it into the
+    command. If a working directory is given, use that as the present working directory when running
+    the command. If a Borg local path is given, then for any matching command or process (regardless
+    of arguments), treat exit code 1 as a warning instead of an error. But if Borg exit codes are
+    given as a sequence of exit code configuration dicts, then use that configuration to decide
+    what's an error and what's a warning.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command or in the
     upstream process.
@@ -546,17 +549,12 @@ def execute_command_with_processes(
         raise
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
-        captured_lines = tuple(
-            log_outputs(
-                (*processes, command_process),
-                (input_file, output_file),
-                output_log_level,
-                borg_local_path,
-                borg_exit_codes,
-            )
+        captured_lines = log_outputs(
+            (*processes, command_process),
+            (input_file, output_file),
+            output_log_level,
+            borg_local_path,
+            borg_exit_codes,
         )
 
-    if output_log_level is None:
-        return '\n'.join(captured_lines)
-
-    return None
+    return captured_lines
