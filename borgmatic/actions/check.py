@@ -402,20 +402,18 @@ def collect_spot_check_source_paths(
     )
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    paths_output = '\n'.join(
-        borgmatic.execute.execute_command_and_capture_output(
-            create_flags + create_positional_arguments,
-            capture_stderr=True,
-            environment=borgmatic.borg.environment.make_environment(config),
-            working_directory=working_directory,
-            borg_local_path=local_path,
-            borg_exit_codes=config.get('borg_exit_codes'),
-        )
+    path_lines = borgmatic.execute.execute_command_and_capture_output(
+        create_flags + create_positional_arguments,
+        capture_stderr=True,
+        environment=borgmatic.borg.environment.make_environment(config),
+        working_directory=working_directory,
+        borg_local_path=local_path,
+        borg_exit_codes=config.get('borg_exit_codes'),
     )
 
-    paths = tuple(
+    paths = (
         path_line.split(' ', 1)[1]
-        for path_line in paths_output.splitlines()
+        for path_line in path_lines
         if path_line and path_line.startswith(('- ', '+ '))
     )
 
@@ -525,24 +523,22 @@ def compare_spot_check_hashes(
         if not source_sample_paths_subset:
             break
 
-        hash_output = '\n'.join(
-            borgmatic.execute.execute_command_and_capture_output(
-                tuple(
-                    shlex.quote(part)
-                    for part in shlex.split(spot_check_config.get('xxh64sum_command', 'xxh64sum'))
-                )
-                + tuple(
-                    path
-                    for path in source_sample_paths_subset
-                    if path in hashable_source_sample_path
-                ),
-                working_directory=working_directory,
+        hash_lines = borgmatic.execute.execute_command_and_capture_output(
+            tuple(
+                shlex.quote(part)
+                for part in shlex.split(spot_check_config.get('xxh64sum_command', 'xxh64sum'))
             )
+            + tuple(
+                path
+                for path in source_sample_paths_subset
+                if path in hashable_source_sample_path
+            ),
+            working_directory=working_directory,
         )
 
         source_hashes.update(
             **dict(
-                (reversed(line.split('  ', 1)) for line in hash_output.splitlines()),
+                (reversed(line.split('  ', 1)) for line in hash_lines),
                 # Represent non-existent files as having empty hashes so the comparison below still
                 # works. Same thing for filesystem links, since Borg produces empty archive hashes
                 # for them.
