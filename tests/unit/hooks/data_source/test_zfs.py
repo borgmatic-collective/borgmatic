@@ -8,8 +8,8 @@ from borgmatic.hooks.data_source import zfs as module
 def test_get_datasets_to_backup_filters_datasets_by_patterns():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        'dataset\t/dataset\ton\t-\nother\t/other\ton\t-',
+    ).and_yield(
+        'dataset\t/dataset\ton\t-', 'other\t/other\ton\t-',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
@@ -63,8 +63,8 @@ def test_get_datasets_to_backup_filters_datasets_by_patterns():
 def test_get_datasets_to_backup_skips_non_root_patterns():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        'dataset\t/dataset\ton\t-\nother\t/other\ton\t-',
+    ).and_yield(
+        'dataset\t/dataset\ton\t-', 'other\t/other\ton\t-',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
@@ -109,8 +109,8 @@ def test_get_datasets_to_backup_skips_non_root_patterns():
 def test_get_datasets_to_backup_skips_non_config_patterns():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        'dataset\t/dataset\ton\t-\nother\t/other\ton\t-',
+    ).and_yield(
+        'dataset\t/dataset\ton\t-', 'other\t/other\ton\t-',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
@@ -155,8 +155,8 @@ def test_get_datasets_to_backup_skips_non_config_patterns():
 def test_get_datasets_to_backup_filters_datasets_by_user_property():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        'dataset\t/dataset\ton\tauto\nother\t/other\ton\t-',
+    ).and_yield(
+        'dataset\t/dataset\ton\tauto', 'other\t/other\ton\t-',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
@@ -181,8 +181,8 @@ def test_get_datasets_to_backup_filters_datasets_by_user_property():
 def test_get_datasets_to_backup_filters_datasets_by_canmount_property():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        'dataset\t/dataset\toff\t-\nother\t/other\ton\t-',
+    ).and_yield(
+        'dataset\t/dataset\toff\t-', 'other\t/other\ton\t-',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
@@ -207,7 +207,7 @@ def test_get_datasets_to_backup_filters_datasets_by_canmount_property():
 def test_get_datasets_to_backup_with_invalid_list_output_raises():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
+    ).and_yield(
         'dataset',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
@@ -221,8 +221,8 @@ def test_get_datasets_to_backup_with_invalid_list_output_raises():
 def test_get_all_dataset_mount_points_omits_none():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        '/dataset\nnone\n/other',
+    ).and_yield(
+        '/dataset', 'none', '/other',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
@@ -238,7 +238,7 @@ def test_get_all_dataset_mount_points_omits_duplicates():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
     ).and_return(
-        '/dataset\n/other\n/dataset\n/other',
+        '/dataset', '/other', '/dataset', '/other',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
@@ -506,8 +506,8 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
 def test_get_all_snapshots_parses_list_output():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        'dataset1@borgmatic-1234\ndataset2@borgmatic-4567',
+    ).and_yield(
+        'dataset1@borgmatic-1234', 'dataset2@borgmatic-4567',
     )
 
     assert module.get_all_snapshots('zfs') == ('dataset1@borgmatic-1234', 'dataset2@borgmatic-4567')

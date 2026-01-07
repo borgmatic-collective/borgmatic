@@ -43,7 +43,7 @@ def test_log_outputs_logs_each_line_separately():
         (),
     ).and_return((there_process.stdout,))
 
-    assert (
+    assert tuple(
         module.log_outputs(
             (hi_process, there_process),
             exclude_stdouts=(),
@@ -51,8 +51,7 @@ def test_log_outputs_logs_each_line_separately():
             borg_local_path='borg',
             borg_exit_codes=None,
         )
-        == {}
-    )
+    ) == ()
 
 
 def test_log_outputs_logs_stderr_as_error():
@@ -76,7 +75,7 @@ def test_log_outputs_logs_stderr_as_error():
         (),
     ).and_return((echo_process.stdout, echo_process.stderr))
 
-    assert (
+    assert tuple(
         module.log_outputs(
             (echo_process,),
             exclude_stdouts=(),
@@ -84,8 +83,7 @@ def test_log_outputs_logs_stderr_as_error():
             borg_local_path='borg',
             borg_exit_codes=None,
         )
-        == {}
-    )
+    ) == ()
 
 
 def test_log_outputs_skips_logs_for_process_with_none_stdout():
@@ -114,7 +112,7 @@ def test_log_outputs_skips_logs_for_process_with_none_stdout():
         (),
     ).and_return((there_process.stdout,))
 
-    assert (
+    assert tuple(
         module.log_outputs(
             (hi_process, there_process),
             exclude_stdouts=(),
@@ -122,8 +120,7 @@ def test_log_outputs_skips_logs_for_process_with_none_stdout():
             borg_local_path='borg',
             borg_exit_codes=None,
         )
-        == {}
-    )
+    ) == ()
 
 
 def test_log_outputs_returns_output_without_logging_for_output_log_level_none():
@@ -142,15 +139,15 @@ def test_log_outputs_returns_output_without_logging_for_output_log_level_none():
         (),
     ).and_return((there_process.stdout,))
 
-    captured_outputs = module.log_outputs(
+    output_lines = tuple(module.log_outputs(
         (hi_process, there_process),
         exclude_stdouts=(),
         output_log_level=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    )
+    ))
 
-    assert captured_outputs == {hi_process: 'hi', there_process: 'there'}
+    assert output_lines == ('there',)
 
 
 def test_log_outputs_includes_error_output_in_exception():
@@ -162,13 +159,13 @@ def test_log_outputs_includes_error_output_in_exception():
     flexmock(module).should_receive('output_buffers_for_process').and_return((process.stdout,))
 
     with pytest.raises(subprocess.CalledProcessError) as error:
-        module.log_outputs(
+        tuple(module.log_outputs(
             (process,),
             exclude_stdouts=(),
             output_log_level=logging.INFO,
             borg_local_path='borg',
             borg_exit_codes=None,
-        )
+        ))
 
     assert error.value.output
 
@@ -190,13 +187,13 @@ def test_log_outputs_logs_multiline_error_output():
     flexmock(module.logger).should_call('handle').at_least().times(3)
 
     with pytest.raises(subprocess.CalledProcessError):
-        module.log_outputs(
+        tuple(module.log_outputs(
             (process,),
             exclude_stdouts=(),
             output_log_level=logging.INFO,
             borg_local_path='borg',
             borg_exit_codes=None,
-        )
+        ))
 
 
 def test_log_outputs_skips_error_output_in_exception_for_process_with_none_stdout():
@@ -208,13 +205,13 @@ def test_log_outputs_skips_error_output_in_exception_for_process_with_none_stdou
     flexmock(module).should_receive('output_buffers_for_process').and_return((process.stdout,))
 
     with pytest.raises(subprocess.CalledProcessError) as error:
-        module.log_outputs(
+        tuple(module.log_outputs(
             (process,),
             exclude_stdouts=(),
             output_log_level=logging.INFO,
             borg_local_path='borg',
             borg_exit_codes=None,
-        )
+        ))
 
     assert error.value.returncode == 2
     assert not error.value.output
@@ -258,13 +255,13 @@ def test_log_outputs_kills_other_processes_and_raises_when_one_errors():
     flexmock(other_process).should_receive('kill').once()
 
     with pytest.raises(subprocess.CalledProcessError) as error:
-        module.log_outputs(
+        tuple(module.log_outputs(
             (process, other_process),
             exclude_stdouts=(),
             output_log_level=logging.INFO,
             borg_local_path='borg',
             borg_exit_codes=None,
-        )
+        ))
 
     assert error.value.returncode == 2
     assert error.value.output
@@ -307,7 +304,7 @@ def test_log_outputs_kills_other_processes_and_returns_when_one_exits_with_warni
     ).and_return((other_process.stdout,))
     flexmock(other_process).should_receive('kill').once()
 
-    assert (
+    assert tuple(
         module.log_outputs(
             (process, other_process),
             exclude_stdouts=(),
@@ -315,8 +312,7 @@ def test_log_outputs_kills_other_processes_and_returns_when_one_exits_with_warni
             borg_local_path='borg',
             borg_exit_codes=None,
         )
-        == {}
-    )
+    ) == ()
 
 
 def test_log_outputs_vents_other_processes_when_one_exits():
@@ -354,7 +350,7 @@ def test_log_outputs_vents_other_processes_when_one_exits():
     ).and_return((other_process.stdout,))
     flexmock(process.stdout).should_call('readline').at_least().once()
 
-    assert (
+    assert tuple(
         module.log_outputs(
             (process, other_process),
             exclude_stdouts=(process.stdout,),
@@ -362,8 +358,7 @@ def test_log_outputs_vents_other_processes_when_one_exits():
             borg_local_path='borg',
             borg_exit_codes=None,
         )
-        == {}
-    )
+    ) == ()
 
 
 def test_log_outputs_does_not_error_when_one_process_exits():
@@ -394,7 +389,7 @@ def test_log_outputs_does_not_error_when_one_process_exits():
         (process.stdout,),
     ).and_return((other_process.stdout,))
 
-    assert (
+    assert tuple(
         module.log_outputs(
             (process, other_process),
             exclude_stdouts=(process.stdout,),
@@ -402,8 +397,7 @@ def test_log_outputs_does_not_error_when_one_process_exits():
             borg_local_path='borg',
             borg_exit_codes=None,
         )
-        == {}
-    )
+    ) == ()
 
 
 def test_log_outputs_truncates_long_error_output():
@@ -426,13 +420,13 @@ def test_log_outputs_truncates_long_error_output():
     flexmock(module).should_receive('output_buffers_for_process').and_return((process.stdout,))
 
     with pytest.raises(subprocess.CalledProcessError) as error:
-        flexmock(module, ERROR_OUTPUT_MAX_LINE_COUNT=0).log_outputs(
+        tuple(flexmock(module, ERROR_OUTPUT_MAX_LINE_COUNT=0).log_outputs(
             (process,),
             exclude_stdouts=(),
             output_log_level=logging.INFO,
             borg_local_path='borg',
             borg_exit_codes=None,
-        )
+        ))
 
     assert error.value.returncode == 2
     assert error.value.output.startswith('...')
@@ -445,7 +439,7 @@ def test_log_outputs_with_no_output_logs_nothing():
     process = subprocess.Popen(['true'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     flexmock(module).should_receive('output_buffers_for_process').and_return((process.stdout,))
 
-    assert (
+    assert tuple(
         module.log_outputs(
             (process,),
             exclude_stdouts=(),
@@ -453,8 +447,7 @@ def test_log_outputs_with_no_output_logs_nothing():
             borg_local_path='borg',
             borg_exit_codes=None,
         )
-        == {}
-    )
+    ) == ()
 
 
 def test_log_outputs_with_unfinished_process_re_polls():
@@ -465,7 +458,7 @@ def test_log_outputs_with_unfinished_process_re_polls():
     flexmock(process).should_receive('poll').and_return(None).and_return(0).times(3)
     flexmock(module).should_receive('output_buffers_for_process').and_return((process.stdout,))
 
-    assert (
+    assert tuple(
         module.log_outputs(
             (process,),
             exclude_stdouts=(),
@@ -473,5 +466,4 @@ def test_log_outputs_with_unfinished_process_re_polls():
             borg_local_path='borg',
             borg_exit_codes=None,
         )
-        == {}
-    )
+    ) == ()

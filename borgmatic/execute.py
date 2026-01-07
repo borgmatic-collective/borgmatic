@@ -485,7 +485,7 @@ def execute_command_and_capture_output(
             borg_exit_codes,
         )
 
-    return captured_lines
+    yield from captured_lines
 
 
 def execute_command_with_processes(
@@ -557,4 +557,4 @@ def execute_command_with_processes(
             borg_exit_codes,
         )
 
-    return captured_lines
+    yield from captured_lines

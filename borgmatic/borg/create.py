@@ -128,11 +128,9 @@ def validate_planned_backup_paths(
         # If all root patterns in the runtime directory are missing from the paths Borg is planning
         # to backup, then they must've gotten excluded, e.g. by user-configured excludes. Warn
         # accordingly (below).
-        if (
-            validate_runtime_directory and any(
-                any_parent_directories(path, (pattern.path,))
-                for pattern in runtime_directory_root_patterns
-            )
+        if validate_runtime_directory and any(
+            any_parent_directories(path, (pattern.path,))
+            for pattern in runtime_directory_root_patterns
         ):
             runtime_directory_in_path = True
 
