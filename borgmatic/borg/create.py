@@ -116,23 +116,25 @@ def validate_planned_backup_paths(
     )
 
     special_paths = []
-    runtime_directory_exists = os.path.exists(borgmatic_runtime_directory)
-    candidate_for_warning = bool(
-        not dry_run and runtime_directory_exists and runtime_directory_root_patterns
+    validate_runtime_directory = bool(
+        not dry_run
+        and os.path.exists(borgmatic_runtime_directory)
+        and runtime_directory_root_patterns
     )
+    runtime_directory_in_path = False
 
     # Do everything in this one loop because we only want to consume the paths generator once.
     for path in paths:
-        # If all root patterns in the runtime directory are missing from the paths Borg is planning to
-        # backup, then they must've gotten excluded, e.g. by user-configured excludes. Warn accordingly.
-        if candidate_for_warning and not any(
-            any_parent_directories(path, (pattern.path,))
-            for pattern in runtime_directory_root_patterns
-        ):
-            logger.warning(
-                f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes (or the snapshotted source directories are empty). Please ensure the runtime directory is not excluded.'
+        # If all root patterns in the runtime directory are missing from the paths Borg is planning
+        # to backup, then they must've gotten excluded, e.g. by user-configured excludes. Warn
+        # accordingly (below).
+        if (
+            validate_runtime_directory and any(
+                any_parent_directories(path, (pattern.path,))
+                for pattern in runtime_directory_root_patterns
             )
-            candidate_for_warning = False
+        ):
+            runtime_directory_in_path = True
 
         # Return the subset of output paths that are special files but *not* contained within the
         # borgmatic runtime directory. The intent is to skip runtime paths that borgmatic uses for its
@@ -141,6 +143,11 @@ def validate_planned_backup_paths(
             path, working_directory
         ):
             special_paths.append(path)
+
+    if validate_runtime_directory and not runtime_directory_in_path:
+        logger.warning(
+            f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes (or the snapshotted source directories are empty). Please ensure the runtime directory is not excluded.'
+        )
 
     return tuple(special_paths)
 
