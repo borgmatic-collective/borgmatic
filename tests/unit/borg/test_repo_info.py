@@ -141,7 +141,7 @@ def test_display_repository_info_with_log_info_and_json_suppresses_most_borg_out
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'repo-info', '--log-json', '--json', '--repo', 'repo'),
+        ('borg', 'repo-info', '--json', '--repo', 'repo'),
         environment=None,
         working_directory=None,
         borg_local_path='borg',
@@ -219,7 +219,7 @@ def test_display_repository_info_with_log_debug_and_json_suppresses_most_borg_ou
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'repo-info', '--log-json', '--json', '--repo', 'repo'),
+        ('borg', 'repo-info', '--json', '--repo', 'repo'),
         environment=None,
         working_directory=None,
         borg_local_path='borg',
@@ -255,7 +255,7 @@ def test_display_repository_info_with_json_calls_borg_with_json_flag():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'repo-info', '--log-json', '--json', '--repo', 'repo'),
+        ('borg', 'repo-info', '--json', '--repo', 'repo'),
         environment=None,
         working_directory=None,
         borg_local_path='borg',
@@ -458,16 +458,9 @@ def test_display_repository_info_with_lock_wait_calls_borg_with_lock_wait_flags(
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'repo-info', '--log-json', '--lock-wait', '5', '--json', '--repo', 'repo'),
-        environment=None,
-        working_directory=None,
-        borg_local_path='borg',
-        borg_exit_codes=None,
-    ).and_return('[]')
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'repo-info', '--log-json', '--lock-wait', '5', '--repo', 'repo'),
+        ('borg', 'repo-info', '--lock-wait', '5', '--log-json', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         environment=None,
         working_directory=None,
