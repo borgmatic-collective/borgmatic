@@ -102,8 +102,9 @@ def test_database_names_to_dump_with_all_and_format_lists_databases():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('execute_command_and_capture_output').and_return(
-        'foo,test,\nbar,test,"stuff and such"',
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield(
+        'foo,test,',
+        'bar,test,"stuff and such"',
     )
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
@@ -135,7 +136,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_hostnam
         ),
         environment=object,
         working_directory='/path/to/working/dir',
-    ).and_return('foo,test,\nbar,test,"stuff and such"')
+    ).and_yield('foo,test,', 'bar,test,"stuff and such"')
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
         'foo',
@@ -162,7 +163,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_usernam
         ),
         environment=object,
         working_directory=None,
-    ).and_return('foo,test,\nbar,test,"stuff and such"')
+    ).and_yield('foo,test,', 'bar,test,"stuff and such"')
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
         'foo',
@@ -180,7 +181,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_options
         ('psql', '--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only', '--harder'),
         environment=object,
         working_directory=None,
-    ).and_return('foo,test,\nbar,test,"stuff and such"')
+    ).and_yield('foo,test,', 'bar,test,"stuff and such"')
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
         'foo',
@@ -193,8 +194,9 @@ def test_database_names_to_dump_with_all_and_format_excludes_particular_database
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('execute_command_and_capture_output').and_return(
-        'foo,test,\ntemplate0,test,blah',
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield(
+        'foo,test,',
+        'template0,test,blah',
     )
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == ('foo',)
@@ -226,7 +228,7 @@ def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
         ),
         environment=object,
         working_directory=None,
-    ).and_return('foo,text').once()
+    ).and_yield('foo,text').once()
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == ('foo',)
 
@@ -993,7 +995,7 @@ def test_restore_data_source_dump_runs_pg_restore():
         input_file=extract_process.stdout,
         environment={'PGSSLMODE': 'disable'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1057,7 +1059,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_hostname_and_port():
         input_file=extract_process.stdout,
         environment={'PGSSLMODE': 'disable'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1125,7 +1127,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_username_and_password():
         input_file=extract_process.stdout,
         environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1206,7 +1208,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         input_file=extract_process.stdout,
         environment={'PGPASSWORD': 'clipassword', 'PGSSLMODE': 'disable'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1291,7 +1293,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         input_file=extract_process.stdout,
         environment={'PGPASSWORD': 'restorepassword', 'PGSSLMODE': 'disable'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1363,7 +1365,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
         input_file=extract_process.stdout,
         environment={'PGSSLMODE': 'disable'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1418,7 +1420,7 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
         input_file=extract_process.stdout,
         environment={'PGSSLMODE': 'disable'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         ('psql', '--no-password', '--no-psqlrc', '--quiet', '--command', 'ANALYZE'),
         environment={'PGSSLMODE': 'disable'},
@@ -1459,7 +1461,7 @@ def test_restore_data_source_dump_runs_psql_for_plain_database_dump():
         input_file=extract_process.stdout,
         environment={'PGSSLMODE': 'disable'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1529,7 +1531,7 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
         input_file=extract_process.stdout,
         environment={'PGSSLMODE': 'disable'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'docker',
@@ -1619,7 +1621,7 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
         input_file=None,
         environment={'PGSSLMODE': 'disable'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1681,7 +1683,7 @@ def test_restore_data_source_dump_with_schemas_restores_schemas():
         input_file=None,
         environment={'PGSSLMODE': 'disable'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',

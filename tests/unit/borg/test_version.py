@@ -27,7 +27,7 @@ def insert_execute_command_and_capture_output_mock(
         working_directory=working_directory,
         borg_local_path=borg_local_path,
         borg_exit_codes=borg_exit_codes,
-    ).once().and_return(version_output)
+    ).and_yield(version_output).once()
 
 
 def test_local_borg_version_calls_borg_with_required_parameters():

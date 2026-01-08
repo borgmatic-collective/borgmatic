@@ -539,7 +539,7 @@ def test_execute_command_and_capture_output_returns_output_when_process_error_is
 
     output_lines = tuple(module.execute_command_and_capture_output(full_command))
 
-    assert output_lines == ()
+    assert output_lines == ('[]',)
 
 
 def test_execute_command_and_capture_output_raises_when_command_errors():

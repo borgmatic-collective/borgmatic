@@ -108,7 +108,7 @@ def test_get_ip_from_container_without_engines_errors():
 def test_get_ip_from_container_parses_top_level_ip_address():
     flexmock(module.shutil).should_receive('which').and_return(None).and_return('/usr/bin/podman')
 
-    flexmock(module).should_receive('execute_command_and_capture_output').and_return(
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield(
         '{"IPAddress": "1.2.3.4"}'
     )
 
@@ -118,7 +118,7 @@ def test_get_ip_from_container_parses_top_level_ip_address():
 def test_get_ip_from_container_parses_network_ip_address():
     flexmock(module.shutil).should_receive('which').and_return(None).and_return('/usr/bin/podman')
 
-    flexmock(module).should_receive('execute_command_and_capture_output').and_return(
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield(
         '{"Networks": {"my_network": {"IPAddress": "5.6.7.8"}}}'
     )
 
@@ -138,7 +138,7 @@ def test_get_ip_from_container_without_container_errors():
 def test_get_ip_from_container_without_network_errors():
     flexmock(module.shutil).should_receive('which').and_return(None).and_return('/usr/bin/podman')
 
-    flexmock(module).should_receive('execute_command_and_capture_output').and_return('{}')
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield('{}')
 
     with pytest.raises(ValueError) as exc_info:
         module.get_ip_from_container('yolo')
@@ -149,7 +149,7 @@ def test_get_ip_from_container_without_network_errors():
 def test_get_ip_from_container_with_broken_output_errors():
     flexmock(module.shutil).should_receive('which').and_return(None).and_return('/usr/bin/podman')
 
-    flexmock(module).should_receive('execute_command_and_capture_output').and_return('abc')
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield('abc')
 
     with pytest.raises(ValueError) as exc_info:
         module.get_ip_from_container('yolo')

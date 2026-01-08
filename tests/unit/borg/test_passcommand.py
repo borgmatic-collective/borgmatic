@@ -7,7 +7,7 @@ def test_run_passcommand_does_not_raise():
     module.run_passcommand.cache_clear()
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return('passphrase')
+    ).and_yield('passphrase')
 
     assert module.run_passcommand('passcommand', working_directory=None) == 'passphrase'
 
@@ -39,7 +39,7 @@ def test_run_passcommand_caches_passcommand_after_first_call():
     module.run_passcommand.cache_clear()
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return('passphrase').once()
+    ).and_yield('passphrase').once()
 
     assert module.run_passcommand('passcommand', working_directory=None) == 'passphrase'
     assert module.run_passcommand('passcommand', working_directory=None) == 'passphrase'

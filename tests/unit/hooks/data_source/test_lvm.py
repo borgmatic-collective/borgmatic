@@ -8,8 +8,8 @@ from borgmatic.hooks.data_source import lvm as module
 def test_get_logical_volumes_filters_by_patterns():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        '''
+    ).and_yield(
+        *'''
         {
             "blockdevices": [
                 {
@@ -35,7 +35,7 @@ def test_get_logical_volumes_filters_by_patterns():
                 }
             ]
         }
-        ''',
+        '''.splitlines(),
     )
     contained = {
         Pattern('/mnt/lvolume', source=Pattern_source.CONFIG),
@@ -81,8 +81,8 @@ def test_get_logical_volumes_filters_by_patterns():
 def test_get_logical_volumes_skips_non_root_patterns():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        '''
+    ).and_yield(
+        *'''
         {
             "blockdevices": [
                 {
@@ -93,7 +93,7 @@ def test_get_logical_volumes_skips_non_root_patterns():
                 }
             ]
         }
-        ''',
+        '''.splitlines(),
     )
     contained = {
         Pattern('/mnt/lvolume', type=Pattern_type.EXCLUDE, source=Pattern_source.CONFIG),
@@ -130,8 +130,8 @@ def test_get_logical_volumes_skips_non_root_patterns():
 def test_get_logical_volumes_skips_non_config_patterns():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        '''
+    ).and_yield(
+        *'''
         {
             "blockdevices": [
                 {
@@ -142,7 +142,7 @@ def test_get_logical_volumes_skips_non_config_patterns():
                 }
             ]
         }
-        ''',
+        '''.splitlines(),
     )
     contained = {
         Pattern('/mnt/lvolume', source=Pattern_source.HOOK),
@@ -175,7 +175,7 @@ def test_get_logical_volumes_skips_non_config_patterns():
 def test_get_logical_volumes_with_invalid_lsblk_json_errors():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return('{')
+    ).and_yield('{')
 
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
@@ -191,7 +191,7 @@ def test_get_logical_volumes_with_invalid_lsblk_json_errors():
 def test_get_logical_volumes_with_lsblk_json_missing_keys_errors():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return('{"block_devices": [{}]}')
+    ).and_yield('{"block_devices": [{}]}')
 
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
@@ -801,8 +801,8 @@ def test_dump_data_sources_with_missing_snapshot_errors():
 def test_get_snapshots_lists_all_snapshots():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        '''
+    ).and_yield(
+        *'''
           {
               "report": [
                   {
@@ -815,7 +815,7 @@ def test_get_snapshots_lists_all_snapshots():
               "log": [
               ]
           }
-        ''',
+        '''.splitlines(),
     )
 
     assert module.get_snapshots('lvs') == (
@@ -828,7 +828,7 @@ def test_get_snapshots_with_snapshot_name_lists_just_that_snapshot():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
     ).and_return(
-        '''
+        *'''
           {
               "report": [
                   {
@@ -841,7 +841,7 @@ def test_get_snapshots_with_snapshot_name_lists_just_that_snapshot():
               "log": [
               ]
           }
-        ''',
+        '''.splitlines(),
     )
 
     assert module.get_snapshots('lvs', snapshot_name='snap2') == (
@@ -852,7 +852,7 @@ def test_get_snapshots_with_snapshot_name_lists_just_that_snapshot():
 def test_get_snapshots_with_invalid_lvs_json_errors():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return('{')
+    ).and_yield('{')
 
     with pytest.raises(ValueError):
         assert module.get_snapshots('lvs')
@@ -861,14 +861,14 @@ def test_get_snapshots_with_invalid_lvs_json_errors():
 def test_get_snapshots_with_lvs_json_missing_report_errors():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        '''
+    ).and_yield(
+        *'''
           {
               "report": [],
               "log": [
               ]
           }
-        ''',
+        '''.splitlines(),
     )
 
     with pytest.raises(ValueError):
@@ -878,8 +878,8 @@ def test_get_snapshots_with_lvs_json_missing_report_errors():
 def test_get_snapshots_with_lvs_json_missing_keys_errors():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).and_return(
-        '''
+    ).and_yield(
+        *'''
           {
               "report": [
                   {
@@ -891,7 +891,7 @@ def test_get_snapshots_with_lvs_json_missing_keys_errors():
               "log": [
               ]
           }
-        ''',
+        '''.splitlines(),
     )
 
     with pytest.raises(ValueError):

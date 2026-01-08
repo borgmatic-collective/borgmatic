@@ -201,7 +201,7 @@ def test_database_names_to_dump_queries_mariadb_for_database_names():
         ),
         environment=environment,
         working_directory='/path/to/working/dir',
-    ).and_return('foo\nbar\nmysql\n').once()
+    ).and_yield('foo', 'bar', 'mysql').once()
 
     names = module.database_names_to_dump(
         {'name': 'all'},
@@ -239,7 +239,7 @@ def test_database_names_to_dump_with_database_name_all_and_skip_names_filters_ou
         ),
         environment=environment,
         working_directory=None,
-    ).and_return('foo\nbar\nbaz\nmysql\n').once()
+    ).and_yield('foo', 'bar', 'baz', 'mysql').once()
 
     names = module.database_names_to_dump(
         {'name': 'all', 'skip_names': ('foo', 'bar')},
@@ -279,7 +279,7 @@ def test_database_names_to_dump_runs_mariadb_with_socket_path():
         ),
         environment=environment,
         working_directory=None,
-    ).and_return('foo\nbar\nmysql\n').once()
+    ).and_yield('foo', 'bar', 'mysql').once()
 
     names = module.database_names_to_dump(
         {'name': 'all', 'socket_path': '/socket'},
@@ -314,7 +314,7 @@ def test_database_names_to_dump_with_environment_password_transport_skips_defaul
         ),
         environment=environment,
         working_directory=None,
-    ).and_return('foo\nbar\nmysql\n').once()
+    ).and_yield('foo', 'bar', 'mysql').once()
 
     names = module.database_names_to_dump(
         {'name': 'all', 'password_transport': 'environment'},
@@ -353,7 +353,7 @@ def test_database_names_to_dump_runs_mariadb_with_tls():
         ),
         environment=environment,
         working_directory=None,
-    ).and_return('foo\nbar\nmysql\n').once()
+    ).and_yield('foo', 'bar', 'mysql').once()
 
     names = module.database_names_to_dump(
         {'name': 'all', 'tls': True},
@@ -392,7 +392,7 @@ def test_database_names_to_dump_runs_mariadb_without_tls():
         ),
         environment=environment,
         working_directory=None,
-    ).and_return('foo\nbar\nmysql\n').once()
+    ).and_yield('foo', 'bar', 'mysql').once()
 
     names = module.database_names_to_dump(
         {'name': 'all', 'tls': False},
@@ -770,7 +770,7 @@ def test_database_names_to_dump_runs_mariadb_with_list_options():
         ),
         environment=None,
         working_directory=None,
-    ).and_return('foo\nbar').once()
+    ).and_yield('foo', 'bar').once()
 
     assert module.database_names_to_dump(database, {}, 'root', 'trustsome1', None, '') == (
         'foo',
@@ -807,7 +807,7 @@ def test_database_names_to_dump_runs_non_default_mariadb_with_list_options():
             'show schemas',
         ),
         working_directory=None,
-    ).and_return('foo\nbar').once()
+    ).and_yield('foo', 'bar').once()
 
     assert module.database_names_to_dump(database, {}, 'root', 'trustsome1', None, '') == (
         'foo',
@@ -1353,7 +1353,7 @@ def test_restore_data_source_dump_runs_mariadb_to_restore():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -1394,7 +1394,7 @@ def test_restore_data_source_dump_runs_mariadb_with_options():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -1437,7 +1437,7 @@ def test_restore_data_source_dump_runs_non_default_mariadb_with_options():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -1489,7 +1489,7 @@ def test_restore_data_source_dump_runs_mariadb_with_hostname_and_port():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -1537,7 +1537,7 @@ def test_restore_data_source_dump_runs_mariadb_with_socket_path():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -1584,7 +1584,7 @@ def test_restore_data_source_dump_runs_mariadb_with_tls():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -1631,7 +1631,7 @@ def test_restore_data_source_dump_runs_mariadb_without_tls():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -1674,7 +1674,7 @@ def test_restore_data_source_dump_runs_mariadb_with_username_and_password():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -1722,7 +1722,7 @@ def test_restore_data_source_with_environment_password_transport_skips_defaults_
         input_file=extract_process.stdout,
         environment={'USER': 'root', 'MYSQL_PWD': 'trustsome1'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -1787,7 +1787,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -1857,7 +1857,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,

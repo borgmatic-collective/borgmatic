@@ -124,7 +124,7 @@ def test_get_latest_archive_calls_borg_with_flags():
         borg_exit_codes=None,
         environment=None,
         working_directory=None,
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
 
     assert (
         module.get_latest_archive(
@@ -153,7 +153,7 @@ def test_get_latest_archive_with_log_info_calls_borg_without_info_flag():
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
     insert_logging_mock(logging.INFO)
 
     assert (
@@ -183,7 +183,7 @@ def test_get_latest_archive_with_log_debug_calls_borg_without_debug_flag():
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
     insert_logging_mock(logging.DEBUG)
 
     assert (
@@ -213,7 +213,7 @@ def test_get_latest_archive_with_local_path_calls_borg_via_local_path():
         working_directory=None,
         borg_local_path='borg1',
         borg_exit_codes=None,
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
 
     assert (
         module.get_latest_archive(
@@ -244,7 +244,7 @@ def test_get_latest_archive_with_exit_codes_calls_borg_using_them():
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=borg_exit_codes,
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
 
     assert (
         module.get_latest_archive(
@@ -276,7 +276,7 @@ def test_get_latest_archive_with_remote_path_calls_borg_with_remote_path_flags()
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
 
     assert (
         module.get_latest_archive(
@@ -309,7 +309,7 @@ def test_get_latest_archive_with_umask_calls_borg_with_umask_flags():
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
 
     assert (
         module.get_latest_archive(
@@ -337,7 +337,7 @@ def test_get_latest_archive_without_archives_raises():
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    ).and_return(json.dumps({'archives': []}))
+    ).and_yield(json.dumps({'archives': []}))
 
     with pytest.raises(ValueError):
         module.get_latest_archive(
@@ -367,7 +367,7 @@ def test_get_latest_archive_with_lock_wait_calls_borg_with_lock_wait_flags():
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
 
     assert (
         module.get_latest_archive(
@@ -404,7 +404,7 @@ def test_get_latest_archive_calls_borg_with_list_extra_borg_options():
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
 
     assert (
         module.get_latest_archive(
@@ -441,7 +441,7 @@ def test_get_latest_archive_with_feature_available_calls_borg_with_repo_list_ext
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
 
     assert (
         module.get_latest_archive(
@@ -473,7 +473,7 @@ def test_get_latest_archive_with_consider_checkpoints_calls_borg_with_consider_c
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
 
     assert (
         module.get_latest_archive(
@@ -506,7 +506,7 @@ def test_get_latest_archive_with_consider_checkpoints_and_feature_available_call
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
 
     assert (
         module.get_latest_archive(
@@ -538,7 +538,7 @@ def test_get_latest_archive_calls_borg_with_working_directory():
         borg_exit_codes=None,
         environment=None,
         working_directory='/working/dir',
-    ).and_return(json.dumps({'archives': [expected_archive]}))
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
 
     assert (
         module.get_latest_archive(
@@ -1114,7 +1114,7 @@ def test_list_repository_calls_two_commands():
     flexmock(module).should_receive('make_repo_list_command')
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('execute_command_and_capture_output').once()
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield('').once()
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
     flexmock(module).should_receive('execute_command').once()
 
@@ -1132,8 +1132,7 @@ def test_list_repository_with_json_calls_json_command_only():
     flexmock(module).should_receive('make_repo_list_command')
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    json_output = flexmock()
-    flexmock(module).should_receive('execute_command_and_capture_output').and_return(json_output)
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield('{}')
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags').never()
     flexmock(module).should_receive('execute_command').never()
 
@@ -1145,7 +1144,7 @@ def test_list_repository_with_json_calls_json_command_only():
             repo_list_arguments=argparse.Namespace(json=True),
             global_arguments=flexmock(),
         )
-        == json_output
+        == '{}'
     )
 
 
@@ -1211,7 +1210,7 @@ def test_list_repository_calls_borg_with_working_directory():
         working_directory='/working/dir',
         borg_local_path=object,
         borg_exit_codes=object,
-    ).once()
+    ).and_yield('').once()
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
     flexmock(module).should_receive('execute_command').with_args(
         full_command=object,

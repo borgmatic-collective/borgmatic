@@ -474,7 +474,10 @@ def execute_command_and_capture_output(
         ):
             raise
 
-        return error.output.decode() if error.output is not None else None
+        if error.output is not None:
+            yield from iter(error.output.decode().splitlines())
+
+        return
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
         captured_lines = log_outputs(

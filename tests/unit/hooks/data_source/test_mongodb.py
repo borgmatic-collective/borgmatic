@@ -394,7 +394,7 @@ def test_restore_data_source_dump_runs_mongorestore():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -438,7 +438,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_hostname_and_port():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -493,7 +493,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_username_and_password()
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -556,7 +556,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -619,7 +619,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -653,7 +653,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_options():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -695,7 +695,7 @@ def test_restore_databases_dump_runs_mongorestore_with_schemas():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -729,7 +729,7 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -788,7 +788,7 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
         output_log_level=logging.DEBUG,
         input_file=None,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -901,7 +901,7 @@ def test_restore_data_source_dump_uses_custom_mongorestore_command():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
