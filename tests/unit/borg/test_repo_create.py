@@ -9,7 +9,7 @@ from borgmatic.borg import repo_create as module
 from ..test_verbosity import insert_logging_mock
 
 REPO_INFO_SOME_UNKNOWN_EXIT_CODE = -999
-REPO_CREATE_COMMAND = ('borg', 'repo-create', '--log-json', '--encryption', 'repokey')
+REPO_CREATE_COMMAND = ('borg', 'repo-create', '--encryption', 'repokey')
 
 
 def insert_repo_info_command_found_mock():
