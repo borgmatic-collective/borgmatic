@@ -81,7 +81,6 @@ def create_repository(
             if feature.available(feature.Feature.REPO_CREATE, local_borg_version)
             else ('init',)
         )
-        + ('--log-json',)
         + (('--encryption', encryption_mode) if encryption_mode else ())
         + (('--other-repo', source_repository) if source_repository else ())
         + (('--copy-crypt-key',) if copy_crypt_key else ())
