@@ -137,8 +137,10 @@ def validate_planned_backup_paths(
         # Return the subset of output paths that are special files but *not* contained within the
         # borgmatic runtime directory. The intent is to skip runtime paths that borgmatic uses for its
         # own bookkeeping, instead focusing on user-configured paths.
-        if not any_parent_directories(path, (borgmatic_runtime_directory,)) and special_file(
-            path, working_directory
+        if (
+            find_special_files
+            and not any_parent_directories(path, (borgmatic_runtime_directory,))
+            and special_file(path, working_directory)
         ):
             special_paths.append(path)
 
@@ -273,7 +275,6 @@ def make_base_create_command(  # noqa: PLR0912
 
     logger.debug('Checking file paths Borg plans to include')
 
-    find_special_files = bool(stream_processes)
     special_file_paths = validate_planned_backup_paths(
         dry_run,
         create_flags + create_positional_arguments,
@@ -282,10 +283,10 @@ def make_base_create_command(  # noqa: PLR0912
         local_path,
         working_directory,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
-        find_special_files=find_special_files,
+        find_special_files=bool(stream_processes),
     )
 
-    if find_special_files and config.get('read_special') is False:
+    if stream_processes and config.get('read_special') is False:
         logger.warning(
             'Ignoring configured "read_special" value of false, as true is needed for database hooks.',
         )

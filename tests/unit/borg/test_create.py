@@ -1835,7 +1835,7 @@ def test_create_archive_calls_borg_with_working_directory():
     )
 
 
-def test_validate_planned_backup_paths_finds_special_files():
+def test_validate_planned_backup_paths_returns_special_files():
     flexmock(module.flags).should_receive('omit_flag').replace_with(
         lambda arguments, flag: arguments,
     )
@@ -1872,4 +1872,46 @@ def test_validate_planned_backup_paths_finds_special_files():
         local_path=None,
         working_directory=None,
         borgmatic_runtime_directory='/run/borgmatic',
+        find_special_files=True,
     ) == ('/dev/foo', '/dev/baz')
+
+
+def test_validate_planned_backup_paths_without_find_special_files_ignores_special_files():
+    flexmock(module.flags).should_receive('omit_flag').replace_with(
+        lambda arguments, flag: arguments,
+    )
+    flexmock(module.flags).should_receive('omit_flag_and_value').replace_with(
+        lambda arguments, flag: arguments,
+    )
+    flexmock(module.environment).should_receive('make_environment').and_return(None)
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield(
+        '+ /dev/foo',
+        '- /run/borgmatic/bar',
+        '- /dev/baz',
+        '- /quux',
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module).should_receive('any_parent_directories').replace_with(
+        lambda path, candidates: any(path.startswith(parent) for parent in candidates)
+    )
+    flexmock(module).should_receive('special_file').never()
+
+    assert (
+        module.validate_planned_backup_paths(
+            dry_run=False,
+            create_command=('borg', 'create'),
+            config={},
+            patterns=(
+                module.borgmatic.borg.pattern.Pattern('/dev/foo'),
+                module.borgmatic.borg.pattern.Pattern(
+                    '/run/borgmatic/bar', module.borgmatic.borg.pattern.Pattern_type.ROOT
+                ),
+                module.borgmatic.borg.pattern.Pattern('/dev/baz'),
+            ),
+            local_path=None,
+            working_directory=None,
+            borgmatic_runtime_directory='/run/borgmatic',
+            find_special_files=False,
+        )
+        == ()
+    )
