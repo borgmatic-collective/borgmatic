@@ -715,7 +715,7 @@ def test_extract_archive_calls_borg_with_extract_to_stdout_returns_process():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'extract', '--log-json', '--stdout', 'repo::archive'),
+        ('borg', 'extract', '--stdout', 'repo::archive'),
         output_file=module.subprocess.PIPE,
         run_to_completion=False,
         environment=None,

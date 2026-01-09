@@ -135,7 +135,11 @@ def extract_archive(
         + (('--remote-path', remote_path) if remote_path else ())
         + numeric_ids_flags
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if (config.get('log_json') or not config.get('progress')) else ())
+        + (
+            ('--log-json',)
+            if (config.get('log_json') or (not config.get('progress') and not extract_to_stdout))
+            else ()
+        )
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
