@@ -341,7 +341,7 @@ def test_restore_data_source_dump_restores_database():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     flexmock(module.os).should_receive('remove').once()
 
@@ -379,7 +379,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_restores_database():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     flexmock(module.os).should_receive('remove').once()
 
@@ -415,7 +415,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     flexmock(module.os).should_receive('remove').once()
 
@@ -451,7 +451,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_with_connection_params
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     flexmock(module.os).should_receive('remove').once()
 
@@ -489,7 +489,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     flexmock(module.os).should_receive('remove').once()
 
@@ -526,7 +526,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_without_connection_par
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         working_directory=None,
-    ).once()
+    ).and_yield().once()
 
     flexmock(module.os).should_receive('remove').once()
 

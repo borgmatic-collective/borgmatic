@@ -59,12 +59,14 @@ def display_repository_info(
     borg_exit_codes = config.get('borg_exit_codes')
 
     if repo_info_arguments.json:
-        return execute_command_and_capture_output(
-            full_command,
-            environment=environment.make_environment(config),
-            working_directory=working_directory,
-            borg_local_path=local_path,
-            borg_exit_codes=borg_exit_codes,
+        return '\n'.join(
+            execute_command_and_capture_output(
+                full_command,
+                environment=environment.make_environment(config),
+                working_directory=working_directory,
+                borg_local_path=local_path,
+                borg_exit_codes=borg_exit_codes,
+            )
         )
 
     execute_command(

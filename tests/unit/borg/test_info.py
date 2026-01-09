@@ -571,7 +571,7 @@ def test_display_archives_info_calls_two_commands():
     flexmock(module).should_receive('make_info_command')
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('execute_command_and_capture_output').once()
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield().once()
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
     flexmock(module).should_receive('execute_command').once()
 
@@ -590,8 +590,7 @@ def test_display_archives_info_with_json_calls_json_command_only():
     flexmock(module).should_receive('make_info_command')
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    json_output = flexmock()
-    flexmock(module).should_receive('execute_command_and_capture_output').and_return(json_output)
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield('{}')
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags').never()
     flexmock(module).should_receive('execute_command').never()
 
@@ -603,7 +602,7 @@ def test_display_archives_info_with_json_calls_json_command_only():
             global_arguments=flexmock(),
             info_arguments=flexmock(archive=None, json=True, prefix=None, match_archives=None),
         )
-        == json_output
+        == '{}'
     )
 
 
@@ -621,7 +620,7 @@ def test_display_archives_info_calls_borg_with_working_directory():
         working_directory='/working/dir',
         borg_local_path=object,
         borg_exit_codes=object,
-    ).once()
+    ).and_yield().once()
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
     flexmock(module).should_receive('execute_command').with_args(
         full_command=object,

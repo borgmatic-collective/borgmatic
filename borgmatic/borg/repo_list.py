@@ -90,12 +90,14 @@ def get_latest_archive(
         *flags.make_repository_flags(repository_path, local_borg_version),
     )
 
-    json_output = execute_command_and_capture_output(
-        full_command,
-        environment=environment.make_environment(config),
-        working_directory=borgmatic.config.paths.get_working_directory(config),
-        borg_local_path=local_path,
-        borg_exit_codes=config.get('borg_exit_codes'),
+    json_output = '\n'.join(
+        execute_command_and_capture_output(
+            full_command,
+            environment=environment.make_environment(config),
+            working_directory=borgmatic.config.paths.get_working_directory(config),
+            borg_local_path=local_path,
+            borg_exit_codes=config.get('borg_exit_codes'),
+        )
     )
 
     archives = json.loads(json_output)['archives']
@@ -217,12 +219,14 @@ def list_repository(
     working_directory = borgmatic.config.paths.get_working_directory(config)
     borg_exit_codes = config.get('borg_exit_codes')
 
-    json_listing = execute_command_and_capture_output(
-        json_command,
-        environment=environment.make_environment(config),
-        working_directory=working_directory,
-        borg_local_path=local_path,
-        borg_exit_codes=borg_exit_codes,
+    json_listing = '\n'.join(
+        execute_command_and_capture_output(
+            json_command,
+            environment=environment.make_environment(config),
+            working_directory=working_directory,
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
+        )
     )
 
     if repo_list_arguments.json:

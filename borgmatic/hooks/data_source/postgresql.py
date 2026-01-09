@@ -103,7 +103,7 @@ def database_names_to_dump(database, config, environment, dry_run):
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
     )
     logger.debug('Querying for "all" PostgreSQL databases to dump')
-    list_output = execute_command_and_capture_output(
+    list_lines = execute_command_and_capture_output(
         list_command,
         environment=environment,
         working_directory=borgmatic.config.paths.get_working_directory(config),
@@ -111,7 +111,7 @@ def database_names_to_dump(database, config, environment, dry_run):
 
     return tuple(
         row[0]
-        for row in csv.reader(list_output.splitlines(), delimiter=',', quotechar='"')
+        for row in csv.reader(list_lines, delimiter=',', quotechar='"')
         if row[0] not in EXCLUDED_DATABASE_NAMES
     )
 
@@ -434,13 +434,15 @@ def restore_data_source_dump(
 
     # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
     # if the restore paths don't exist in the archive.
-    execute_command_with_processes(
-        restore_command,
-        [extract_process] if extract_process else [],
-        output_log_level=logging.DEBUG,
-        input_file=extract_process.stdout if extract_process else None,
-        environment=environment,
-        working_directory=borgmatic.config.paths.get_working_directory(config),
+    tuple(
+        execute_command_with_processes(
+            restore_command,
+            [extract_process] if extract_process else [],
+            output_log_level=logging.DEBUG,
+            input_file=extract_process.stdout if extract_process else None,
+            environment=environment,
+            working_directory=borgmatic.config.paths.get_working_directory(config),
+        )
     )
     execute_command(
         analyze_command,

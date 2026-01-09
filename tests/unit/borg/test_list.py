@@ -332,7 +332,7 @@ def test_make_find_paths_adds_globs_to_path_fragments():
 def test_capture_archive_listing_does_not_raise():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('execute_command_and_capture_output').and_return('')
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield('')
     flexmock(module).should_receive('make_list_command')
 
     module.capture_archive_listing(
@@ -537,7 +537,7 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    ).and_return('archive1\narchive2').once()
+    ).and_yield('archive1', 'archive2').once()
     flexmock(module).should_receive('make_list_command').and_return(
         ('borg', 'list', '--log-json', 'repo::archive1'),
     ).and_return(('borg', 'list', '--log-json', 'repo::archive2'))
@@ -802,7 +802,7 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    ).and_return('archive1\narchive2').once()
+    ).and_yield('archive1', 'archive2').once()
 
     flexmock(module).should_receive('make_list_command').with_args(
         repository_path='repo',

@@ -72,13 +72,15 @@ def get_ip_from_container(container):
     last_error = None
     for engine in engines:
         try:
-            output = execute_command_and_capture_output(
-                (
-                    engine,
-                    'container',
-                    'inspect',
-                    '--format={{json .NetworkSettings}}',
-                    container,
+            output = '\n'.join(
+                execute_command_and_capture_output(
+                    (
+                        engine,
+                        'container',
+                        'inspect',
+                        '--format={{json .NetworkSettings}}',
+                        container,
+                    )
                 )
             )
         except subprocess.CalledProcessError as error:

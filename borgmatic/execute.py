@@ -153,11 +153,12 @@ def parse_log_line(line, log_level, came_from_stderr, borg_local_path, command):
     return log_line_to_record(line, log_level)
 
 
-def handle_log_record(log_record, last_lines, captured_output):
+def handle_log_record(log_record, last_lines):
     '''
-    Given a log record to be logged, a rolling list of last lines, and a list of captured output,
-    append the record's message to the last lines and (if its log level is None) the captured
-    output. Then log the line.
+    Given a log record to be logged and a rolling list of last lines, append the record's message to
+    the last lines. Then (if the log level is not None), log the record.
+
+    Return the log record.
     '''
     log_message = log_record.getMessage()
     last_lines.append(log_message)
@@ -165,11 +166,10 @@ def handle_log_record(log_record, last_lines, captured_output):
     if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
         last_lines.pop(0)
 
-    if log_record.levelno is None:
-        captured_output.append(log_message)
-        return
+    if log_record.levelno is not None:
+        logger.handle(log_record)
 
-    logger.handle(log_record)
+    return log_record
 
 
 def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, borg_exit_codes):  # noqa: PLR0912
@@ -179,9 +179,11 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
     log level. Additionally, raise a CalledProcessError if a process exits with an error (or a
     warning for exit code 1, if that process does not match the Borg local path).
 
-    If the output log level is None, then instead of logging, capture output for each process and
-    return it as a dict from the process to its output. If the output log level is not None, return
-    an empty dict.
+    If the output log level is None, then instead of logging, capture the output for the last
+    process given and yield it one line at a time. But if the output log level is not None, don't
+    yield anything.
+
+    This yielding means that this function is a generator, and must be consumed in order to execute.
 
     Use the given Borg local path and exit code configuration to decide what's an error and what's a
     warning. If any stdouts are given to exclude, then for any matching processes, ignore those
@@ -197,7 +199,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
         for buffer in output_buffers_for_process(process, exclude_stdouts)
     }
     output_buffers = list(process_for_output_buffer.keys())
-    captured_outputs = collections.defaultdict(list)
+    process_to_capture = processes[-1]
     still_running = True
 
     # Log output for each process until they all exit.
@@ -234,7 +236,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
 
                     # Keep the last few lines of output in case the process errors and we need the
                     # output for the exception below.
-                    handle_log_record(
+                    log_record = handle_log_record(
                         parse_log_line(
                             line=line,
                             log_level=output_log_level,
@@ -243,8 +245,10 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                             command=command,
                         ),
                         last_lines=process_last_lines[ready_process],
-                        captured_output=captured_outputs[ready_process],
                     )
+
+                    if log_record.levelno is None and ready_process == process_to_capture:
+                        yield log_record.getMessage()
 
         if not still_running:
             break
@@ -274,7 +278,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                         if not line:
                             break
 
-                        handle_log_record(
+                        log_record = handle_log_record(
                             parse_log_line(
                                 line=line,
                                 log_level=output_log_level,
@@ -283,8 +287,10 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                                 command=command,
                             ),
                             last_lines=last_lines,
-                            captured_output=captured_outputs[process],
                         )
+
+                        if log_record.levelno is None and process == process_to_capture:
+                            yield log_record.getMessage()
 
                 if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
                     last_lines.insert(0, '...')
@@ -305,13 +311,6 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
 
                 still_running = False
                 break
-
-    if output_log_level is None:
-        return {
-            process: '\n'.join(output_lines) for process, output_lines in captured_outputs.items()
-        }
-
-    return {}
 
 
 SECRET_COMMAND_FLAG_NAMES = {'--password'}
@@ -415,12 +414,14 @@ def execute_command(
         return process
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
-        log_outputs(
-            (process,),
-            (input_file, output_file),
-            output_log_level,
-            borg_local_path,
-            borg_exit_codes,
+        tuple(
+            log_outputs(
+                (process,),
+                (input_file, output_file),
+                output_log_level,
+                borg_local_path,
+                borg_exit_codes,
+            )
         )
 
     return None
@@ -439,14 +440,16 @@ def execute_command_and_capture_output(
 ):
     '''
     Execute the given command (a sequence of command/argument strings), capturing and returning its
-    output (stdout) as a string. If an input file descriptor is given, then pipe it to the command's
-    stdin. If capture stderr is True, then capture and return stderr in addition to stdout. If shell
-    is True, execute the command within a shell. If an environment variables dict is given, then
-    pass it into the command. If a working directory is given, use that as the present working
-    directory when running the command. If a Borg local path is given, and the command matches it
-    (regardless of arguments), treat exit code 1 as a warning instead of an error. But if Borg exit
-    codes are given as a sequence of exit code configuration dicts, then use that configuration to
-    decide what's an error and what's a warning.
+    output (stdout) as a generator that yields one line at a time. The generator must be consumed in
+    order for the called command to execute.
+
+    If an input file descriptor is given, then pipe it to the command's stdin. If capture stderr is
+    True, then capture stderr in addition to stdout. If shell is True, execute the command within a
+    shell. If an environment variables dict is given, then pass it into the command. If a working
+    directory is given, use that as the present working directory when running the command. If a
+    Borg local path is given, and the command matches it (regardless of arguments), treat exit code
+    1 as a warning instead of an error. But if Borg exit codes are given as a sequence of exit code
+    configuration dicts, then use that configuration to decide what's an error and what's a warning.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
@@ -471,10 +474,13 @@ def execute_command_and_capture_output(
         ):
             raise
 
-        return error.output.decode() if error.output is not None else None
+        if error.output is not None:
+            yield from iter(error.output.decode().splitlines())
+
+        return
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
-        captured_outputs = log_outputs(
+        captured_lines = log_outputs(
             (process,),
             (input_file,),
             None,
@@ -482,7 +488,7 @@ def execute_command_and_capture_output(
             borg_exit_codes,
         )
 
-    return captured_outputs.get(process, '')
+    yield from captured_lines
 
 
 def execute_command_with_processes(
@@ -506,13 +512,16 @@ def execute_command_with_processes(
 
     If an open output file object is given, then write stdout to the file and only log stderr. But
     if output log level is None, instead suppress logging and return the captured output for (only)
-    the given command. If an open input file object is given, then read stdin from the file. If
-    shell is True, execute the command within a shell. If an environment variables dict is given,
-    then pass it into the command. If a working directory is given, use that as the present working
-    directory when running the command. If a Borg local path is given, then for any matching command
-    or process (regardless of arguments), treat exit code 1 as a warning instead of an error. But if
-    Borg exit codes are given as a sequence of exit code configuration dicts, then use that
-    configuration to decide what's an error and what's a warning.
+    the given command as a generator that yields one line at a time. The generator must be consumed
+    in order for the called command to execute—regardless of the output log level.
+
+    If an open input file object is given, then read stdin from the file. If shell is True, execute
+    the command within a shell. If an environment variables dict is given, then pass it into the
+    command. If a working directory is given, use that as the present working directory when running
+    the command. If a Borg local path is given, then for any matching command or process (regardless
+    of arguments), treat exit code 1 as a warning instead of an error. But if Borg exit codes are
+    given as a sequence of exit code configuration dicts, then use that configuration to decide
+    what's an error and what's a warning.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command or in the
     upstream process.
@@ -543,7 +552,7 @@ def execute_command_with_processes(
         raise
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
-        captured_outputs = log_outputs(
+        captured_lines = log_outputs(
             (*processes, command_process),
             (input_file, output_file),
             output_log_level,
@@ -551,7 +560,4 @@ def execute_command_with_processes(
             borg_exit_codes,
         )
 
-    if output_log_level is None:
-        return captured_outputs.get(command_process, '')
-
-    return None
+    yield from captured_lines

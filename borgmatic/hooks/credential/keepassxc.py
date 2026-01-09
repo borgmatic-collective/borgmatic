@@ -43,4 +43,6 @@ def load_credential(hook_config, config, credential_parameters):
         + (expanded_database_path, attribute_name)  # Ensure database and entry are last.
     )
 
-    return borgmatic.execute.execute_command_and_capture_output(command).rstrip(os.linesep)
+    return '\n'.join(borgmatic.execute.execute_command_and_capture_output(command)).rstrip(
+        os.linesep
+    )

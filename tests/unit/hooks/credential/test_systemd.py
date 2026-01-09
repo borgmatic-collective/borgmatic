@@ -25,7 +25,7 @@ def test_load_credential_without_credentials_directory_falls_back_to_systemd_cre
     )
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
-    ).with_args(('systemd-creds', 'decrypt', '/etc/credstore.encrypted/mycredential')).and_return(
+    ).with_args(('systemd-creds', 'decrypt', '/etc/credstore.encrypted/mycredential')).and_yield(
         'password'
     ).once()
 
@@ -43,7 +43,7 @@ def test_load_credential_without_credentials_directory_calls_custom_systemd_cred
         'execute_command_and_capture_output'
     ).with_args(
         ('/path/to/systemd-creds', '--flag', 'decrypt', '/etc/credstore.encrypted/mycredential')
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
@@ -61,7 +61,7 @@ def test_load_credential_without_credentials_directory_uses_custom_encrypted_cre
     )
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
-    ).with_args(('systemd-creds', 'decrypt', '/my/credstore.encrypted/mycredential')).and_return(
+    ).with_args(('systemd-creds', 'decrypt', '/my/credstore.encrypted/mycredential')).and_yield(
         'password'
     ).once()
 

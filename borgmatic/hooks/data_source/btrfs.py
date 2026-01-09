@@ -53,17 +53,19 @@ def get_subvolume_property(btrfs_command, subvolume_path, property_name):
     As a performance optimization, multiple calls to this function with the same arguments are
     cached.
     '''
-    output = borgmatic.execute.execute_command_and_capture_output(
-        (
-            *btrfs_command.split(' '),
-            'property',
-            'get',
-            '-t',  # Type.
-            'subvol',
-            subvolume_path,
-            property_name,
-        ),
-        close_fds=True,
+    output = '\n'.join(
+        borgmatic.execute.execute_command_and_capture_output(
+            (
+                *btrfs_command.split(' '),
+                'property',
+                'get',
+                '-t',  # Type.
+                'subvol',
+                subvolume_path,
+                property_name,
+            ),
+            close_fds=True,
+        )
     )
 
     try:

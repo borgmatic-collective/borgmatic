@@ -45,7 +45,7 @@ def get_datasets_to_backup(zfs_command, patterns):
 
     Return the result as a sequence of Dataset instances, sorted by mount point.
     '''
-    list_output = borgmatic.execute.execute_command_and_capture_output(
+    list_lines = borgmatic.execute.execute_command_and_capture_output(
         (
             *zfs_command.split(' '),
             'list',
@@ -65,7 +65,7 @@ def get_datasets_to_backup(zfs_command, patterns):
         datasets = sorted(
             (
                 Dataset(dataset_name, mount_point, (user_property_value == 'auto'), ())
-                for line in list_output.splitlines()
+                for line in list_lines
                 for (dataset_name, mount_point, can_mount, user_property_value) in (
                     line.rstrip().split('\t'),
                 )
@@ -125,7 +125,7 @@ def get_all_dataset_mount_points(zfs_command):
     '''
     Given a ZFS command to run, return all ZFS datasets as a sequence of sorted mount points.
     '''
-    list_output = borgmatic.execute.execute_command_and_capture_output(
+    list_lines = borgmatic.execute.execute_command_and_capture_output(
         (
             *zfs_command.split(' '),
             'list',
@@ -142,7 +142,7 @@ def get_all_dataset_mount_points(zfs_command):
         sorted(
             {
                 mount_point
-                for line in list_output.splitlines()
+                for line in list_lines
                 for mount_point in (line.rstrip(),)
                 if mount_point != 'none'
             },
@@ -344,7 +344,7 @@ def get_all_snapshots(zfs_command):
     Given a ZFS command to run, return all ZFS snapshots as a sequence of full snapshot names of the
     form "dataset@snapshot".
     '''
-    list_output = borgmatic.execute.execute_command_and_capture_output(
+    list_lines = borgmatic.execute.execute_command_and_capture_output(
         (
             *tuple(zfs_command.split(' ')),
             'list',
@@ -357,7 +357,7 @@ def get_all_snapshots(zfs_command):
         close_fds=True,
     )
 
-    return tuple(line.rstrip() for line in list_output.splitlines())
+    return tuple(line.rstrip() for line in list_lines)
 
 
 def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, patterns, dry_run):  # noqa: PLR0912

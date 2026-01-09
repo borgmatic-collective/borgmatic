@@ -48,7 +48,7 @@ def test_load_credential_with_present_database_fetches_password_from_keepassxc()
             'database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
@@ -79,7 +79,7 @@ def test_load_credential_with_custom_keepassxc_cli_command_calls_it():
             'database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
@@ -108,7 +108,7 @@ def test_load_credential_with_expanded_directory_with_present_database_fetches_p
             '/root/database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
@@ -139,7 +139,7 @@ def test_load_credential_with_key_file():
             'database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
@@ -171,7 +171,7 @@ def test_load_credential_with_key_file_and_ask_for_password_false():
             'database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
@@ -202,7 +202,7 @@ def test_load_credential_with_yubikey():
             'database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
@@ -235,7 +235,7 @@ def test_load_credential_with_key_file_and_yubikey():
             'database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
