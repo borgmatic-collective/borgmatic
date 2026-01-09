@@ -191,7 +191,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
     captured, in which case it won't be logged.
     '''
     # Map from output buffer to sequence of last lines.
-    buffer_last_lines = collections.defaultdict(list)
+    process_last_lines = collections.defaultdict(list)
     process_for_output_buffer = {
         buffer: process
         for process in processes
@@ -244,7 +244,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                             borg_local_path=borg_local_path,
                             command=command,
                         ),
-                        last_lines=buffer_last_lines[ready_buffer],
+                        last_lines=process_last_lines[ready_process],
                     )
 
                     if log_record.levelno is None and ready_process == process_to_capture:
@@ -267,11 +267,11 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
             exit_status = interpret_exit_code(command, exit_code, borg_local_path, borg_exit_codes)
 
             if exit_status in {Exit_status.ERROR, Exit_status.WARNING}:
+                last_lines = process_last_lines[process]
+
                 # If an error occurs, include its output in the raised exception so that we don't
                 # inadvertently hide error output.
                 for output_buffer in output_buffers_for_process(process, exclude_stdouts):
-                    last_lines = buffer_last_lines[output_buffer] if output_buffer else []
-
                     # Collect any straggling output lines that came in since we last gathered output.
                     while output_buffer:  # pragma: no cover
                         line = output_buffer.readline().rstrip().decode()

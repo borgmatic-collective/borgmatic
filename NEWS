@@ -27,6 +27,7 @@
    https://torsion.org/borgmatic/reference/command-line/logging/#systemd-journal
  * SECURITY: Prevent shell injection attacks via constant interpolation in command hooks. (This was
    already implemented for deprecated "before_*"/"after_*" command hooks.)
+ * Fix for an error in the "key import" action when importing a key from stdin.
  * Promote the ZFS, LVM, and Btrfs hooks from beta features to stable.
 
 2.0.13

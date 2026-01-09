@@ -48,7 +48,7 @@ def export_key(
         (local_path, 'key', 'export')
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + ('--log-json',)
+        + (('--log-json',) if output_file is None else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())

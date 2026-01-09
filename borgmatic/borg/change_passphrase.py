@@ -32,7 +32,6 @@ def change_passphrase(
         (local_path, 'key', 'change-passphrase')
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + ('--log-json',)
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
@@ -66,5 +65,5 @@ def change_passphrase(
     )
 
     logger.answer(
-        f"{repository_path}: Don't forget to update your encryption_passphrase option (if needed)",
+        "Don't forget to update your encryption_passphrase option (if needed)",
     )

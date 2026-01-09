@@ -368,9 +368,7 @@ def test_export_tar_archive_calls_borg_with_stdout_destination_path():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         ('repo::archive',),
     )
-    insert_execute_command_mock(
-        ('borg', 'export-tar', '--log-json', 'repo::archive', '-'), capture=False
-    )
+    insert_execute_command_mock(('borg', 'export-tar', 'repo::archive', '-'), capture=False)
 
     module.export_tar_archive(
         dry_run=False,

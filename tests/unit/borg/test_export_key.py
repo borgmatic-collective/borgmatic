@@ -35,7 +35,7 @@ def insert_execute_command_mock(
 def test_export_key_calls_borg_with_required_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(('borg', 'key', 'export', '--log-json', 'repo'))
+    insert_execute_command_mock(('borg', 'key', 'export', 'repo'))
 
     module.export_key(
         repository_path='repo',
@@ -49,7 +49,7 @@ def test_export_key_calls_borg_with_required_flags():
 def test_export_key_calls_borg_with_local_path():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(('borg1', 'key', 'export', '--log-json', 'repo'))
+    insert_execute_command_mock(('borg1', 'key', 'export', 'repo'))
 
     module.export_key(
         repository_path='repo',
@@ -65,9 +65,7 @@ def test_export_key_calls_borg_using_exit_codes():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     borg_exit_codes = flexmock()
-    insert_execute_command_mock(
-        ('borg', 'key', 'export', '--log-json', 'repo'), borg_exit_codes=borg_exit_codes
-    )
+    insert_execute_command_mock(('borg', 'key', 'export', 'repo'), borg_exit_codes=borg_exit_codes)
 
     module.export_key(
         repository_path='repo',
@@ -81,9 +79,7 @@ def test_export_key_calls_borg_using_exit_codes():
 def test_export_key_calls_borg_with_remote_path_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(
-        ('borg', 'key', 'export', '--remote-path', 'borg1', '--log-json', 'repo')
-    )
+    insert_execute_command_mock(('borg', 'key', 'export', '--remote-path', 'borg1', 'repo'))
 
     module.export_key(
         repository_path='repo',
@@ -98,7 +94,7 @@ def test_export_key_calls_borg_with_remote_path_flags():
 def test_export_key_calls_borg_with_umask_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(('borg', 'key', 'export', '--umask', '0770', '--log-json', 'repo'))
+    insert_execute_command_mock(('borg', 'key', 'export', '--umask', '0770', 'repo'))
 
     module.export_key(
         repository_path='repo',
@@ -112,7 +108,7 @@ def test_export_key_calls_borg_with_umask_flags():
 def test_export_key_calls_borg_with_lock_wait_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(('borg', 'key', 'export', '--log-json', '--lock-wait', '5', 'repo'))
+    insert_execute_command_mock(('borg', 'key', 'export', '--lock-wait', '5', 'repo'))
 
     module.export_key(
         repository_path='repo',
@@ -126,9 +122,7 @@ def test_export_key_calls_borg_with_lock_wait_flags():
 def test_export_key_calls_borg_with_extra_borg_options():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(
-        ('borg', 'key', 'export', '--log-json', '--extra', 'value with space', 'repo')
-    )
+    insert_execute_command_mock(('borg', 'key', 'export', '--extra', 'value with space', 'repo'))
 
     module.export_key(
         repository_path='repo',
@@ -142,7 +136,7 @@ def test_export_key_calls_borg_with_extra_borg_options():
 def test_export_key_with_log_info_calls_borg_with_info_parameter():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(('borg', 'key', 'export', '--log-json', '--info', 'repo'))
+    insert_execute_command_mock(('borg', 'key', 'export', '--info', 'repo'))
     insert_logging_mock(logging.INFO)
 
     module.export_key(
@@ -157,9 +151,7 @@ def test_export_key_with_log_info_calls_borg_with_info_parameter():
 def test_export_key_with_log_debug_calls_borg_with_debug_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(
-        ('borg', 'key', 'export', '--log-json', '--debug', '--show-rc', 'repo')
-    )
+    insert_execute_command_mock(('borg', 'key', 'export', '--debug', '--show-rc', 'repo'))
     insert_logging_mock(logging.DEBUG)
 
     module.export_key(
@@ -174,7 +166,7 @@ def test_export_key_with_log_debug_calls_borg_with_debug_flags():
 def test_export_key_calls_borg_with_paper_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(('borg', 'key', 'export', '--log-json', '--paper', 'repo'))
+    insert_execute_command_mock(('borg', 'key', 'export', '--paper', 'repo'))
 
     module.export_key(
         repository_path='repo',
@@ -188,7 +180,7 @@ def test_export_key_calls_borg_with_paper_flags():
 def test_export_key_calls_borg_with_paper_flag():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(('borg', 'key', 'export', '--log-json', '--paper', 'repo'))
+    insert_execute_command_mock(('borg', 'key', 'export', '--paper', 'repo'))
 
     module.export_key(
         repository_path='repo',
@@ -202,7 +194,7 @@ def test_export_key_calls_borg_with_paper_flag():
 def test_export_key_calls_borg_with_qr_html_flag():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(('borg', 'key', 'export', '--log-json', '--qr-html', 'repo'))
+    insert_execute_command_mock(('borg', 'key', 'export', '--qr-html', 'repo'))
 
     module.export_key(
         repository_path='repo',
@@ -247,7 +239,7 @@ def test_export_key_with_already_existent_path_raises():
 def test_export_key_with_stdout_path_calls_borg_without_path_argument():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(('borg', 'key', 'export', '--log-json', 'repo'))
+    insert_execute_command_mock(('borg', 'key', 'export', 'repo'))
 
     module.export_key(
         repository_path='repo',
@@ -275,9 +267,7 @@ def test_export_key_with_dry_run_skips_borg_call():
 def test_export_key_calls_borg_with_working_directory():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
-    insert_execute_command_mock(
-        ('borg', 'key', 'export', '--log-json', 'repo'), working_directory='/working/dir'
-    )
+    insert_execute_command_mock(('borg', 'key', 'export', 'repo'), working_directory='/working/dir')
 
     module.export_key(
         repository_path='repo',
