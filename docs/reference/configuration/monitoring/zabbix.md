@@ -65,6 +65,8 @@ the "Visual name".
 
 ### Full configuration
 
+{% include snippet/configuration/sample.md %}
+
 ```yaml
 {% include borgmatic/zabbix.yaml %}
 ```

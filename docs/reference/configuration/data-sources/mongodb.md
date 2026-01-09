@@ -16,6 +16,8 @@ mongodb_databases:
 
 ### Full configuration
 
+{% include snippet/configuration/sample.md %}
+
 ```yaml
 {% include borgmatic/mongodb_databases.yaml %}
 ```

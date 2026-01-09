@@ -113,6 +113,8 @@ the sample systemd service file for details.
 
 ## Full configuration
 
+{% include snippet/configuration/sample.md %}
+
 ```yaml
 {% include borgmatic/zfs.yaml %}
 ```

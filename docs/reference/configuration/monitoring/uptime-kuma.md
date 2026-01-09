@@ -61,6 +61,8 @@ Resend Notification every X times = 1
 
 ### Full configuration
 
+{% include snippet/configuration/sample.md %}
+
 ```yaml
 {% include borgmatic/uptime_kuma.yaml %}
 ```

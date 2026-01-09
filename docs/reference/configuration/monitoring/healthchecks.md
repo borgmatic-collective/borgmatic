@@ -53,6 +53,8 @@ or it doesn't hear from borgmatic for a certain period of time.
 
 ### Full configuration
 
+{% include snippet/configuration/sample.md %}
+
 ```yaml
 {% include borgmatic/healthchecks.yaml %}
 ```

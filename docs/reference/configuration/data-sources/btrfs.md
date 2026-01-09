@@ -114,6 +114,8 @@ subvolume, which is necessary for the borgmatic Btrfs hook to work.
 
 ## Full configuration
 
+{% include snippet/configuration/sample.md %}
+
 ```yaml
 {% include borgmatic/btrfs.yaml %}
 ```
