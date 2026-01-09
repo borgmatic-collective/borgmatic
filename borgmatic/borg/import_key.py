@@ -4,7 +4,7 @@ import shlex
 
 import borgmatic.config.paths
 from borgmatic.borg import environment, flags
-from borgmatic.execute import DO_NOT_CAPTURE, execute_command
+from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
 
@@ -32,13 +32,12 @@ def import_key(
     working_directory = borgmatic.config.paths.get_working_directory(config)
     extra_borg_options = config.get('extra_borg_options', {}).get('key_import', '')
 
-    if import_arguments.path and import_arguments.path != '-':
-        if not os.path.exists(os.path.join(working_directory or '', import_arguments.path)):
-            raise ValueError(f'Path {import_arguments.path} does not exist. Aborting.')
-
-        input_file = None
-    else:
-        input_file = DO_NOT_CAPTURE
+    if (
+        import_arguments.path
+        and import_arguments.path != '-'
+        and not os.path.exists(os.path.join(working_directory or '', import_arguments.path))
+    ):
+        raise ValueError(f'Path {import_arguments.path} does not exist. Aborting.')
 
     full_command = (
         (local_path, 'key', 'import')
@@ -54,7 +53,7 @@ def import_key(
             repository_path,
             local_borg_version,
         )
-        + ((import_arguments.path,) if input_file is None else ())
+        + (import_arguments.path or '-',)
     )
 
     if global_arguments.dry_run:
@@ -63,7 +62,6 @@ def import_key(
 
     execute_command(
         full_command,
-        input_file=input_file,
         output_log_level=logging.INFO,
         environment=environment.make_environment(config),
         working_directory=working_directory,
