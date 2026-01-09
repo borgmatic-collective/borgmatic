@@ -16,6 +16,8 @@ postgresql_databases:
 
 ## Full configuration
 
+{% include snippet/configuration/sample.md %}
+
 ```yaml
 {% include borgmatic/postgresql_databases.yaml %}
 ```

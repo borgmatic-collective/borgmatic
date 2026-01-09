@@ -52,9 +52,11 @@ ntfy:
 
 ### Full configuration
 
-Here's an example configuration with all the available options,
-including [priorities](https://ntfy.sh/docs/publish/#message-priority) and
-[tags](https://ntfy.sh/docs/publish/#tags-emojis):
+{% include snippet/configuration/sample.md %}
+
+The options here include
+[priorities](https://ntfy.sh/docs/publish/#message-priority) and
+[tags](https://ntfy.sh/docs/publish/#tags-emojis).
 
 ```yaml
 {% include borgmatic/ntfy.yaml %}

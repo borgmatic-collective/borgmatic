@@ -237,6 +237,8 @@ There are some caveats you should be aware of with this feature.
 
 ## Full configuration
 
+{% include snippet/configuration/sample.md %}
+
 ```yaml
 {% include borgmatic/commands.yaml %}
 ```

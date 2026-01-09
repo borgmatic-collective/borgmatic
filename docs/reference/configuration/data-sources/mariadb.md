@@ -18,6 +18,8 @@ mariadb_databases:
 
 ### Full configuration
 
+{% include snippet/configuration/sample.md %}
+
 ```yaml
 {% include borgmatic/mariadb_databases.yaml %}
 ```
