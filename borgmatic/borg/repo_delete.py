@@ -21,11 +21,13 @@ def make_repo_delete_command(
     global_arguments,
     local_path,
     remote_path,
+    output_file,
 ):
     '''
     Given a local or remote repository dict, a configuration dict, the local Borg version, the
-    arguments to the repo_delete action as an argparse.Namespace, and global arguments, return a command
-    as a tuple to repo_delete the entire repository.
+    arguments to the repo_delete action as an argparse.Namespace, and global arguments, the Borg
+    local path, the Borg remote path, and an optional output file, return a command as a tuple to
+    repo_delete the entire repository.
     '''
     extra_borg_options = config.get('extra_borg_options', {}).get(
         'repo_delete'
@@ -51,7 +53,7 @@ def make_repo_delete_command(
         + borgmatic.borg.flags.make_flags('dry-run', global_arguments.dry_run)
         + borgmatic.borg.flags.make_flags('remote-path', remote_path)
         + borgmatic.borg.flags.make_flags('umask', config.get('umask'))
-        + ('--log-json',)
+        + (('--log-json',) if output_file is None else ())
         + borgmatic.borg.flags.make_flags('lock-wait', config.get('lock_wait'))
         + borgmatic.borg.flags.make_flags('list', config.get('list_details'))
         + (
@@ -87,6 +89,14 @@ def delete_repository(
     '''
     borgmatic.logger.add_custom_log_levels()
 
+    # Don't capture output when Borg is expected to prompt for interactive confirmation, or the
+    # prompt won't work.
+    output_file = (
+        None
+        if repo_delete_arguments.force or repo_delete_arguments.cache_only
+        else borgmatic.execute.DO_NOT_CAPTURE
+    )
+
     command = make_repo_delete_command(
         repository,
         config,
@@ -95,18 +105,13 @@ def delete_repository(
         global_arguments,
         local_path,
         remote_path,
+        output_file,
     )
 
     borgmatic.execute.execute_command(
         command,
         output_log_level=logging.ANSWER,
-        # Don't capture output when Borg is expected to prompt for interactive confirmation, or the
-        # prompt won't work.
-        output_file=(
-            None
-            if repo_delete_arguments.force or repo_delete_arguments.cache_only
-            else borgmatic.execute.DO_NOT_CAPTURE
-        ),
+        output_file=output_file,
         environment=borgmatic.borg.environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
