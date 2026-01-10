@@ -30,7 +30,7 @@ def test_initialize_monitor_with_send_logs_false_does_not_add_handler():
     )
 
 
-def test_initialize_monitor_with_send_logs_true_adds_handler_with_default_log_size_limit():
+def test_initialize_monitor_with_send_logs_adds_handler_with_default_logs_size_limit():
     truncation_indicator_length = 4
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'Forgetful_buffering_handler',
@@ -50,16 +50,11 @@ def test_initialize_monitor_with_send_logs_true_adds_handler_with_default_log_si
     )
 
 
-def test_initialize_monitor_without_send_logs_adds_handler_with_default_log_size_limit():
-    truncation_indicator_length = 4
+def test_initialize_monitor_without_send_logs_does_not_add_handler():
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'Forgetful_buffering_handler',
-    ).with_args(
-        module.HANDLER_IDENTIFIER,
-        module.DEFAULT_LOGS_SIZE_LIMIT_BYTES - truncation_indicator_length,
-        1,
-    ).once()
-    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler').once()
+    ).never()
+    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler').never()
 
     module.initialize_monitor(
         hook_config={},

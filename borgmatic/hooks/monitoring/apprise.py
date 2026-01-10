@@ -17,7 +17,7 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
     we can send them all to an Apprise notification service upon a finish or failure state. But skip
     this if the "send_logs" option is false.
     '''
-    if hook_config.get('send_logs') is False:
+    if hook_config.get('send_logs', False) is False:
         return
 
     logs_size_limit = max(

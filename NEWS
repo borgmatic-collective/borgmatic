@@ -2,6 +2,10 @@
  * #485: When running commands (database clients, command hooks, etc.), elevate stderr output to
    show up as borgmatic error logs.
  * #858: With the "--log-json" flag, log borgmatic's own logs as JSON, not just Borg's.
+ * #1132: BREAKING/SECURITY: For the Healthchecks, Apprise, Pagerduty, and Loki monitoring hooks,
+   disable log sending when not explicitly enabled. This avoids revealing private log information to
+   third-party services. To send logs anyway, set the monitoring hook's "send_logs" option to
+   "true".
  * #1204: When verbosity levels differ between console/monitoring/syslog/file, log Borg's output to
    each one at a different level. Previously, it was logged at the maximum level of all the
    verbosities.

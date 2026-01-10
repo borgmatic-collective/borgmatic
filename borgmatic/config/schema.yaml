@@ -2806,8 +2806,8 @@ properties:
                 type: boolean
                 description: |
                     Send borgmatic logs to Apprise services as part of the
-                    "finish", "fail", and "log" states. Defaults to true.
-                example: false
+                    "finish", "fail", and "log" states. Defaults to false.
+                example: true
             logs_size_limit:
                 type: integer
                 description: |
@@ -2921,8 +2921,8 @@ properties:
                 type: boolean
                 description: |
                     Send borgmatic logs to Healthchecks as part of the "finish",
-                    "fail", and "log" states. Defaults to true.
-                example: false
+                    "fail", and "log" states. Defaults to false.
+                example: true
             ping_body_limit:
                 type: integer
                 description: |
@@ -3028,8 +3028,8 @@ properties:
                 type: boolean
                 description: |
                     Send borgmatic logs to PagerDuty when a backup errors.
-                    Defaults to true.
-                example: false
+                    Defaults to false.
+                example: true
         description: |
             Configuration for a monitoring integration with PagerDuty. Create an
             account at https://www.pagerduty.com if you'd like to use this
@@ -3057,7 +3057,7 @@ properties:
             url:
                 type: string
                 description: |
-                    Grafana loki log URL to notify when a backup begins,
+                    Grafana Loki log URL to notify when a backup begins,
                     ends, or fails.
                 example: "http://localhost:3100/loki/api/v1/push"
             labels:
@@ -3074,6 +3074,11 @@ properties:
                     app: "borgmatic"
                     config: "__config"
                     hostname: "__hostname"
+            send_logs:
+                type: boolean
+                description: |
+                    Send borgmatic logs to Loki. Defaults to false.
+                example: true
         description: |
             Configuration for a monitoring integration with Grafana Loki. You
             can send the logs to a self-hosted instance or create an account at

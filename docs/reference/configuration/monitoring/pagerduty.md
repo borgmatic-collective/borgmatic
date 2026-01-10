@@ -45,9 +45,23 @@ us](https://torsion.org/borgmatic/#support-and-contributing).
 ### Sending logs
 
 <span class="minilink minilink-addedin">New in version 1.9.14</span> borgmatic
-logs are included in the payload data sent to PagerDuty. This means that
-(truncated) borgmatic logs, including error messages, show up in the PagerDuty
-incident UI and corresponding notification emails.
+can include logs in the payload data sent to PagerDuty. This means that
+(truncated) borgmatic logs, including error messages, can show up in the
+PagerDuty incident UI and corresponding notification emails. borgmatic has a
+`send_logs` option to enable or disable log sending:
+
+```yaml
+pagerduty:
+    integration_key: a177cad45bd374409f78906a810a3074
+    send_logs: true
+```
+
+<span class="minilink minilink-addedin">New in version 2.1.0</span> To avoid
+revealing private log information to a third-party service, logs are no longer
+sent by default when `send_logs` is omitted.
+
+<span class="minilink minilink-addedin">Prior to version 2.1.0</span> Logs were
+sent by default when `send_logs` was omitted.
 
 You can customize the verbosity of the logs that are sent with borgmatic's
 `--monitoring-verbosity` flag. The `--list` and `--stats` flags may also be of
@@ -58,12 +72,3 @@ for more information.
 <span class="minilink minilink-addedin">New in version 2.0.0</span>Set the
 defaults for these flags in your borgmatic configuration via the
 `monitoring_verbosity`, `list`, and `statistics` options.
-
-If you don't want any logs sent, you can disable log sending by setting
-`send_logs` to `false`:
-
-```yaml
-pagerduty:
-    integration_key: a177cad45bd374409f78906a810a3074
-    send_logs: false
-```

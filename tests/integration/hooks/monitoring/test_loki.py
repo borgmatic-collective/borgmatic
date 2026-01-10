@@ -1,9 +1,36 @@
 import logging
 import platform
 
+import requests
 from flexmock import flexmock
 
 from borgmatic.hooks.monitoring import loki as module
+
+
+def test_loki_log_handler_raw_posts_to_server():
+    '''
+    Assert that the flush function sends a post request after a certain limit.
+    '''
+    handler = module.Loki_log_handler(flexmock(), False, False)
+    flexmock(module.requests).should_receive('post').and_return(
+        flexmock(raise_for_status=lambda: ''),
+    ).once()
+
+    for num in range(int(module.MAX_BUFFER_LINES * 1.5)):
+        handler.raw(num)
+
+
+def test_loki_log_handler_raw_post_failure_does_not_raise():
+    '''
+    Assert that the flush function catches request exceptions.
+    '''
+    handler = module.Loki_log_handler(flexmock(), False, False)
+    flexmock(module.requests).should_receive('post').and_return(
+        flexmock(raise_for_status=lambda: (_ for _ in ()).throw(requests.RequestException())),
+    ).once()
+
+    for num in range(int(module.MAX_BUFFER_LINES * 1.5)):
+        handler.raw(num)
 
 
 def test_initialize_monitor_replaces_labels():

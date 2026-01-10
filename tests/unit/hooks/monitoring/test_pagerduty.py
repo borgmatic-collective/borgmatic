@@ -3,13 +3,26 @@ from flexmock import flexmock
 from borgmatic.hooks.monitoring import pagerduty as module
 
 
-def test_initialize_monitor_creates_log_handler():
+def test_initialize_monitor_with_send_logs_creates_log_handler():
     monitoring_log_level = 1
 
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'Forgetful_buffering_handler',
     ).once()
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler')
+
+    module.initialize_monitor(
+        {'send_logs': True}, {}, 'test.yaml', monitoring_log_level, dry_run=False
+    )
+
+
+def test_initialize_monitor_without_send_logs_creates_nothing():
+    monitoring_log_level = 1
+
+    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
+        'Forgetful_buffering_handler',
+    ).never()
+    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler').never()
 
     module.initialize_monitor({}, {}, 'test.yaml', monitoring_log_level, dry_run=False)
 
