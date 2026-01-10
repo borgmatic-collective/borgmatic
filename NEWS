@@ -1,4 +1,5 @@
 2.1.0.dev0
+ * TL;DR: Many logging, memory, and performance improvements. Mind those breaking changes!
  * #485: When running commands (database clients, command hooks, etc.), elevate stderr output to
    show up as borgmatic error logs.
  * #858: With the "--log-json" flag, log borgmatic's own logs as JSON, not just Borg's.

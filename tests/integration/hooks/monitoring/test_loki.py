@@ -7,11 +7,8 @@ from flexmock import flexmock
 from borgmatic.hooks.monitoring import loki as module
 
 
-def test_loki_log_handler_raw_posts_to_server():
-    '''
-    Assert that the flush function sends a post request after a certain limit.
-    '''
-    handler = module.Loki_log_handler(flexmock(), False, False)
+def test_loki_log_handler_raw_with_send_logs_posts_to_server_after_buffer_full():
+    handler = module.Loki_log_handler(flexmock(), send_logs=True, dry_run=False)
     flexmock(module.requests).should_receive('post').and_return(
         flexmock(raise_for_status=lambda: ''),
     ).once()
@@ -20,11 +17,18 @@ def test_loki_log_handler_raw_posts_to_server():
         handler.raw(num)
 
 
+def test_loki_log_handler_raw_without_send_logs_posts_to_server_without_buffering():
+    handler = module.Loki_log_handler(flexmock(), send_logs=False, dry_run=False)
+    flexmock(module.requests).should_receive('post').and_return(
+        flexmock(raise_for_status=lambda: ''),
+    ).times(3)
+
+    for num in range(3):
+        handler.raw(num)
+
+
 def test_loki_log_handler_raw_post_failure_does_not_raise():
-    '''
-    Assert that the flush function catches request exceptions.
-    '''
-    handler = module.Loki_log_handler(flexmock(), False, False)
+    handler = module.Loki_log_handler(flexmock(), send_logs=True, dry_run=False)
     flexmock(module.requests).should_receive('post').and_return(
         flexmock(raise_for_status=lambda: (_ for _ in ()).throw(requests.RequestException())),
     ).once()

@@ -119,7 +119,11 @@ class Loki_log_handler(logging.Handler):
         '''
         self.buffer.add_value(msg)
 
-        if len(self.buffer) > MAX_BUFFER_LINES:
+        # If log sending is enabled, flush the buffer (and send data to Loki) once we accumulate
+        # enough log data in the buffer. But if log sending is disabled, flush immediately so that,
+        # for instance, start backup notifications are sent when the backup starts instead of after
+        # it finishes!
+        if len(self.buffer) > MAX_BUFFER_LINES or not self.send_logs:
             self.buffer.flush()
 
     def flush(self):

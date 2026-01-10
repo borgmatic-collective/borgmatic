@@ -85,8 +85,16 @@ START_LOG_AND_FINISH = 3
             START_AND_FINISH,
         ),
         (
-            'healthchecks:\n    ping_url: http://localhost:12345/addffa72-da17-40ae-be9c-ff591afb942a',
+            'healthchecks:\n    ping_url: http://localhost:12345/addffa72-da17-40ae-be9c-ff591afb942a\n    send_logs: true',
             START_LOG_AND_FINISH,
+        ),
+        (
+            'healthchecks:\n    ping_url: http://localhost:12345/addffa72-da17-40ae-be9c-ff591afb942a',
+            START_AND_FINISH,
+        ),
+        (
+            'loki:\n    url: http://localhost:12345/loki/api/v1/push\n    labels:\n        app: borgmatic\n    send_logs: true',
+            START_AND_FINISH,
         ),
         (
             'loki:\n    url: http://localhost:12345/loki/api/v1/push\n    labels:\n        app: borgmatic',
