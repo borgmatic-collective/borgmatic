@@ -471,7 +471,7 @@ def execute_command_and_capture_output(
             command,
             stdin=input_file,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE if capture_stderr else None,
+            stderr=subprocess.PIPE,
             shell=shell,
             env=environment,
             cwd=working_directory,
