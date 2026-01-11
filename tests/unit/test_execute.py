@@ -497,7 +497,7 @@ def test_execute_command_and_capture_output_returns_stdout():
         full_command,
         stdin=None,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=None,
         shell=False,
         env=None,
         cwd=None,
@@ -534,6 +534,29 @@ def test_execute_command_and_capture_output_with_capture_stderr_returns_stderr()
     assert output_lines == ('out',)
 
 
+def test_execute_command_and_capture_output_without_capture_stderr_omits_stderr():
+    full_command = ['foo', 'bar']
+    process = flexmock()
+    flexmock(module.subprocess).should_receive('Popen').with_args(
+        full_command,
+        stdin=None,
+        stdout=subprocess.PIPE,
+        stderr=None,
+        shell=False,
+        env=None,
+        cwd=None,
+        close_fds=False,
+    ).and_return(process).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module).should_receive('log_outputs').and_yield('out')
+
+    output_lines = tuple(
+        module.execute_command_and_capture_output(full_command, capture_stderr=False)
+    )
+
+    assert output_lines == ('out',)
+
+
 def test_execute_command_and_capture_output_returns_output_when_process_error_is_not_considered_an_error():
     full_command = ['foo', 'bar']
     err_output = b'[]'
@@ -542,7 +565,7 @@ def test_execute_command_and_capture_output_returns_output_when_process_error_is
         full_command,
         stdin=None,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=None,
         shell=False,
         env=None,
         cwd=None,
@@ -564,7 +587,7 @@ def test_execute_command_and_capture_output_raises_when_command_errors():
         full_command,
         stdin=None,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=None,
         shell=False,
         env=None,
         cwd=None,
@@ -586,7 +609,7 @@ def test_execute_command_and_capture_output_with_shell_returns_output():
         'foo bar',
         stdin=None,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=None,
         shell=True,
         env=None,
         cwd=None,
@@ -608,7 +631,7 @@ def test_execute_command_and_capture_output_with_enviroment_returns_output():
         full_command,
         stdin=None,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=None,
         shell=False,
         env={'a': 'b'},
         cwd=None,
@@ -636,7 +659,7 @@ def test_execute_command_and_capture_output_returns_output_with_working_director
         full_command,
         stdin=None,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=None,
         shell=False,
         env=None,
         cwd='/working',
