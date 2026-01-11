@@ -3,6 +3,12 @@
  * #485: When running commands (database clients, command hooks, etc.), elevate stderr output to
    show up as borgmatic error logs.
  * #858: With the "--log-json" flag, log borgmatic's own logs as JSON, not just Borg's.
+ * #1092: BREAKING: Treat most Borg warnings as errors by default, so for instance backups now fail
+   when source directories are missing. You can still override this behavior with the
+   "borg_exit_codes" option. See the documentation for more information:
+   https://torsion.org/borgmatic/how-to/customize-warnings-and-errors/
+ * #1092: Deprecate the "source_directories_must_exist" option, as borgmatic now treats "backup file
+   not found" warnings from Borg as errors, which accomplishes the same thing.
  * #1132: BREAKING/SECURITY: For the Healthchecks, Apprise, Pagerduty, and Loki monitoring hooks,
    disable log sending when not explicitly enabled. This avoids revealing private log information to
    third-party services. To send logs anyway, set the monitoring hook's "send_logs" option to

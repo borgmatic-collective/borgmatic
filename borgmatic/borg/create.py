@@ -180,6 +180,9 @@ def make_base_create_command(  # noqa: PLR0912
     open pattern file handle).
     '''
     if config.get('source_directories_must_exist', False):
+        logger.warning(
+            'The "source_directories_must_exist" option is deprecated and will be removed from a future release; borgmatic now errors on missing files as Borg runs'
+        )
         borgmatic.borg.pattern.check_all_root_patterns_exist(patterns)
 
     patterns_file = borgmatic.borg.pattern.write_patterns_file(

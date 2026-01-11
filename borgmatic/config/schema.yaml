@@ -21,11 +21,7 @@ properties:
             type: string
         description: |
             List of source directories and files to back up. Globs and tildes
-            are expanded. Do not backslash spaces in path names. Be aware that
-            by default, Borg treats missing source directories as warnings
-            rather than errors. If you'd like to change that behavior, see
-            https://torsion.org/borgmatic/how-to/customize-warnings-and-errors/
-            or the "source_directories_must_exist" option.
+            are expanded. Do not backslash spaces in path names.
         example:
             - /home
             - /etc
@@ -34,8 +30,11 @@ properties:
     source_directories_must_exist:
         type: boolean
         description: |
-            If true, then source directories (and root pattern paths) must
-            exist. If they don't, an error is raised. Defaults to false.
+            Deprecated. Replaced by borgmatic treating Borg's "backup file not
+            found" warning as an error by default. But if
+            "source_directories_must_exist" is true, then source directories
+            (and root pattern paths) must exist before a backup begins. If they
+            don't, borgmatic errors. Defaults to false.
         example: true
     repositories:
         type: array
@@ -468,9 +467,9 @@ properties:
         description: |
             A list of Borg exit codes that should be elevated to errors or
             squashed to warnings as indicated. By default, Borg error exit codes
-            (2 to 99) are treated as errors while warning exit codes (1 and
-            100+) are treated as warnings. Exit codes other than 1 and 2 are
-            only present in Borg 1.4.0+.
+            (2 to 99) are treated as errors and most warning exit codes (1 and
+            100+) are treated as errors as well. Exit codes other than 1 and 2
+            are only present in Borg 1.4.0+.
         example:
             - code: 13
               treat_as: warning

@@ -16,6 +16,9 @@ ERROR_OUTPUT_MAX_LINE_COUNT = 25
 BORG_ERROR_EXIT_CODE_START = 2
 BORG_ERROR_EXIT_CODE_END = 99
 
+# See https://borgbackup.readthedocs.io/en/stable/internals/frontends.html#message-ids
+BORG_WARNING_EXIT_CODES_TREATED_AS_ERRORS = {101, 102, 104, 105, 106, 107}
+
 
 class Exit_status(enum.Enum):
     STILL_RUNNING = 1
@@ -24,7 +27,7 @@ class Exit_status(enum.Enum):
     ERROR = 4
 
 
-def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_codes=None):
+def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_codes=None):  # noqa: PLR0911
     '''
     Return an Exit_status value (e.g. SUCCESS, ERROR, or WARNING) based on interpreting the given
     exit code. If a Borg local path is given and matches the process' command, then interpret the
@@ -55,8 +58,15 @@ def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_code
                     )
                     return Exit_status.WARNING
 
-        # If the exit code doesn't have explicit configuration, then fall back to the default Borg
-        # behavior.
+        # If the exit code doesn't have explicit configuration, then fall back to the default
+        # behavior of treating Borg errors as errors and some Borg warnings as errors.
+        if exit_code in BORG_WARNING_EXIT_CODES_TREATED_AS_ERRORS:
+            logger.error(
+                f'Treating exit code {exit_code} as an error, as per borgmatic defaults',
+            )
+
+            return Exit_status.ERROR
+
         return (
             Exit_status.ERROR
             if (
