@@ -77,7 +77,6 @@ def get_latest_archive(
         ),
         *flags.make_flags('remote-path', remote_path),
         *flags.make_flags('umask', config.get('umask')),
-        *('--log-json',),
         *flags.make_flags('lock-wait', config.get('lock_wait')),
         *(
             flags.make_flags('consider-checkpoints', consider_checkpoints)
