@@ -602,6 +602,8 @@ def spot_check(
     disk to those stored in the latest archive. If any differences are beyond configured tolerances,
     then the check fails.
     '''
+    logger.debug('Running spot check')
+
     try:
         spot_check_config = next(
             check for check in config.get('checks', ()) if check.get('name') == 'spot'
@@ -786,7 +788,6 @@ def run_check(
             write_check_time(make_check_time_path(config, repository_id, check, archives_check_id))
 
     if 'extract' in checks:
-        logger.info('Running extract check')
         borgmatic.borg.extract.extract_last_archive_dry_run(
             config,
             local_borg_version,
@@ -800,7 +801,6 @@ def run_check(
 
     if 'spot' in checks:
         with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
-            logger.info('Running spot check')
             spot_check(
                 repository,
                 config,
