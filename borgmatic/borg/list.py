@@ -1,5 +1,6 @@
 import argparse
 import copy
+import json
 import logging
 import re
 import shlex
@@ -19,6 +20,7 @@ MAKE_FLAGS_EXCLUDES = (
     'paths',
     'find_paths',
     'format',
+    'json',
     *ARCHIVE_FILTER_FLAGS_MOVED_TO_REPO_LIST,
 )
 
@@ -54,6 +56,7 @@ def make_list_command(
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
         + ('--log-json',)
+        + (('--json-lines',) if list_arguments.json else ())
         + flags.make_flags('lock-wait', config.get('lock_wait'))
         + flags.make_flags('format', list_arguments.format or config.get('file_list_format'))
         + flags.make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
@@ -109,39 +112,36 @@ def capture_archive_listing(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, an archive name, a configuration
-    dict, the local Borg version, global arguments as an argparse.Namespace,
-    the archive paths (or Borg patterns) in which to list files, the Borg path
-    format to use for the output, and local and remote Borg paths, capture the
-    output of listing that archive and return it as a list of file paths.
+    Given a local or remote repository path, an archive name, a configuration dict, the local Borg
+    version, global arguments as an argparse.Namespace, the archive paths (or Borg patterns) in
+    which to list files, the Borg path format indicating keys to include in the output, and local
+    and remote Borg paths, capture the output of listing that archive and return it as a sequence of
+    dicts, one per path.
     '''
     return tuple(
-        ''.join(
-            execute_command_and_capture_output(
-                make_list_command(
-                    repository_path,
-                    config,
-                    local_borg_version,
-                    argparse.Namespace(
-                        repository=repository_path,
-                        archive=archive,
-                        paths=list(list_paths) if list_paths else None,
-                        find_paths=None,
-                        json=None,
-                        format=path_format or '{path}{NUL}',
-                    ),
-                    global_arguments,
-                    local_path,
-                    remote_path,
+        json.loads(entry)
+        for entry in execute_command_and_capture_output(
+            make_list_command(
+                repository_path,
+                config,
+                local_borg_version,
+                argparse.Namespace(
+                    repository=repository_path,
+                    archive=archive,
+                    paths=list(list_paths) if list_paths else None,
+                    find_paths=None,
+                    json=True,
+                    format=path_format or None,
                 ),
-                environment=environment.make_environment(config),
-                working_directory=borgmatic.config.paths.get_working_directory(config),
-                borg_local_path=local_path,
-                borg_exit_codes=config.get('borg_exit_codes'),
-            )
+                global_arguments,
+                local_path,
+                remote_path,
+            ),
+            environment=environment.make_environment(config),
+            working_directory=borgmatic.config.paths.get_working_directory(config),
+            borg_local_path=local_path,
+            borg_exit_codes=config.get('borg_exit_codes'),
         )
-        .strip('\0')
-        .split('\0'),
     )
 
 

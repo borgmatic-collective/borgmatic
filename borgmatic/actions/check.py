@@ -448,24 +448,22 @@ def collect_spot_check_archive_paths(
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
     return tuple(
-        path
-        for line in borgmatic.borg.list.capture_archive_listing(
+        entry['path']
+        for entry in borgmatic.borg.list.capture_archive_listing(
             repository['path'],
             archive,
             config,
             local_borg_version,
             global_arguments,
-            path_format='{type} {path}{NUL}',
             local_path=local_path,
             remote_path=remote_path,
         )
-        for (file_type, path) in (line.split(' ', 1),)
-        if file_type not in {BORG_DIRECTORY_FILE_TYPE, BORG_PIPE_FILE_TYPE}
-        if pathlib.Path('borgmatic') not in pathlib.Path(path).parents
+        if entry['type'] not in {BORG_DIRECTORY_FILE_TYPE, BORG_PIPE_FILE_TYPE}
+        if pathlib.Path('borgmatic') not in pathlib.Path(entry['path']).parents
         if pathlib.Path(borgmatic_source_directory.lstrip(os.path.sep))
-        not in pathlib.Path(path).parents
+        not in pathlib.Path(entry['path']).parents
         if pathlib.Path(borgmatic_runtime_directory.lstrip(os.path.sep))
-        not in pathlib.Path(path).parents
+        not in pathlib.Path(entry['path']).parents
     )
 
 
@@ -523,20 +521,33 @@ def compare_spot_check_hashes(
         if not source_sample_paths_subset:
             break
 
+        hash_paths = tuple(
+            path for path in source_sample_paths_subset if path in hashable_source_sample_path
+        )
         hash_lines = borgmatic.execute.execute_command_and_capture_output(
             tuple(
                 shlex.quote(part)
                 for part in shlex.split(spot_check_config.get('xxh64sum_command', 'xxh64sum'))
-            )
-            + tuple(
-                path for path in source_sample_paths_subset if path in hashable_source_sample_path
-            ),
+            ) + hash_paths,
             working_directory=working_directory,
         )
 
         source_hashes.update(
             **dict(
-                (reversed(line.split('  ', 1)) for line in hash_lines),
+                zip(
+                    # xxh64sum rewrites/escapes the paths that it returns alongside its hashes, for
+                    # instance if they contain special characters. When that happens, they don't
+                    # match the original source paths and therefore hash lookups fail. So when
+                    # building this lookup dict, use the original unaltered paths we provided as
+                    # input to xxh64sum.
+                    hash_paths,
+                    (
+                        # For some reason, xxh64sum prefixes the hash with a backslash if the path
+                        # contains a newline. Work around that.
+                        line.split('  ', 1)[0].lstrip('\\')
+                        for line in hash_lines
+                    ),
+                ),
                 # Represent non-existent files as having empty hashes so the comparison below still
                 # works. Same thing for filesystem links, since Borg produces empty archive hashes
                 # for them.
@@ -550,21 +561,21 @@ def compare_spot_check_hashes(
 
         # Get the hash for each file in the archive.
         archive_hashes.update(
-            **dict(
-                reversed(line.split(' ', 1))
-                for line in borgmatic.borg.list.capture_archive_listing(
+            **{
+                entry['path']: entry['xxh64']
+                for entry in borgmatic.borg.list.capture_archive_listing(
                     repository['path'],
                     archive,
                     config,
                     local_borg_version,
                     global_arguments,
                     list_paths=source_sample_paths_subset,
-                    path_format='{xxh64} {path}{NUL}',
+                    path_format='{xxh64}{path}',
                     local_path=local_path,
                     remote_path=remote_path,
                 )
-                if line
-            ),
+                if entry
+            },
         )
 
     # Compare the source hashes with the archive hashes to see how many match.
@@ -602,8 +613,6 @@ def spot_check(
     disk to those stored in the latest archive. If any differences are beyond configured tolerances,
     then the check fails.
     '''
-    logger.debug('Running spot check')
-
     try:
         spot_check_config = next(
             check for check in config.get('checks', ()) if check.get('name') == 'spot'
@@ -788,6 +797,7 @@ def run_check(
             write_check_time(make_check_time_path(config, repository_id, check, archives_check_id))
 
     if 'extract' in checks:
+        logger.info('Running extract check')
         borgmatic.borg.extract.extract_last_archive_dry_run(
             config,
             local_borg_version,
@@ -800,6 +810,7 @@ def run_check(
         write_check_time(make_check_time_path(config, repository_id, 'extract'))
 
     if 'spot' in checks:
+        logger.info('Running spot check')
         with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
             spot_check(
                 repository,
