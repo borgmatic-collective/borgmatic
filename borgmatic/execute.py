@@ -196,48 +196,6 @@ def handle_log_record(log_record, last_lines):
     return log_record
 
 
-READ_CHUNK_SIZE = 4096
-
-
-def read_lines(buffer, process, line_separator='\n'):
-    '''
-    Given a Python buffer (like stdout) ready for reading, its process, and a line separator, yield
-    each (decoded) line from the buffer until the process has exited.
-
-    It is assumed that this function's generator is used in conjunction with an external select()
-    call to know when to read more lines. Otherwise, the generator will busywait if it's called in a
-    tight loop.
-    '''
-    data = ''
-
-    while True:
-        chunk = buffer.read(READ_CHUNK_SIZE).decode()
-
-        if not chunk:  # EOF
-            # The process is still running, so we keep running too.
-            if process.poll() is None:
-                continue
-
-            break
-
-        data += chunk
-
-        while True:
-            separator_position = data.find(line_separator)
-
-            if separator_position == -1:
-                break
-
-            yield data[:separator_position].rstrip()
-
-            data = data[separator_position + 1:]
-
-    # Yield any leftover data from the end of the buffer.
-    if data:
-        yield data.rstrip()
-
-
-
 def log_outputs(
     processes,
     exclude_stdouts,
@@ -271,12 +229,6 @@ def log_outputs(
         if process.stdout or process.stderr
         for buffer in output_buffers_for_process(process, exclude_stdouts)
     }
-    reader_for_output_buffer = {
-        buffer: read_lines(buffer, process)
-        for process in processes
-        if process.stdout or process.stderr
-        for buffer in output_buffers_for_process(process, exclude_stdouts)
-    }
     output_buffers = list(process_for_output_buffer.keys())
     process_to_capture = processes[-1]
     still_running = True
@@ -302,7 +254,8 @@ def log_outputs(
                             # Add the process's output to output_buffers to ensure it'll get read.
                             output_buffers.append(other_process.stdout)
 
-                for line in reader_for_output_buffer[ready_buffer]:
+                while True:
+                    line = ready_buffer.readline().rstrip().decode()
                     if not line or not ready_process:
                         break
 
@@ -354,25 +307,25 @@ def log_outputs(
                 for output_buffer in output_buffers_for_process(process, exclude_stdouts):
                     # Collect any straggling output lines that came in since we last gathered output.
                     while output_buffer:  # pragma: no cover
-                        for line in reader_for_output_buffer[output_buffer]:
-                            if not line:
-                                break
+                        line = ready_buffer.readline().rstrip().decode()
+                        if not line or not ready_process:
+                            break
 
-                            log_record = handle_log_record(
-                                parse_log_line(
-                                    line=line,
-                                    log_level=output_log_level,
-                                    elevate_stderr=(
-                                        output_buffer == process.stderr and not capture_stderr
-                                    ),
-                                    borg_local_path=borg_local_path,
-                                    command=command,
+                        log_record = handle_log_record(
+                            parse_log_line(
+                                line=line,
+                                log_level=output_log_level,
+                                elevate_stderr=(
+                                    output_buffer == process.stderr and not capture_stderr
                                 ),
-                                last_lines=last_lines,
-                            )
+                                borg_local_path=borg_local_path,
+                                command=command,
+                            ),
+                            last_lines=last_lines,
+                        )
 
-                            if log_record.levelno is None and process == process_to_capture:
-                                yield log_record.getMessage()
+                        if log_record.levelno is None and process == process_to_capture:
+                            yield log_record.getMessage()
 
                 if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
                     last_lines.insert(0, '...')
