@@ -56,7 +56,7 @@ def make_list_command(
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
         + ('--log-json',)
-        + (('--json-lines',) if list_arguments.json else ())
+        + flags.make_flags('json-lines', list_arguments.json)
         + flags.make_flags('lock-wait', config.get('lock_wait'))
         + flags.make_flags('format', list_arguments.format or config.get('file_list_format'))
         + flags.make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
@@ -197,11 +197,6 @@ def list_archive(
                 logger.warning(
                     f"The --{name.replace('_', '-')} flag on the list action is ignored when using the --archive flag.",
                 )
-
-    if list_arguments.json:
-        raise ValueError(
-            'The --json flag on the list action is not supported when using the --archive/--find flags.',
-        )
 
     borg_exit_codes = config.get('borg_exit_codes')
 

@@ -850,13 +850,11 @@ def test_collect_spot_check_archive_paths_excludes_directories_and_pipes():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory',
     ).and_return('/home/user/.borgmatic')
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        (
-            'f etc/path',
-            'p var/pipe',
-            'f etc/other',
-            'd etc/dir',
-        ),
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'type': 'f', 'path': 'etc/path'},
+        {'type': 'p', 'path': 'var/pipe'},
+        {'type': 'f', 'path': 'etc/other'},
+        {'type': 'd', 'path': 'etc/dir'},
     )
 
     assert module.collect_spot_check_archive_paths(
@@ -875,11 +873,9 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory',
     ).and_return('/root/.borgmatic')
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        (
-            'f etc/path',
-            'f borgmatic/some/thing',
-        ),
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'type': 'f', 'path': 'etc/path'},
+        {'type': 'f', 'path': 'borgmatic/some/thing'},
     )
 
     assert module.collect_spot_check_archive_paths(
@@ -898,11 +894,9 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_dire
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory',
     ).and_return('/root/.borgmatic')
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        (
-            'f etc/path',
-            'f root/.borgmatic/some/thing',
-        ),
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'type': 'f', 'path': 'etc/path'},
+        {'type': 'f', 'path': 'root/.borgmatic/some/thing'},
     )
 
     assert module.collect_spot_check_archive_paths(
@@ -921,11 +915,9 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory',
     ).and_return('/root.borgmatic')
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        (
-            'f etc/path',
-            'f run/user/0/borgmatic/some/thing',
-        ),
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'type': 'f', 'path': 'etc/path'},
+        {'type': 'f', 'path': 'run/user/0/borgmatic/some/thing'},
     )
 
     assert module.collect_spot_check_archive_paths(
@@ -1009,8 +1001,9 @@ def test_compare_spot_check_hashes_returns_paths_having_failing_hashes():
         'hash1  /foo',
         'hash2  /bar',
     )
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 foo', 'nothash2 bar'],
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'xxh64': 'hash1', 'path': 'foo'},
+        {'xxh64': 'nothash2', 'path': 'bar'},
     )
 
     assert module.compare_spot_check_hashes(
@@ -1051,8 +1044,9 @@ def test_compare_spot_check_hashes_returns_relative_paths_having_failing_hashes(
         'hash1  foo',
         'hash2  bar',
     )
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 foo', 'nothash2 bar'],
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'xxh64': 'hash1', 'path': 'foo'},
+        {'xxh64': 'nothash2', 'path': 'bar'},
     )
 
     assert module.compare_spot_check_hashes(
@@ -1093,8 +1087,9 @@ def test_compare_spot_check_hashes_handles_data_sample_percentage_above_100():
         'hash1  /foo',
         'hash2  /bar',
     )
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['nothash1 foo', 'nothash2 bar'],
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'xxh64': 'nothash1', 'path': 'foo'},
+        {'xxh64': 'nothash2', 'path': 'bar'},
     )
 
     assert module.compare_spot_check_hashes(
@@ -1135,8 +1130,9 @@ def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
         ('/usr/local/bin/xxhsum', '-H64', '/foo', '/bar'),
         working_directory=None,
     ).and_yield('hash1  /foo', 'hash2  /bar')
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 foo', 'nothash2 bar'],
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'xxh64': 'hash1', 'path': 'foo'},
+        {'xxh64': 'nothash2', 'path': 'bar'},
     )
 
     assert module.compare_spot_check_hashes(
@@ -1174,8 +1170,8 @@ def test_compare_spot_check_hashes_considers_path_missing_from_archive_as_not_ma
         'hash1  /foo',
         'hash2  /bar',
     )
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 foo'],
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'xxh64': 'hash1', 'path': 'foo'}
     )
 
     assert module.compare_spot_check_hashes(
@@ -1210,8 +1206,9 @@ def test_compare_spot_check_hashes_considers_symlink_path_as_not_matching():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
     ).with_args(('xxh64sum', '/foo'), working_directory=None).and_yield('hash1  /foo')
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 foo', 'hash2 bar'],
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'xxh64': 'hash1', 'path': 'foo'},
+        {'xxh64': 'hash2', 'path': 'bar'},
     )
 
     assert module.compare_spot_check_hashes(
@@ -1246,8 +1243,9 @@ def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching()
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
     ).with_args(('xxh64sum', '/foo'), working_directory=None).and_yield('hash1  /foo')
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 foo', 'hash2 bar'],
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'xxh64': 'hash1', 'path': 'foo'},
+        {'xxh64': 'hash2', 'path': 'bar'},
     )
 
     assert module.compare_spot_check_hashes(
@@ -1291,9 +1289,13 @@ def test_compare_spot_check_hashes_with_too_many_paths_feeds_them_to_commands_in
         'hash3  /baz',
         'hash4  /quux',
     )
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 foo', 'hash2 bar'],
-    ).and_return(['hash3 baz', 'nothash4 quux'])
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'xxh64': 'hash1', 'path': 'foo'},
+        {'xxh64': 'hash2', 'path': 'bar'},
+    ).and_yield(
+        {'xxh64': 'hash3', 'path': 'baz'},
+        {'xxh64': 'nothash4', 'path': 'quux'},
+    )
 
     assert module.compare_spot_check_hashes(
         repository={'path': 'repo'},
@@ -1334,8 +1336,9 @@ def test_compare_spot_check_hashes_uses_working_directory_to_access_source_paths
         'hash1  foo',
         'hash2  bar',
     )
-    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 foo', 'nothash2 bar'],
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'xxh64': 'hash1', 'path': 'foo'},
+        {'xxh64': 'nothash2', 'path': 'bar'},
     )
 
     assert module.compare_spot_check_hashes(

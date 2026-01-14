@@ -196,14 +196,14 @@ def handle_log_record(log_record, last_lines):
     return log_record
 
 
-def log_outputs(
+def log_outputs(  # noqa: PLR0912
     processes,
     exclude_stdouts,
     output_log_level,
     borg_local_path,
     borg_exit_codes,
     capture_stderr=False,
-):  # noqa: PLR0912
+):
     '''
     Given a sequence of subprocess.Popen() instances for multiple processes, log the outputs (stderr
     and stdout). Use the requested output log level for stdout, but always log stderr to the ERROR

@@ -104,11 +104,10 @@ def test_output_buffers_for_process_returns_stderr_only_when_stdout_excluded():
     )
 
 
-def test_borg_log_line_to_record_parses_line():
-    flexmock(module).should_receive('log_line_to_record').never()
-    line = '{"levelname": "INFO", "time": 12345, "message": "All done", "name": "borg.something"}'
+def test_borg_json_log_line_to_record_parses_log_message_line():
+    line = '{"type": "log_message", "levelname": "INFO", "time": 12345, "message": "All done", "name": "borg.something"}'
 
-    record = module.borg_log_line_to_record(line, module.logging.INFO)
+    record = module.borg_json_log_line_to_record(line, module.logging.INFO)
 
     assert record.levelno == module.logging.INFO
     assert record.created == 12345
@@ -117,24 +116,35 @@ def test_borg_log_line_to_record_parses_line():
     assert record.name == 'borg.something'
 
 
-def test_borg_log_line_to_record_with_invalid_json_falls_back_to_raw_line():
-    record = flexmock()
+def test_borg_json_log_line_to_record_parses_file_status_line():
+    flexmock(module.time).should_receive('time').and_return(12345)
+    line = '{"type": "file_status", "status": "-", "path": "/foo/bar"}'
+
+    record = module.borg_json_log_line_to_record(line, module.logging.INFO)
+
+    assert record.levelno == module.logging.INFO
+    assert record.created == 12345
+    assert record.msg == '- /foo/bar'
+    assert record.levelname == 'INFO'
+    assert record.name == 'borg.file_status'
+
+
+def test_borg_json_log_line_to_record_handles_invalid_json():
     line = '{invalid'
-    flexmock(module).should_receive('log_line_to_record').with_args(
-        line, module.logging.INFO
-    ).and_return(record).once()
 
-    assert module.borg_log_line_to_record(line, module.logging.INFO) == record
+    assert module.borg_json_log_line_to_record(line, module.logging.INFO) is None
 
 
-def test_borg_log_line_to_record_with_non_dict_json_falls_back_to_raw_line():
-    record = flexmock()
+def test_borg_json_log_line_to_record_handles_non_dict_json():
     line = '[]'
-    flexmock(module).should_receive('log_line_to_record').with_args(
-        line, module.logging.INFO
-    ).and_return(record).once()
 
-    assert module.borg_log_line_to_record(line, module.logging.INFO) == record
+    assert module.borg_json_log_line_to_record(line, module.logging.INFO) is None
+
+
+def test_borg_json_log_line_to_record_handles_json_dict_without_type():
+    line = '{"status": "-", "path": "/foo/bar"}'
+
+    assert module.borg_json_log_line_to_record(line, module.logging.INFO) is None
 
 
 def test_log_line_to_record_makes_log_record():
@@ -149,14 +159,14 @@ def test_log_line_to_record_makes_log_record():
 
 def test_parse_log_line_with_borg_command_parses_borg_log_line():
     record = flexmock()
-    flexmock(module).should_receive('borg_log_line_to_record').and_return(record).once()
+    flexmock(module).should_receive('borg_json_log_line_to_record').and_return(record).once()
     flexmock(module).should_receive('log_line_to_record').never()
 
     assert (
         module.parse_log_line(
             'All done',
             module.logging.INFO,
-            came_from_stderr=False,
+            elevate_stderr=False,
             borg_local_path='borg',
             command=['borg', 'do-stuff'],
         )
@@ -166,14 +176,14 @@ def test_parse_log_line_with_borg_command_parses_borg_log_line():
 
 def test_parse_log_line_without_borg_command_parses_plain_log_line():
     record = flexmock()
-    flexmock(module).should_receive('borg_log_line_to_record').never()
+    flexmock(module).should_receive('borg_json_log_line_to_record').never()
     flexmock(module).should_receive('log_line_to_record').and_return(record).once()
 
     assert (
         module.parse_log_line(
             'All done',
             module.logging.INFO,
-            came_from_stderr=False,
+            elevate_stderr=False,
             borg_local_path='borg',
             command=['totally-not-borg', 'do-stuff'],
         )
@@ -181,9 +191,9 @@ def test_parse_log_line_without_borg_command_parses_plain_log_line():
     )
 
 
-def test_parse_log_line_with_came_from_stderr_makes_error_record():
+def test_parse_log_line_with_elevate_stderr_makes_error_record():
     record = flexmock()
-    flexmock(module).should_receive('borg_log_line_to_record').never()
+    flexmock(module).should_receive('borg_json_log_line_to_record').never()
     flexmock(module).should_receive('log_line_to_record').with_args(
         'All done', module.logging.ERROR
     ).and_return(record).once()
@@ -192,7 +202,7 @@ def test_parse_log_line_with_came_from_stderr_makes_error_record():
         module.parse_log_line(
             'All done',
             module.logging.INFO,
-            came_from_stderr=True,
+            elevate_stderr=True,
             borg_local_path='borg',
             command=['totally-not-borg', 'do-stuff'],
         )
@@ -200,9 +210,9 @@ def test_parse_log_line_with_came_from_stderr_makes_error_record():
     )
 
 
-def test_parse_log_line_with_came_from_stderr_and_warning_prefix_makes_warning_record():
+def test_parse_log_line_with_elevate_stderr_and_warning_prefix_makes_warning_record():
     record = flexmock()
-    flexmock(module).should_receive('borg_log_line_to_record').never()
+    flexmock(module).should_receive('borg_json_log_line_to_record').never()
     flexmock(module).should_receive('log_line_to_record').with_args(
         'warning: All done', module.logging.WARNING
     ).and_return(record).once()
@@ -211,7 +221,7 @@ def test_parse_log_line_with_came_from_stderr_and_warning_prefix_makes_warning_r
         module.parse_log_line(
             'warning: All done',
             module.logging.INFO,
-            came_from_stderr=True,
+            elevate_stderr=True,
             borg_local_path='borg',
             command=['totally-not-borg', 'do-stuff'],
         )
