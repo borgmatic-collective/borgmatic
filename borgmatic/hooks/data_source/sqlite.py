@@ -215,6 +215,7 @@ def restore_data_source_dump(
         for part in shlex.split(data_source.get('sqlite_restore_command') or 'sqlite3')
     )
     restore_command = (*sqlite_restore_command, '-bail', shlex.quote(database_path))
+
     # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
     # if the restore paths don't exist in the archive.
     tuple(
@@ -224,5 +225,6 @@ def restore_data_source_dump(
             output_log_level=logging.DEBUG,
             input_file=extract_process.stdout,
             working_directory=borgmatic.config.paths.get_working_directory(config),
+            borg_local_path=config.get('local_path', 'borg'),
         )
     )

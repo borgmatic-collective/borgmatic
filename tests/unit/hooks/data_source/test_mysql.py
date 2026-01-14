@@ -1235,6 +1235,7 @@ def test_restore_data_source_dump_runs_mysql_to_restore():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
+        borg_local_path='borg',
     ).and_yield().once()
 
     module.restore_data_source_dump(
@@ -1276,6 +1277,7 @@ def test_restore_data_source_dump_runs_mysql_with_options():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
+        borg_local_path='borg',
     ).and_yield().once()
 
     module.restore_data_source_dump(
@@ -1317,6 +1319,7 @@ def test_restore_data_source_dump_runs_non_default_mysql_with_options():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
+        borg_local_path='borg',
     ).and_yield().once()
 
     module.restore_data_source_dump(
@@ -1369,6 +1372,7 @@ def test_restore_data_source_dump_runs_mysql_with_hostname_and_port():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
+        borg_local_path='borg',
     ).and_yield().once()
 
     module.restore_data_source_dump(
@@ -1421,6 +1425,7 @@ def test_restore_data_source_dump_runs_mysql_with_socket_path():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
+        borg_local_path='borg',
     ).and_yield().once()
 
     module.restore_data_source_dump(
@@ -1468,6 +1473,7 @@ def test_restore_data_source_dump_runs_mysql_with_tls():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
+        borg_local_path='borg',
     ).and_yield().once()
 
     module.restore_data_source_dump(
@@ -1515,6 +1521,7 @@ def test_restore_data_source_dump_runs_mysql_without_tls():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
+        borg_local_path='borg',
     ).and_yield().once()
 
     module.restore_data_source_dump(
@@ -1558,6 +1565,7 @@ def test_restore_data_source_dump_runs_mysql_with_username_and_password():
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
+        borg_local_path='borg',
     ).and_yield().once()
 
     module.restore_data_source_dump(
@@ -1610,6 +1618,7 @@ def test_restore_data_source_with_environment_password_transport_skips_defaults_
         input_file=extract_process.stdout,
         environment={'USER': 'root', 'MYSQL_PWD': 'trustsome1'},
         working_directory=None,
+        borg_local_path='borg',
     ).and_yield().once()
 
     module.restore_data_source_dump(
@@ -1677,6 +1686,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
+        borg_local_path='borg',
     ).and_yield().once()
 
     module.restore_data_source_dump(
@@ -1749,6 +1759,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
         working_directory=None,
+        borg_local_path='borg',
     ).and_yield().once()
 
     module.restore_data_source_dump(

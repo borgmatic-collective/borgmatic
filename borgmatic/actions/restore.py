@@ -277,7 +277,7 @@ def collect_dumps_from_archive(
     dumps_from_archive = {}  # Use a dict as an ordered set.
 
     # There is (at most) one dump metadata file per data source hook. Load each.
-    for dumps_metadata_path in borgmatic.borg.list.capture_archive_listing(
+    for dumps_metadata_entry in borgmatic.borg.list.capture_archive_listing(
         repository,
         archive,
         config,
@@ -300,7 +300,7 @@ def collect_dumps_from_archive(
         local_path=local_path,
         remote_path=remote_path,
     ):
-        if not dumps_metadata_path:
+        if not dumps_metadata_entry.get('path'):
             continue
 
         for dump in borgmatic.hooks.data_source.dump.parse_data_source_dumps_metadata(
@@ -308,7 +308,7 @@ def collect_dumps_from_archive(
                 global_arguments.dry_run,
                 repository,
                 archive,
-                [dumps_metadata_path],
+                [dumps_metadata_entry['path']],
                 config,
                 local_borg_version,
                 global_arguments,
@@ -318,7 +318,7 @@ def collect_dumps_from_archive(
             )
             .stdout.read()
             .decode(),
-            dumps_metadata_path,
+            dumps_metadata_entry['path'],
         ):
             dumps_from_archive[dump] = None
 
@@ -338,7 +338,7 @@ def collect_dumps_from_archive(
     # Probe for the data source dumps in multiple locations, as the default location has moved to
     # the borgmatic runtime directory (which gets stored as just "/borgmatic" with Borg 1.4+). But
     # we still want to support reading dumps from previously created archives as well.
-    dump_paths = borgmatic.borg.list.capture_archive_listing(
+    dump_entries = borgmatic.borg.list.capture_archive_listing(
         repository,
         archive,
         config,
@@ -360,7 +360,9 @@ def collect_dumps_from_archive(
         remote_path=remote_path,
     )
 
-    for dump_path in dump_paths:
+    for dump_entry in dump_entries:
+        dump_path = dump_entry.get('path')
+
         if not dump_path:
             continue
 
