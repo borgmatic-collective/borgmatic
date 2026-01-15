@@ -31,14 +31,14 @@ def insert_execute_command_and_capture_output_mock(
 
 
 def test_local_borg_version_calls_borg_with_required_parameters():
-    insert_execute_command_and_capture_output_mock(('borg', '--version'))
+    insert_execute_command_and_capture_output_mock(('borg', '--version', '--log-json'))
     flexmock(module.environment).should_receive('make_environment')
 
     assert module.local_borg_version({}) == VERSION
 
 
 def test_local_borg_version_with_log_info_calls_borg_with_info_parameter():
-    insert_execute_command_and_capture_output_mock(('borg', '--version', '--info'))
+    insert_execute_command_and_capture_output_mock(('borg', '--version', '--log-json', '--info'))
     insert_logging_mock(logging.INFO)
     flexmock(module.environment).should_receive('make_environment')
 
@@ -46,7 +46,9 @@ def test_local_borg_version_with_log_info_calls_borg_with_info_parameter():
 
 
 def test_local_borg_version_with_log_debug_calls_borg_with_debug_parameters():
-    insert_execute_command_and_capture_output_mock(('borg', '--version', '--debug', '--show-rc'))
+    insert_execute_command_and_capture_output_mock(
+        ('borg', '--version', '--log-json', '--debug', '--show-rc')
+    )
     insert_logging_mock(logging.DEBUG)
     flexmock(module.environment).should_receive('make_environment')
 
@@ -54,7 +56,9 @@ def test_local_borg_version_with_log_debug_calls_borg_with_debug_parameters():
 
 
 def test_local_borg_version_with_local_borg_path_calls_borg_with_it():
-    insert_execute_command_and_capture_output_mock(('borg1', '--version'), borg_local_path='borg1')
+    insert_execute_command_and_capture_output_mock(
+        ('borg1', '--version', '--log-json'), borg_local_path='borg1'
+    )
     flexmock(module.environment).should_receive('make_environment')
 
     assert module.local_borg_version({}, 'borg1') == VERSION
@@ -63,7 +67,7 @@ def test_local_borg_version_with_local_borg_path_calls_borg_with_it():
 def test_local_borg_version_with_borg_exit_codes_calls_using_with_them():
     borg_exit_codes = flexmock()
     insert_execute_command_and_capture_output_mock(
-        ('borg', '--version'),
+        ('borg', '--version', '--log-json'),
         borg_exit_codes=borg_exit_codes,
     )
     flexmock(module.environment).should_receive('make_environment')
@@ -72,7 +76,9 @@ def test_local_borg_version_with_borg_exit_codes_calls_using_with_them():
 
 
 def test_local_borg_version_with_invalid_version_raises():
-    insert_execute_command_and_capture_output_mock(('borg', '--version'), version_output='wtf')
+    insert_execute_command_and_capture_output_mock(
+        ('borg', '--version', '--log-json'), version_output='wtf'
+    )
     flexmock(module.environment).should_receive('make_environment')
 
     with pytest.raises(ValueError):
@@ -81,7 +87,7 @@ def test_local_borg_version_with_invalid_version_raises():
 
 def test_local_borg_version_calls_borg_with_working_directory():
     insert_execute_command_and_capture_output_mock(
-        ('borg', '--version'),
+        ('borg', '--version', '--log-json'),
         working_directory='/working/dir',
     )
     flexmock(module.environment).should_receive('make_environment')

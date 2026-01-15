@@ -141,7 +141,7 @@ def test_display_repository_info_with_log_info_and_json_suppresses_most_borg_out
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'repo-info', '--json', '--repo', 'repo'),
+        ('borg', 'repo-info', '--log-json', '--json', '--repo', 'repo'),
         environment=None,
         working_directory=None,
         borg_local_path='borg',
@@ -219,7 +219,7 @@ def test_display_repository_info_with_log_debug_and_json_suppresses_most_borg_ou
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'repo-info', '--json', '--repo', 'repo'),
+        ('borg', 'repo-info', '--log-json', '--json', '--repo', 'repo'),
         environment=None,
         working_directory=None,
         borg_local_path='borg',
@@ -255,7 +255,7 @@ def test_display_repository_info_with_json_calls_borg_with_json_flag():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'repo-info', '--json', '--repo', 'repo'),
+        ('borg', 'repo-info', '--log-json', '--json', '--repo', 'repo'),
         environment=None,
         working_directory=None,
         borg_local_path='borg',
@@ -542,6 +542,7 @@ def test_display_repository_info_with_feature_available_calls_borg_with_repo_inf
             '--log-json',
             '--extra',
             'value with space',
+            '--log-json',
             '--json',
             '--repo',
             'repo',
