@@ -37,6 +37,7 @@ def display_repository_info(
             if feature.available(feature.Feature.REPO_INFO, local_borg_version)
             else ('info',)
         )
+        + (('--critical',) if repo_info_arguments.json else ())
         + (
             ('--info',)
             if logger.getEffectiveLevel() == logging.INFO and not repo_info_arguments.json
