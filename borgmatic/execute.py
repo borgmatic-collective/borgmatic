@@ -307,8 +307,8 @@ def log_outputs(  # noqa: PLR0912
                 for output_buffer in output_buffers_for_process(process, exclude_stdouts):
                     # Collect any straggling output lines that came in since we last gathered output.
                     while output_buffer:  # pragma: no cover
-                        line = ready_buffer.readline().rstrip().decode()
-                        if not line or not ready_process:
+                        line = output_buffer.readline().rstrip().decode()
+                        if not line:
                             break
 
                         log_record = handle_log_record(
