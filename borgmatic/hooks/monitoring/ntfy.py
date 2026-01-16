@@ -46,14 +46,17 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         topic = hook_config.get('topic')
 
         logger.info(f'Pinging ntfy topic {topic}{dry_run_label}')
-        logger.debug(f'Using Ntfy ping URL {base_url}/{topic}')
+        logger.debug(f'Using ntfy ping URL {base_url}')
 
         headers = {
             'User-Agent': 'borgmatic',
-            'X-Title': state_config.get('title'),
-            'X-Message': state_config.get('message'),
-            'X-Priority': state_config.get('priority'),
-            'X-Tags': state_config.get('tags'),
+        }
+        payload = {
+            'topic': topic,
+            'title': state_config.get('title'),
+            'message': state_config.get('message'),
+            'priority': state_config.get('priority'),
+            'tags': state_config.get('tags'),
         }
 
         try:
@@ -81,7 +84,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
                     'ntfy access_token is set but so is username/password, only using access_token',
                 )
 
-            auth = requests.auth.HTTPBasicAuth('', access_token)
+            headers['Authorization'] = f'Bearer {access_token}'
         elif (username and password) is not None:
             auth = requests.auth.HTTPBasicAuth(username, password)
             logger.info(f'Using basic auth with user {username} for ntfy')
@@ -94,10 +97,11 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             logging.getLogger('urllib3').setLevel(logging.ERROR)
             try:
                 response = requests.post(
-                    f'{base_url}/{topic}',
+                    base_url,
                     auth=auth,
                     timeout=TIMEOUT_SECONDS,
                     headers=headers,
+                    json=payload,
                 )
                 if not response.ok:
                     response.raise_for_status()
