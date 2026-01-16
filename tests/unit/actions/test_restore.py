@@ -513,10 +513,10 @@ def test_collect_dumps_from_archive_with_dumps_metadata_parses_it():
         'make_runtime_directory_glob'
     ).and_return('')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        [
-            'borgmatic/postgresql_databases/dumps.json',
-            'borgmatic/mysql_databases/dumps.json',
-        ],
+        (
+            {'path': 'borgmatic/postgresql_databases/dumps.json'},
+            {'path': 'borgmatic/mysql_databases/dumps.json'},
+        ),
     )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
         flexmock(stdout=flexmock(read=lambda: b''))
@@ -550,13 +550,13 @@ def test_collect_dumps_from_archive_with_empty_dumps_metadata_path_falls_back_to
         'make_runtime_directory_glob'
     ).and_return('')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['']
+        ({'path': ''},)
     ).and_return(
-        [
-            'borgmatic/postgresql_databases/localhost/foo',
-            'borgmatic/postgresql_databases/host:1234/bar',
-            'borgmatic/mysql_databases/localhost/quux',
-        ],
+        (
+            {'path': 'borgmatic/postgresql_databases/localhost/foo'},
+            {'path': 'borgmatic/postgresql_databases/host:1234/bar'},
+            {'path': 'borgmatic/mysql_databases/localhost/quux'},
+        ),
     )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').never()
     flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
@@ -592,13 +592,13 @@ def test_collect_dumps_from_archive_without_dumps_metadata_falls_back_to_parsing
         'make_runtime_directory_glob'
     ).and_return('')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        []
+        ()
     ).and_return(
-        [
-            'borgmatic/postgresql_databases/localhost/foo',
-            'borgmatic/postgresql_databases/host:1234/bar',
-            'borgmatic/mysql_databases/localhost/quux',
-        ],
+        (
+            {'path': 'borgmatic/postgresql_databases/localhost/foo'},
+            {'path': 'borgmatic/postgresql_databases/host:1234/bar'},
+            {'path': 'borgmatic/mysql_databases/localhost/quux'},
+        ),
     )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').never()
     flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
@@ -634,14 +634,14 @@ def test_collect_dumps_from_archive_parses_archive_paths_with_different_base_dir
         'make_runtime_directory_glob'
     ).and_return('')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        []
+        ()
     ).and_return(
-        [
-            'borgmatic/postgresql_databases/localhost/foo',
-            '.borgmatic/postgresql_databases/localhost/bar',
-            '/root/.borgmatic/postgresql_databases/localhost/baz',
-            '/var/run/0/borgmatic/mysql_databases/localhost/quux',
-        ],
+        (
+            {'path': 'borgmatic/postgresql_databases/localhost/foo'},
+            {'path': '.borgmatic/postgresql_databases/localhost/bar'},
+            {'path': '/root/.borgmatic/postgresql_databases/localhost/baz'},
+            {'path': '/var/run/0/borgmatic/mysql_databases/localhost/quux'},
+        ),
     )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').never()
     flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
@@ -678,12 +678,12 @@ def test_collect_dumps_from_archive_parses_directory_format_archive_paths():
         'make_runtime_directory_glob'
     ).and_return('')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        []
+        ()
     ).and_return(
-        [
-            'borgmatic/postgresql_databases/localhost/foo/table1',
-            'borgmatic/postgresql_databases/localhost/foo/table2',
-        ],
+        (
+            {'path': 'borgmatic/postgresql_databases/localhost/foo/table1'},
+            {'path': 'borgmatic/postgresql_databases/localhost/foo/table2'},
+        ),
     )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').never()
     flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
@@ -715,15 +715,15 @@ def test_collect_dumps_from_archive_skips_bad_archive_paths_or_bad_path_componen
         'make_runtime_directory_glob'
     ).and_return('')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        []
+        ()
     ).and_return(
-        [
-            'borgmatic/postgresql_databases/localhost/foo',
-            'borgmatic/postgresql_databases/localhost:abcd/bar',
-            'borgmatic/invalid',
-            'invalid/as/well',
-            '',
-        ],
+        (
+            {'path': 'borgmatic/postgresql_databases/localhost/foo'},
+            {'path': 'borgmatic/postgresql_databases/localhost:abcd/bar'},
+            {'path': 'borgmatic/invalid'},
+            {'path': 'invalid/as/well'},
+            {'path': ''},
+        )
     )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').never()
     flexmock(module.borgmatic.hooks.data_source.dump).should_receive(

@@ -26,10 +26,10 @@ def test_make_list_command_includes_log_info():
     assert command == ('borg', 'list', '--info', '--log-json', 'repo')
 
 
-def test_make_list_command_includes_json_but_not_info():
+def test_make_list_command_includes_json_lines_but_not_info():
     insert_logging_mock(logging.INFO)
     flexmock(module.flags).should_receive('make_flags').and_return(())
-    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json-lines',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
     command = module.make_list_command(
@@ -40,7 +40,7 @@ def test_make_list_command_includes_json_but_not_info():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--log-json', '--json', 'repo')
+    assert command == ('borg', 'list', '--log-json', '--json-lines', 'repo')
 
 
 def test_make_list_command_includes_log_debug():
@@ -332,7 +332,7 @@ def test_make_find_paths_adds_globs_to_path_fragments():
 def test_capture_archive_listing_does_not_raise():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('execute_command_and_capture_output').and_yield('')
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield('{}', '{}')
     flexmock(module).should_receive('make_list_command')
 
     module.capture_archive_listing(
@@ -391,24 +391,6 @@ def test_list_archive_calls_borg_with_flags():
         list_arguments=list_arguments,
         global_arguments=global_arguments,
     )
-
-
-def test_list_archive_with_archive_and_json_errors():
-    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-    flexmock(module.logger).answer = lambda message: None
-    list_arguments = argparse.Namespace(archive='archive', paths=None, json=True, find_paths=None)
-
-    flexmock(module.feature).should_receive('available').and_return(False)
-
-    with pytest.raises(ValueError):
-        module.list_archive(
-            repository_path='repo',
-            config={},
-            local_borg_version='1.2.3',
-            list_arguments=list_arguments,
-            global_arguments=flexmock(),
-        )
 
 
 def test_list_archive_calls_borg_with_local_path():

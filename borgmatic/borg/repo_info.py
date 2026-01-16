@@ -37,6 +37,7 @@ def display_repository_info(
             if feature.available(feature.Feature.REPO_INFO, local_borg_version)
             else ('info',)
         )
+        + (('--critical',) if repo_info_arguments.json else ())
         + (
             ('--info',)
             if logger.getEffectiveLevel() == logging.INFO and not repo_info_arguments.json
@@ -50,7 +51,8 @@ def display_repository_info(
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
         + flags.make_flags('lock-wait', lock_wait)
-        + (('--json',) if repo_info_arguments.json else ('--log-json',))
+        + ('--log-json',)
+        + (('--json',) if repo_info_arguments.json else ())
         + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )

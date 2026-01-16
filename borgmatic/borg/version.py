@@ -16,6 +16,7 @@ def local_borg_version(config, local_path='borg'):
     '''
     full_command = (
         (local_path, '--version')
+        + ('--log-json',)
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
     )

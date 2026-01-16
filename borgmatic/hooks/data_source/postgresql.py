@@ -442,6 +442,7 @@ def restore_data_source_dump(
             input_file=extract_process.stdout if extract_process else None,
             environment=environment,
             working_directory=borgmatic.config.paths.get_working_directory(config),
+            borg_local_path=config.get('local_path', 'borg'),
         )
     )
     execute_command(

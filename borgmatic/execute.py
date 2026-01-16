@@ -6,6 +6,7 @@ import logging
 import select
 import subprocess
 import textwrap
+import time
 
 import borgmatic.logger
 
@@ -101,28 +102,38 @@ def output_buffers_for_process(process, exclude_stdouts):
     )
 
 
-def borg_log_line_to_record(line, log_level):
+def borg_json_log_line_to_record(line, log_level):
     '''
-    Given a single Borg log entry and a log level, return the line converted to a logging.LogRecord
-    instance.
-
-    If it can't be parsed, then fall back to making a record out of the raw line and the given log
-    level.
+    Given a single Borg "--log-json"-style log line and a log level, return the line converted to a
+    logging.LogRecord instance. Return None if the line can't be parsed as JSON.
     '''
     with contextlib.suppress(json.JSONDecodeError, TypeError, KeyError, AttributeError):
         log_data = json.loads(line)
+        log_type = log_data.get('type')
 
-        return logging.makeLogRecord(
-            dict(
-                levelno=logging._nameToLevel.get(log_data.get('levelname')),
-                created=log_data.get('time'),
-                msg=log_data.get('message'),
-                levelname=log_data.get('levelname'),
-                name=log_data.get('name'),
+        if log_type == 'log_message':
+            return logging.makeLogRecord(
+                dict(
+                    levelno=logging._nameToLevel.get(log_data.get('levelname')),
+                    created=log_data.get('time'),
+                    msg=log_data.get('message'),
+                    levelname=log_data.get('levelname'),
+                    name=log_data.get('name'),
+                )
             )
-        )
 
-    return log_line_to_record(line, log_level)
+        if log_type == 'file_status':
+            return logging.makeLogRecord(
+                dict(
+                    levelno=log_level,
+                    created=time.time(),
+                    msg=f'{log_data.get("status")} {log_data.get("path")}',
+                    levelname=logging.getLevelName(log_level),
+                    name='borg.file_status',
+                )
+            )
+
+    return None
 
 
 def log_line_to_record(line, log_level):
@@ -139,11 +150,11 @@ def log_line_to_record(line, log_level):
     )
 
 
-def parse_log_line(line, log_level, came_from_stderr, borg_local_path, command):
+def parse_log_line(line, log_level, elevate_stderr, borg_local_path, command):
     '''
-    Given a raw output line from an external program, whether this line came from stderr, the Borg
-    local path, and the command as a sequence, return a logging.LogRecord instance containing its
-    parsed data.
+    Given a raw output line from an external program, whether this line came from stderr and should
+    be elevated to error/warning, the Borg local path, and the command as a sequence, return a
+    logging.LogRecord instance containing its parsed data.
 
     If the command being run is Borg, and the log line is JSON-formatted log data, then grab the log
     level from it and log the parsed JSON to be consumed later by a Python logging.Formatter.
@@ -153,9 +164,12 @@ def parse_log_line(line, log_level, came_from_stderr, borg_local_path, command):
     just elevate the log level to a WARN.
     '''
     if borg_local_path and command[0] == borg_local_path:
-        return borg_log_line_to_record(line, log_level)
+        log_record = borg_json_log_line_to_record(line, log_level)
 
-    if came_from_stderr:
+        if log_record:
+            return log_record
+
+    if elevate_stderr:
         return log_line_to_record(
             line, logging.WARNING if line.lower().startswith('warning:') else logging.ERROR
         )
@@ -182,7 +196,14 @@ def handle_log_record(log_record, last_lines):
     return log_record
 
 
-def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, borg_exit_codes):  # noqa: PLR0912
+def log_outputs(  # noqa: PLR0912
+    processes,
+    exclude_stdouts,
+    output_log_level,
+    borg_local_path,
+    borg_exit_codes,
+    capture_stderr=False,
+):
     '''
     Given a sequence of subprocess.Popen() instances for multiple processes, log the outputs (stderr
     and stdout). Use the requested output log level for stdout, but always log stderr to the ERROR
@@ -190,8 +211,8 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
     warning for exit code 1, if that process does not match the Borg local path).
 
     If the output log level is None, then instead of logging, capture the output for the last
-    process given and yield it one line at a time. But if the output log level is not None, don't
-    yield anything.
+    process given and yield it one line at a time. This includes stderr if capture stderr is set.
+    But if the output log level is not None, don't yield anything.
 
     This yielding means that this function is a generator, and must be consumed in order to execute.
 
@@ -250,7 +271,9 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                         parse_log_line(
                             line=line,
                             log_level=output_log_level,
-                            came_from_stderr=(ready_buffer == ready_process.stderr),
+                            elevate_stderr=(
+                                ready_buffer == ready_process.stderr and not capture_stderr
+                            ),
                             borg_local_path=borg_local_path,
                             command=command,
                         ),
@@ -292,7 +315,9 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
                             parse_log_line(
                                 line=line,
                                 log_level=output_log_level,
-                                came_from_stderr=(output_buffer == process.stderr),
+                                elevate_stderr=(
+                                    output_buffer == process.stderr and not capture_stderr
+                                ),
                                 borg_local_path=borg_local_path,
                                 command=command,
                             ),
@@ -471,7 +496,7 @@ def execute_command_and_capture_output(
             command,
             stdin=input_file,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE if capture_stderr else None,
+            stderr=subprocess.PIPE,
             shell=shell,
             env=environment,
             cwd=working_directory,
@@ -496,6 +521,7 @@ def execute_command_and_capture_output(
             None,
             borg_local_path,
             borg_exit_codes,
+            capture_stderr=capture_stderr,
         )
 
     yield from captured_lines
