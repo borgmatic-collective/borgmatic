@@ -179,6 +179,7 @@ def execute_hooks(command_hooks, umask, working_directory, dry_run, **context): 
                     shell=True,
                     environment=make_environment(os.environ),
                     working_directory=working_directory,
+                    close_fds=True,
                 )
         finally:
             if original_umask:

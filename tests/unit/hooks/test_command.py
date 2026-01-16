@@ -204,6 +204,7 @@ def test_execute_hooks_invokes_each_hook_and_command():
             shell=True,
             environment={},
             working_directory=None,
+            close_fds=True,
         ).once()
 
     module.execute_hooks(
@@ -229,6 +230,7 @@ def test_execute_hooks_with_umask_sets_that_umask():
         shell=True,
         environment={},
         working_directory=None,
+        close_fds=True,
     )
 
     module.execute_hooks(
@@ -252,6 +254,7 @@ def test_execute_hooks_with_working_directory_executes_command_with_it():
         shell=True,
         environment={},
         working_directory='/working',
+        close_fds=True,
     )
 
     module.execute_hooks(
@@ -296,6 +299,7 @@ def test_execute_hooks_with_error_logs_as_error():
         shell=True,
         environment={},
         working_directory=None,
+        close_fds=True,
     ).once()
 
     module.execute_hooks(
@@ -340,6 +344,7 @@ def test_execute_hooks_without_commands_to_run_does_not_raise():
             shell=True,
             environment={},
             working_directory=None,
+            close_fds=True,
         ).once()
 
     module.execute_hooks(

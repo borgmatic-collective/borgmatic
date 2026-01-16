@@ -33,6 +33,8 @@
  * #1224: When running an "extract" check with the "--progress" flag, show file extraction progress.
  * #1225: Improve performance and greatly reduce memory usage during pre-backup safety validation on
    large filesystems.
+ * #1230: Fix another warning from LVM about leaked file descriptors, this time when calling
+   "lvcreate" from a command hook.
  * #1234: Fix for the ntfy monitoring hook erroring on emojis in the "title" option.
  * When syslog verbosity is enabled, log to systemd's journal (if present) with
    structured data. See the documentation for more information:
