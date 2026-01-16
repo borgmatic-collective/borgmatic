@@ -39,6 +39,8 @@
  * SECURITY: Prevent shell injection attacks via constant interpolation in command hooks. (This was
    already implemented for deprecated "before_*"/"after_*" command hooks.)
  * Fix for an error in the "key import" action when importing a key from stdin.
+ * Fix the "recreate" action to include borgmatic-specific paths (database dumps, etc.) in recreated
+   archives.
  * Update the "list" action to support the "--json" flag when the "--archive" flag is also used.
  * Promote the ZFS, LVM, and Btrfs hooks from beta features to stable.
 

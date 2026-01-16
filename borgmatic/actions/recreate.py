@@ -1,10 +1,10 @@
 import logging
 import subprocess
 
-import borgmatic.borg.info
+import borgmatic.actions.pattern
+import borgmatic.borg.pattern
 import borgmatic.borg.recreate
 import borgmatic.borg.repo_list
-from borgmatic.actions.pattern import collect_patterns, process_patterns
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +30,16 @@ def run_recreate(
         logger.answer('Recreating repository')
 
     # Collect and process patterns.
-    processed_patterns = process_patterns(
-        collect_patterns(config),
+    processed_patterns = borgmatic.actions.pattern.process_patterns(
+        (
+            *borgmatic.actions.pattern.collect_patterns(config),
+            # Also add borgmatic-specific paths, so they don't get excluded from the recreated
+            # archive. Note that this doesn't currently work for archives created with Borg 1.2 or
+            # below.
+            borgmatic.borg.pattern.Pattern(
+                '/borgmatic', source=borgmatic.borg.pattern.Pattern_source.INTERNAL
+            ),
+        ),
         config,
         borgmatic.config.paths.get_working_directory(config),
     )
