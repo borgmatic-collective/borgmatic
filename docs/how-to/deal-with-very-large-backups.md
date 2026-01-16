@@ -39,6 +39,31 @@ documentation](https://torsion.org/borgmatic/reference/configuration/consistency
 for details.
 
 
+### Pre-backup safety validation
+
+Before running a backup during the `create` action, borgmatic automatically runs
+through some pre-backup safety validation to ensure that:
+
+1. You haven't accidentally excluded borgmatic's [runtime
+directory](https://torsion.org/borgmatic/reference/configuration/runtime-directory/)
+from the backup, which would break things like database dumps, filesystem
+snapshots, etc.
+2. Special files are auto-excluded to prevent Borg from hanging.
+
+This validation does have a cost: performance. On a large filesystem, it can
+take a while to run. So if you are absolutely sure that you aren't excluding
+borgmatic's runtime directory, and you also aren't including any special files
+that might cause Borg to hang, you can disable the pre-backup validation as
+follows:
+
+```yaml
+unsafe_skip_path_validation_before_create: true
+```
+
+However, this is indeed unsafe, and could lead to hangs or data being left out
+of backups. Use this option at your own risk.
+
+
 ## Troubleshooting
 
 ### Broken pipe with remote repository
