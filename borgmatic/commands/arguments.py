@@ -1931,7 +1931,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     )
     recreate_group.add_argument(
         '--archive',
-        help='Archive name, hash, or series to recreate',
+        help='Archive name, hash, or series to recreate, defaults to all archives in the repository (if specified), or all archives across all repositories',
     )
     recreate_group.add_argument(
         '--list',
