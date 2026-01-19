@@ -441,6 +441,7 @@ def run_actions(  # noqa: PLR0912, PLR0915
                         local_borg_version,
                         action_arguments,
                         global_arguments,
+                        dry_run_label,
                         local_path,
                         remote_path,
                     )

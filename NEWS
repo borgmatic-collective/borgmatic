@@ -1,3 +1,7 @@
+2.1.1.dev0
+ * #1241: For the "recreate" action, actually pass the "--dry-run" flag through to Borg instead of
+   just skipping the Borg call.
+
 2.1.0
  * TL;DR: Many logging, memory, and performance improvements. Mind those breaking changes!
  * #485: When running commands (database clients, command hooks, etc.), elevate stderr output to

@@ -60,7 +60,7 @@ follows:
 unsafe_skip_path_validation_before_create: true
 ```
 
-However, this is indeed unsafe, and could lead to hangs or data being left out
+However, this is indeed unsafe and could lead to hangs or data being left out
 of backups. Use this option at your own risk.
 
 

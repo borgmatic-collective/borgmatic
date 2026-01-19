@@ -22,6 +22,7 @@ def test_run_recreate_does_not_raise():
         local_borg_version=None,
         recreate_arguments=flexmock(repository=flexmock(), archive=None),
         global_arguments=flexmock(),
+        dry_run_label='',
         local_path=None,
         remote_path=None,
     )
@@ -45,6 +46,7 @@ def test_run_recreate_with_archive_does_not_raise():
         local_borg_version=None,
         recreate_arguments=flexmock(repository=flexmock(), archive='test-archive'),
         global_arguments=flexmock(),
+        dry_run_label='',
         local_path=None,
         remote_path=None,
     )
@@ -69,6 +71,7 @@ def test_run_recreate_with_leftover_recreate_archive_raises():
             local_borg_version=None,
             recreate_arguments=flexmock(repository=flexmock(), archive='test-archive.recreate'),
             global_arguments=flexmock(),
+            dry_run_label='',
             local_path=None,
             remote_path=None,
         )
@@ -93,6 +96,7 @@ def test_run_recreate_with_latest_archive_resolving_to_leftover_recreate_archive
             local_borg_version=None,
             recreate_arguments=flexmock(repository=flexmock(), archive='latest'),
             global_arguments=flexmock(),
+            dry_run_label='',
             local_path=None,
             remote_path=None,
         )
@@ -122,6 +126,7 @@ def test_run_recreate_with_archive_already_exists_error_raises():
             local_borg_version=None,
             recreate_arguments=flexmock(repository=flexmock(), archive='test-archive', target=None),
             global_arguments=flexmock(),
+            dry_run_label='',
             local_path=None,
             remote_path=None,
         )
@@ -155,6 +160,7 @@ def test_run_recreate_with_target_and_archive_already_exists_error_raises():
                 target='target-archive',
             ),
             global_arguments=flexmock(),
+            dry_run_label='',
             local_path=None,
             remote_path=None,
         )
@@ -188,6 +194,7 @@ def test_run_recreate_with_other_called_process_error_passes_it_through():
                 target='target-archive',
             ),
             global_arguments=flexmock(),
+            dry_run_label='',
             local_path=None,
             remote_path=None,
         )

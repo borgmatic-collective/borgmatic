@@ -18,6 +18,7 @@ def run_recreate(
     local_borg_version,
     recreate_arguments,
     global_arguments,
+    dry_run_label,
     local_path,
     remote_path,
 ):
@@ -25,9 +26,9 @@ def run_recreate(
     Run the "recreate" action for the given repository.
     '''
     if recreate_arguments.archive:
-        logger.answer(f'Recreating archive {recreate_arguments.archive}')
+        logger.answer(f'Recreating archive {recreate_arguments.archive}{dry_run_label}')
     else:
-        logger.answer('Recreating repository')
+        logger.answer(f'Recreating repository{dry_run_label}')
 
     # Collect and process patterns.
     processed_patterns = borgmatic.actions.pattern.process_patterns(

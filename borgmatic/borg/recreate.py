@@ -72,6 +72,7 @@ def recreate_archive(
         + (('--chunker-params', chunker_params) if chunker_params else ())
         + (('--recompress', recompress) if recompress else ())
         + exclude_flags
+        + (('--dry-run',) if global_arguments.dry_run else ())
         + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + (
             (
@@ -93,10 +94,6 @@ def recreate_archive(
             )
         )
     )
-
-    if global_arguments.dry_run:
-        logger.info('Skipping the archive recreation (dry run)')
-        return
 
     borgmatic.execute.execute_command(
         full_command=recreate_command,

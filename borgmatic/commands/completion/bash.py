@@ -39,7 +39,7 @@ def bash_completion():
             'check_version() {',
             '    local this_script="$(cat "$BASH_SOURCE" 2> /dev/null)"',
             '    local installed_script="$(borgmatic --bash-completion 2> /dev/null)"',
-            '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ];'
+            '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ];'  # noqa: ISC004
             f'''        then cat << EOF\n{borgmatic.commands.completion.actions.upgrade_message(
                     'bash',
                     'sudo sh -c "borgmatic --bash-completion > $BASH_SOURCE"',
