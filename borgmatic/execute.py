@@ -234,7 +234,7 @@ def log_outputs(  # noqa: PLR0912
     still_running = True
 
     # Log output for each process until they all exit.
-    while True:  # noqa: PLR1702
+    while True:
         if output_buffers:
             (ready_buffers, _, _) = select.select(output_buffers, [], [])
 
@@ -254,34 +254,33 @@ def log_outputs(  # noqa: PLR0912
                             # Add the process's output to output_buffers to ensure it'll get read.
                             output_buffers.append(other_process.stdout)
 
-                while True:
-                    line = ready_buffer.readline().rstrip().decode()
-                    if not line or not ready_process:
-                        break
+                line = ready_buffer.readline().rstrip().decode()
+                if not line or not ready_process:
+                    continue
 
-                    command = (
-                        ready_process.args.split(' ')
-                        if isinstance(ready_process.args, str)
-                        else ready_process.args
-                    )
+                command = (
+                    ready_process.args.split(' ')
+                    if isinstance(ready_process.args, str)
+                    else ready_process.args
+                )
 
-                    # Keep the last few lines of output in case the process errors and we need the
-                    # output for the exception below.
-                    log_record = handle_log_record(
-                        parse_log_line(
-                            line=line,
-                            log_level=output_log_level,
-                            elevate_stderr=(
-                                ready_buffer == ready_process.stderr and not capture_stderr
-                            ),
-                            borg_local_path=borg_local_path,
-                            command=command,
+                # Keep the last few lines of output in case the process errors and we need the
+                # output for the exception below.
+                log_record = handle_log_record(
+                    parse_log_line(
+                        line=line,
+                        log_level=output_log_level,
+                        elevate_stderr=(
+                            ready_buffer == ready_process.stderr and not capture_stderr
                         ),
-                        last_lines=process_last_lines[ready_process],
-                    )
+                        borg_local_path=borg_local_path,
+                        command=command,
+                    ),
+                    last_lines=process_last_lines[ready_process],
+                )
 
-                    if log_record.levelno is None and ready_process == process_to_capture:
-                        yield log_record.getMessage()
+                if log_record.levelno is None and ready_process == process_to_capture:
+                    yield log_record.getMessage()
 
         if not still_running:
             break
@@ -293,7 +292,6 @@ def log_outputs(  # noqa: PLR0912
 
             if exit_code is None:
                 still_running = True
-                command = process.args.split(' ') if isinstance(process.args, str) else process.args
                 continue
 
             command = process.args.split(' ') if isinstance(process.args, str) else process.args
@@ -346,6 +344,32 @@ def log_outputs(  # noqa: PLR0912
 
                 still_running = False
                 break
+
+        if still_running is True:
+            continue
+
+        for output_buffer in output_buffers:
+            process = process_for_output_buffer.get(output_buffer)
+            last_lines = process_last_lines[process]
+
+            for line in output_buffer.readlines():
+                log_record = handle_log_record(
+                    parse_log_line(
+                        line=line.rstrip().decode(),
+                        log_level=output_log_level,
+                        elevate_stderr=(
+                            output_buffer == process.stderr and not capture_stderr
+                        ),
+                        borg_local_path=borg_local_path,
+                        command=command,
+                    ),
+                    last_lines=last_lines,
+                )
+
+                if log_record.levelno is None and process == process_to_capture:
+                    yield log_record.getMessage()
+
+        return
 
 
 SECRET_COMMAND_FLAG_NAMES = {'--password'}
