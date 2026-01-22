@@ -3,6 +3,7 @@ import contextlib
 import enum
 import json
 import logging
+import os
 import select
 import subprocess
 import textwrap
@@ -196,6 +197,50 @@ def handle_log_record(log_record, last_lines):
     return log_record
 
 
+READ_CHUNK_SIZE = 4096
+
+
+def read_lines(buffer, process, line_separator='\n'):
+    '''
+    Given a Python buffer (like stdout) ready for reading, its process, and a line separator,
+    repeatedly yield a tuple of (decoded) lines from the buffer until the process has exited.
+
+    It is assumed that this function's generator is used in conjunction with an external select()
+    call to know when to read more lines. Otherwise, the generator will busywait if it's called in a
+    tight loop.
+    '''
+    data = ''
+
+    while True:
+        #chunk = buffer.read(READ_CHUNK_SIZE).decode()
+        chunk = os.read(buffer.fileno(), READ_CHUNK_SIZE).decode()
+
+        if not chunk:  # EOF
+            # The process is still running, so we keep running too.
+            if process.poll() is None:
+                continue
+
+            break
+
+        data += chunk
+        lines = []
+
+        while True:
+            separator_position = data.find(line_separator)
+
+            if separator_position == -1:
+                break
+
+            lines.append(data[:separator_position].rstrip())
+            data = data[separator_position + 1 :]
+
+        yield tuple(lines)
+
+    # Yield any leftover data from the end of the buffer.
+    if data:
+        yield tuple(data.rstrip().splitlines())
+
+
 def log_outputs(  # noqa: PLR0912
     processes,
     exclude_stdouts,
@@ -231,6 +276,12 @@ def log_outputs(  # noqa: PLR0912
     }
     output_buffers = list(process_for_output_buffer.keys())
     process_to_capture = processes[-1]
+    reader_for_output_buffer = {
+        buffer: read_lines(buffer, process)
+        for process in processes
+        if process.stdout or process.stderr
+        for buffer in output_buffers_for_process(process, exclude_stdouts)
+    }
 
     # Log output for each process until they all exit.
     while any(process.poll() is None for process in processes):
@@ -252,40 +303,44 @@ def log_outputs(  # noqa: PLR0912
                         ):
                             # Add the process's output to output_buffers to ensure it'll get read.
                             output_buffers.append(other_process.stdout)
+                            process_for_output_buffer[other_process.stdout] = other_process
+                            reader_for_output_buffer[other_process.stdout] = read_lines(
+                                other_process.stdout, other_process
+                            )
 
-                line = ready_buffer.readline().rstrip().decode()
-                if not line or not ready_process:
+                try:
+                    lines = next(reader_for_output_buffer[ready_buffer])
+                except StopIteration:
                     continue
 
-                command = (
-                    ready_process.args.split(' ')
-                    if isinstance(ready_process.args, str)
-                    else ready_process.args
-                )
+                for line in lines:
+                    if not line or not ready_process:
+                        continue
 
-                # Keep the last few lines of output in case the process errors and we need the
-                # output for the exception below.
-                log_record = handle_log_record(
-                    parse_log_line(
-                        line=line,
-                        log_level=output_log_level,
-                        elevate_stderr=(
-                            ready_buffer == ready_process.stderr and not capture_stderr
+                    command = (
+                        ready_process.args.split(' ')
+                        if isinstance(ready_process.args, str)
+                        else ready_process.args
+                    )
+
+                    # Keep the last few lines of output in case the process errors and we need the
+                    # output for the exception below.
+                    log_record = handle_log_record(
+                        parse_log_line(
+                            line=line,
+                            log_level=output_log_level,
+                            elevate_stderr=(
+                                ready_buffer == ready_process.stderr and not capture_stderr
+                            ),
+                            borg_local_path=borg_local_path,
+                            command=command,
                         ),
-                        borg_local_path=borg_local_path,
-                        command=command,
-                    ),
-                    last_lines=process_last_lines[ready_process],
-                )
+                        last_lines=process_last_lines[ready_process],
+                    )
 
-                if log_record.levelno is None and ready_process == process_to_capture:
-                    print('***', log_record.getMessage())
-                    yield log_record.getMessage()
-                else:
-                    # Yield an empty string just to keep the generator executing. Without this,
-                    # logged lines might not get processed by the caller until the next yielded
-                    # message.
-                    yield ''
+                    if log_record.levelno is None and ready_process == process_to_capture:
+                        print('***', log_record.getMessage())
+                        yield log_record.getMessage()
 
         for process in processes:
             exit_code = process.poll() if output_buffers else process.wait()
@@ -301,32 +356,6 @@ def log_outputs(  # noqa: PLR0912
 
                 # If an error occurs, include its output in the raised exception so that we don't
                 # inadvertently hide error output.
-                for output_buffer in output_buffers_for_process(process, exclude_stdouts):
-                    # Collect any straggling output lines that came in since we last gathered output.
-                    while output_buffer:  # pragma: no cover
-                        line = output_buffer.readline().rstrip().decode()
-                        if not line:
-                            break
-
-                        log_record = handle_log_record(
-                            parse_log_line(
-                                line=line,
-                                log_level=output_log_level,
-                                elevate_stderr=(
-                                    output_buffer == process.stderr and not capture_stderr
-                                ),
-                                borg_local_path=borg_local_path,
-                                command=command,
-                            ),
-                            last_lines=last_lines,
-                        )
-
-                        if log_record.levelno is None and process == process_to_capture:
-                            print('**e', log_record.getMessage())
-                            yield log_record.getMessage()
-                        else:
-                            yield
-
                 if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
                     last_lines.insert(0, '...')
 
@@ -349,27 +378,29 @@ def log_outputs(  # noqa: PLR0912
     # Now that all processes have exited, drain and consume any last output.
     for output_buffer in output_buffers:
         process = process_for_output_buffer.get(output_buffer)
+
+        if not process:
+            continue
+
+        command = process.args.split(' ') if isinstance(process.args, str) else process.args
         last_lines = process_last_lines[process]
 
-        for line in output_buffer.readlines():
-            log_record = handle_log_record(
-                parse_log_line(
-                    line=line.rstrip().decode(),
-                    log_level=output_log_level,
-                    elevate_stderr=(
-                        output_buffer == process.stderr and not capture_stderr
+        for lines in reader_for_output_buffer[output_buffer]:
+            for line in lines:
+                log_record = handle_log_record(
+                    parse_log_line(
+                        line=line.rstrip(),
+                        log_level=output_log_level,
+                        elevate_stderr=(output_buffer == process.stderr and not capture_stderr),
+                        borg_local_path=borg_local_path,
+                        command=command,
                     ),
-                    borg_local_path=borg_local_path,
-                    command=command,
-                ),
-                last_lines=last_lines,
-            )
+                    last_lines=last_lines,
+                )
 
-            if log_record.levelno is None and process == process_to_capture:
-                yield log_record.getMessage()
-                print('**d', log_record.getMessage())
-            else:
-                yield ''
+                if log_record.levelno is None and process == process_to_capture:
+                    print('***', log_record.getMessage())
+                    yield log_record.getMessage()
 
 
 SECRET_COMMAND_FLAG_NAMES = {'--password'}
