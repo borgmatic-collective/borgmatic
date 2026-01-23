@@ -364,17 +364,28 @@ def test_log_outputs_vents_other_processes_when_one_exits():
         other_process,
         (process.stdout,),
     ).and_return((other_process.stdout,))
-    flexmock(process.stdout).should_call('readline').at_least().once()
+    flexmock(module.os).should_call('read').with_args(
+        process.stderr.fileno(), int
+    ).at_least().once()
+    flexmock(module.os).should_call('read').with_args(
+        process.stdout.fileno(), int
+    ).at_least().once()
+    flexmock(module.os).should_call('read').with_args(
+        other_process.stdout.fileno(), int
+    ).at_least().once()
 
-    assert tuple(
-        module.log_outputs(
-            (process, other_process),
-            exclude_stdouts=(process.stdout,),
-            output_log_level=logging.INFO,
-            borg_local_path='borg',
-            borg_exit_codes=None,
+    assert (
+        tuple(
+            module.log_outputs(
+                (process, other_process),
+                exclude_stdouts=(process.stdout,),
+                output_log_level=logging.INFO,
+                borg_local_path='borg',
+                borg_exit_codes=None,
+            )
         )
-    ) == ('',)
+        == ()
+    )
 
 
 def test_log_outputs_does_not_error_when_one_process_exits():
@@ -443,8 +454,8 @@ def test_log_outputs_truncates_long_error_output():
             )
         )
 
-        assert error.value.returncode == 2
-        assert error.value.output.startswith('...')
+    assert error.value.returncode == 2
+    assert error.value.output.startswith('...')
 
 
 def test_log_outputs_with_no_output_logs_nothing():

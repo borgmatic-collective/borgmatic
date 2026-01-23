@@ -255,12 +255,12 @@ Buffer_reader = collections.namedtuple(
 
 
 def log_buffer_lines(
-    buffer_readers, processes, output_log_level, borg_local_path, capture_stderr=False
+    buffer_readers, process_last_lines, output_log_level, borg_local_path, capture_stderr=False
 ):
     '''
-    Given a dict from buffer object to Buffer_reader, a sequence of subprocess.Popen() instances for
-    the processes corresponding to those buffers, a requested output log level for stdout, Borg's
-    local path, and whether to capture stderr, read and log any ready output lines from the buffers.
+    Given a dict from buffer object to Buffer_reader, a map from subprocess.Popen() instance to a
+    sequence of last lines for that process, a requested output log level for stdout, Borg's local
+    path, and whether to capture stderr, read and log any ready output lines from the buffers.
     Additionally, if the log level is None for any log record, then yield those log messages for
     capture.
 
@@ -279,7 +279,7 @@ def log_buffer_lines(
         # processes (pipe sources) waiting to be read from. So as a measure to prevent
         # hangs, vent all processes when one exits.
         if reader.process and reader.process.poll() is not None:
-            for other_process in processes:
+            for other_process in process_last_lines.keys():
                 if (
                     other_process.poll() is None
                     and other_process.stdout
@@ -309,10 +309,11 @@ def log_buffer_lines(
                     borg_local_path=borg_local_path,
                     command=reader.process.args,
                 ),
+                last_lines=process_last_lines[reader.process],
             )
 
             # By convention, assume that we're capturing only the last process in the sequence.
-            if log_record.levelno is None and reader.process == processes[-1]:
+            if log_record.levelno is None and reader.process == tuple(process_last_lines.keys())[-1]:
                 print('***', log_record.getMessage())
                 yield log_record.getMessage()
 
@@ -357,7 +358,7 @@ def raise_for_process_errors(buffer_readers, process_last_lines, borg_local_path
                 '\n'.join(last_lines),
             )
 
-        return exit_status
+        return Exit_status.WARNING
 
     return Exit_status.STILL_RUNNING
 
@@ -421,7 +422,9 @@ def log_outputs(
     captured, in which case it won't be logged.
     '''
     # Map from output buffer to sequence of last lines.
-    process_last_lines = collections.defaultdict(list)
+    process_last_lines = {process: [] for process in processes}
+
+    # Map from buffer to Buffer_reader instance.
     buffer_readers = {
         buffer: Buffer_reader(read_lines(buffer, process), process)
         for process in processes
@@ -432,17 +435,22 @@ def log_outputs(
     # Log output for each process until they all exit.
     while any(process.poll() is None for process in processes):
         yield from log_buffer_lines(
-            buffer_readers, processes, output_log_level, borg_local_path, capture_stderr
+            buffer_readers, process_last_lines, output_log_level, borg_local_path, capture_stderr
         )
 
-        if raise_for_process_errors(
-            buffer_readers, process_last_lines, borg_local_path, borg_exit_codes
-        ) == Exit_status.WARNING:
+        if (
+            raise_for_process_errors(
+                buffer_readers, process_last_lines, borg_local_path, borg_exit_codes
+            )
+            == Exit_status.WARNING
+        ):
             break
 
     # Now that all processes have exited, drain and consume any last output. By convention, the last
     # process is the process to capture.
-    yield from log_remaining_buffer_lines(buffer_readers, processes[-1], output_log_level, borg_local_path, capture_stderr)
+    yield from log_remaining_buffer_lines(
+        buffer_readers, processes[-1], output_log_level, borg_local_path, capture_stderr
+    )
 
 
 SECRET_COMMAND_FLAG_NAMES = {'--password'}
