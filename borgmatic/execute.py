@@ -254,17 +254,22 @@ Buffer_reader = collections.namedtuple(
 )
 
 
+Process_metadata = collections.namedtuple(
+    'Process_metadata',
+    ('last_lines', 'capture'),
+)
+
+
 def log_buffer_lines(
-    buffer_readers, process_last_lines, output_log_level, borg_local_path, capture_stderr=False
+    buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr=False
 ):
     '''
-    Given a dict from buffer object to Buffer_reader, a map from subprocess.Popen() instance to a
-    sequence of last lines for that process, a requested output log level for stdout, Borg's local
-    path, and whether to capture stderr, read and log any ready output lines from the buffers.
-    Additionally, if the log level is None for any log record, then yield those log messages for
-    capture.
+    Given a dict from buffer object to Buffer_reader, a dict from subprocess.Popen() instance to
+    Process_metadata instance, a requested output log level for stdout, Borg's local path, and
+    whether to capture stderr, read and log any ready output lines from the buffers.  Additionally,
+    if the log level is None for any log record, then yield those log messages for capture.
 
-    This function just does one "turn of the crank" on logging buffer output. It is intended to be
+    This function just does one "turn of the crank" of logging buffer output. It is intended to be
     called repeatedly to continue to process buffers.
     '''
     if not buffer_readers:
@@ -279,7 +284,7 @@ def log_buffer_lines(
         # processes (pipe sources) waiting to be read from. So as a measure to prevent
         # hangs, vent all processes when one exits.
         if reader.process and reader.process.poll() is not None:
-            for other_process in process_last_lines.keys():
+            for other_process in process_metadatas.keys():
                 if (
                     other_process.poll() is None
                     and other_process.stdout
@@ -309,24 +314,23 @@ def log_buffer_lines(
                     borg_local_path=borg_local_path,
                     command=reader.process.args,
                 ),
-                last_lines=process_last_lines[reader.process],
+                last_lines=process_metadatas[reader.process].last_lines,
             )
 
-            # By convention, assume that we're capturing only the last process in the sequence.
-            if log_record.levelno is None and reader.process == tuple(process_last_lines.keys())[-1]:
+            if log_record.levelno is None and process_metadatas[reader.process].capture:
                 print('***', log_record.getMessage())
                 yield log_record.getMessage()
 
 
-def raise_for_process_errors(buffer_readers, process_last_lines, borg_local_path, borg_exit_codes):
+def raise_for_process_errors(buffer_readers, process_metadatas, borg_local_path, borg_exit_codes):
     '''
-    Given a dict from buffer object to Buffer_reader, a map from subprocess.Popen() instance to a
-    sequence of last lines for that process, Borg's local path, a sequence of exit code
-    configuration dicts, check the given processes for error or warning exit codes. If found, vent
-    or kill any running processes. In the case of an error exit code, raise. In the case of warning,
-    return Exit_status.WARNING. Otherwise, return Exit_status.STILL_RUNNING.
+    Given a dict from buffer object to Buffer_reader, a dict from subprocess.Popen() instance to
+    Process_metadata instance, Borg's local path, a sequence of exit code configuration dicts, check
+    the given processes for error or warning exit codes. If found, vent or kill any running
+    processes. In the case of an error exit code, raise. In the case of warning, return
+    Exit_status.WARNING. Otherwise, return Exit_status.STILL_RUNNING.
     '''
-    for process in process_last_lines.keys():
+    for process in process_metadatas.keys():
         exit_code = process.poll() if buffer_readers else process.wait()
 
         if exit_code is None:
@@ -337,16 +341,16 @@ def raise_for_process_errors(buffer_readers, process_last_lines, borg_local_path
         if exit_status not in {Exit_status.ERROR, Exit_status.WARNING}:
             continue
 
-        last_lines = process_last_lines[process]
+        last_lines = process_metadatas[process].last_lines
 
         # If an error occurs, include its output in the raised exception so that we don't
         # inadvertently hide error output.
-        if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
+        if len(last_lines) >= ERROR_OUTPUT_MAX_LINE_COUNT:
             last_lines.insert(0, '...')
 
         # Something has gone wrong. So vent each process' output buffer to prevent it from
         # hanging. And then kill the process.
-        for other_process in process_last_lines.keys():
+        for other_process in process_metadatas.keys():
             if other_process.poll() is None:
                 other_process.stdout.read(0)
                 other_process.kill()
@@ -364,14 +368,14 @@ def raise_for_process_errors(buffer_readers, process_last_lines, borg_local_path
 
 
 def log_remaining_buffer_lines(
-    buffer_readers, process_to_capture, output_log_level, borg_local_path, capture_stderr=False
+    buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr=False
 ):
     '''
-    Given a dict from buffer object to Buffer_reader, a subprocess.Popen() instance of a process to
-    capture, a requested output log level for stdout, Borg's local path, and whether to capture
-    stderr, drain and log any remaining output lines from the buffers until they're empty.
-    Additionally, if the log level is None for any log record, then yield those log messages for
-    capture.
+    Given a dict from buffer object to Buffer_reader, a dict from subprocess.Popen() instance to
+    Process_metadata instance, a requested output log level for stdout, Borg's local path, and
+    whether to capture stderr, drain and log any remaining output lines from the buffers until
+    they're empty. Additionally, if the log level is None for any log record, then yield those log
+    messages for capture.
     '''
     for output_buffer, reader in buffer_readers.items():
         if not reader.process:
@@ -391,7 +395,7 @@ def log_remaining_buffer_lines(
                     ),
                 )
 
-                if log_record.levelno is None and reader.process == process_to_capture:
+                if log_record.levelno is None and process_metadatas[reader.process].capture:
                     print('***', log_record.getMessage())
                     yield log_record.getMessage()
 
@@ -421,8 +425,12 @@ def log_outputs(
     buffers. Also note that stdout for a process can be None if output is intentionally not
     captured, in which case it won't be logged.
     '''
-    # Map from output buffer to sequence of last lines.
-    process_last_lines = {process: [] for process in processes}
+    # Map from output buffer to Process_metadata instance. By convention, the last process is the
+    # process to capture.
+    process_metadatas = {
+        process: Process_metadata(last_lines=[], capture=bool(process == processes[-1]))
+        for process in processes
+    }
 
     # Map from buffer to Buffer_reader instance.
     buffer_readers = {
@@ -432,24 +440,26 @@ def log_outputs(
         for buffer in output_buffers_for_process(process, exclude_stdouts)
     }
 
-    # Log output for each process until they all exit.
-    while any(process.poll() is None for process in processes):
+    # Log output lines for each process until they all exit.
+    while True:
         yield from log_buffer_lines(
-            buffer_readers, process_last_lines, output_log_level, borg_local_path, capture_stderr
+            buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr
         )
 
         if (
             raise_for_process_errors(
-                buffer_readers, process_last_lines, borg_local_path, borg_exit_codes
+                buffer_readers, process_metadatas, borg_local_path, borg_exit_codes
             )
             == Exit_status.WARNING
         ):
             break
 
-    # Now that all processes have exited, drain and consume any last output. By convention, the last
-    # process is the process to capture.
+        if all(process.poll() is not None for process in processes):
+            break
+
+    # Now that all processes have exited, drain and consume any last output.
     yield from log_remaining_buffer_lines(
-        buffer_readers, processes[-1], output_log_level, borg_local_path, capture_stderr
+        buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr
     )
 
 
