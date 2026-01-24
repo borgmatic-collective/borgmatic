@@ -42,7 +42,7 @@ def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_code
     if exit_code == 0:
         return Exit_status.SUCCESS
 
-    parsed_command = command.args.split(' ', 1) if isinstance(command, str) else command
+    parsed_command = command.split(' ', 1) if isinstance(command, str) else command
 
     if borg_local_path and parsed_command[0] == borg_local_path:
         # First try looking for the exit code in the borg_exit_codes configuration.
@@ -284,7 +284,7 @@ def log_buffer_lines(
         # processes (pipe sources) waiting to be read from. So as a measure to prevent
         # hangs, vent all processes when one exits.
         if reader.process and reader.process.poll() is not None:
-            for other_process in process_metadatas.keys():
+            for other_process in process_metadatas:
                 if (
                     other_process.poll() is None
                     and other_process.stdout
@@ -318,7 +318,6 @@ def log_buffer_lines(
             )
 
             if log_record.levelno is None and process_metadatas[reader.process].capture:
-                print('***', log_record.getMessage())
                 yield log_record.getMessage()
 
 
@@ -328,9 +327,11 @@ def raise_for_process_errors(buffer_readers, process_metadatas, borg_local_path,
     Process_metadata instance, Borg's local path, a sequence of exit code configuration dicts, check
     the given processes for error or warning exit codes. If found, vent or kill any running
     processes. In the case of an error exit code, raise. In the case of warning, return
-    Exit_status.WARNING. Otherwise, return Exit_status.STILL_RUNNING.
+    Exit_status.WARNING. Otherwise, return None.
     '''
-    for process in process_metadatas.keys():
+    result_status = None
+
+    for process in process_metadatas:
         exit_code = process.poll() if buffer_readers else process.wait()
 
         if exit_code is None:
@@ -341,6 +342,17 @@ def raise_for_process_errors(buffer_readers, process_metadatas, borg_local_path,
         if exit_status not in {Exit_status.ERROR, Exit_status.WARNING}:
             continue
 
+        # Something has gone wrong. So vent each process' output buffer to prevent it from
+        # hanging. And then kill the process.
+        for other_process in process_metadatas:
+            if other_process.poll() is None:
+                other_process.stdout.read(0)
+                other_process.kill()
+
+        if exit_status == Exit_status.WARNING:
+            result_status = Exit_status.WARNING
+            continue
+
         last_lines = process_metadatas[process].last_lines
 
         # If an error occurs, include its output in the raised exception so that we don't
@@ -348,23 +360,13 @@ def raise_for_process_errors(buffer_readers, process_metadatas, borg_local_path,
         if len(last_lines) >= ERROR_OUTPUT_MAX_LINE_COUNT:
             last_lines.insert(0, '...')
 
-        # Something has gone wrong. So vent each process' output buffer to prevent it from
-        # hanging. And then kill the process.
-        for other_process in process_metadatas.keys():
-            if other_process.poll() is None:
-                other_process.stdout.read(0)
-                other_process.kill()
+        raise subprocess.CalledProcessError(
+            exit_code,
+            command_for_process(process),
+            '\n'.join(last_lines),
+        )
 
-        if exit_status == Exit_status.ERROR:
-            raise subprocess.CalledProcessError(
-                exit_code,
-                command_for_process(process),
-                '\n'.join(last_lines),
-            )
-
-        return Exit_status.WARNING
-
-    return Exit_status.STILL_RUNNING
+    return result_status
 
 
 def log_remaining_buffer_lines(
@@ -396,7 +398,6 @@ def log_remaining_buffer_lines(
                 )
 
                 if log_record.levelno is None and process_metadatas[reader.process].capture:
-                    print('***', log_record.getMessage())
                     yield log_record.getMessage()
 
 

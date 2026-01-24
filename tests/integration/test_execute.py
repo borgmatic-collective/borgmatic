@@ -8,6 +8,42 @@ from flexmock import flexmock
 from borgmatic import execute as module
 
 
+def test_read_lines_yields_single_line():
+    process = subprocess.Popen(['echo', 'hi'], stdout=subprocess.PIPE)
+
+    assert tuple(module.read_lines(process.stdout, process)) == (('hi',),)
+
+
+def test_read_lines_yields_single_line_longer_than_chunk_size():
+    process = subprocess.Popen(
+        ['echo', 'this line is longer than the chunk size'], stdout=subprocess.PIPE
+    )
+
+    assert tuple(flexmock(module, READ_CHUNK_SIZE=16).read_lines(process.stdout, process)) == (
+        (),
+        (),
+        ('this line is longer than the chunk size',),
+    )
+
+
+def test_read_lines_yields_multiple_lines():
+    process = subprocess.Popen(['echo', 'hi\nthere'], stdout=subprocess.PIPE)
+
+    assert tuple(module.read_lines(process.stdout, process)) == (('hi', 'there'),)
+
+
+def test_read_lines_yields_multiple_lines_plus_partial_line():
+    process = subprocess.Popen(['echo', '-n', 'hi\nthere\npartial'], stdout=subprocess.PIPE)
+
+    assert tuple(module.read_lines(process.stdout, process)) == (('hi', 'there'), ('partial',))
+
+
+def test_read_lines_yields_nothing():
+    process = subprocess.Popen(['echo', '-n'], stdout=subprocess.PIPE)
+
+    assert tuple(module.read_lines(process.stdout, process)) == ()
+
+
 def test_log_outputs_logs_each_line_separately():
     hi_record = flexmock(
         msg='hi',

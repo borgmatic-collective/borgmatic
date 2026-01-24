@@ -19,12 +19,18 @@ from borgmatic import execute as module
         (['borg1'], 1, 'borg1', None, module.Exit_status.WARNING),
         (['grep'], 100, None, None, module.Exit_status.ERROR),
         (['grep'], 100, 'borg', None, module.Exit_status.ERROR),
+        ('grep', 2, None, None, module.Exit_status.ERROR),
+        ('borg', 2, 'borg', None, module.Exit_status.ERROR),
         (['borg'], 100, 'borg', None, module.Exit_status.WARNING),
         (['borg1'], 100, 'borg1', None, module.Exit_status.WARNING),
+        ('borg', 100, 'borg', None, module.Exit_status.WARNING),
+        ('borg1', 100, 'borg1', None, module.Exit_status.WARNING),
         (['grep'], 0, None, None, module.Exit_status.SUCCESS),
         (['grep'], 0, 'borg', None, module.Exit_status.SUCCESS),
         (['borg'], 0, 'borg', None, module.Exit_status.SUCCESS),
         (['borg1'], 0, 'borg1', None, module.Exit_status.SUCCESS),
+        ('grep', 0, None, None, module.Exit_status.SUCCESS),
+        ('grep', 0, 'borg', None, module.Exit_status.SUCCESS),
         # -9 exit code occurs when child process get SIGKILLed.
         (['grep'], -9, None, None, module.Exit_status.ERROR),
         (['grep'], -9, 'borg', None, module.Exit_status.ERROR),
@@ -174,6 +180,23 @@ def test_parse_log_line_with_borg_command_parses_borg_log_line():
     )
 
 
+def test_parse_log_line_with_borg_command_parses_borg_log_line_with_string_command():
+    record = flexmock()
+    flexmock(module).should_receive('borg_json_log_line_to_record').and_return(record).once()
+    flexmock(module).should_receive('log_line_to_record').never()
+
+    assert (
+        module.parse_log_line(
+            'All done',
+            module.logging.INFO,
+            elevate_stderr=False,
+            borg_local_path='borg',
+            command='borg do-stuff',
+        )
+        == record
+    )
+
+
 def test_parse_log_line_without_borg_command_parses_plain_log_line():
     record = flexmock()
     flexmock(module).should_receive('borg_json_log_line_to_record').never()
@@ -186,6 +209,23 @@ def test_parse_log_line_without_borg_command_parses_plain_log_line():
             elevate_stderr=False,
             borg_local_path='borg',
             command=['totally-not-borg', 'do-stuff'],
+        )
+        == record
+    )
+
+
+def test_parse_log_line_without_borg_command_parses_plain_log_line_with_string_command():
+    record = flexmock()
+    flexmock(module).should_receive('borg_json_log_line_to_record').never()
+    flexmock(module).should_receive('log_line_to_record').and_return(record).once()
+
+    assert (
+        module.parse_log_line(
+            'All done',
+            module.logging.INFO,
+            elevate_stderr=False,
+            borg_local_path='borg',
+            command='totally-not-borg do-stuff',
         )
         == record
     )
@@ -260,6 +300,837 @@ def test_handle_log_record_over_max_line_count_trims_and_appends():
     )
 
     assert last_lines == [*original_last_lines[1:], 'line']
+
+
+def test_log_buffer_lines_without_buffer_readers_bails():
+    flexmock(module.select).should_receive('select').never()
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers={},
+                process_metadatas={},
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_buffer_lines_without_ready_buffers_bails():
+    buffer_readers = {flexmock(): flexmock()}
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return([], [], []).once()
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers=buffer_readers,
+                process_metadatas={},
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_buffer_lines_with_ready_buffer_and_running_process_handles_each_log_line():
+    process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
+    buffer_readers = {
+        flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return(list(buffer_readers.keys()), [], [])
+    flexmock(module).should_receive('parse_log_line').and_return(flexmock())
+    flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).twice()
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers=buffer_readers,
+                process_metadatas=process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_buffer_lines_with_ready_buffer_and_capture_process_yields_each_line():
+    process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
+    buffer_readers = {
+        flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=True)}
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return(list(buffer_readers.keys()), [], [])
+    flexmock(module).should_receive('parse_log_line').and_return(flexmock())
+    flexmock(module).should_receive('handle_log_record').and_return(
+        flexmock(levelno=None, getMessage=lambda: 'message')
+    ).twice()
+
+    assert tuple(
+        module.log_buffer_lines(
+            buffer_readers=buffer_readers,
+            process_metadatas=process_metadatas,
+            output_log_level=flexmock(),
+            borg_local_path=flexmock(),
+        )
+    ) == ('message', 'message')
+
+
+def test_log_buffer_lines_with_ready_buffer_and_log_level_and_capture_process_does_not_yield_each_line():
+    process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
+    buffer_readers = {
+        flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=True)}
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return(list(buffer_readers.keys()), [], [])
+    flexmock(module).should_receive('parse_log_line').and_return(flexmock())
+    flexmock(module).should_receive('handle_log_record').and_return(
+        flexmock(levelno=10, getMessage=lambda: 'message')
+    ).twice()
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers=buffer_readers,
+                process_metadatas=process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_buffer_lines_with_ready_buffer_and_finished_process_vents_other_processes():
+    process_stdout = flexmock()
+    process = flexmock(poll=lambda: 0, stdout=process_stdout, stderr=flexmock(), args=flexmock())
+    other_process = flexmock(
+        poll=lambda: None, stdout=flexmock(), stderr=flexmock(), args=flexmock()
+    )
+    buffer_readers = {process_stdout: module.Buffer_reader(lines=iter((('hi',),)), process=process)}
+    process_metadatas = {
+        process: module.Process_metadata(last_lines=[], capture=False),
+        other_process: module.Process_metadata(last_lines=[], capture=False),
+    }
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return(list(buffer_readers.keys()), [], [])
+    flexmock(module).should_receive('read_lines').and_return(iter((('there',),))).once()
+    flexmock(module).should_receive('parse_log_line').and_return(flexmock())
+    flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).once()
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers=buffer_readers,
+                process_metadatas=process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+    # log_buffer_lines() vents other processes by adding them to buffer_readers, with the idea that
+    # subsequent calls will then read from them.
+    assert len(buffer_readers) == 2
+
+    # Assert that the process' buffer has been consumed, indicating that it hasn't been accidentally
+    # replaced.
+    assert tuple(buffer_readers[process_stdout].lines) == ()
+
+
+def test_log_buffer_lines_with_ready_buffer_and_finished_process_does_not_vent_other_finished_processes():
+    process_stdout = flexmock()
+    process = flexmock(poll=lambda: 0, stdout=process_stdout, stderr=flexmock(), args=flexmock())
+    other_process = flexmock(poll=lambda: 0, stdout=flexmock(), stderr=flexmock(), args=flexmock())
+    buffer_readers = {process_stdout: module.Buffer_reader(lines=iter((('hi',),)), process=process)}
+    process_metadatas = {
+        process: module.Process_metadata(last_lines=[], capture=False),
+        other_process: module.Process_metadata(last_lines=[], capture=False),
+    }
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return(list(buffer_readers.keys()), [], [])
+    flexmock(module).should_receive('read_lines').never()
+    flexmock(module).should_receive('parse_log_line').and_return(flexmock())
+    flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).once()
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers=buffer_readers,
+                process_metadatas=process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+    assert len(buffer_readers) == 1
+    assert tuple(buffer_readers[process_stdout].lines) == ()
+
+
+def test_log_buffer_lines_with_ready_eof_buffer_and_running_process_skips_it():
+    process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=iter(()), process=process)}
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return(list(buffer_readers.keys()), [], [])
+    flexmock(module).should_receive('parse_log_line').never()
+    flexmock(module).should_receive('handle_log_record').never()
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers=buffer_readers,
+                process_metadatas=process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_buffer_lines_with_ready_buffer_with_empty_line_skips_it():
+    process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=iter((('',),)), process=process)}
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return(list(buffer_readers.keys()), [], [])
+    flexmock(module).should_receive('parse_log_line').never()
+    flexmock(module).should_receive('handle_log_record').never()
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers=buffer_readers,
+                process_metadatas=process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_buffer_lines_with_multiple_ready_buffers_and_running_processes_handles_log_lines_from_each():
+    process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
+    other_process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
+    buffer_readers = {
+        flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process),
+        flexmock(): module.Buffer_reader(lines=iter((('foo', 'bar'),)), process=other_process),
+    }
+    process_metadatas = {
+        process: module.Process_metadata(last_lines=[], capture=False),
+        other_process: module.Process_metadata(last_lines=[], capture=False),
+    }
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return(list(buffer_readers.keys()), [], [])
+    flexmock(module).should_receive('parse_log_line').and_return(flexmock())
+    flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).times(4)
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers=buffer_readers,
+                process_metadatas=process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_buffer_lines_with_multiple_ready_buffers_from_same_running_process_handles_all_log_lines():
+    process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
+    buffer_readers = {
+        flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process),
+        flexmock(): module.Buffer_reader(lines=iter((('foo', 'bar'),)), process=process),
+    }
+    process_metadatas = {
+        process: module.Process_metadata(last_lines=[], capture=False),
+    }
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return(list(buffer_readers.keys()), [], [])
+    flexmock(module).should_receive('parse_log_line').and_return(flexmock())
+    flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).times(4)
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers=buffer_readers,
+                process_metadatas=process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_buffer_lines_with_ready_stderr_buffer_and_running_process_elevates_stderr():
+    process_stderr = flexmock()
+    process = flexmock(poll=lambda: None, stderr=process_stderr, args=flexmock())
+    buffer_readers = {
+        process_stderr: module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return(list(buffer_readers.keys()), [], [])
+    flexmock(module).should_receive('parse_log_line').with_args(
+        line=str, log_level=object, elevate_stderr=True, borg_local_path=object, command=object
+    ).and_return(flexmock()).twice()
+    flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).twice()
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers=buffer_readers,
+                process_metadatas=process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_buffer_lines_with_ready_stdout_buffer_and_running_process_does_not_elevate_stderr():
+    process_stdout = flexmock()
+    process = flexmock(poll=lambda: None, stdout=process_stdout, stderr=flexmock(), args=flexmock())
+    buffer_readers = {
+        process_stdout: module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return(list(buffer_readers.keys()), [], [])
+    flexmock(module).should_receive('parse_log_line').with_args(
+        line=str, log_level=object, elevate_stderr=False, borg_local_path=object, command=object
+    ).and_return(flexmock()).twice()
+    flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).twice()
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers=buffer_readers,
+                process_metadatas=process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_buffer_lines_with_ready_stderr_buffer_and_capture_stderr_does_not_elevate_stderr():
+    process_stderr = flexmock()
+    process = flexmock(poll=lambda: None, stderr=process_stderr, args=flexmock())
+    buffer_readers = {
+        process_stderr: module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module.select).should_receive('select').with_args(
+        buffer_readers.keys(), [], []
+    ).and_return(list(buffer_readers.keys()), [], [])
+    flexmock(module).should_receive('parse_log_line').with_args(
+        line=str, log_level=object, elevate_stderr=False, borg_local_path=object, command=object
+    ).and_return(flexmock()).twice()
+    flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).twice()
+
+    assert (
+        tuple(
+            module.log_buffer_lines(
+                buffer_readers=buffer_readers,
+                process_metadatas=process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+                capture_stderr=True,
+            )
+        )
+        == ()
+    )
+
+
+def test_raise_for_process_errors_with_no_processes_bails():
+    process = flexmock()
+    process.should_receive('poll').never()
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=process)}
+
+    assert (
+        module.raise_for_process_errors(
+            buffer_readers,
+            process_metadatas={},
+            borg_local_path=flexmock(),
+            borg_exit_codes=flexmock(),
+        )
+        is None
+    )
+
+
+def test_raise_for_process_errors_with_running_process_bails():
+    process = flexmock(poll=lambda: None)
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=process)}
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+
+    assert (
+        module.raise_for_process_errors(
+            buffer_readers,
+            process_metadatas,
+            borg_local_path=flexmock(),
+            borg_exit_codes=flexmock(),
+        )
+        is None
+    )
+
+
+def test_raise_for_process_errors_with_running_process_and_no_buffer_readers_waits_and_bails():
+    process = flexmock()
+    process.should_receive('poll').never()
+    process.should_receive('wait').and_return(None).once()
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+
+    assert (
+        module.raise_for_process_errors(
+            buffer_readers={},
+            process_metadatas=process_metadatas,
+            borg_local_path=flexmock(),
+            borg_exit_codes=flexmock(),
+        )
+        is None
+    )
+
+
+def test_raise_for_process_errors_with_successful_process_bails():
+    process = flexmock(poll=lambda: 0, args=flexmock())
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=process)}
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
+
+    assert (
+        module.raise_for_process_errors(
+            buffer_readers,
+            process_metadatas,
+            borg_local_path=flexmock(),
+            borg_exit_codes=flexmock(),
+        )
+        is None
+    )
+
+
+def test_raise_for_process_errors_with_warning_process_returns_warning_status():
+    process = flexmock(poll=lambda: 1, args=flexmock())
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=process)}
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.WARNING)
+
+    assert (
+        module.raise_for_process_errors(
+            buffer_readers,
+            process_metadatas,
+            borg_local_path=flexmock(),
+            borg_exit_codes=flexmock(),
+        )
+        == module.Exit_status.WARNING
+    )
+
+
+def test_raise_for_process_errors_with_error_process_raises():
+    process = flexmock(poll=lambda: 3, args=flexmock())
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=process)}
+    process_metadatas = {
+        process: module.Process_metadata(last_lines=['hi', 'there'], capture=False)
+    }
+    flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.ERROR)
+    command = flexmock()
+    flexmock(module).should_receive('command_for_process').and_return(command)
+
+    with pytest.raises(module.subprocess.CalledProcessError) as error:
+        module.raise_for_process_errors(
+            buffer_readers,
+            process_metadatas,
+            borg_local_path=flexmock(),
+            borg_exit_codes=flexmock(),
+        )
+
+    assert error.value.returncode == 3
+    assert error.value.cmd == command
+    assert error.value.output == 'hi\nthere'
+
+
+def test_raise_for_process_errors_with_success_process_and_warning_process_returns_warning_status():
+    process = flexmock(poll=lambda: 0, args=flexmock())
+    other_process = flexmock(poll=lambda: 1, args=flexmock())
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=process)}
+    process_metadatas = {
+        process: module.Process_metadata(last_lines=['hi', 'there'], capture=False),
+        other_process: module.Process_metadata(last_lines=['and', 'stuff'], capture=False),
+    }
+    flexmock(module).should_receive('interpret_exit_code').with_args(
+        object, 0, object, object
+    ).and_return(module.Exit_status.SUCCESS)
+    flexmock(module).should_receive('interpret_exit_code').with_args(
+        object, 1, object, object
+    ).and_return(module.Exit_status.WARNING)
+    flexmock(module).should_receive('command_for_process').never()
+
+    assert (
+        module.raise_for_process_errors(
+            buffer_readers,
+            process_metadatas,
+            borg_local_path=flexmock(),
+            borg_exit_codes=flexmock(),
+        )
+        == module.Exit_status.WARNING
+    )
+
+
+def test_raise_for_process_errors_with_warning_process_and_error_process_raises():
+    process = flexmock(poll=lambda: 1, args=flexmock())
+    other_process = flexmock(poll=lambda: 3, args=flexmock())
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=process)}
+    process_metadatas = {
+        process: module.Process_metadata(last_lines=['hi', 'there'], capture=False),
+        other_process: module.Process_metadata(last_lines=['and', 'stuff'], capture=False),
+    }
+    flexmock(module).should_receive('interpret_exit_code').with_args(
+        object, 1, object, object
+    ).and_return(module.Exit_status.WARNING)
+    flexmock(module).should_receive('interpret_exit_code').with_args(
+        object, 3, object, object
+    ).and_return(module.Exit_status.ERROR)
+    command = flexmock()
+    flexmock(module).should_receive('command_for_process').and_return(command)
+
+    with pytest.raises(module.subprocess.CalledProcessError) as error:
+        module.raise_for_process_errors(
+            buffer_readers,
+            process_metadatas,
+            borg_local_path=flexmock(),
+            borg_exit_codes=flexmock(),
+        )
+
+    assert error.value.returncode == 3
+    assert error.value.cmd == command
+    assert error.value.output == 'and\nstuff'
+
+
+def test_raise_for_process_errors_with_warning_process_and_running_process_kills_and_returns_warning_status():
+    process = flexmock(poll=lambda: 1, args=flexmock())
+    other_process = flexmock(
+        poll=lambda: None, stdout=flexmock(read=lambda size: None), args=flexmock()
+    )
+    other_process.should_receive('kill').once()
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=process)}
+    process_metadatas = {
+        process: module.Process_metadata(last_lines=['hi', 'there'], capture=False),
+        other_process: module.Process_metadata(last_lines=['and', 'stuff'], capture=False),
+    }
+    flexmock(module).should_receive('interpret_exit_code').with_args(
+        object, 1, object, object
+    ).and_return(module.Exit_status.WARNING)
+    command = flexmock()
+    flexmock(module).should_receive('command_for_process').and_return(command)
+
+    assert (
+        module.raise_for_process_errors(
+            buffer_readers,
+            process_metadatas,
+            borg_local_path=flexmock(),
+            borg_exit_codes=flexmock(),
+        )
+        == module.Exit_status.WARNING
+    )
+
+
+def test_raise_for_process_errors_with_error_process_and_running_process_kills_and_raises():
+    process = flexmock(poll=lambda: 3, args=flexmock())
+    other_process = flexmock(
+        poll=lambda: None, stdout=flexmock(read=lambda size: None), args=flexmock()
+    )
+    other_process.should_receive('kill').once()
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=process)}
+    process_metadatas = {
+        process: module.Process_metadata(last_lines=['hi', 'there'], capture=False),
+        other_process: module.Process_metadata(last_lines=['and', 'stuff'], capture=False),
+    }
+    flexmock(module).should_receive('interpret_exit_code').with_args(
+        object, 3, object, object
+    ).and_return(module.Exit_status.ERROR)
+    command = flexmock()
+    flexmock(module).should_receive('command_for_process').and_return(command)
+
+    with pytest.raises(module.subprocess.CalledProcessError) as error:
+        module.raise_for_process_errors(
+            buffer_readers,
+            process_metadatas,
+            borg_local_path=flexmock(),
+            borg_exit_codes=flexmock(),
+        )
+
+    assert error.value.returncode == 3
+    assert error.value.cmd == command
+    assert error.value.output == 'hi\nthere'
+
+
+def test_raise_for_process_errors_with_warning_process_and_long_output_raises_with_truncated_output():
+    process = flexmock(poll=lambda: 3, args=flexmock())
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=process)}
+    process_metadatas = {
+        process: module.Process_metadata(last_lines=['hi', 'there'], capture=False)
+    }
+    flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.ERROR)
+    command = flexmock()
+    flexmock(module).should_receive('command_for_process').and_return(command)
+
+    with pytest.raises(module.subprocess.CalledProcessError) as error:
+        flexmock(module, ERROR_OUTPUT_MAX_LINE_COUNT=2).raise_for_process_errors(
+            buffer_readers,
+            process_metadatas,
+            borg_local_path=flexmock(),
+            borg_exit_codes=flexmock(),
+        )
+
+    assert error.value.returncode == 3
+    assert error.value.cmd == command
+    assert error.value.output == '...\nhi\nthere'
+
+
+def test_log_remaining_buffer_lines_without_buffer_readers_bails():
+    process_metadatas = {flexmock(): module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module).should_receive('parse_log_line').never()
+
+    assert (
+        tuple(
+            module.log_remaining_buffer_lines(
+                buffer_readers={},
+                process_metadatas=process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_remaining_buffer_lines_without_reader_process_bails():
+    buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=None)}
+    process_metadatas = {flexmock(): module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module).should_receive('parse_log_line').never()
+
+    assert (
+        tuple(
+            module.log_remaining_buffer_lines(
+                buffer_readers,
+                process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_remaining_buffer_lines_logs_each_line():
+    process = flexmock(stderr=flexmock(), args=flexmock())
+    buffer_readers = {
+        flexmock(): module.Buffer_reader(
+            lines=(('hi', 'there'), ('and', 'stuff')),
+            process=process,
+        )
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module).should_receive('parse_log_line').with_args(
+        line=str, log_level=object, elevate_stderr=False, borg_local_path=object, command=object
+    ).and_return(flexmock()).times(4)
+    flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).times(4)
+
+    assert (
+        tuple(
+            module.log_remaining_buffer_lines(
+                buffer_readers,
+                process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_remaining_buffer_lines_with_multiple_buffers_logs_lines_from_each():
+    process = flexmock(stderr=flexmock(), args=flexmock())
+    buffer_readers = {
+        flexmock(): module.Buffer_reader(
+            lines=(('hi', 'there'),),
+            process=process,
+        ),
+        flexmock(): module.Buffer_reader(
+            lines=(('and', 'stuff'),),
+            process=process,
+        ),
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module).should_receive('parse_log_line').with_args(
+        line=str, log_level=object, elevate_stderr=False, borg_local_path=object, command=object
+    ).and_return(flexmock()).times(4)
+    flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).times(4)
+
+    assert (
+        tuple(
+            module.log_remaining_buffer_lines(
+                buffer_readers,
+                process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_remaining_buffer_lines_with_stderr_buffer_elevates_stderr():
+    stderr = flexmock()
+    process = flexmock(stderr=stderr, args=flexmock())
+    buffer_readers = {
+        stderr: module.Buffer_reader(
+            lines=(('hi', 'there'),),
+            process=process,
+        ),
+        flexmock(): module.Buffer_reader(
+            lines=(('and', 'stuff'),),
+            process=process,
+        ),
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module).should_receive('parse_log_line').with_args(
+        line=str, log_level=object, elevate_stderr=True, borg_local_path=object, command=object
+    ).and_return(flexmock()).twice()
+    flexmock(module).should_receive('parse_log_line').with_args(
+        line=str, log_level=object, elevate_stderr=False, borg_local_path=object, command=object
+    ).and_return(flexmock()).twice()
+    flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).times(4)
+
+    assert (
+        tuple(
+            module.log_remaining_buffer_lines(
+                buffer_readers,
+                process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
+
+
+def test_log_remaining_buffer_lines_with_stderr_buffer_and_capture_stderr_does_not_elevate_stderr():
+    stderr = flexmock()
+    process = flexmock(stderr=stderr, args=flexmock())
+    buffer_readers = {
+        stderr: module.Buffer_reader(
+            lines=(('hi', 'there'),),
+            process=process,
+        ),
+        flexmock(): module.Buffer_reader(
+            lines=(('and', 'stuff'),),
+            process=process,
+        ),
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module).should_receive('parse_log_line').with_args(
+        line=str, log_level=object, elevate_stderr=False, borg_local_path=object, command=object
+    ).and_return(flexmock()).times(4)
+    flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).times(4)
+
+    assert (
+        tuple(
+            module.log_remaining_buffer_lines(
+                buffer_readers,
+                process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+                capture_stderr=True,
+            )
+        )
+        == ()
+    )
+
+
+def test_log_remaining_buffer_lines_with_capture_process_yields_each_line():
+    process = flexmock(stderr=flexmock(), args=flexmock())
+    buffer_readers = {
+        flexmock(): module.Buffer_reader(
+            lines=(('hi', 'there'),),
+            process=process,
+        )
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=True)}
+    flexmock(module).should_receive('parse_log_line').with_args(
+        line=str, log_level=object, elevate_stderr=False, borg_local_path=object, command=object
+    ).and_return(flexmock()).twice()
+    flexmock(module).should_receive('handle_log_record').and_return(
+        flexmock(levelno=None, getMessage=lambda: 'message')
+    ).twice()
+
+    assert tuple(
+        module.log_remaining_buffer_lines(
+            buffer_readers,
+            process_metadatas,
+            output_log_level=flexmock(),
+            borg_local_path=flexmock(),
+        )
+    ) == ('message', 'message')
+
+
+def test_log_remaining_buffer_lines_with_log_level_and_capture_process_does_not_yield_each_line():
+    process = flexmock(stderr=flexmock(), args=flexmock())
+    buffer_readers = {
+        flexmock(): module.Buffer_reader(
+            lines=(('hi', 'there'),),
+            process=process,
+        )
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=True)}
+    flexmock(module).should_receive('parse_log_line').with_args(
+        line=str, log_level=object, elevate_stderr=False, borg_local_path=object, command=object
+    ).and_return(flexmock()).twice()
+    flexmock(module).should_receive('handle_log_record').and_return(
+        flexmock(levelno=10, getMessage=lambda: 'message')
+    ).twice()
+
+    assert (
+        tuple(
+            module.log_remaining_buffer_lines(
+                buffer_readers,
+                process_metadatas,
+                output_log_level=flexmock(),
+                borg_local_path=flexmock(),
+            )
+        )
+        == ()
+    )
 
 
 def test_mask_command_secrets_masks_password_flag_value():
