@@ -302,6 +302,13 @@ def test_handle_log_record_over_max_line_count_trims_and_appends():
     assert last_lines == [*original_last_lines[1:], 'line']
 
 
+def test_handle_log_record_without_last_lines_just_handles():
+    flexmock(module.logger).should_receive('handle').once()
+    log_record = flexmock(levelno=module.logging.INFO, getMessage=lambda: 'line')
+
+    assert module.handle_log_record(log_record) == log_record
+
+
 def test_log_buffer_lines_without_buffer_readers_bails():
     flexmock(module.select).should_receive('select').never()
 

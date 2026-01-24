@@ -222,7 +222,7 @@ def read_lines(buffer, process, line_separator='\n'):
 
         if not chunk:  # EOF
             # The process is still running, so we keep running too.
-            if process.poll() is None:
+            if process.poll() is None:  # pragma: no cover
                 continue
 
             break
