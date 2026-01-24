@@ -38,6 +38,19 @@ def test_read_lines_yields_multiple_lines_plus_partial_line():
     assert tuple(module.read_lines(process.stdout, process)) == (('hi', 'there'), ('partial',))
 
 
+def test_read_lines_with_longer_running_process_yields_many_lines():
+    process = subprocess.Popen(
+        [
+            sys.executable,
+            '-c',
+            "import random, string; print('\\n'.join(random.choice(string.ascii_letters) for _ in range(1000)))",
+        ],
+        stdout=subprocess.PIPE,
+    )
+
+    assert tuple(module.read_lines(process.stdout, process))
+
+
 def test_read_lines_yields_nothing():
     process = subprocess.Popen(['echo', '-n'], stdout=subprocess.PIPE)
 
