@@ -2342,6 +2342,13 @@ properties:
                         example: Your backups have started.
                     priority:
                         type: string
+                        enum:
+                            - max
+                            - urgent
+                            - high
+                            - default
+                            - low
+                            - min
                         description: |
                             The priority to set.
                         example: min
@@ -2366,6 +2373,13 @@ properties:
                         example: Your backups have finished.
                     priority:
                         type: string
+                        enum:
+                            - max
+                            - urgent
+                            - high
+                            - default
+                            - low
+                            - min
                         description: |
                             The priority to set.
                         example: min
@@ -2390,6 +2404,13 @@ properties:
                         example: Your backups have failed.
                     priority:
                         type: string
+                        enum:
+                            - max
+                            - urgent
+                            - high
+                            - default
+                            - low
+                            - min
                         description: |
                             The priority to set.
                         example: max

@@ -22,6 +22,16 @@ def initialize_monitor(
     '''
 
 
+PRIORITY_NAME_TO_ID = {
+    'max': 5,
+    'urgent': 5,
+    'high': 4,
+    'default': 3,
+    'low': 2,
+    'min': 1,
+}
+
+
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
     '''
     Ping the configured Ntfy topic. Use the given configuration filename in any log entries.
@@ -31,13 +41,13 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     if state.name.lower() in run_states:
         dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
-
+        default_priority = PRIORITY_NAME_TO_ID['default']
         state_config = hook_config.get(
             state.name.lower(),
             {
                 'title': f'A borgmatic {state.name} event happened',
                 'message': f'A borgmatic {state.name} event happened',
-                'priority': 'default',
+                'priority': default_priority,
                 'tags': 'borgmatic',
             },
         )
@@ -55,7 +65,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             'topic': topic,
             'title': state_config.get('title'),
             'message': state_config.get('message'),
-            'priority': state_config.get('priority'),
+            'priority': PRIORITY_NAME_TO_ID.get(state_config.get('priority'), default_priority),
             'tags': state_config.get('tags'),
         }
 

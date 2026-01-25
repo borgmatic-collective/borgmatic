@@ -3,6 +3,8 @@
    just skipping the Borg call.
  * #1242: Fix a regression in which the "spot" check hung while collecting archive contents.
  * #1245: Fix a regression in which the KeePassXC credential hook password prompt was invisible.
+ * #1246: Fix a regression in which the ntfy monitoring hook failed to send a ping when the
+   "priority" option was set.
 
 2.1.0
  * TL;DR: Many logging, memory, and performance improvements. Mind those breaking changes!
