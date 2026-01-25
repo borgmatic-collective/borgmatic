@@ -2,6 +2,8 @@
  * #1241: For the "recreate" action, actually pass the "--dry-run" flag through to Borg instead of
    just skipping the Borg call.
  * #1242: Fix a regression in which the "spot" check hung while collecting archive contents.
+ * #1244: When the "unsafe_skip_path_validation_before_create" option is enabled, don't log a
+   warning about it.
  * #1245: Fix a regression in which the KeePassXC credential hook password prompt was invisible.
  * #1246: Fix a regression in which the ntfy monitoring hook failed to send a ping when the
    "priority" option was set.

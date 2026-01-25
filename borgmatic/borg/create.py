@@ -270,7 +270,7 @@ def make_base_create_command(  # noqa: PLR0912
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
     if config.get('unsafe_skip_path_validation_before_create'):
-        logger.warning(
+        logger.debug(
             'Skipping pre-backup path validation due to "unsafe_skip_path_validation_before_create" option.'
         )
 

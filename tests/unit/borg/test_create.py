@@ -1128,7 +1128,6 @@ def test_make_base_create_command_with_unsafe_skip_path_validation_before_create
         (f'repo::{module.flags.get_default_archive_name_format()}',),
     )
     flexmock(module).should_receive('validate_planned_backup_paths').never()
-    flexmock(module.logger).should_receive('warning').once()
 
     module.make_base_create_command(
         dry_run=False,
