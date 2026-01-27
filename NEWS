@@ -1,4 +1,4 @@
-2.1.1.dev0
+2.1.1
  * #1241: For the "recreate" action, actually pass the "--dry-run" flag through to Borg instead of
    just skipping the Borg call.
  * #1242: Fix a regression in which the "spot" check hung while collecting archive contents.
