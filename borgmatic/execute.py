@@ -105,19 +105,41 @@ def output_buffers_for_process(process, exclude_stdouts):
     )
 
 
+BORG_LOG_LEVEL_ELEVATION_THRESHOLD = 10
+
+
 def borg_json_log_line_to_record(line, log_level):
     '''
     Given a single Borg "--log-json"-style log line and a log level, return the line converted to a
     logging.LogRecord instance. Return None if the line can't be parsed as JSON.
+
+    If Borg provides a log level in its JSON, prefer logging at that level. But if Borg doesn't
+    provide a log level—or the log level given to this function is just a little bit higher than
+    Borg's—elevate to that level. This supports use cases like elevating Borg's INFO level logs to
+    borgmatic's custom ANSWER level so that requested data shows up even at the default verbosity.
     '''
     with contextlib.suppress(json.JSONDecodeError, TypeError, KeyError, AttributeError):
         log_data = json.loads(line)
         log_type = log_data.get('type')
 
         if log_type == 'log_message':
+            borg_log_level = logging._nameToLevel.get(log_data.get('levelname'))
+            log_level_delta = log_level - borg_log_level
+
+            if log_level_delta > 0 and log_level_delta < BORG_LOG_LEVEL_ELEVATION_THRESHOLD:
+                return logging.makeLogRecord(
+                    dict(
+                        levelno=log_level,
+                        created=log_data.get('time'),
+                        msg=log_data.get('message'),
+                        levelname=logging.getLevelName(log_level),
+                        name=log_data.get('name'),
+                    )
+                )
+
             return logging.makeLogRecord(
                 dict(
-                    levelno=logging._nameToLevel.get(log_data.get('levelname')),
+                    levelno=borg_log_level,
                     created=log_data.get('time'),
                     msg=log_data.get('message'),
                     levelname=log_data.get('levelname'),

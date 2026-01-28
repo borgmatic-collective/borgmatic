@@ -1,3 +1,6 @@
+2.1.2.dev0
+ * #1250: Fix a regression in which the "--stats" flag hides statistics at default verbosity.
+
 2.1.1
  * #1241: For the "recreate" action, actually pass the "--dry-run" flag through to Borg instead of
    just skipping the Borg call.

@@ -122,6 +122,30 @@ def test_borg_json_log_line_to_record_parses_log_message_line():
     assert record.name == 'borg.something'
 
 
+def test_borg_json_log_line_to_record_elevates_log_message_info_level_to_small_jump_in_log_level():
+    line = '{"type": "log_message", "levelname": "INFO", "time": 12345, "message": "All done", "name": "borg.something"}'
+
+    record = module.borg_json_log_line_to_record(line, 25)
+
+    assert record.levelno == 25
+    assert record.created == 12345
+    assert record.msg == 'All done'
+    assert record.levelname in {'ANSWER', 'Level 25'}
+    assert record.name == 'borg.something'
+
+
+def test_borg_json_log_line_to_record_does_not_elevate_log_message_info_level_to_big_jump_in_log_level():
+    line = '{"type": "log_message", "levelname": "INFO", "time": 12345, "message": "All done", "name": "borg.something"}'
+
+    record = module.borg_json_log_line_to_record(line, 40)
+
+    assert record.levelno == module.logging.INFO
+    assert record.created == 12345
+    assert record.msg == 'All done'
+    assert record.levelname == 'INFO'
+    assert record.name == 'borg.something'
+
+
 def test_borg_json_log_line_to_record_parses_file_status_line():
     flexmock(module.time).should_receive('time').and_return(12345)
     line = '{"type": "file_status", "status": "-", "path": "/foo/bar"}'
