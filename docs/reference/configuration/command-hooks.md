@@ -12,11 +12,15 @@ list of `commands:` in your borgmatic configuration file. For example:
 ```yaml
 commands:
     - before: action
-      when: [create]
+      when: [check]  # This is an inline YAML sequence.
       run:
           - echo "Before create!"
+    - before: action
+      when: [create, prune]  # Also an inline YAML sequence.
+      run:
+          - echo "Before create or prune!"
     - after: action
-      when:
+      when:  # Multi-line YAML sequence, equivalent to "[create, prune]".
           - create
           - prune
       run:
