@@ -82,7 +82,7 @@ before_actions:
 option in the `hooks:` section of your configuration.
 
 <span class="minilink minilink-addedin">Prior to version 1.7.0</span> Use
-`before_create` or similar instead of `before_actions`, which was introduced in
+`before_backup` or similar instead of `before_actions`, which was introduced in
 borgmatic 1.7.0.
 
 What this does is check if the `findmnt` command errors when probing for a
