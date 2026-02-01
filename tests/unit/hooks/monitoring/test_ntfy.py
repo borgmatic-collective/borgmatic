@@ -25,7 +25,7 @@ CUSTOM_MESSAGE_PAYLOAD = {
     'title': CUSTOM_MESSAGE_CONFIG['title'],
     'message': CUSTOM_MESSAGE_CONFIG['message'],
     'priority': 1,
-    'tags': CUSTOM_MESSAGE_CONFIG['tags'],
+    'tags': [CUSTOM_MESSAGE_CONFIG['tags']],
 }
 
 
@@ -35,7 +35,7 @@ def default_message_payload(state=Enum):
         'title': f'A borgmatic {state.name} event happened',
         'message': f'A borgmatic {state.name} event happened',
         'priority': 3,
-        'tags': 'borgmatic',
+        'tags': ['borgmatic'],
     }
 
 
