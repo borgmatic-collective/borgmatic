@@ -25,10 +25,13 @@ def initialize_monitor(
 def convert_string_to_array(value):
     value = '' if value is None else str(value)
     items = []
+
     for item in value.split(','):
         stripped = item.strip()
+
         if stripped:
             items.append(stripped)
+
     return items
 
 

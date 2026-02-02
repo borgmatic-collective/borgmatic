@@ -1,9 +1,25 @@
 from enum import Enum
 
+import pytest
 from flexmock import flexmock
 
 import borgmatic.hooks.monitoring.monitor
 from borgmatic.hooks.monitoring import ntfy as module
+
+
+@pytest.mark.parametrize(
+    'tags_input,expected_tags_output',
+    (
+        (None, []),
+        ('', []),
+        ('foo', ['foo']),
+        (' foo ,  bar ,baz ', ['foo', 'bar', 'baz']),
+        ('foo,,bar,', ['foo', 'bar']),
+    ),
+)
+def test_convert_string_to_array(tags_input, expected_tags_output):
+    assert module.convert_string_to_array(tags_input) == expected_tags_output
+
 
 DEFAULT_BASE_URL = 'https://ntfy.sh'
 CUSTOM_BASE_URL = 'https://ntfy.example.com'
@@ -41,6 +57,9 @@ def default_message_payload(state=Enum):
 
 def test_ping_monitor_minimal_config_hits_hosted_ntfy_on_fail():
     hook_config = {'topic': TOPIC}
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -67,6 +86,9 @@ def test_ping_monitor_with_access_token_hits_hosted_ntfy_on_fail():
         'topic': TOPIC,
         'access_token': 'abc123',
     }
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -95,6 +117,9 @@ def test_ping_monitor_with_username_password_and_access_token_ignores_username_p
         'password': 'fakepassword',
         'access_token': 'abc123',
     }
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -123,6 +148,9 @@ def test_ping_monitor_with_username_password_hits_hosted_ntfy_on_fail():
         'username': 'testuser',
         'password': 'fakepassword',
     }
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -146,6 +174,9 @@ def test_ping_monitor_with_username_password_hits_hosted_ntfy_on_fail():
 
 def test_ping_monitor_with_password_but_no_username_warns():
     hook_config = {'topic': TOPIC, 'password': 'fakepassword'}
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -170,6 +201,9 @@ def test_ping_monitor_with_password_but_no_username_warns():
 
 def test_ping_monitor_with_username_but_no_password_warns():
     hook_config = {'topic': TOPIC, 'username': 'testuser'}
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -194,6 +228,9 @@ def test_ping_monitor_with_username_but_no_password_warns():
 
 def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_start():
     hook_config = {'topic': TOPIC}
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -211,6 +248,9 @@ def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_start():
 
 def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_finish():
     hook_config = {'topic': TOPIC}
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -228,6 +268,9 @@ def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_finish():
 
 def test_ping_monitor_minimal_config_hits_selfhosted_ntfy_on_fail():
     hook_config = {'topic': TOPIC, 'server': CUSTOM_BASE_URL}
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -251,6 +294,9 @@ def test_ping_monitor_minimal_config_hits_selfhosted_ntfy_on_fail():
 
 def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_fail_dry_run():
     hook_config = {'topic': TOPIC}
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -268,6 +314,7 @@ def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_fail_dry_run():
 
 def test_ping_monitor_custom_message_hits_hosted_ntfy_on_fail():
     hook_config = {'topic': TOPIC, 'fail': CUSTOM_MESSAGE_CONFIG}
+    flexmock(module).should_receive('convert_string_to_array').with_args('+1').and_return(['+1'])
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -291,6 +338,9 @@ def test_ping_monitor_custom_message_hits_hosted_ntfy_on_fail():
 
 def test_ping_monitor_custom_state_hits_hosted_ntfy_on_start():
     hook_config = {'topic': TOPIC, 'states': ['start', 'fail']}
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -314,6 +364,9 @@ def test_ping_monitor_custom_state_hits_hosted_ntfy_on_start():
 
 def test_ping_monitor_with_connection_error_logs_warning():
     hook_config = {'topic': TOPIC}
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -338,6 +391,9 @@ def test_ping_monitor_with_connection_error_logs_warning():
 
 def test_ping_monitor_with_credential_error_logs_warning():
     hook_config = {'topic': TOPIC}
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).and_raise(ValueError)
@@ -356,6 +412,9 @@ def test_ping_monitor_with_credential_error_logs_warning():
 
 def test_ping_monitor_with_other_error_logs_warning():
     hook_config = {'topic': TOPIC}
+    flexmock(module).should_receive('convert_string_to_array').with_args('borgmatic').and_return(
+        ['borgmatic']
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -380,11 +439,3 @@ def test_ping_monitor_with_other_error_logs_warning():
         monitoring_log_level=1,
         dry_run=False,
     )
-
-
-def test_convert_string_to_array():
-    assert module.convert_string_to_array(None) == []
-    assert module.convert_string_to_array('') == []
-    assert module.convert_string_to_array('foo') == ['foo']
-    assert module.convert_string_to_array(' foo ,  bar ,baz ') == ['foo', 'bar', 'baz']
-    assert module.convert_string_to_array('foo,,bar,') == ['foo', 'bar']
