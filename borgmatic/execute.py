@@ -237,10 +237,12 @@ def read_lines(buffer, process, line_separator='\n'):
     call to know when to read more lines. Otherwise, the generator will busywait if it's called in a
     tight loop.
     '''
-    data = ''
+    data = b''
+    encoded_separator = line_separator.encode()
+    separator_size = len(encoded_separator)
 
     while True:
-        chunk = os.read(buffer.fileno(), READ_CHUNK_SIZE).decode()
+        chunk = os.read(buffer.fileno(), READ_CHUNK_SIZE)
 
         if not chunk:  # EOF
             # The process is still running, so we keep running too.
@@ -255,19 +257,19 @@ def read_lines(buffer, process, line_separator='\n'):
         # Split the data into lines, holding back anything leftover that might
         # be a partial line.
         while True:
-            separator_position = data.find(line_separator)
+            separator_position = data.find(encoded_separator)
 
             if separator_position == -1:
                 break
 
-            lines.append(data[:separator_position].rstrip())
-            data = data[separator_position + 1 :]
+            lines.append(data[:separator_position].decode())
+            data = data[separator_position + separator_size :]
 
         yield tuple(lines)
 
     # Yield any leftover data from the end of the buffer.
     if data:
-        yield (data.rstrip(),)
+        yield (data.decode().rstrip(),)
 
 
 Buffer_reader = collections.namedtuple(

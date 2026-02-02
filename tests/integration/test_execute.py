@@ -26,6 +26,19 @@ def test_read_lines_yields_single_line_longer_than_chunk_size():
     )
 
 
+def test_read_lines_yields_single_line_with_multibyte_unicode_character_spanning_chunk_boundary():
+    # In case it's not clear, "ñ" is a multi-byte UTF-8 character. The "a" shifts it over one byte
+    # so it straddles the chunk boundary.
+    process = subprocess.Popen(['echo', 'aññññññññññññññññññññññññññññññ'], stdout=subprocess.PIPE)
+
+    assert tuple(flexmock(module, READ_CHUNK_SIZE=16).read_lines(process.stdout, process)) == (
+        (),
+        (),
+        (),
+        ('aññññññññññññññññññññññññññññññ',),
+    )
+
+
 def test_read_lines_yields_multiple_lines():
     process = subprocess.Popen(['echo', 'hi\nthere'], stdout=subprocess.PIPE)
 
