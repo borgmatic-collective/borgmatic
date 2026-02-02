@@ -25,7 +25,7 @@ CUSTOM_MESSAGE_PAYLOAD = {
     'title': CUSTOM_MESSAGE_CONFIG['title'],
     'message': CUSTOM_MESSAGE_CONFIG['message'],
     'priority': 1,
-    'tags': CUSTOM_MESSAGE_CONFIG['tags'],
+    'tags': [CUSTOM_MESSAGE_CONFIG['tags']],
 }
 
 
@@ -35,7 +35,7 @@ def default_message_payload(state=Enum):
         'title': f'A borgmatic {state.name} event happened',
         'message': f'A borgmatic {state.name} event happened',
         'priority': 3,
-        'tags': 'borgmatic',
+        'tags': ['borgmatic'],
     }
 
 
@@ -380,3 +380,11 @@ def test_ping_monitor_with_other_error_logs_warning():
         monitoring_log_level=1,
         dry_run=False,
     )
+
+
+def test_convert_string_to_array():
+    assert module.convert_string_to_array(None) == []
+    assert module.convert_string_to_array('') == []
+    assert module.convert_string_to_array('foo') == ['foo']
+    assert module.convert_string_to_array(' foo ,  bar ,baz ') == ['foo', 'bar', 'baz']
+    assert module.convert_string_to_array('foo,,bar,') == ['foo', 'bar']
