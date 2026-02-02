@@ -380,3 +380,11 @@ def test_ping_monitor_with_other_error_logs_warning():
         monitoring_log_level=1,
         dry_run=False,
     )
+
+
+def test_convert_string_to_array():
+    assert module.convert_string_to_array(None) == []
+    assert module.convert_string_to_array('') == []
+    assert module.convert_string_to_array('foo') == ['foo']
+    assert module.convert_string_to_array(' foo ,  bar ,baz ') == ['foo', 'bar', 'baz']
+    assert module.convert_string_to_array('foo,,bar,') == ['foo', 'bar']

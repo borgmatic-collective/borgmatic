@@ -22,10 +22,14 @@ def initialize_monitor(
     '''
 
 
-def _convert_string_to_array(value):
-    value = str(value or '')
-
-    return [str(item).strip() for item in value.split(',') if str(item).strip()]
+def convert_string_to_array(value):
+    value = '' if value is None else str(value)
+    items = []
+    for item in value.split(','):
+        stripped = item.strip()
+        if stripped:
+            items.append(stripped)
+    return items
 
 
 PRIORITY_NAME_TO_ID = {
@@ -72,7 +76,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             'title': state_config.get('title'),
             'message': state_config.get('message'),
             'priority': PRIORITY_NAME_TO_ID.get(state_config.get('priority'), default_priority),
-            'tags': _convert_string_to_array(state_config.get('tags')),
+            'tags': convert_string_to_array(state_config.get('tags')),
         }
 
         try:
