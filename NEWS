@@ -1,5 +1,7 @@
 2.1.2.dev0
  * #1250: Fix a regression in which the "--stats" flag hides statistics at default verbosity.
+ * #1258: Fix a "codec can't decode byte" error when running commands that output multi-byte unicode
+   characters.
 
 2.1.1
  * #1241: For the "recreate" action, actually pass the "--dry-run" flag through to Borg instead of
