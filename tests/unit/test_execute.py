@@ -7,72 +7,80 @@ from borgmatic import execute as module
 
 
 @pytest.mark.parametrize(
-    'command,exit_code,borg_local_path,borg_exit_codes,expected_result',
+    'command,borg_local_path,expected_result',
     (
-        (['grep'], 2, None, None, module.Exit_status.ERROR),
-        (['grep'], 2, 'borg', None, module.Exit_status.ERROR),
-        (['borg'], 2, 'borg', None, module.Exit_status.ERROR),
-        (['borg1'], 2, 'borg1', None, module.Exit_status.ERROR),
-        (['grep'], 1, None, None, module.Exit_status.ERROR),
-        (['grep'], 1, 'borg', None, module.Exit_status.ERROR),
-        (['borg'], 1, 'borg', None, module.Exit_status.WARNING),
-        (['borg1'], 1, 'borg1', None, module.Exit_status.WARNING),
-        (['grep'], 100, None, None, module.Exit_status.ERROR),
-        (['grep'], 100, 'borg', None, module.Exit_status.ERROR),
-        ('grep', 2, None, None, module.Exit_status.ERROR),
-        ('borg', 2, 'borg', None, module.Exit_status.ERROR),
-        (['borg'], 100, 'borg', None, module.Exit_status.WARNING),
-        (['borg1'], 100, 'borg1', None, module.Exit_status.WARNING),
-        ('borg', 100, 'borg', None, module.Exit_status.WARNING),
-        ('borg1', 100, 'borg1', None, module.Exit_status.WARNING),
-        (['grep'], 0, None, None, module.Exit_status.SUCCESS),
-        (['grep'], 0, 'borg', None, module.Exit_status.SUCCESS),
-        (['borg'], 0, 'borg', None, module.Exit_status.SUCCESS),
-        (['borg1'], 0, 'borg1', None, module.Exit_status.SUCCESS),
-        ('grep', 0, None, None, module.Exit_status.SUCCESS),
-        ('grep', 0, 'borg', None, module.Exit_status.SUCCESS),
+        (['foo', 'bar'], 'borg', False),
+        (['borg', 'list'], 'borg', True),
+        (['borg1', 'list'], 'borg', False),
+        (['borg', 'list'], 'borg1', False),
+        ([], 'borg', False),
+        ('foo bar', 'borg', False),
+        ('borg list', 'borg', True),
+        ('', 'borg', False),
+    ),
+)
+def test_command_is_borg_matches_local_path_to_command(command, borg_local_path, expected_result):
+    assert module.command_is_borg(command, borg_local_path) == expected_result
+
+
+@pytest.mark.parametrize(
+    'command_is_borg,exit_code,borg_exit_codes,expected_result',
+    (
+        (False, 2, None, module.Exit_status.ERROR),
+        (True, 2, None, module.Exit_status.ERROR),
+        (False, 1, None, module.Exit_status.ERROR),
+        (True, 1, None, module.Exit_status.WARNING),
+        (False, 100, None, module.Exit_status.ERROR),
+        (False, 2, None, module.Exit_status.ERROR),
+        (True, 2, None, module.Exit_status.ERROR),
+        (True, 100, None, module.Exit_status.WARNING),
+        (False, 0, None, module.Exit_status.SUCCESS),
+        (True, 0, None, module.Exit_status.SUCCESS),
         # -9 exit code occurs when child process get SIGKILLed.
-        (['grep'], -9, None, None, module.Exit_status.ERROR),
-        (['grep'], -9, 'borg', None, module.Exit_status.ERROR),
-        (['borg'], -9, 'borg', None, module.Exit_status.ERROR),
-        (['borg1'], -9, 'borg1', None, module.Exit_status.ERROR),
-        (['borg'], None, None, None, module.Exit_status.STILL_RUNNING),
-        (['borg'], 1, 'borg', [], module.Exit_status.WARNING),
-        (['borg'], 1, 'borg', [{}], module.Exit_status.WARNING),
-        (['borg'], 1, 'borg', [{'code': 1}], module.Exit_status.WARNING),
-        (['grep'], 1, 'borg', [{'code': 100, 'treat_as': 'error'}], module.Exit_status.ERROR),
-        (['borg'], 1, 'borg', [{'code': 100, 'treat_as': 'error'}], module.Exit_status.WARNING),
-        (['borg'], 1, 'borg', [{'code': 1, 'treat_as': 'error'}], module.Exit_status.ERROR),
-        (['borg'], 2, 'borg', [{'code': 99, 'treat_as': 'warning'}], module.Exit_status.ERROR),
-        (['borg'], 2, 'borg', [{'code': 2, 'treat_as': 'warning'}], module.Exit_status.WARNING),
-        (['borg'], 100, 'borg', [{'code': 1, 'treat_as': 'error'}], module.Exit_status.WARNING),
-        (['borg'], 100, 'borg', [], module.Exit_status.WARNING),
-        (['borg'], 100, 'borg', [{'code': 100, 'treat_as': 'error'}], module.Exit_status.ERROR),
-        (['borg'], 101, 'borg', [], module.Exit_status.ERROR),
-        (['borg'], 101, 'borg', [{'code': 101, 'treat_as': 'warning'}], module.Exit_status.WARNING),
-        (['borg'], 102, 'borg', [], module.Exit_status.ERROR),
-        (['borg'], 102, 'borg', [{'code': 102, 'treat_as': 'warning'}], module.Exit_status.WARNING),
-        (['borg'], 103, 'borg', [], module.Exit_status.WARNING),
-        (['borg'], 103, 'borg', [{'code': 103, 'treat_as': 'error'}], module.Exit_status.ERROR),
-        (['borg'], 104, 'borg', [], module.Exit_status.ERROR),
-        (['borg'], 104, 'borg', [{'code': 104, 'treat_as': 'warning'}], module.Exit_status.WARNING),
-        (['borg'], 105, 'borg', [], module.Exit_status.ERROR),
-        (['borg'], 105, 'borg', [{'code': 105, 'treat_as': 'warning'}], module.Exit_status.WARNING),
-        (['borg'], 106, 'borg', [], module.Exit_status.ERROR),
-        (['borg'], 106, 'borg', [{'code': 106, 'treat_as': 'warning'}], module.Exit_status.WARNING),
-        (['borg'], 107, 'borg', [], module.Exit_status.ERROR),
-        (['borg'], 107, 'borg', [{'code': 107, 'treat_as': 'warning'}], module.Exit_status.WARNING),
+        (False, -9, None, module.Exit_status.ERROR),
+        (True, -9, None, module.Exit_status.ERROR),
+        (True, None, None, module.Exit_status.STILL_RUNNING),
+        (True, 1, [], module.Exit_status.WARNING),
+        (True, 1, [{'code': 1}], module.Exit_status.WARNING),
+        (False, 1, [{'code': 100, 'treat_as': 'error'}], module.Exit_status.ERROR),
+        (True, 1, [{'code': 100, 'treat_as': 'error'}], module.Exit_status.WARNING),
+        (True, 1, [{'code': 1, 'treat_as': 'error'}], module.Exit_status.ERROR),
+        (True, 2, [{'code': 99, 'treat_as': 'warning'}], module.Exit_status.ERROR),
+        (True, 2, [{'code': 2, 'treat_as': 'warning'}], module.Exit_status.WARNING),
+        (True, 100, [{'code': 1, 'treat_as': 'error'}], module.Exit_status.WARNING),
+        (True, 100, [], module.Exit_status.WARNING),
+        (True, 100, [{'code': 100, 'treat_as': 'error'}], module.Exit_status.ERROR),
+        (True, 101, [], module.Exit_status.ERROR),
+        (True, 101, [{'code': 101, 'treat_as': 'warning'}], module.Exit_status.WARNING),
+        (True, 102, [], module.Exit_status.ERROR),
+        (True, 102, [{'code': 102, 'treat_as': 'warning'}], module.Exit_status.WARNING),
+        (True, 103, [], module.Exit_status.WARNING),
+        (True, 103, [{'code': 103, 'treat_as': 'error'}], module.Exit_status.ERROR),
+        (True, 104, [], module.Exit_status.ERROR),
+        (True, 104, [{'code': 104, 'treat_as': 'warning'}], module.Exit_status.WARNING),
+        (True, 105, [], module.Exit_status.ERROR),
+        (True, 105, [{'code': 105, 'treat_as': 'warning'}], module.Exit_status.WARNING),
+        (True, 106, [], module.Exit_status.ERROR),
+        (True, 106, [{'code': 106, 'treat_as': 'warning'}], module.Exit_status.WARNING),
+        (True, 107, [], module.Exit_status.ERROR),
+        (True, 107, [{'code': 107, 'treat_as': 'warning'}], module.Exit_status.WARNING),
     ),
 )
 def test_interpret_exit_code_respects_exit_code_and_borg_local_path(
-    command,
+    command_is_borg,
     exit_code,
-    borg_local_path,
     borg_exit_codes,
     expected_result,
 ):
+    flexmock(module).should_receive('command_is_borg').and_return(command_is_borg)
+
     assert (
-        module.interpret_exit_code(command, exit_code, borg_local_path, borg_exit_codes)
+        module.interpret_exit_code(
+            command=flexmock(),
+            exit_code=exit_code,
+            borg_local_path=flexmock(),
+            borg_exit_codes=borg_exit_codes,
+        )
         is expected_result
     )
 
@@ -138,6 +146,18 @@ def test_borg_json_log_line_to_record_does_not_elevate_log_message_info_level_to
     line = '{"type": "log_message", "levelname": "INFO", "time": 12345, "message": "All done", "name": "borg.something"}'
 
     record = module.borg_json_log_line_to_record(line, 40)
+
+    assert record.levelno == module.logging.INFO
+    assert record.created == 12345
+    assert record.msg == 'All done'
+    assert record.levelname == 'INFO'
+    assert record.name == 'borg.something'
+
+
+def test_borg_json_log_line_with_none_log_level_parses_log_message_line():
+    line = '{"type": "log_message", "levelname": "INFO", "time": 12345, "message": "All done", "name": "borg.something"}'
+
+    record = module.borg_json_log_line_to_record(line, None)
 
     assert record.levelno == module.logging.INFO
     assert record.created == 12345
@@ -1404,6 +1424,7 @@ def test_execute_command_without_run_to_completion_returns_process():
 def test_execute_command_and_capture_output_returns_stdout():
     full_command = ['foo', 'bar']
     flexmock(module).should_receive('log_command')
+    flexmock(module).should_receive('command_is_borg').and_return(False)
     process = flexmock()
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -1423,8 +1444,10 @@ def test_execute_command_and_capture_output_returns_stdout():
     assert output_lines == ('out',)
 
 
-def test_execute_command_and_capture_output_with_capture_stderr_returns_stderr():
+def test_execute_command_and_capture_output_with_capture_stderr_popens_stderr():
     full_command = ['foo', 'bar']
+    flexmock(module).should_receive('log_command')
+    flexmock(module).should_receive('command_is_borg').and_return(False)
     process = flexmock()
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -1446,10 +1469,34 @@ def test_execute_command_and_capture_output_with_capture_stderr_returns_stderr()
     assert output_lines == ('out',)
 
 
+def test_execute_command_and_capture_output_with_borg_command_popens_stderr():
+    full_command = ['borg', 'list']
+    flexmock(module).should_receive('log_command')
+    flexmock(module).should_receive('command_is_borg').and_return(True)
+    process = flexmock()
+    flexmock(module.subprocess).should_receive('Popen').with_args(
+        full_command,
+        stdin=None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False,
+        env=None,
+        cwd=None,
+        close_fds=False,
+    ).and_return(process).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module).should_receive('log_outputs').and_yield('out')
+
+    output_lines = tuple(module.execute_command_and_capture_output(full_command))
+
+    assert output_lines == ('out',)
+
+
 def test_execute_command_and_capture_output_returns_output_when_process_error_is_not_considered_an_error():
     full_command = ['foo', 'bar']
     err_output = b'[]'
     flexmock(module).should_receive('log_command')
+    flexmock(module).should_receive('command_is_borg').and_return(False)
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
         stdin=None,
@@ -1472,6 +1519,7 @@ def test_execute_command_and_capture_output_returns_output_when_process_error_is
 def test_execute_command_and_capture_output_raises_when_command_errors():
     full_command = ['foo', 'bar']
     flexmock(module).should_receive('log_command')
+    flexmock(module).should_receive('command_is_borg').and_return(False)
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
         stdin=None,
@@ -1493,6 +1541,7 @@ def test_execute_command_and_capture_output_raises_when_command_errors():
 def test_execute_command_and_capture_output_with_shell_returns_output():
     full_command = ['foo', 'bar']
     flexmock(module).should_receive('log_command')
+    flexmock(module).should_receive('command_is_borg').and_return(False)
     process = flexmock()
     flexmock(module.subprocess).should_receive('Popen').with_args(
         'foo bar',
@@ -1515,6 +1564,7 @@ def test_execute_command_and_capture_output_with_shell_returns_output():
 def test_execute_command_and_capture_output_with_enviroment_returns_output():
     full_command = ['foo', 'bar']
     flexmock(module).should_receive('log_command')
+    flexmock(module).should_receive('command_is_borg').and_return(False)
     process = flexmock()
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -1543,6 +1593,7 @@ def test_execute_command_and_capture_output_with_enviroment_returns_output():
 def test_execute_command_and_capture_output_returns_output_with_working_directory():
     full_command = ['foo', 'bar']
     flexmock(module).should_receive('log_command')
+    flexmock(module).should_receive('command_is_borg').and_return(False)
     process = flexmock()
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,

@@ -4,6 +4,7 @@
    resulting in "400 Bad Request" from ntfy.
  * #1258: Fix a "codec can't decode byte" error when running commands that output multi-byte unicode
    characters.
+ * #1260: Fix for SSH warnings from Borg showing up as JSON logs even without the "--log-json" flag.
 
 2.1.1
  * #1241: For the "recreate" action, actually pass the "--dry-run" flag through to Borg instead of

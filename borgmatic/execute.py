@@ -29,6 +29,19 @@ class Exit_status(enum.Enum):
     ERROR = 4
 
 
+def command_is_borg(command, borg_local_path):
+    '''
+    Given a command as a sequence and the Borg local path, return whether that command is a call to
+    Borg.
+    '''
+    parsed_command = command.split(' ', 1) if isinstance(command, str) else command
+
+    if not parsed_command:
+        return False
+
+    return bool(borg_local_path and parsed_command[0] == borg_local_path)
+
+
 def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_codes=None):  # noqa: PLR0911
     '''
     Return an Exit_status value (e.g. SUCCESS, ERROR, or WARNING) based on interpreting the given
@@ -42,9 +55,7 @@ def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_code
     if exit_code == 0:
         return Exit_status.SUCCESS
 
-    parsed_command = command.split(' ', 1) if isinstance(command, str) else command
-
-    if borg_local_path and parsed_command[0] == borg_local_path:
+    if command_is_borg(command, borg_local_path):
         # First try looking for the exit code in the borg_exit_codes configuration.
         for entry in borg_exit_codes or ():
             if entry.get('code') == exit_code:
@@ -124,7 +135,7 @@ def borg_json_log_line_to_record(line, log_level):
 
         if log_type == 'log_message':
             borg_log_level = logging._nameToLevel.get(log_data.get('levelname'))
-            log_level_delta = log_level - borg_log_level
+            log_level_delta = 0 if log_level is None else log_level - borg_log_level
 
             if log_level_delta > 0 and log_level_delta < BORG_LOG_LEVEL_ELEVATION_THRESHOLD:
                 return logging.makeLogRecord(
@@ -188,9 +199,7 @@ def parse_log_line(line, log_level, elevate_stderr, borg_local_path, command):
     came from stderr and the string "warning:" appears at the start of the log line. In that case,
     just elevate the log level to a WARN.
     '''
-    parsed_command = command.split(' ', 1) if isinstance(command, str) else command
-
-    if borg_local_path and parsed_command[0] == borg_local_path:
+    if command_is_borg(command, borg_local_path):
         log_record = borg_json_log_line_to_record(line, log_level)
 
         if log_record:
@@ -636,7 +645,9 @@ def execute_command_and_capture_output(
             command,
             stdin=input_file,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE if capture_stderr else None,
+            stderr=subprocess.PIPE
+            if capture_stderr or command_is_borg(command, borg_local_path)
+            else None,
             shell=shell,
             env=environment,
             cwd=working_directory,
