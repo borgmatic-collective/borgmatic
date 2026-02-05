@@ -7,6 +7,8 @@
  * #1260: Fix for SSH warnings from Borg showing up as JSON logs even without the "--log-json" flag.
  * #1252: Work around Borg returning a warning exit code when a repository/archive check fails. Now,
    borgmatic interprets such failures as errors.
+ * Deduplicate overlapping source directories and patterns so they don't throw off "spot" check file
+   counts and cause spurious check failures.
 
 2.1.1
  * #1241: For the "recreate" action, actually pass the "--dry-run" flag through to Borg instead of

@@ -418,7 +418,13 @@ def collect_spot_check_source_paths(
     )
 
     return tuple(
-        path for path in paths if os.path.isfile(os.path.join(working_directory or '', path))
+        # Use dict.fromkeys() to deduplicate file paths, which are present in Borg's dry run output
+        # when there are overlapping source patterns. For instance, if both "/foo" and
+        # "/foo/file.txt" are in configured patterns, then "/foo/file.txt" will show up in Borg's
+        # dry run output twice.
+        dict.fromkeys(
+            path for path in paths if os.path.isfile(os.path.join(working_directory or '', path))
+        )
     )
 
 
