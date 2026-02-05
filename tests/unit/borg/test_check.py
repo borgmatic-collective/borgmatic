@@ -24,7 +24,7 @@ def insert_execute_command_mock(
         environment=None,
         working_directory=working_directory,
         borg_local_path=command[0],
-        borg_exit_codes=borg_exit_codes,
+        borg_exit_codes=(borg_exit_codes or []) + [{'code': 1, 'treat_as': 'error'}],
     ).once()
 
 
@@ -335,7 +335,7 @@ def test_check_archives_with_progress_passes_through_to_borg():
         environment=None,
         working_directory=None,
         borg_local_path='borg',
-        borg_exit_codes=None,
+        borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
 
     module.check_archives(
@@ -371,7 +371,7 @@ def test_check_archives_with_log_json_and_progress_passes_through_both_to_borg()
         environment=None,
         working_directory=None,
         borg_local_path='borg',
-        borg_exit_codes=None,
+        borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
 
     module.check_archives(
@@ -407,7 +407,7 @@ def test_check_archives_with_repair_passes_through_to_borg():
         environment=None,
         working_directory=None,
         borg_local_path='borg',
-        borg_exit_codes=None,
+        borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
 
     module.check_archives(
@@ -443,7 +443,7 @@ def test_check_archives_with_log_json_and_repair_passes_through_both_to_borg():
         environment=None,
         working_directory=None,
         borg_local_path='borg',
-        borg_exit_codes=None,
+        borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
 
     module.check_archives(
@@ -479,7 +479,7 @@ def test_check_archives_with_max_duration_flag_passes_through_to_borg():
         environment=None,
         working_directory=None,
         borg_local_path='borg',
-        borg_exit_codes=None,
+        borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
 
     module.check_archives(
@@ -515,7 +515,7 @@ def test_check_archives_with_max_duration_option_passes_through_to_borg():
         environment=None,
         working_directory=None,
         borg_local_path='borg',
-        borg_exit_codes=None,
+        borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
 
     module.check_archives(
@@ -689,7 +689,7 @@ def test_check_archives_with_max_duration_flag_overrides_max_duration_option():
         environment=None,
         working_directory=None,
         borg_local_path='borg',
-        borg_exit_codes=None,
+        borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
 
     module.check_archives(
@@ -854,7 +854,7 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
 
 def test_check_archives_with_exit_codes_calls_borg_using_them():
     checks = {'repository'}
-    borg_exit_codes = flexmock()
+    borg_exit_codes = [{'code': 101, 'treat_as': 'error'}]
     config = {'borg_exit_codes': borg_exit_codes}
     flexmock(module).should_receive('make_check_name_flags').with_args(checks, ()).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -1026,7 +1026,7 @@ def test_check_archives_with_match_archives_passes_through_to_borg():
         environment=None,
         working_directory=None,
         borg_local_path='borg',
-        borg_exit_codes=None,
+        borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
 
     module.check_archives(

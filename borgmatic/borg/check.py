@@ -149,8 +149,10 @@ def check_archives(
 
     max_duration = check_arguments.max_duration or repository_check_config.get('max_duration')
 
+    # If not configured, elevate Borg's exit code 1 (an ostensible warning) to error, because Borg
+    # returns exit code 1 for repository check errors!
+    borg_exit_codes = config.get('borg_exit_codes', []) + [{'code': 1, 'treat_as': 'error'}]
     umask = config.get('umask')
-    borg_exit_codes = config.get('borg_exit_codes')
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
     if 'data' in checks:
