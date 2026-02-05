@@ -151,7 +151,7 @@ def check_archives(
 
     # If not configured, elevate Borg's exit code 1 (an ostensible warning) to error, because Borg
     # returns exit code 1 for repository check errors!
-    borg_exit_codes = config.get('borg_exit_codes', []) + [{'code': 1, 'treat_as': 'error'}]
+    borg_exit_codes = [*config.get('borg_exit_codes', []), *[{'code': 1, 'treat_as': 'error'}]]
     umask = config.get('umask')
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
