@@ -1,4 +1,4 @@
-2.1.2.dev0
+2.1.2
  * #1231: If a source file is deleted during a "spot" check, consider the file as non-matching
    and move on instead of immediately failing the entire check.
  * #1250: Fix a regression in which the "--stats" flag hides statistics at default verbosity.
