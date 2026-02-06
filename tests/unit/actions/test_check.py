@@ -1174,6 +1174,59 @@ def test_compare_spot_check_hashes_handles_incorrect_path_names_from_xxh64sum():
     ) == ('/bar',)
 
 
+def test_compare_spot_check_hashes_with_xxh64sum_failure_falls_back_to_individual_file_hashing():
+    flexmock(module.random).should_receive('SystemRandom').and_return(
+        flexmock(sample=lambda population, count: population[:count]),
+    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        None,
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('islink').and_return(False)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output',
+    ).with_args(('xxh64sum', '/foo', '/bar'), working_directory=None).and_raise(
+        module.subprocess.CalledProcessError(1, 'wtf')
+    )
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output',
+    ).with_args(('xxh64sum', '/foo'), working_directory=None).and_raise(
+        module.subprocess.CalledProcessError(1, 'wtf')
+    ).once()
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output',
+    ).with_args(('xxh64sum', '/bar'), working_directory=None).and_yield(
+        'hash2  /bar',
+    ).once()
+
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'xxh64': 'hash1', 'path': 'foo'},
+        {'xxh64': 'hash2', 'path': 'bar'},
+    )
+
+    assert module.compare_spot_check_hashes(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={
+            'checks': [
+                {
+                    'name': 'archives',
+                    'frequency': '2 weeks',
+                },
+                {
+                    'name': 'spot',
+                    'data_sample_percentage': 50,
+                },
+            ],
+        },
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+        source_paths=('/foo', '/bar', '/baz', '/quux'),
+    ) == ('/foo',)
+
+
 def test_compare_spot_check_hashes_returns_relative_paths_having_failing_hashes():
     flexmock(module.random).should_receive('SystemRandom').and_return(
         flexmock(sample=lambda population, count: population[:count]),

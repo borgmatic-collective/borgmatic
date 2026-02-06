@@ -9,6 +9,7 @@ import pathlib
 import random
 import shlex
 import shutil
+import subprocess
 import textwrap
 
 import borgmatic.actions.config.bootstrap
@@ -530,41 +531,70 @@ def compare_spot_check_hashes(
         hash_paths = tuple(
             path for path in source_sample_paths_subset if path in hashable_source_sample_path
         )
-        hash_lines = borgmatic.execute.execute_command_and_capture_output(
-            tuple(
-                shlex.quote(part)
-                for part in shlex.split(spot_check_config.get('xxh64sum_command', 'xxh64sum'))
-            )
-            + hash_paths,
-            working_directory=working_directory,
-        )
 
-        source_hashes.update(
-            **dict(
-                zip(
-                    # xxh64sum rewrites/escapes the paths that it returns alongside its hashes, for
-                    # instance if they contain special characters. When that happens, they don't
-                    # match the original source paths and therefore hash lookups fail. So when
-                    # building this lookup dict, use the original unaltered paths we provided as
-                    # input to xxh64sum.
-                    hash_paths,
-                    (
-                        # For some reason, xxh64sum prefixes the hash with a backslash if the path
-                        # contains a newline. Work around that.
-                        line.split('  ', 1)[0].lstrip('\\')
-                        for line in hash_lines
+        try:
+            hash_lines = borgmatic.execute.execute_command_and_capture_output(
+                tuple(
+                    shlex.quote(part)
+                    for part in shlex.split(spot_check_config.get('xxh64sum_command', 'xxh64sum'))
+                )
+                + hash_paths,
+                working_directory=working_directory,
+            )
+            source_hashes.update(
+                **dict(
+                    zip(
+                        # xxh64sum rewrites/escapes the paths that it returns alongside its hashes, for
+                        # instance if they contain special characters. When that happens, they don't
+                        # match the original source paths and therefore hash lookups fail. So when
+                        # building this lookup dict, use the original unaltered paths we provided as
+                        # input to xxh64sum.
+                        hash_paths,
+                        (
+                            # For some reason, xxh64sum prefixes the hash with a backslash if the path
+                            # contains a newline. Work around that.
+                            line.split('  ', 1)[0].lstrip('\\')
+                            for line in hash_lines
+                        ),
                     ),
+                    # Represent non-existent files as having empty hashes so the comparison below still
+                    # works. Same thing for filesystem links, since Borg produces empty archive hashes
+                    # for them.
+                    **{
+                        path: ''
+                        for path in source_sample_paths_subset
+                        if path not in hashable_source_sample_path
+                    },
                 ),
-                # Represent non-existent files as having empty hashes so the comparison below still
-                # works. Same thing for filesystem links, since Borg produces empty archive hashes
-                # for them.
-                **{
-                    path: ''
-                    for path in source_sample_paths_subset
-                    if path not in hashable_source_sample_path
-                },
-            ),
-        )
+            )
+        except subprocess.CalledProcessError:
+            # This can happen if a file we planned to hash gets deleted right before we try to hash
+            # it. Falling back to individual file hashing allows us to find and mark just the
+            # file(s) with problems instead of failing the whole batch.
+            logger.warning(
+                'Bulk source path hashing failed for this batch; falling back to individual file hashing'
+            )
+
+            for hash_path in hash_paths:
+                try:
+                    hash_lines = borgmatic.execute.execute_command_and_capture_output(
+                        (
+                            *(
+                                shlex.quote(part)
+                                for part in shlex.split(
+                                    spot_check_config.get('xxh64sum_command', 'xxh64sum')
+                                )
+                            ),
+                            hash_path,
+                        ),
+                        working_directory=working_directory,
+                    )
+                    source_hashes[hash_path] = next(hash_lines).split('  ', 1)[0].lstrip('\\')
+                except (subprocess.CalledProcessError, StopIteration):  # noqa: PERF203
+                    logger.warning(
+                        f'Source path hashing failed for {hash_path}; treating as missing'
+                    )
+                    source_hashes[hash_path] = ''
 
         # Get the hash for each file in the archive.
         archive_hashes.update(
