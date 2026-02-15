@@ -3,6 +3,7 @@
    handy for fetching borgmatic configuration from external scripts. See the documentation for more
    information:
    https://torsion.org/borgmatic/reference/command-line/actions/config-show/
+ * #1269: Fix the ZFS hook to support datasets with a "canmount" property of "noauto".
 
 2.1.2
  * #1231: If a source file is deleted during a "spot" check, consider the file as non-matching

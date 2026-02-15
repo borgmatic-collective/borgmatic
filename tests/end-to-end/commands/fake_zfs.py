@@ -35,7 +35,7 @@ BUILTIN_DATASETS = (
         'used': '256K',
         'avail': '23.7M',
         'refer': '25K',
-        'canmount': 'on',
+        'canmount': 'noauto',
         'mountpoint': '/e2e/pool/dataset',
     },
 )
