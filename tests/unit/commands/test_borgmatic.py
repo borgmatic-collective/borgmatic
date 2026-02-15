@@ -2058,6 +2058,43 @@ def test_collect_highlander_action_summary_logs_error_on_run_validate_failure():
     assert {log.levelno for log in logs} == {logging.CRITICAL}
 
 
+def test_collect_highlander_action_summary_logs_nothing_additional_for_success_with_show():
+    flexmock(module.borgmatic.actions.config.show).should_receive('run_show')
+    arguments = {
+        'show': flexmock(),
+        'global': flexmock(),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}},
+            arguments=arguments,
+            configuration_parse_errors=False,
+        ),
+    )
+    assert not logs
+
+
+def test_collect_highlander_action_summary_logs_error_on_run_show_failure():
+    flexmock(module.borgmatic.actions.config.show).should_receive('run_show').and_raise(
+        ValueError,
+    )
+    arguments = {
+        'show': flexmock(),
+        'global': flexmock(),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}},
+            arguments=arguments,
+            configuration_parse_errors=False,
+        ),
+    )
+
+    assert {log.levelno for log in logs} == {logging.CRITICAL}
+
+
 def test_collect_configuration_run_summary_logs_info_for_success():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module.command).should_receive('filter_hooks').with_args(

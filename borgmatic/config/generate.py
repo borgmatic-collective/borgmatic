@@ -153,6 +153,9 @@ def transform_optional_configuration(rendered_config, comment_out=True):
     return '\n'.join(lines)
 
 
+RUAMEL_YAML_END_OF_DOCUMENT_MARKER = '...\n'
+
+
 def render_configuration(config):
     '''
     Given a config data structure of nested OrderedDicts, render the config as YAML and return it.
@@ -160,7 +163,15 @@ def render_configuration(config):
     dumper = ruamel.yaml.YAML(typ='rt')
     dumper.indent(mapping=INDENT, sequence=INDENT + SEQUENCE_INDENT, offset=INDENT)
     rendered = io.StringIO()
-    dumper.dump(config, rendered)
+    dumper.dump(
+        config,
+        rendered,
+        # Dumping certain values (integers, for instance) causes ruamel.yaml to append an
+        # end-of-document "..." marker. Strip it.
+        transform=lambda dumped: dumped[: -len(RUAMEL_YAML_END_OF_DOCUMENT_MARKER)]
+        if dumped.endswith(RUAMEL_YAML_END_OF_DOCUMENT_MARKER)
+        else dumped,
+    )
 
     return rendered.getvalue()
 

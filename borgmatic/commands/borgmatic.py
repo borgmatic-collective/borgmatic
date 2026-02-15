@@ -17,6 +17,7 @@ import borgmatic.actions.check
 import borgmatic.actions.compact
 import borgmatic.actions.config.bootstrap
 import borgmatic.actions.config.generate
+import borgmatic.actions.config.show
 import borgmatic.actions.config.validate
 import borgmatic.actions.create
 import borgmatic.actions.delete
@@ -810,18 +811,18 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
     '''
     add_custom_log_levels()
 
-    if 'bootstrap' in arguments:
-        try:
-            # No configuration file is needed for bootstrap.
-            local_borg_version = borg_version.local_borg_version(
-                {},
-                arguments['bootstrap'].local_path,
-            )
-        except (OSError, CalledProcessError, ValueError) as error:
-            yield from log_error_records('Error getting local Borg version', error)
-            return
+    try:
+        if 'bootstrap' in arguments:
+            try:
+                # No configuration file is needed for bootstrap.
+                local_borg_version = borg_version.local_borg_version(
+                    {},
+                    arguments['bootstrap'].local_path,
+                )
+            except (OSError, CalledProcessError, ValueError) as error:
+                yield from log_error_records('Error getting local Borg version', error)
+                return
 
-        try:
             borgmatic.actions.config.bootstrap.run_bootstrap(
                 arguments['bootstrap'],
                 arguments['global'],
@@ -835,17 +836,10 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
                     name=logger.name,
                 ),
             )
-        except (
-            CalledProcessError,
-            ValueError,
-            OSError,
-        ) as error:
-            yield from log_error_records(error)
 
-        return
+            return
 
-    if 'generate' in arguments:
-        try:
+        if 'generate' in arguments:
             borgmatic.actions.config.generate.run_generate(
                 arguments['generate'],
                 arguments['global'],
@@ -858,29 +852,22 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
                     name=logger.name,
                 ),
             )
-        except (
-            CalledProcessError,
-            ValueError,
-            OSError,
-        ) as error:
-            yield from log_error_records(error)
-
-        return
-
-    if 'validate' in arguments:
-        if configuration_parse_errors:
-            yield logging.makeLogRecord(
-                dict(
-                    levelno=logging.CRITICAL,
-                    levelname='CRITICAL',
-                    msg='Configuration validation failed',
-                    name=logger.name,
-                ),
-            )
 
             return
 
-        try:
+        if 'validate' in arguments:
+            if configuration_parse_errors:
+                yield logging.makeLogRecord(
+                    dict(
+                        levelno=logging.CRITICAL,
+                        levelname='CRITICAL',
+                        msg='Configuration validation failed',
+                        name=logger.name,
+                    ),
+                )
+
+                return
+
             borgmatic.actions.config.validate.run_validate(arguments['validate'], configs)
 
             yield logging.makeLogRecord(
@@ -891,14 +878,20 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
                     name=logger.name,
                 ),
             )
-        except (
-            CalledProcessError,
-            ValueError,
-            OSError,
-        ) as error:
-            yield from log_error_records(error)
 
-        return
+            return
+
+        if 'show' in arguments:
+            borgmatic.actions.config.show.run_show(arguments['show'], configs)
+
+            return
+
+    except (
+        CalledProcessError,
+        ValueError,
+        OSError,
+    ) as error:
+        yield from log_error_records(error)
 
 
 def collect_configuration_run_summary_logs(configs, config_paths, arguments, log_file_path):  # noqa: PLR0912
