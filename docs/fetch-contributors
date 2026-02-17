@@ -36,7 +36,6 @@ def list_contributing_issues(url):
 
 PULLS_API_ENDPOINT_URLS = (
     'https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/pulls',
-    'https://api.github.com/repos/borgmatic-collective/borgmatic/pulls',
 )
 ISSUES_API_ENDPOINT_URL = 'https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/issues?state=all'
 RECENT_CONTRIBUTORS_CUTOFF_DAYS = 365
