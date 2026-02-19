@@ -4,6 +4,8 @@
    information:
    https://torsion.org/borgmatic/reference/command-line/actions/config-show/
  * #1269: Fix the ZFS hook to support datasets with a "canmount" property of "noauto".
+ * Add a policy about the use of generative AI in the borgmatic codebase:
+   https://torsion.org/borgmatic/how-to/develop-on-borgmatic/#use-of-generative-ai
 
 2.1.2
  * #1231: If a source file is deleted during a "spot" check, consider the file as non-matching
