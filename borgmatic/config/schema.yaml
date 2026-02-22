@@ -166,6 +166,14 @@ properties:
             Record filesystem flags (e.g. NODUMP, IMMUTABLE) in archive.
             Defaults to true.
         example: false
+    files_changed:
+        type: string
+        description: |
+            Threshold for considering a file as changed. See
+            https://borgbackup.readthedocs.io/en/stable/usage/create.html for
+            details. Defaults to "mtime" (i.e., a file is considered
+            changed if its mtime has changed since the last backup).
+        example: mtime,size
     files_cache:
         type: string
         description: |
