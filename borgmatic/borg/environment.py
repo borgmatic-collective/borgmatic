@@ -13,6 +13,7 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
     'borg_key_file': 'BORG_KEY_FILE',
     'ssh_command': 'BORG_RSH',
     'temporary_directory': 'TMPDIR',
+    'msgpack_version_check': 'BORG_MSGPACK_VERSION_CHECK',
 }
 
 DEFAULT_BOOL_OPTION_TO_UNCONDITIONAL_ENVIRONMENT_VARIABLE = {

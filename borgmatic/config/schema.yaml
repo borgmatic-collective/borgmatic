@@ -570,6 +570,12 @@ properties:
             Bypass Borg confirmation about check with repair option. Defaults to
             false and an interactive prompt from Borg.
         example: true
+    msgpack_version_check:
+        type: string
+        description: |
+            optionally disable the msgpack version check.
+            Default is “yes”; use at your own risk.
+        example: yes
     extra_borg_options:
         type: object
         additionalProperties: false
