@@ -13,7 +13,6 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
     'borg_key_file': 'BORG_KEY_FILE',
     'ssh_command': 'BORG_RSH',
     'temporary_directory': 'TMPDIR',
-    'msgpack_version_check': 'BORG_MSGPACK_VERSION_CHECK',
 }
 
 DEFAULT_BOOL_OPTION_TO_UNCONDITIONAL_ENVIRONMENT_VARIABLE = {
@@ -26,6 +25,7 @@ DEFAULT_BOOL_OPTION_TO_ENVIRONMENT_VARIABLE = {
     'relocated_repo_access_is_ok': 'BORG_RELOCATED_REPO_ACCESS_IS_OK',
     'unknown_unencrypted_repo_access_is_ok': 'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK',
     'use_chunks_archive': 'BORG_USE_CHUNKS_ARCHIVE',
+    'msgpack_version_check': 'BORG_MSGPACK_VERSION_CHECK',
 }
 
 
@@ -91,7 +91,8 @@ def make_environment(config):
     ) in DEFAULT_BOOL_OPTION_TO_ENVIRONMENT_VARIABLE.items():
         if os.environ.get(environment_variable_name) is None:
             value = config.get(option_name)
-            environment[environment_variable_name] = 'YES' if value else 'NO'
+            if value is not None:
+                environment[environment_variable_name] = 'YES' if value else 'NO'
 
     for (
         option_name,
