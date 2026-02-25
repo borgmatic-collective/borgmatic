@@ -317,3 +317,6 @@ a default location.
 
 This will output the merged configuration as borgmatic sees it, which can be
 helpful for understanding how your includes work in practice.
+
+Also see the [`config show`
+action](https://torsion.org/borgmatic/reference/command-line/actions/config-show/).

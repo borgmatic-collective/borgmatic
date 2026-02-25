@@ -9,6 +9,7 @@ import pathlib
 import random
 import shlex
 import shutil
+import subprocess
 import textwrap
 
 import borgmatic.actions.config.bootstrap
@@ -418,7 +419,13 @@ def collect_spot_check_source_paths(
     )
 
     return tuple(
-        path for path in paths if os.path.isfile(os.path.join(working_directory or '', path))
+        # Use dict.fromkeys() to deduplicate file paths, which are present in Borg's dry run output
+        # when there are overlapping source patterns. For instance, if both "/foo" and
+        # "/foo/file.txt" are in configured patterns, then "/foo/file.txt" will show up in Borg's
+        # dry run output twice.
+        dict.fromkeys(
+            path for path in paths if os.path.isfile(os.path.join(working_directory or '', path))
+        )
     )
 
 
@@ -518,66 +525,100 @@ def compare_spot_check_hashes(
         source_sample_paths_subset = tuple(
             itertools.islice(source_sample_paths_iterator, SAMPLE_PATHS_SUBSET_COUNT),
         )
+
         if not source_sample_paths_subset:
             break
 
         hash_paths = tuple(
             path for path in source_sample_paths_subset if path in hashable_source_sample_path
         )
-        hash_lines = borgmatic.execute.execute_command_and_capture_output(
-            tuple(
-                shlex.quote(part)
-                for part in shlex.split(spot_check_config.get('xxh64sum_command', 'xxh64sum'))
-            )
-            + hash_paths,
-            working_directory=working_directory,
-        )
 
-        source_hashes.update(
-            **dict(
-                zip(
-                    # xxh64sum rewrites/escapes the paths that it returns alongside its hashes, for
-                    # instance if they contain special characters. When that happens, they don't
-                    # match the original source paths and therefore hash lookups fail. So when
-                    # building this lookup dict, use the original unaltered paths we provided as
-                    # input to xxh64sum.
-                    hash_paths,
-                    (
-                        # For some reason, xxh64sum prefixes the hash with a backslash if the path
-                        # contains a newline. Work around that.
-                        line.split('  ', 1)[0].lstrip('\\')
-                        for line in hash_lines
+        try:
+            hash_lines = borgmatic.execute.execute_command_and_capture_output(
+                tuple(
+                    shlex.quote(part)
+                    for part in shlex.split(spot_check_config.get('xxh64sum_command', 'xxh64sum'))
+                )
+                + hash_paths,
+                working_directory=working_directory,
+            )
+            source_hashes.update(
+                **dict(
+                    zip(
+                        # xxh64sum rewrites/escapes the paths that it returns alongside its hashes, for
+                        # instance if they contain special characters. When that happens, they don't
+                        # match the original source paths and therefore hash lookups fail. So when
+                        # building this lookup dict, use the original unaltered paths we provided as
+                        # input to xxh64sum.
+                        hash_paths,
+                        (
+                            # For some reason, xxh64sum prefixes the hash with a backslash if the path
+                            # contains a newline. Work around that.
+                            line.split('  ', 1)[0].lstrip('\\')
+                            for line in hash_lines
+                        ),
                     ),
+                    # Represent non-existent files as having empty hashes so the comparison below still
+                    # works. Same thing for filesystem links, since Borg produces empty archive hashes
+                    # for them.
+                    **{
+                        path: ''
+                        for path in source_sample_paths_subset
+                        if path not in hashable_source_sample_path
+                    },
                 ),
-                # Represent non-existent files as having empty hashes so the comparison below still
-                # works. Same thing for filesystem links, since Borg produces empty archive hashes
-                # for them.
-                **{
-                    path: ''
-                    for path in source_sample_paths_subset
-                    if path not in hashable_source_sample_path
-                },
-            ),
-        )
+            )
+        except subprocess.CalledProcessError:
+            # This can happen if a file we planned to hash gets deleted right before we try to hash
+            # it. Falling back to individual file hashing allows us to find and mark just the
+            # file(s) with problems instead of failing the whole batch.
+            logger.warning(
+                'Bulk source path hashing failed for this batch; falling back to individual file hashing'
+            )
+
+            for hash_path in hash_paths:
+                try:
+                    hash_lines = borgmatic.execute.execute_command_and_capture_output(
+                        (
+                            *(
+                                shlex.quote(part)
+                                for part in shlex.split(
+                                    spot_check_config.get('xxh64sum_command', 'xxh64sum')
+                                )
+                            ),
+                            hash_path,
+                        ),
+                        working_directory=working_directory,
+                    )
+                    source_hashes[hash_path] = next(hash_lines).split('  ', 1)[0].lstrip('\\')
+                except (subprocess.CalledProcessError, StopIteration):  # noqa: PERF203
+                    logger.warning(
+                        f'Source path hashing failed for {hash_path}; treating as missing'
+                    )
+                    source_hashes[hash_path] = ''
 
         # Get the hash for each file in the archive.
-        archive_hashes.update(
-            **{
-                entry['path']: entry['xxh64']
-                for entry in borgmatic.borg.list.capture_archive_listing(
-                    repository['path'],
-                    archive,
-                    config,
-                    local_borg_version,
-                    global_arguments,
-                    list_paths=source_sample_paths_subset,
-                    path_format='{xxh64}{path}',
-                    local_path=local_path,
-                    remote_path=remote_path,
-                )
-                if entry
-            },
-        )
+        for entry in borgmatic.borg.list.capture_archive_listing(
+            repository['path'],
+            archive,
+            config,
+            local_borg_version,
+            global_arguments,
+            list_paths=source_sample_paths_subset,
+            path_format='{xxh64}{path}{linktarget}',
+            local_path=local_path,
+            remote_path=remote_path,
+        ):
+            if not entry:
+                continue
+
+            # Borg can't get hashes of stored hard links. So if this is a hard link path (and not
+            # deemed as the "original" by Borg), then skip hashing of it.
+            if entry['linktarget']:
+                source_hashes.pop(os.path.join('/', entry['path']), None)
+                continue
+
+            archive_hashes[entry['path']] = entry['xxh64']
 
     # Compare the source hashes with the archive hashes to see how many match.
     failing_paths = []
@@ -676,7 +717,7 @@ def spot_check(
         )
         logger.debug(f'Paths in latest archive but not source paths: {truncated_archive_paths}')
         raise ValueError(
-            'Spot check failed: There are no source paths to compare against the archive',
+            'Spot check failed; there are no source paths to compare against the archive',
         )
 
     # Calculate the percentage delta between the source paths count and the archive paths count, and
@@ -690,19 +731,13 @@ def spot_check(
             width=MAX_SPOT_CHECK_PATHS_LENGTH,
             placeholder=' ...',
         )
-        logger.debug(
-            f'Paths in source paths but not latest archive: {truncated_exclusive_source_paths}',
-        )
         truncated_exclusive_archive_paths = textwrap.shorten(
             ', '.join(set(archive_paths) - rootless_source_paths) or 'none',
             width=MAX_SPOT_CHECK_PATHS_LENGTH,
             placeholder=' ...',
         )
-        logger.debug(
-            f'Paths in latest archive but not source paths: {truncated_exclusive_archive_paths}',
-        )
         raise ValueError(
-            f'Spot check failed: {count_delta_percentage:.2f}% file count delta between source paths and latest archive (tolerance is {spot_check_config["count_tolerance_percentage"]}%)',
+            f'Spot check failed\n{count_delta_percentage:.2f}% file count delta between source paths ({len(source_paths)} total) and latest archive ({len(archive_paths)} total); tolerance is {spot_check_config["count_tolerance_percentage"]}%\nOnly in source paths: {truncated_exclusive_source_paths}\nOnly in latest archive: {truncated_exclusive_archive_paths}',
         )
 
     failing_paths = compare_spot_check_hashes(
@@ -727,11 +762,8 @@ def spot_check(
             width=MAX_SPOT_CHECK_PATHS_LENGTH,
             placeholder=' ...',
         )
-        logger.debug(
-            f'Source paths with data not matching the latest archive: {truncated_failing_paths}',
-        )
         raise ValueError(
-            f'Spot check failed: {failing_percentage:.2f}% of source paths with data not matching the latest archive (tolerance is {data_tolerance_percentage}%)',
+            f'Spot check failed\n{failing_percentage:.2f}% of source paths ({len(failing_paths)} total) with data not matching the latest archive; tolerance is {data_tolerance_percentage}%\nSource paths with non-matching data: {truncated_failing_paths}',
         )
 
     logger.info(

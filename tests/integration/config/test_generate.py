@@ -292,6 +292,12 @@ def test_render_configuration_converts_configuration_to_yaml_string():
     assert yaml_string == 'foo: bar\n'
 
 
+def test_render_configuration_strips_ruamel_yaml_end_of_document_marker():
+    yaml_string = module.render_configuration(33)
+
+    assert yaml_string == '33\n'
+
+
 def test_write_configuration_does_not_raise():
     flexmock(os.path).should_receive('exists').and_return(False)
     flexmock(os).should_receive('makedirs')

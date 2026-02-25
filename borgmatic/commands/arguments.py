@@ -1261,6 +1261,29 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         help='Show this help message and exit',
     )
 
+    config_show_parser = config_parsers.add_parser(
+        'show',
+        help='Show the computed configuration for each file specified with --config (see borgmatic --help)',
+        description='Show the computed configuration for each file specified with --config (see borgmatic --help)',
+        add_help=False,
+    )
+    config_show_group = config_show_parser.add_argument_group('config show arguments')
+    config_show_group.add_argument(
+        '--option',
+        help='Show the value of a single named configuration option instead of the entire configuration',
+    )
+    config_show_group.add_argument(
+        '--json',
+        action='store_true',
+        help='Show the configuration as JSON with one array element per configuration file',
+    )
+    config_show_group.add_argument(
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
+    )
+
     export_tar_parser = action_parsers.add_parser(
         'export-tar',
         aliases=ACTION_ALIASES['export-tar'],

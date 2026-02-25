@@ -71,7 +71,7 @@ def get_datasets_to_backup(zfs_command, patterns):
                 )
                 # Skip datasets that are marked "canmount=off", because mounting their snapshots will
                 # result in completely empty mount points—thereby preventing us from backing them up.
-                if can_mount == 'on'
+                if can_mount != 'off'
             ),
             key=lambda dataset: dataset.mount_point,
             reverse=True,

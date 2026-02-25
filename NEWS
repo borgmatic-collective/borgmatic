@@ -1,5 +1,29 @@
-2.1.2.dev0
+2.1.3.dev0
+ * #1218: Add a "config show" action to display computed borgmatic configuration as YAML or JSON,
+   handy for fetching borgmatic configuration from external scripts. See the documentation for more
+   information:
+   https://torsion.org/borgmatic/reference/command-line/actions/config-show/
+ * #1228: Adjust the "spot" check so error output includes more information about what failed.
+ * #1236: Fix the "spot" check to skip hard links, as Borg doesn't produces hashes for them.
+ * #1269: Fix the ZFS hook to support datasets with a "canmount" property of "noauto".
+ * #1270: Follow symlinks when backing up borgmatic configuration files to support the "bootstrap"
+   action.
+ * Add a policy about the use of generative AI in the borgmatic codebase:
+   https://torsion.org/borgmatic/how-to/develop-on-borgmatic/#use-of-generative-ai
+
+2.1.2
+ * #1231: If a source file is deleted during a "spot" check, consider the file as non-matching
+   and move on instead of immediately failing the entire check.
  * #1250: Fix a regression in which the "--stats" flag hides statistics at default verbosity.
+ * #1251: Fix a regression in the ntfy monitoring hook in which borgmatic sends tags incorrectly,
+   resulting in "400 Bad Request" from ntfy.
+ * #1258: Fix a "codec can't decode byte" error when running commands that output multi-byte unicode
+   characters.
+ * #1260: Fix for SSH warnings from Borg showing up as JSON logs even without the "--log-json" flag.
+ * #1252: Work around Borg returning a warning exit code when a repository/archive check fails. Now,
+   borgmatic interprets such failures as errors.
+ * Deduplicate overlapping source directories and patterns so they don't throw off "spot" check file
+   counts and cause spurious check failures.
 
 2.1.1
  * #1241: For the "recreate" action, actually pass the "--dry-run" flag through to Borg instead of

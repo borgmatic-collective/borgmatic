@@ -64,6 +64,27 @@ suppressed so as not to interfere with the captured JSON. Also note that JSON
 output only shows up at the console and not in syslog.
 
 
+### Getting configuration
+
+<span class="minilink minilink-addedin">New in version 2.1.3</span> If you want
+to consume borgmatic's computed configuration in your scripts, use the [`config
+show`
+action](https://torsion.org/borgmatic/reference/command-line/actions/config-show/).
+Here's an example:
+
+```bash
+borgmatic config show --json
+```
+
+That outputs borgmatic's entire configuration as JSON with one array element per
+configuration file.
+
+Or you can ask for the value of a particular option:
+
+```bash
+borgmatic config show --option repositories --json
+```
+
 ### Latest backups
 
 All borgmatic actions that accept an `--archive` flag allow you to specify an

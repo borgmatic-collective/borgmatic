@@ -1,6 +1,7 @@
 import contextlib
 import glob
 import importlib
+import itertools
 import json
 import logging
 import os
@@ -19,6 +20,29 @@ def use_streaming(hook_config, config):  # pragma: no cover
     return False
 
 
+MAXIMUM_CONFIG_SYMLINKS_TO_FOLLOW = 10
+
+
+def resolve_config_path_symlinks(path):
+    '''
+    Given a path, resolve and yield each successive symlink until the final non-symlink target. If
+    the given path isn't a symlink, then just yield it.
+
+    Raise ValueError if we have to follow too many symlinks without getting to the final target.
+    '''
+    original_path = path
+
+    for _ in range(MAXIMUM_CONFIG_SYMLINKS_TO_FOLLOW):
+        yield os.path.abspath(path)
+
+        if not os.path.islink(path):
+            return
+
+        path = os.readlink(path)
+
+    raise ValueError(f'Too many symlinks to follow for configuration path: {original_path}')
+
+
 def dump_data_sources(
     hook_config,
     config,
@@ -34,6 +58,9 @@ def dump_data_sources(
     the archive. But skip this if the bootstrap store_config_files option is False or if this is a
     dry run.
 
+    If any configuration paths are symlinks, then store each symlink along with any destination
+    paths as well.
+
     Return an empty sequence, since there are no ongoing dump processes from this hook.
     '''
     if hook_config and hook_config.get('store_config_files') is False:
@@ -45,6 +72,10 @@ def dump_data_sources(
         'manifest.json',
     )
 
+    resolved_config_paths = tuple(
+        itertools.chain.from_iterable(resolve_config_path_symlinks(path) for path in config_paths)
+    )
+
     if dry_run:
         return []
 
@@ -54,7 +85,7 @@ def dump_data_sources(
         json.dump(
             {
                 'borgmatic_version': importlib.metadata.version('borgmatic'),
-                'config_paths': config_paths,
+                'config_paths': resolved_config_paths,
             },
             manifest_file,
         )
@@ -67,7 +98,7 @@ def dump_data_sources(
         ),
     )
 
-    for config_path in config_paths:
+    for config_path in resolved_config_paths:
         borgmatic.hooks.data_source.config.inject_pattern(
             patterns,
             borgmatic.borg.pattern.Pattern(

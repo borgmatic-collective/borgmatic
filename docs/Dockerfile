@@ -5,7 +5,7 @@ RUN apk add --no-cache py3-pip py3-ruamel.yaml py3-ruamel.yaml.clib
 RUN pip install --break-system-packages --no-cache /app && borgmatic config generate && borgmatic config generate --destination /etc/borgmatic --split && chmod +r /etc/borgmatic/*.yaml
 RUN mkdir /command-line \
     && borgmatic --help > /command-line/global.txt \
-    && for action in repo-create transfer create prune compact check delete extract config "config bootstrap" "config generate" "config validate" export-tar mount umount repo-delete restore repo-list list repo-info info break-lock "key export" "key import" "key change-passphrase" recreate borg; do \
+    && for action in repo-create transfer create prune compact check delete extract config "config bootstrap" "config generate" "config validate" "config show" export-tar mount umount repo-delete restore repo-list list repo-info info break-lock "key export" "key import" "key change-passphrase" recreate borg; do \
            borgmatic $action --help > /command-line/${action/ /-}.txt; done
 RUN /app/docs/fetch-contributors >> /contributors.html
 

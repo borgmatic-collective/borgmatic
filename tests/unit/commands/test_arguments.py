@@ -329,10 +329,12 @@ def test_parse_arguments_for_actions_consumes_action_arguments_after_action_name
     remaining = flexmock()
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
-        lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: action_namespace},
-        )
-        or remaining,
+        lambda unparsed, parsed, parser, action, canonical=None: (
+            parsed.update(
+                {action: action_namespace},
+            )
+            or remaining
+        ),
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {'action': flexmock(), 'other': flexmock()}
@@ -355,10 +357,12 @@ def test_parse_arguments_for_actions_consumes_action_arguments_with_alias():
     remaining = flexmock()
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
-        lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {canonical or action: action_namespace},
-        )
-        or remaining,
+        lambda unparsed, parsed, parser, action, canonical=None: (
+            parsed.update(
+                {canonical or action: action_namespace},
+            )
+            or remaining
+        ),
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -387,10 +391,12 @@ def test_parse_arguments_for_actions_consumes_multiple_action_arguments():
     other_namespace = flexmock(bar=3)
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
-        lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: action_namespace if action == 'action' else other_namespace},
-        )
-        or (),
+        lambda unparsed, parsed, parser, action, canonical=None: (
+            parsed.update(
+                {action: action_namespace if action == 'action' else other_namespace},
+            )
+            or ()
+        ),
     ).and_return(('other', '--bar', '3')).and_return('action', '--foo', 'true')
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -420,10 +426,12 @@ def test_parse_arguments_for_actions_respects_command_line_action_ordering():
     action_namespace = flexmock(foo=True)
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
-        lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: other_namespace if action == 'other' else action_namespace},
-        )
-        or (),
+        lambda unparsed, parsed, parser, action, canonical=None: (
+            parsed.update(
+                {action: other_namespace if action == 'other' else action_namespace},
+            )
+            or ()
+        ),
     ).and_return(('action',)).and_return(('other', '--foo', 'true'))
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -458,10 +466,12 @@ def test_parse_arguments_for_actions_applies_default_action_parsers():
 
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
-        lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: namespaces.get(action)},
-        )
-        or (),
+        lambda unparsed, parsed, parser, action, canonical=None: (
+            parsed.update(
+                {action: namespaces.get(action)},
+            )
+            or ()
+        ),
     ).and_return(())
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -488,10 +498,12 @@ def test_parse_arguments_for_actions_consumes_global_arguments():
     action_namespace = flexmock()
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
-        lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: action_namespace},
-        )
-        or ('--verbosity', 'lots'),
+        lambda unparsed, parsed, parser, action, canonical=None: (
+            parsed.update(
+                {action: action_namespace},
+            )
+            or ('--verbosity', 'lots')
+        ),
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -516,10 +528,12 @@ def test_parse_arguments_for_actions_passes_through_unknown_arguments_before_act
     action_namespace = flexmock()
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
-        lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: action_namespace},
-        )
-        or ('--wtf', 'yes'),
+        lambda unparsed, parsed, parser, action, canonical=None: (
+            parsed.update(
+                {action: action_namespace},
+            )
+            or ('--wtf', 'yes')
+        ),
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -544,10 +558,12 @@ def test_parse_arguments_for_actions_passes_through_unknown_arguments_after_acti
     action_namespace = flexmock()
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
-        lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: action_namespace},
-        )
-        or ('--wtf', 'yes'),
+        lambda unparsed, parsed, parser, action, canonical=None: (
+            parsed.update(
+                {action: action_namespace},
+            )
+            or ('--wtf', 'yes')
+        ),
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -572,10 +588,12 @@ def test_parse_arguments_for_actions_with_borg_action_skips_other_action_parsers
     action_namespace = flexmock(options=[])
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
     flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
-        lambda unparsed, parsed, parser, action, canonical=None: parsed.update(
-            {action: action_namespace},
-        )
-        or (),
+        lambda unparsed, parsed, parser, action, canonical=None: (
+            parsed.update(
+                {action: action_namespace},
+            )
+            or ()
+        ),
     ).and_return(())
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
