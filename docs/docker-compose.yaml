@@ -2,10 +2,12 @@ services:
   traefik:
     image: public.ecr.aws/docker/library/traefik:3.5.3
     container_name: borgmatic-docs-traefik
+    environment:
+      - PORT=${PORT}
     command:
       - "--global.checkNewVersion=false"
       - "--global.sendAnonymousUsage=false"
-      - "--entrypoints.web.address=:8080"
+      - "--entrypoints.web.address=:${PORT}"
       - "--accesslog"
       - "--accesslog.fields.headers.defaultmode=keep"
       - "--providers.docker"
@@ -14,7 +16,7 @@ services:
       - "--api.dashboard=false"
       - "--log.level=WARN"
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:${PORT}:${PORT}"
     volumes:
       - ${CONTAINER_SOCKET_PATH:-/run/user/docker.sock}:/var/run/docker.sock:ro
   docs:
@@ -37,6 +39,7 @@ services:
       context: ..
       args:
         ENVIRONMENT: development
+        PORT: 3000
   message:
     image: alpine
     container_name: borgmatic-docs-message
@@ -44,6 +47,6 @@ services:
       - sh
       - -c
       - |
-        echo; echo "You can view dev docs at http://localhost:8080/borgmatic/"; echo
+        echo; echo "You can view dev docs at http://localhost:${PORT}/borgmatic/"; echo
     depends_on:
       - docs
