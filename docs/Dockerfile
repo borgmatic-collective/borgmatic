@@ -12,7 +12,7 @@ RUN /app/docs/fetch-contributors >> /contributors.html
 FROM docker.io/node:22.4.0-alpine AS html
 
 ARG ENVIRONMENT=production
-ARG PORT=3000
+ARG PORT=${PORT}
 
 WORKDIR /source
 

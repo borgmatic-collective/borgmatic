@@ -3,7 +3,7 @@ services:
     image: public.ecr.aws/docker/library/traefik:3.5.3
     container_name: borgmatic-docs-traefik
     environment:
-      - PORT=${PORT}
+      - PORT=${PORT:-8080}
     command:
       - "--global.checkNewVersion=false"
       - "--global.sendAnonymousUsage=false"
@@ -39,7 +39,9 @@ services:
       context: ..
       args:
         ENVIRONMENT: development
-        PORT: 3000
+        PORT: ${PORT:-8080}
+    environment:
+      - PORT=${PORT:-8080}
   message:
     image: alpine
     container_name: borgmatic-docs-message
