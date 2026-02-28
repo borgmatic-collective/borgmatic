@@ -1,4 +1,6 @@
 2.1.3.dev0
+ * #1175: Add a "files_changed" option for customizing Borg's file modification detection.
+ * #1175: Add a "msgpack_version_check" option to prevent Borg from validating msgpack's version.
  * #1218: Add a "config show" action to display computed borgmatic configuration as YAML or JSON,
    handy for fetching borgmatic configuration from external scripts. See the documentation for more
    information:

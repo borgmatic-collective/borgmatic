@@ -172,8 +172,9 @@ properties:
         description: |
             Threshold for considering a file as changed. See
             https://borgbackup.readthedocs.io/en/stable/usage/create.html for
-            details. Defaults to "ctime" (i.e., a file is considered
-            changed if its ctime has changed since the last backup).
+            details. Defaults to "ctime". E.g., a file is considered changed if
+            its ctime has changed since the last backup. (This option is
+            supported for Borg 1.4.2+ only.)
         example: ctime
     files_cache:
         type: string
@@ -574,9 +575,9 @@ properties:
     msgpack_version_check:
         type: boolean
         description: |
-            Optionally disable the msgpack version check.
-            Default is true; use at your own risk.
-        example: true
+            Optionally disable the msgpack version check. Default is true; use
+            at your own risk. (This option is supported for Borg 1.4.2+ only.)
+        example: false
     extra_borg_options:
         type: object
         additionalProperties: false
