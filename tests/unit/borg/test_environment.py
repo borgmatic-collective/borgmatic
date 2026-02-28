@@ -90,12 +90,6 @@ def test_make_environment_without_configuration_sets_certain_environment_variabl
     assert environment == {
         'USER': 'root',
         'BORG_EXIT_CODES': 'modern',
-        'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'NO',
-        'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK': 'NO',
-        'BORG_USE_CHUNKS_ARCHIVE': 'NO',
-        'BORG_DEBUG_PASSPHRASE': 'NO',
-        'BORG_DISPLAY_PASSPHRASE': 'NO',
-        'BORG_MSGPACK_VERSION_CHECK': 'YES',
     }
 
 
