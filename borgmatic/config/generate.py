@@ -168,9 +168,11 @@ def render_configuration(config):
         rendered,
         # Dumping certain values (integers, for instance) causes ruamel.yaml to append an
         # end-of-document "..." marker. Strip it.
-        transform=lambda dumped: dumped[: -len(RUAMEL_YAML_END_OF_DOCUMENT_MARKER)]
-        if dumped.endswith(RUAMEL_YAML_END_OF_DOCUMENT_MARKER)
-        else dumped,
+        transform=lambda dumped: (
+            dumped[: -len(RUAMEL_YAML_END_OF_DOCUMENT_MARKER)]
+            if dumped.endswith(RUAMEL_YAML_END_OF_DOCUMENT_MARKER)
+            else dumped
+        ),
     )
 
     return rendered.getvalue()

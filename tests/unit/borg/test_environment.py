@@ -103,7 +103,6 @@ def test_make_environment_without_configuration_passes_through_default_environme
             'BORG_DEBUG_PASSPHRASE': 'nah',
             'BORG_DISPLAY_PASSPHRASE': 'yup',
             'BORG_MSGPACK_VERSION_CHECK': 'yup',
-
         },
     )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
