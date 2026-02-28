@@ -198,6 +198,7 @@ def make_base_create_command(  # noqa: PLR0912
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
     list_filter_flags = flags.make_list_filter_flags(local_borg_version, dry_run)
+    files_changed = config.get('files_changed')
     files_cache = config.get('files_cache')
     archive_name_format = (
         config.get('archive_name_format', flags.get_default_archive_name_format(local_borg_version))
@@ -248,6 +249,7 @@ def make_base_create_command(  # noqa: PLR0912
         + (('--nobirthtime',) if config.get('birthtime') is False else ())
         + (('--read-special',) if config.get('read_special') or stream_processes else ())
         + noflags_flags
+        + (('--files-changed', files_changed) if files_changed else ())
         + (('--files-cache', files_cache) if files_cache else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())

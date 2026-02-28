@@ -90,11 +90,6 @@ def test_make_environment_without_configuration_sets_certain_environment_variabl
     assert environment == {
         'USER': 'root',
         'BORG_EXIT_CODES': 'modern',
-        'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'NO',
-        'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK': 'NO',
-        'BORG_USE_CHUNKS_ARCHIVE': 'NO',
-        'BORG_DEBUG_PASSPHRASE': 'NO',
-        'BORG_DISPLAY_PASSPHRASE': 'NO',
     }
 
 
@@ -107,6 +102,7 @@ def test_make_environment_without_configuration_passes_through_default_environme
             'BORG_USE_CHUNKS_ARCHIVE': 'yup',
             'BORG_DEBUG_PASSPHRASE': 'nah',
             'BORG_DISPLAY_PASSPHRASE': 'yup',
+            'BORG_MSGPACK_VERSION_CHECK': 'yup',
         },
     )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
@@ -122,6 +118,7 @@ def test_make_environment_without_configuration_passes_through_default_environme
         'BORG_USE_CHUNKS_ARCHIVE': 'yup',
         'BORG_DEBUG_PASSPHRASE': 'nah',
         'BORG_DISPLAY_PASSPHRASE': 'yup',
+        'BORG_MSGPACK_VERSION_CHECK': 'yup',
         'BORG_EXIT_CODES': 'modern',
     }
 

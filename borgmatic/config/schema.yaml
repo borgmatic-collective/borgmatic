@@ -166,6 +166,15 @@ properties:
             Record filesystem flags (e.g. NODUMP, IMMUTABLE) in archive.
             Defaults to true.
         example: false
+    files_changed:
+        type: string
+        enum: ['ctime', 'mtime', 'disabled']
+        description: |
+            Threshold for considering a file as changed. See
+            https://borgbackup.readthedocs.io/en/stable/usage/create.html for
+            details. Defaults to "ctime" (i.e., a file is considered
+            changed if its ctime has changed since the last backup).
+        example: ctime
     files_cache:
         type: string
         description: |
@@ -561,6 +570,12 @@ properties:
         description: |
             Bypass Borg confirmation about check with repair option. Defaults to
             false and an interactive prompt from Borg.
+        example: true
+    msgpack_version_check:
+        type: boolean
+        description: |
+            Optionally disable the msgpack version check.
+            Default is true; use at your own risk.
         example: true
     extra_borg_options:
         type: object
