@@ -11,6 +11,8 @@
  * #1269: Fix the ZFS hook to support datasets with a "canmount" property of "noauto".
  * #1270: Follow symlinks when backing up borgmatic configuration files to support the "bootstrap"
    action.
+ * #1274: Add an optional override for the documentation development listen port and use Podman
+   Compose if present.
  * Add a policy about the use of generative AI in the borgmatic codebase:
    https://torsion.org/borgmatic/how-to/develop-on-borgmatic/#use-of-generative-ai
 

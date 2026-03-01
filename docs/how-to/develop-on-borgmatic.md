@@ -225,9 +225,11 @@ borgmatic's developer build for documentation optionally supports using
 [Podman](https://podman.io/) instead of Docker.
 
 Setting up Podman is outside the scope of this documentation. But once you
-install and configure Podman, then `scripts/dev-docs` should automatically use
-Podman instead of Docker (make sure you have
-[`podman-compose`](https://github.com/containers/podman-compose) installed).
+install and configure Podman, then `scripts/dev-docs` automatically uses Podman
+instead of Docker and [Podman
+Compose](https://github.com/containers/podman-compose) (if present) instead of
+Docker Compose. However Podman works fine with either Podman Compose or Docker
+Compose.
 
 
 ## Use of generative AI
