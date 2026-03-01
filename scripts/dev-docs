@@ -2,11 +2,7 @@
 
 set -e
 
-if command -v podman >/dev/null 2>&1; then
-    if ! command -v podman-compose >/dev/null 2>&1; then
-        echo "Error: podman is installed, but podman-compose is missing." >&2
-        exit 1
-    fi
+if command -v podman-compose >/dev/null 2>&1; then
     COMPOSE_CMD="podman-compose"
     export CONTAINER_SOCKET_PATH="${XDG_RUNTIME_DIR:-/run/user/$UID}/podman/podman.sock"
 else
