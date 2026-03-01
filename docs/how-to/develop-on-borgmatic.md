@@ -190,8 +190,28 @@ This requires Docker (or Podman; see below) to be installed on your system.
 This script assumes you have permission to run `docker`. If you don't, then
 you may need to run with `sudo`.
 
+### How to choose a different port
+
+You can choose a different listening port in two ways:
+
+#### 1. Modify the `.env` file
+
+1.  Open `docs/.env`.
+2.  Change `PORT=8080` to your desired port number (e.g., `PORT=3000`).
+3.  Run the development script: `scripts/dev-docs`.
+
+#### 2. Use an environment variable
+
+Alternatively, you can override the port directly from your terminal without
+modifying any files:
+
+```bash
+PORT=3000 ./scripts/dev-docs
+```
+
 After you run the script, you can point your web browser at
-http://localhost:8080/borgmatic/ to view the documentation with your changes.
+http://localhost:8080/borgmatic/ (or your chosen port) to view the documentation
+with your changes.
 
 To close the documentation server, ctrl-C the script. Note that it does not
 currently auto-reload, so you'll need to stop it and re-run it for any
@@ -206,7 +226,8 @@ borgmatic's developer build for documentation optionally supports using
 
 Setting up Podman is outside the scope of this documentation. But once you
 install and configure Podman, then `scripts/dev-docs` should automatically use
-Podman instead of Docker.
+Podman instead of Docker (make sure you have
+[`podman-compose`](https://github.com/containers/podman-compose) installed).
 
 
 ## Use of generative AI

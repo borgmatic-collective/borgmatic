@@ -21,7 +21,7 @@ headerClass: elv-header-default
             {% set navPages = collections.all | eleventyNavigation %}
             {% macro renderNavListItem(entry) -%}
             <li{% if entry.url == page.url %} class="elv-toc-active"{% endif %}>
-              <a {% if entry.url %}href="{% if borgmatic.environment == "production" %}https://torsion.org/borgmatic{% else %}http://localhost:8080/borgmatic{% endif %}{{ entry.url | url }}"{% endif %}>{{ entry.title }}</a>
+              <a {% if entry.url %}href="{% if borgmatic.environment == "production" %}https://torsion.org/borgmatic{% else %}http://localhost:{{ borgmatic.port }}/borgmatic{% endif %}{{ entry.url | url }}"{% endif %}>{{ entry.title }}</a>
             {%- if entry.children.length -%}
               <ul>
                 {%- for child in entry.children %}{{ renderNavListItem(child) }}{% endfor -%}

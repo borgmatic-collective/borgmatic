@@ -2,11 +2,11 @@
 
 set -e
 
-USER_PODMAN_SOCKET_PATH=/run/user/$UID/podman/podman.sock
-
-if [ -e "$USER_PODMAN_SOCKET_PATH" ]; then
-    export DOCKER_HOST="unix://$USER_PODMAN_SOCKET_PATH"
-    export CONTAINER_SOCKET_PATH="$USER_PODMAN_SOCKET_PATH"
+if command -v podman-compose >/dev/null 2>&1; then
+    COMPOSE_CMD="podman-compose"
+    export CONTAINER_SOCKET_PATH="${XDG_RUNTIME_DIR:-/run/user/$UID}/podman/podman.sock"
+else
+    COMPOSE_CMD="docker-compose"
 fi
 
-BUILDKIT_PROGRESS=plain docker-compose --file docs/docker-compose.yaml up --build --force-recreate
+BUILDKIT_PROGRESS=plain $COMPOSE_CMD --file docs/docker-compose.yaml up --build --force-recreate
