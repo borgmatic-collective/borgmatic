@@ -9,7 +9,7 @@ if [ -e "$USER_PODMAN_SOCKET_PATH" ]; then
     export CONTAINER_SOCKET_PATH="$USER_PODMAN_SOCKET_PATH"
 fi
 
-podman build --tag borgmatic-release-docs --file docs/Dockerfile .
+podman build --tag borgmatic-release-docs --file docs/Dockerfile --env FONT=plain .
 docs_container_id=$(podman create borgmatic-release-docs)
 podman cp "$docs_container_id":/usr/share/nginx/html - > borgmatic-docs-dump.tar
 tar xf borgmatic-docs-dump.tar

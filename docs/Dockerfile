@@ -13,6 +13,9 @@ FROM docker.io/node:22.4.0-alpine AS html
 
 ARG ENVIRONMENT=production
 ARG PORT=${PORT}
+ARG FONT=${FONT}
+
+RUN echo "FONT: ${FONT}"
 
 WORKDIR /source
 
@@ -29,7 +32,7 @@ COPY --from=borgmatic /etc/borgmatic/options.json /source/docs/reference/configu
 COPY --from=borgmatic /command-line/* /source/docs/_includes/borgmatic/command-line/
 COPY --from=borgmatic /contributors.html /source/docs/_includes/borgmatic/contributors.html
 COPY . /source
-RUN NODE_ENV=${ENVIRONMENT} PORT=${PORT} npx eleventy --input=/source/docs --output=/output
+RUN NODE_ENV=${ENVIRONMENT} PORT=${PORT} FONT=${FONT} npx eleventy --input=/source/docs --output=/output
 RUN npx -y pagefind --site /output
 
 FROM docker.io/nginx:1.26.1-alpine

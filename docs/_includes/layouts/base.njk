@@ -11,7 +11,7 @@
 		<title>borgmatic{% if subtitle or title %} - {% endif %}{{ subtitle + ' - ' if subtitle}}{{ title }}</title>
 		{% endif %}
 {%- set css %}
-{% include 'index.css' %}
+{% include 'index.css.njk' %}
 {% include 'components/lists.css' %}
 {% include 'components/external-links.css' %}
 {% include 'components/minilink.css' %}
