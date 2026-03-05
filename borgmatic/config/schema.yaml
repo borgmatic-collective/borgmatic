@@ -30,12 +30,10 @@ properties:
     source_directories_must_exist:
         type: boolean
         description: |
-            Deprecated. Replaced by borgmatic treating Borg's "backup file not
-            found" warning as an error by default. But if
-            "source_directories_must_exist" is true, then source directories
-            (and root pattern paths) must exist before a backup begins. If they
-            don't, borgmatic errors. Defaults to false.
-        example: true
+            When true, source directories (and root pattern paths) must exist
+            before a backup begins. If they don't, borgmatic errors. Defaults to
+            true.
+        example: false
     repositories:
         type: array
         items:

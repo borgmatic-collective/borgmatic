@@ -8,6 +8,13 @@
  * #1228: Adjust the "spot" check so error output includes more information about what failed.
  * #1236: Fix the "spot" check to skip hard links, as Borg doesn't produces hashes for them.
  * #1243: Add a "diff" action for viewing the difference between the contents of two archives.
+ * #1248: Go back to treating Borg "file not found" warnings (exit code 107) as
+   warnings instead of errors. Otherwise, borgmatic can error on files that a user intentionally
+   deletes while a backup is running. You can still override this behavior with the
+   "borg_exit_codes" option. See the documentation for more information:
+   https://torsion.org/borgmatic/how-to/customize-warnings-and-errors/
+ * #1248: Un-deprecate the "source_directories_must_exist" option and default it to true, to
+   compensate for Borg "file not found" warnings no longer being treated as errors.
  * #1269: Fix the ZFS hook to support datasets with a "canmount" property of "noauto".
  * #1270: Follow symlinks when backing up borgmatic configuration files to support the "bootstrap"
    action.

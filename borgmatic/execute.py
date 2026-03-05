@@ -19,7 +19,7 @@ BORG_ERROR_EXIT_CODE_START = 2
 BORG_ERROR_EXIT_CODE_END = 99
 
 # See https://borgbackup.readthedocs.io/en/stable/internals/frontends.html#message-ids
-BORG_WARNING_EXIT_CODES_TREATED_AS_ERRORS = {101, 102, 104, 105, 106, 107}
+BORG_WARNING_EXIT_CODES_TREATED_AS_ERRORS = {101, 102, 104, 105, 106}
 
 
 class Exit_status(enum.Enum):

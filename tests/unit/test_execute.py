@@ -62,8 +62,8 @@ def test_command_is_borg_matches_local_path_to_command(command, borg_local_path,
         (True, 105, [{'code': 105, 'treat_as': 'warning'}], module.Exit_status.WARNING),
         (True, 106, [], module.Exit_status.ERROR),
         (True, 106, [{'code': 106, 'treat_as': 'warning'}], module.Exit_status.WARNING),
-        (True, 107, [], module.Exit_status.ERROR),
-        (True, 107, [{'code': 107, 'treat_as': 'warning'}], module.Exit_status.WARNING),
+        (True, 107, [], module.Exit_status.WARNING),
+        (True, 107, [{'code': 107, 'treat_as': 'error'}], module.Exit_status.ERROR),
     ),
 )
 def test_interpret_exit_code_respects_exit_code_and_borg_local_path(

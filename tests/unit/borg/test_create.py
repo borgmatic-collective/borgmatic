@@ -357,7 +357,8 @@ DEFAULT_ARCHIVE_NAME = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
 REPO_ARCHIVE = (f'repo::{DEFAULT_ARCHIVE_NAME}',)
 
 
-def test_make_base_create_produces_borg_command():
+def test_make_base_create_command_checks_root_patterns_exist_and_produces_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist').once()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -386,7 +387,39 @@ def test_make_base_create_produces_borg_command():
     assert not pattern_file
 
 
+def test_make_base_create_command_without_check_all_root_patterns_exist_skips_check_and_produces_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist').never()
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',),
+    )
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
+
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'source_directories_must_exist': False,
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        borgmatic_runtime_directory='/run/borgmatic',
+    )
+
+    assert create_flags == ('borg', 'create', '--log-json')
+    assert create_positional_arguments == REPO_ARCHIVE
+    assert not pattern_file
+
+
 def test_make_base_create_command_includes_patterns_file_in_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     mock_pattern_file = flexmock(name='/tmp/patterns')
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
@@ -424,6 +457,7 @@ def test_make_base_create_command_includes_patterns_file_in_borg_command():
 
 
 def test_make_base_create_command_with_store_config_false_omits_config_files():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -494,6 +528,7 @@ def test_make_base_create_command_includes_configuration_option_as_command_flag(
     feature_available,
     option_flags,
 ):
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -527,6 +562,7 @@ def test_make_base_create_command_includes_configuration_option_as_command_flag(
 
 
 def test_make_base_create_command_with_progress_omits_log_json_from_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -561,6 +597,7 @@ def test_make_base_create_command_with_progress_omits_log_json_from_borg_command
 
 
 def test_make_base_create_command_with_log_json_and_progress_includes_log_json_in_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -596,6 +633,7 @@ def test_make_base_create_command_with_log_json_and_progress_includes_log_json_i
 
 
 def test_make_base_create_command_includes_dry_run_in_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -629,6 +667,7 @@ def test_make_base_create_command_includes_dry_run_in_borg_command():
 
 
 def test_make_base_create_command_includes_comment_in_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -663,6 +702,7 @@ def test_make_base_create_command_includes_comment_in_borg_command():
 
 
 def test_make_base_create_command_includes_local_path_in_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -696,6 +736,7 @@ def test_make_base_create_command_includes_local_path_in_borg_command():
 
 
 def test_make_base_create_command_includes_remote_path_in_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -729,6 +770,7 @@ def test_make_base_create_command_includes_remote_path_in_borg_command():
 
 
 def test_make_base_create_command_includes_list_flags_in_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -764,6 +806,7 @@ def test_make_base_create_command_includes_list_flags_in_borg_command():
 def test_make_base_create_command_with_stream_processes_ignores_read_special_false_and_excludes_special_files():
     patterns = [Pattern('foo'), Pattern('bar')]
     patterns_file = flexmock(name='patterns')
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').with_args(
         patterns,
@@ -823,6 +866,7 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
 
 
 def test_make_base_create_command_without_patterns_and_with_stream_processes_ignores_read_special_false_and_excludes_special_files():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').with_args(
         [],
@@ -882,6 +926,7 @@ def test_make_base_create_command_without_patterns_and_with_stream_processes_ign
 
 
 def test_make_base_create_command_with_stream_processes_and_read_special_true_skips_special_files_excludes():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -917,6 +962,7 @@ def test_make_base_create_command_with_stream_processes_and_read_special_true_sk
 
 
 def test_make_base_create_command_includes_archive_name_format_in_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -950,6 +996,7 @@ def test_make_base_create_command_includes_archive_name_format_in_borg_command()
 
 
 def test_make_base_create_command_includes_default_archive_name_format_in_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -983,6 +1030,7 @@ def test_make_base_create_command_includes_default_archive_name_format_in_borg_c
 
 def test_make_base_create_command_includes_archive_name_format_with_placeholders_in_borg_command():
     repository_archive_pattern = 'repo::Documents_{hostname}-{now}'
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
@@ -1016,6 +1064,7 @@ def test_make_base_create_command_includes_archive_name_format_with_placeholders
 
 def test_make_base_create_command_includes_repository_and_archive_name_format_with_placeholders_in_borg_command():
     repository_archive_pattern = '{fqdn}::Documents_{hostname}-{now}'
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
@@ -1048,6 +1097,7 @@ def test_make_base_create_command_includes_repository_and_archive_name_format_wi
 
 
 def test_make_base_create_command_includes_archive_suffix_in_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -1077,6 +1127,7 @@ def test_make_base_create_command_includes_archive_suffix_in_borg_command():
 
 
 def test_make_base_create_command_includes_extra_borg_options_in_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -1117,6 +1168,7 @@ def test_make_base_create_command_includes_extra_borg_options_in_borg_command():
 
 
 def test_make_base_create_command_with_unsafe_skip_path_validation_before_create_skips_validation():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
@@ -1146,6 +1198,7 @@ def test_make_base_create_command_with_unsafe_skip_path_validation_before_create
 
 
 def test_make_base_create_command_without_unsafe_skip_path_validation_before_create_calls_validation():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
