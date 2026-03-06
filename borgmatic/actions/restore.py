@@ -1,4 +1,5 @@
 import collections
+import locale
 import logging
 import os
 import pathlib
@@ -317,7 +318,7 @@ def collect_dumps_from_archive(
                 extract_to_stdout=True,
             )
             .stdout.read()
-            .decode(),
+            .decode(locale.getpreferredencoding()),
             dumps_metadata_entry['path'],
         ):
             dumps_from_archive[dump] = None

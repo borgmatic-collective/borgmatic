@@ -2,6 +2,7 @@ import collections
 import contextlib
 import enum
 import json
+import locale
 import logging
 import os
 import select
@@ -249,6 +250,7 @@ def read_lines(buffer, process, line_separator='\n'):
     data = b''
     encoded_separator = line_separator.encode()
     separator_size = len(encoded_separator)
+    encoding = locale.getpreferredencoding()
 
     while True:
         chunk = os.read(buffer.fileno(), READ_CHUNK_SIZE)
@@ -271,14 +273,14 @@ def read_lines(buffer, process, line_separator='\n'):
             if separator_position == -1:
                 break
 
-            lines.append(data[:separator_position].decode())
+            lines.append(data[:separator_position].decode(encoding))
             data = data[separator_position + separator_size :]
 
         yield tuple(lines)
 
     # Yield any leftover data from the end of the buffer.
     if data:
-        yield (data.decode().rstrip(),)
+        yield (data.decode(encoding).rstrip(),)
 
 
 Buffer_reader = collections.namedtuple(
@@ -661,7 +663,7 @@ def execute_command_and_capture_output(
             raise
 
         if error.output is not None:
-            yield from iter(error.output.decode().splitlines())
+            yield from iter(error.output.decode(locale.getpreferredencoding()).splitlines())
 
         return
 

@@ -521,6 +521,7 @@ def test_collect_dumps_from_archive_with_dumps_metadata_parses_it():
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
         flexmock(stdout=flexmock(read=lambda: b''))
     )
+    flexmock(module.locale).should_receive('getpreferredencoding').and_return('UTF-8')
     dumps_metadata = [
         module.Dump('postgresql_databases', 'foo'),
         module.Dump('postgresql_databases', 'bar', 'host', 1234),

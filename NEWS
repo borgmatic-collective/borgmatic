@@ -20,6 +20,8 @@
    action.
  * #1274: Add an optional override for the documentation development listen port and use Podman
    Compose if present.
+ * #1281: Fix a unicode error when backing up a non-UTF-8 source filename with a
+   corresponding system locale.
  * Add a policy about the use of generative AI in the borgmatic codebase:
    https://torsion.org/borgmatic/how-to/develop-on-borgmatic/#use-of-generative-ai
 

@@ -1510,6 +1510,7 @@ def test_execute_command_and_capture_output_returns_output_when_process_error_is
     flexmock(module).should_receive('interpret_exit_code').and_return(
         module.Exit_status.SUCCESS,
     ).once()
+    flexmock(module.locale).should_receive('getpreferredencoding').and_return('UTF-8')
 
     output_lines = tuple(module.execute_command_and_capture_output(full_command))
 
@@ -1533,6 +1534,7 @@ def test_execute_command_and_capture_output_raises_when_command_errors():
     flexmock(module).should_receive('interpret_exit_code').and_return(
         module.Exit_status.ERROR,
     ).once()
+    flexmock(module.locale).should_receive('getpreferredencoding').and_return('UTF-8')
 
     with pytest.raises(subprocess.CalledProcessError):
         tuple(module.execute_command_and_capture_output(full_command))

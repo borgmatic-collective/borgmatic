@@ -561,3 +561,10 @@ def test_log_outputs_with_unfinished_process_re_polls():
         )
         == ()
     )
+
+
+def test_read_lines_uses_system_locale_when_decoding_output():
+    flexmock(module.locale).should_receive('getpreferredencoding').and_return('ISO-8859-1')
+    process = subprocess.Popen(['echo', b'\xc4pple'], stdout=subprocess.PIPE)
+
+    assert tuple(module.read_lines(process.stdout, process)) == (('\xc4pple',),)
