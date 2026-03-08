@@ -1,7 +1,7 @@
 ---
 title: 📥 How to install borgmatic
 eleventyNavigation:
-  key: 📥 How to install borgmatic
+  key: 📥 Install borgmatic
   parent: How-to guides
   order: -1
 ---
