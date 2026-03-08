@@ -6,31 +6,32 @@ eleventyNavigation:
   order: -1
 ---
 
-To install borgmatic, first [install
+
+### Prerequisites
+
+Before installing borgmatic, first [install
 Borg](https://borgbackup.readthedocs.io/en/stable/installation.html), at least
 version 1.1. (borgmatic does not install Borg automatically so as to avoid
 conflicts with existing Borg installations.)
 
-Then, [install pipx](https://pypa.github.io/pipx/installation/) as the root
-user (with `sudo`) to make installing borgmatic easier without impacting other
-Python applications on your system. If you have trouble installing pipx with
-pip, then you can install a system package instead. E.g. on Ubuntu or Debian,
-run:
+Then, [install uv](https://docs.astral.sh/uv/getting-started/installation/) as
+the root user (with `sudo`) to make installing borgmatic easier without
+impacting other Python applications on your system. For Debian, there is a
+[third-party package for
+uv](https://dario.griffo.io/posts/how-to-install-uv-debian/). On Ubuntu, there
+is a [snap package](https://snapcraft.io/install/astral-uv/ubuntu). On Arch, you
+can just install the `python-uv` package.
 
-```bash
-sudo apt update
-sudo apt install pipx
-```
 
 ### Root install
 
-If you want to run borgmatic on a schedule with privileged access to your
-files, then you should install borgmatic as the root user by running the
-following commands:
+If you want borgmatic to run with privileged access so it can backup your system
+files, then install borgmatic as the root user by running the following
+commands:
 
 ```bash
-sudo pipx ensurepath
-sudo pipx install borgmatic
+sudo uv tool update-shell
+sudo uv tool install borgmatic
 ```
 
 Check whether this worked with:
@@ -41,7 +42,7 @@ borgmatic --version
 ```
 
 If borgmatic is properly installed, that should output your borgmatic version.
-And if you'd also like `sudo borgmatic` to work, keep reading!
+And if you'd also like `sudo borgmatic` to work as well, keep reading!
 
 
 ### Non-root install
@@ -52,8 +53,8 @@ then install borgmatic as a non-root user by running the following commands as
 that user:
 
 ```bash
-pipx ensurepath
-pipx install borgmatic
+uv tool update-shell
+uv tool install borgmatic
 ```
 
 This should work even if you've also installed borgmatic as the root user.
@@ -97,7 +98,7 @@ installing borgmatic:
 #### Etc.
 
  * [Ansible role](https://github.com/borgbase/ansible-role-borgbackup)
- * [uv tool install](https://docs.astral.sh/uv/)
+ * [pipx](https://pipx.pypa.io/stable/)
 
 
 ## Next steps

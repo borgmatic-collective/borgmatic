@@ -5,10 +5,25 @@ eleventyNavigation:
   parent: How-to guides
   order: 14
 ---
-In general, all you should need to do to upgrade borgmatic if you've
-[installed it with
-pipx](https://torsion.org/borgmatic/how-to/install-borgmatic/)
-is to run the following:
+In general, all you should need to do to upgrade borgmatic if you've [installed
+it with uv](https://docs.astral.sh/uv/) is to run the following:
+
+```bash
+sudo uv tool upgrade borgmatic
+```
+
+Omit `sudo` if you installed borgmatic as a non-root user. And if you
+installed borgmatic *both* as root and as a non-root user, you'll need to
+upgrade each installation independently.
+
+
+### Upgrading from other installation methods
+
+#### pipx
+
+If you have borgmatic installed with
+[pipx](https://pipx.pypa.io/latest/installation/), and you'd like to continue
+using pipx, then you can upgrade borgmatic with:
 
 ```bash
 sudo pipx upgrade borgmatic
@@ -18,16 +33,30 @@ Omit `sudo` if you installed borgmatic as a non-root user. And if you
 installed borgmatic *both* as root and as a non-root user, you'll need to
 upgrade each installation independently.
 
+But if you'd like to switch your borgmatic install from pipx to
+[uv](https://docs.astral.sh/uv/), uninstall borgmatic with pipx (`sudo pipx
+uninstall borgmatic`) and then [install borgmatic with
+uv](https://torsion.org/borgmatic/how-to/install-borgmatic/).
+
+Either one should work just fine. uv is just faster than pipx and also used for
+borgmatic
+[development](https://torsion.org/borgmatic/how-to/develop-on-borgmatic/).
+
+
+#### pip install
+
 If you originally installed borgmatic with `sudo pip3 install --user`, you can
 uninstall it first with `sudo pip3 uninstall borgmatic` and then [install it
 again with
-pipx](https://torsion.org/borgmatic/how-to/install-borgmatic/),
+uv](https://torsion.org/borgmatic/how-to/install-borgmatic/),
 which should better isolate borgmatic from your other Python applications.
 
-But if you [installed borgmatic without pipx or
-pip3](https://torsion.org/borgmatic/how-to/install-borgmatic/#other-ways-to-install),
-then your upgrade method may be different.
 
+#### Etc.
+
+If you [some other
+way](https://torsion.org/borgmatic/how-to/install-borgmatic/#other-ways-to-install),
+then your upgrade method may be different.
 
 
 ### Upgrading your configuration
