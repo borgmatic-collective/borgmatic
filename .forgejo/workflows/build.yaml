@@ -1,0 +1,31 @@
+name: build
+run-name: ${{ forgejo.actor }} is building
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: host
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/run-end-to-end-tests
+
+  docs:
+    needs: [test]
+    runs-on: host
+    if: forgejo.event_name == 'push'
+    env:
+      IMAGE_NAME: projects.torsion.org/borgmatic-collective/borgmatic:docs
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: podman login --username "$USERNAME" --password "$PASSWORD" projects.torsion.org
+        env:
+          USERNAME: "${{ secrets.REGISTRY_USERNAME }}"
+          PASSWORD: "${{ secrets.REGISTRY_PASSWORD }}"
+      - run: podman build --tag "$IMAGE_NAME" --file docs/Dockerfile --storage-opt "overlay.mount_program=/usr/bin/fuse-overlayfs" .
+      - run: podman push "$IMAGE_NAME"

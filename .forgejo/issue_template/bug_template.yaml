@@ -1,0 +1,77 @@
+name: "Bug or question/support"
+about: "For filing a bug or getting support"
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What I'm trying to do and why
+    validations:
+      required: true
+  - type: textarea
+    id: repro_steps
+    attributes:
+      label: Steps to reproduce
+      description: Include (sanitized) borgmatic configuration files if applicable.
+    validations:
+      required: false
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual behavior
+      description: Include (sanitized) `--verbosity 2` output if applicable.
+    validations:
+      required: false
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+    validations:
+      required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: Other notes / implementation ideas
+    validations:
+      required: false
+  - type: input
+    id: borgmatic_version
+    attributes:
+      label: borgmatic version
+      description: Use `sudo borgmatic --version` or `sudo pip show borgmatic | grep ^Version`
+    validations:
+      required: false
+  - type: input
+    id: borgmatic_install_method
+    attributes:
+      label: borgmatic installation method
+      description: e.g., pip install, Debian package, container, etc.
+    validations:
+      required: false
+  - type: input
+    id: borg_version
+    attributes:
+      label: Borg version
+      description: Use `sudo borg --version`
+    validations:
+      required: false
+  - type: input
+    id: python_version
+    attributes:
+      label: Python version
+      description: Use `python3 --version`
+    validations:
+      required: false
+  - type: input
+    id: database_version
+    attributes:
+      label: Database version (if applicable)
+      description: Use `psql --version` / `mysql --version` / `mongodump --version` / `sqlite3 --version`
+    validations:
+      required: false
+  - type: input
+    id: operating_system_version
+    attributes:
+      label: Operating system and version
+      description: On Linux, use `cat /etc/os-release`
+    validations:
+      required: false
