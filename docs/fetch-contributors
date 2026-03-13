@@ -14,7 +14,7 @@ import requests
 
 def list_merged_pulls(url):
     '''
-    Given a Gitea or GitHub API endpoint URL for pull requests, fetch and return the corresponding
+    Given a Forgejo or GitHub API endpoint URL for pull requests, fetch and return the corresponding
     JSON for all such merged pull requests.
     '''
     response = requests.get(f'{url}?state=closed', headers={'Accept': 'application/json', 'Content-Type': 'application/json'})

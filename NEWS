@@ -3,6 +3,7 @@
  * Switch the default borgmatic installation method from pipx to uv, as uv is faster and used for
    borgmatic development. If you'd like to switch, see the documentation for more information:
    https://torsion.org/borgmatic/how-to/upgrade/
+ * Move project tracker from Gitea to Forgejo.
 
 2.1.3
  * #1175: Add a "files_changed" option for customizing Borg's file modification detection.
