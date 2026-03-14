@@ -54,7 +54,7 @@ which should better isolate borgmatic from your other Python applications.
 
 #### Etc.
 
-If you [some other
+If you installed borgmatic [some other
 way](https://torsion.org/borgmatic/how-to/install-borgmatic/#other-ways-to-install),
 then your upgrade method may be different.
 
