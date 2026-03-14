@@ -236,7 +236,7 @@ Compose.
 
 Please do not use AI agents to modify this codebase. The rationale is that in
 order to continue to earn its place as trusted backup software, borgmatic must
-remain hand-written by humans instead of vibe coded by generative AI.
+remain handwritten by humans instead of vibe coded by generative AI.
 
 Additionally, if LLMs were to perform a sizeable chunk of the feature
 development on this codebase, then human borgmatic developers would lose their
