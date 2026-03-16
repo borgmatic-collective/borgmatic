@@ -43,6 +43,18 @@ def command_is_borg(command, borg_local_path):
     return bool(borg_local_path and parsed_command[0] == borg_local_path)
 
 
+BORG_EXIT_CODE_TO_DESCRIPTION = {
+    100: 'File changed while we backed it up',
+    101: 'Include pattern never matched',
+    102: 'General backup issue',
+    103: 'File type or inode changed while we backed it up',
+    104: 'Backup OS issue',
+    105: 'Backup permission issue',
+    106: 'Backup IO issue',
+    107: 'Backup file not found',
+}
+
+
 def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_codes=None):  # noqa: PLR0911
     '''
     Return an Exit_status value (e.g. SUCCESS, ERROR, or WARNING) based on interpreting the given
@@ -56,46 +68,47 @@ def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_code
     if exit_code == 0:
         return Exit_status.SUCCESS
 
-    if command_is_borg(command, borg_local_path):
-        # First try looking for the exit code in the borg_exit_codes configuration.
-        for entry in borg_exit_codes or ():
-            if entry.get('code') == exit_code:
-                treat_as = entry.get('treat_as')
+    if not command_is_borg(command, borg_local_path):
+        return Exit_status.ERROR
 
-                if treat_as == 'error':
-                    logger.error(
-                        f'Treating exit code {exit_code} as an error, as per configuration',
-                    )
-                    return Exit_status.ERROR
+    description = BORG_EXIT_CODE_TO_DESCRIPTION.get(exit_code)
+    description_parenthetical = f' ({description})' if description else ''
 
-                if treat_as == 'warning':
-                    logger.warning(
-                        f'Treating exit code {exit_code} as a warning, as per configuration',
-                    )
-                    return Exit_status.WARNING
+    # First try looking for the exit code in the borg_exit_codes configuration.
+    for entry in borg_exit_codes or ():
+        if entry.get('code') == exit_code:
+            treat_as = entry.get('treat_as')
 
-        # If the exit code doesn't have explicit configuration, then fall back to the default
-        # behavior of treating Borg errors as errors and some Borg warnings as errors.
-        if exit_code in BORG_WARNING_EXIT_CODES_TREATED_AS_ERRORS:
-            logger.error(
-                f'Treating exit code {exit_code} as an error, as per borgmatic defaults',
-            )
-
-            return Exit_status.ERROR
-
-        return (
-            Exit_status.ERROR
-            if (
-                exit_code < 0
-                or (
-                    exit_code >= BORG_ERROR_EXIT_CODE_START
-                    and exit_code <= BORG_ERROR_EXIT_CODE_END
+            if treat_as == 'error':
+                logger.error(
+                    f'Treating exit code {exit_code}{description_parenthetical} as an error, as per configuration',
                 )
-            )
-            else Exit_status.WARNING
+                return Exit_status.ERROR
+
+            if treat_as == 'warning':
+                logger.warning(
+                    f'Treating exit code {exit_code}{description_parenthetical} as a warning, as per configuration',
+                )
+                return Exit_status.WARNING
+
+    # If the exit code doesn't have explicit configuration, then fall back to the default
+    # behavior of treating Borg errors as errors and some Borg warnings as errors.
+    if exit_code in BORG_WARNING_EXIT_CODES_TREATED_AS_ERRORS:
+        logger.error(
+            f'Treating exit code {exit_code}{description_parenthetical} as an error, as per borgmatic defaults',
         )
 
-    return Exit_status.ERROR
+        return Exit_status.ERROR
+
+    if exit_code < 0 or (
+        exit_code >= BORG_ERROR_EXIT_CODE_START and exit_code <= BORG_ERROR_EXIT_CODE_END
+    ):
+        return Exit_status.ERROR
+
+    logger.warning(
+        f'Treating exit code {exit_code}{description_parenthetical} as a warning, as per borgmatic defaults',
+    )
+    return Exit_status.WARNING
 
 
 def command_for_process(process):

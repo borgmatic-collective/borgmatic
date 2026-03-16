@@ -1,4 +1,6 @@
 2.1.4.dev0
+ * When Borg exits with a warning exit code, show a description of it, so you don't have to lookup
+   the code.
  * Split out borgmatic installation documentation to its own page, so it's easier to find.
  * Switch the default borgmatic installation method from pipx to uv, as uv is faster and used for
    borgmatic development. If you'd like to switch, see the documentation for more information:
