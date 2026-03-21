@@ -1202,3 +1202,7 @@ def main(extra_summary_logs=()):  # pragma: no cover
     )
 
     display_summary(summary_logs, log_json)
+
+
+if __name__ == '__main__':  # pragma: no cover
+    main()

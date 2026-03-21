@@ -43,6 +43,16 @@ twine upload -r pypi --username __token__ "$wheel_path"
 scripts/export-docs-from-image
 docs_path=dist/borgmatic-docs.tar.gz
 
+# Build stand-alone binary.
+uv venv --clear binary
+source binary/bin/activate
+uv pip install -r binary_requirements.txt
+nuitka --show-modules --mode=onefile --enable-plugin=upx --include-package-data=borgmatic --include-data-dir=borgmatic.egg-info=borgmatic.egg-info --include-package=borgmatic.hooks --include-package=apprise --no-deployment-flag=self-execution borgmatic/commands/borgmatic.py
+deactivate
+rm -fr binary
+standalone_binary_path=dist/borgmatic-${version}-linux-glibc-x86_64
+mv borgmatic.bin "$standalone_binary_path"
+
 # Set release changelogs on projects.torsion.org and GitHub.
 release_changelog="$(cat NEWS | sed '/^$/q' | grep -v '^\S')"
 escaped_release_changelog="$(echo "$release_changelog" | sed -z 's/\n/\\n/g' | sed -z 's/\"/\\"/g')"
@@ -68,6 +78,11 @@ curl --silent --request POST \
     --header "Authorization: token $projects_token" \
     --header "Accept: application/json" \
     --form attachment=@"$docs_path"
+curl --silent --request POST \
+    "https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/releases/$release_id/assets?name=$(basename $standalone_binary_path)" \
+    --header "Authorization: token $projects_token" \
+    --header "Accept: application/json" \
+    --form attachment=@"$standalone_binary_path"
 
 github-release create --token="$github_token" --owner=witten --repo=borgmatic --tag="$version" --target_commit="main" \
     --name="borgmatic $version" --body="$release_changelog"
