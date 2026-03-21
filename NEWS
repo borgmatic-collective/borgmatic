@@ -1,6 +1,6 @@
 2.1.4.dev0
- * #1266: Add a stand-alone borgmatic binary to the release downloads to serve as another way to
-   install borgmatic. Consider this binary a beta feature.
+ * #1266: Add a stand-alone borgmatic Linux binary to the release downloads to serve as another way
+   to install borgmatic. Consider this binary a beta feature.
  * When Borg exits with a warning exit code, show a description of it, so you don't have to lookup
    the code.
  * Split out borgmatic installation documentation to its own page, so it's easier to find.
