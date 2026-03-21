@@ -47,7 +47,7 @@ docs_path=dist/borgmatic-docs.tar.gz
 uv venv --clear binary
 source binary/bin/activate
 uv pip install -r binary_requirements.txt
-nuitka --show-modules --mode=onefile --enable-plugin=upx --include-package-data=borgmatic --include-data-dir=borgmatic.egg-info=borgmatic.egg-info --include-package=borgmatic.hooks --include-package=apprise --no-deployment-flag=self-execution borgmatic/commands/borgmatic.py
+nuitka --mode=onefile --enable-plugin=upx --include-package-data=borgmatic --include-data-dir=borgmatic.egg-info=borgmatic.egg-info --include-package=borgmatic.hooks --include-package=apprise --no-deployment-flag=self-execution borgmatic/commands/borgmatic.py
 deactivate
 rm -fr binary
 standalone_binary_path="dist/borgmatic-${version}-binary-linux-glibc-x86_64"
