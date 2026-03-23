@@ -1,13 +1,16 @@
 2.1.4.dev0
  * #1266: Add a stand-alone borgmatic Linux binary to the release downloads to serve as another way
    to install borgmatic. Consider this binary a beta feature.
+ * #1286: Fix a regression in which running borgmatic with no arguments and no configuration files
+   doesn't error as expected.
  * When Borg exits with a warning exit code, show a description of it, so you don't have to lookup
    the code.
  * Split out borgmatic installation documentation to its own page, so it's easier to find.
  * Switch the default borgmatic installation method from pipx to uv, as uv is faster and used for
    borgmatic development. If you'd like to switch, see the documentation for more information:
    https://torsion.org/borgmatic/how-to/upgrade/
- * Move project tracker from Gitea to Forgejo.
+ * Move the project tracker from Gitea to Forgejo.
+ * Fix a regression in which borgmatic didn't show an error message when run with no configuration.
 
 2.1.3
  * #1175: Add a "files_changed" option for customizing Borg's file modification detection.

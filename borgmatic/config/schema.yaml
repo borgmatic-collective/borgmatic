@@ -1098,9 +1098,9 @@ properties:
     default_actions:
         type: boolean
         description: |
-            Whether to apply default actions (create, prune, compact and check)
-            when no arguments are supplied to the borgmatic command. If set to
-            false, borgmatic displays the help message instead.
+            Whether to run default actions (create, prune, compact, and check)
+            when no arguments are given on the command line. If set to false,
+            borgmatic displays the help message instead.
         example: true
     skip_actions:
         type: array

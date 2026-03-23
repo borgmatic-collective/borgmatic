@@ -2582,23 +2582,40 @@ def test_collect_configuration_run_summary_logs_outputs_merged_json_results():
 
 def test_check_and_show_help_on_no_args_shows_help_when_no_args_and_default_actions_false():
     flexmock(module.sys).should_receive('argv').and_return(['borgmatic'])
-    flexmock(module).should_receive('parse_arguments').with_args('--help').once()
+    flexmock(module).should_receive('parse_arguments').with_args({}, '--help').once()
     flexmock(module.sys).should_receive('exit').with_args(0).once()
-    module.check_and_show_help_on_no_args({'test.yaml': {'default_actions': False}})
+
+    module.check_and_show_help_on_no_args(
+        configs={'test.yaml': {'default_actions': False}}, schema={}
+    )
+
+
+def test_check_and_show_help_on_no_args_does_not_show_help_when_no_args_and_no_configurations():
+    flexmock(module.sys).should_receive('argv').and_return(['borgmatic'])
+    flexmock(module).should_receive('parse_arguments').never()
+    flexmock(module.sys).should_receive('exit').never()
+
+    module.check_and_show_help_on_no_args(configs={}, schema={})
 
 
 def test_check_and_show_help_on_no_args_does_not_show_help_when_no_args_and_default_actions_true():
     flexmock(module.sys).should_receive('argv').and_return(['borgmatic'])
     flexmock(module).should_receive('parse_arguments').never()
     flexmock(module.sys).should_receive('exit').never()
-    module.check_and_show_help_on_no_args({'test.yaml': {'default_actions': True}})
+
+    module.check_and_show_help_on_no_args(
+        configs={'test.yaml': {'default_actions': True}}, schema={}
+    )
 
 
 def test_check_and_show_help_on_no_args_does_not_show_help_when_args_provided():
     flexmock(module.sys).should_receive('argv').and_return(['borgmatic', '--create'])
     flexmock(module).should_receive('parse_arguments').never()
     flexmock(module.sys).should_receive('exit').never()
-    module.check_and_show_help_on_no_args({'test.yaml': {'default_actions': False}})
+
+    module.check_and_show_help_on_no_args(
+        configs={'test.yaml': {'default_actions': False}}, schema={}
+    )
 
 
 def test_check_and_show_help_on_no_args_with_no_default_actions_in_all_configs():
@@ -2611,10 +2628,10 @@ def test_check_and_show_help_on_no_args_with_no_default_actions_in_all_configs()
     }
 
     # Expect help to be shown
-    flexmock(module).should_receive('parse_arguments').with_args('--help').once()
+    flexmock(module).should_receive('parse_arguments').with_args({}, '--help').once()
     flexmock(module.sys).should_receive('exit').with_args(0).once()
 
-    module.check_and_show_help_on_no_args(configs)
+    module.check_and_show_help_on_no_args(configs=configs, schema={})
 
 
 def test_check_and_show_help_on_no_args_with_conflicting_configs():
@@ -2630,7 +2647,7 @@ def test_check_and_show_help_on_no_args_with_conflicting_configs():
     flexmock(module).should_receive('parse_arguments').never()
     flexmock(module.sys).should_receive('exit').never()
 
-    module.check_and_show_help_on_no_args(configs)
+    module.check_and_show_help_on_no_args(configs=configs, schema={})
 
 
 def test_get_singular_option_value_with_conflicting_values_exits():
