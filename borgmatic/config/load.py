@@ -84,7 +84,7 @@ def raise_retain_node_error(loader, node):
     Also raise ValueError if a scalar node is given, as "!retain" is not supported on scalar nodes.
     '''
     if isinstance(node, (ruamel.yaml.nodes.MappingNode, ruamel.yaml.nodes.SequenceNode)):
-        raise ValueError(  # noqa: TRY004
+        raise ValueError(
             'The !retain tag may only be used within a configuration file containing a merged !include tag.',
         )
 

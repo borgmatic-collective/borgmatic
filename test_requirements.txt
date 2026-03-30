@@ -17,6 +17,7 @@ pluggy==1.6.0
 pygments==2.20.0
 pytest==9.0.2
 pytest-cov==7.1.0
+pytest-timeout==2.4.0
 pyyaml>5.0.0
 referencing==0.37.0
 requests==2.33.1

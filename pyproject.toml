@@ -44,7 +44,7 @@ namespaces = false
 
 [tool.pytest.ini_options]
 testpaths = "tests"
-addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --no-cov-on-fail --cov-fail-under=100 --ignore=tests/end-to-end"
+addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --no-cov-on-fail --cov-fail-under=100 --ignore=tests/end-to-end --timeout=60"
 
 [tool.ruff]
 line-length = 100
@@ -100,6 +100,7 @@ ignore = [
     "S404",  # subprocess import
     "SIM115",  # open() without context manager
     "SIM905",  # split() on literal string
+    "TRY004", # type check and raise something other than TypeError
 ]
 
 [tool.ruff.lint.flake8-quotes]

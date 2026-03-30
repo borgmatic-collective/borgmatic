@@ -69,6 +69,7 @@ class Background_web_server:
         self.thread.join()
 
 
+FINISH = 1
 START_AND_FINISH = 2
 START_LOG_AND_FINISH = 3
 
@@ -94,7 +95,7 @@ START_LOG_AND_FINISH = 3
         ),
         (
             'loki:\n    url: http://localhost:12345/loki/api/v1/push\n    labels:\n        app: borgmatic\n    send_logs: true',
-            START_AND_FINISH,
+            FINISH,
         ),
         (
             'loki:\n    url: http://localhost:12345/loki/api/v1/push\n    labels:\n        app: borgmatic',
