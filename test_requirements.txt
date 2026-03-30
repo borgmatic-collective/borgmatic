@@ -14,7 +14,7 @@ markdown==3.10.2
 oauthlib==3.3.1
 packaging==26.0
 pluggy==1.6.0
-pygments==2.19.2
+pygments==2.20.0
 pytest==9.0.2
 pytest-cov==7.0.0
 pyyaml>5.0.0
