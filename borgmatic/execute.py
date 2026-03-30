@@ -681,7 +681,7 @@ def execute_command_and_capture_output(
         return
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
-        captured_lines = log_outputs(
+        yield from log_outputs(
             (process,),
             (input_file,),
             None,
@@ -689,8 +689,6 @@ def execute_command_and_capture_output(
             borg_exit_codes,
             capture_stderr=capture_stderr,
         )
-
-    yield from captured_lines
 
 
 def execute_command_with_processes(
@@ -754,12 +752,10 @@ def execute_command_with_processes(
         raise
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
-        captured_lines = log_outputs(
+        yield from log_outputs(
             (*processes, command_process),
             (input_file, output_file),
             output_log_level,
             borg_local_path,
             borg_exit_codes,
         )
-
-    yield from captured_lines

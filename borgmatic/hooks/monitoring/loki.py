@@ -88,16 +88,17 @@ class Loki_log_handler(logging.Handler):
     A log handler that sends logs to Loki.
     '''
 
-    def __init__(self, url, send_logs, dry_run):
+    def __init__(self, url, send_logs, log_level, dry_run):
         '''
         Given a URL to send logs to, whether all borgmatic logs should be sent (or just explicitly
-        added messages from this hook), and whether this is a dry run, create an instance of
-        Loki_log_buffer.
+        added messages from this hook), the log level to use (influencing which logs get sent), and
+        whether this is a dry run, create an instance of Loki_log_buffer.
         '''
         super().__init__()
 
         self.buffer = Loki_log_buffer(url, dry_run)
         self.send_logs = send_logs
+        self.setLevel(log_level)
 
     def emit(self, record):
         '''
@@ -138,7 +139,7 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
     Add a handler to the root logger to regularly send the logs to Loki.
     '''
     url = hook_config.get('url')
-    loki = Loki_log_handler(url, hook_config.get('send_logs', False), dry_run)
+    loki = Loki_log_handler(url, hook_config.get('send_logs', False), monitoring_log_level, dry_run)
 
     for key, value in hook_config.get('labels').items():
         if value == '__hostname':
@@ -150,7 +151,9 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
         else:
             loki.add_label(key, value)
 
-    logging.getLogger().addHandler(loki)
+    global_logger = logging.getLogger()
+    global_logger.addHandler(loki)
+    global_logger.setLevel(min(handler.level for handler in global_logger.handlers))
 
 
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
@@ -166,9 +169,11 @@ def destroy_monitor(hook_config, config, monitoring_log_level, dry_run):
     '''
     Remove the monitor handler that was added to the root logger.
     '''
-    logger = logging.getLogger()
+    global_logger = logging.getLogger()
 
-    for handler in tuple(logger.handlers):
+    for handler in tuple(global_logger.handlers):
         if isinstance(handler, Loki_log_handler):
             handler.flush()
-            logger.removeHandler(handler)
+            global_logger.removeHandler(handler)
+
+    global_logger.setLevel(min(handler.level for handler in global_logger.handlers))

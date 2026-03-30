@@ -8,7 +8,7 @@ from borgmatic.hooks.monitoring import loki as module
 
 
 def test_loki_log_handler_raw_with_send_logs_posts_to_server_after_buffer_full():
-    handler = module.Loki_log_handler(flexmock(), send_logs=True, dry_run=False)
+    handler = module.Loki_log_handler(flexmock(), send_logs=True, log_level=10, dry_run=False)
     flexmock(module.requests).should_receive('post').and_return(
         flexmock(raise_for_status=lambda: ''),
     ).once()
@@ -18,7 +18,7 @@ def test_loki_log_handler_raw_with_send_logs_posts_to_server_after_buffer_full()
 
 
 def test_loki_log_handler_raw_without_send_logs_posts_to_server_without_buffering():
-    handler = module.Loki_log_handler(flexmock(), send_logs=False, dry_run=False)
+    handler = module.Loki_log_handler(flexmock(), send_logs=False, log_level=10, dry_run=False)
     flexmock(module.requests).should_receive('post').and_return(
         flexmock(raise_for_status=lambda: ''),
     ).times(3)
@@ -28,7 +28,7 @@ def test_loki_log_handler_raw_without_send_logs_posts_to_server_without_bufferin
 
 
 def test_loki_log_handler_raw_post_failure_does_not_raise():
-    handler = module.Loki_log_handler(flexmock(), send_logs=True, dry_run=False)
+    handler = module.Loki_log_handler(flexmock(), send_logs=True, log_level=10, dry_run=False)
     flexmock(module.requests).should_receive('post').and_return(
         flexmock(raise_for_status=lambda: (_ for _ in ()).throw(requests.RequestException())),
     ).once()
@@ -46,7 +46,10 @@ def test_initialize_monitor_replaces_labels():
         'labels': {'hostname': '__hostname', 'config': '__config', 'config_full': '__config_path'},
     }
     config_filename = '/mock/path/test.yaml'
-    module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run=False)
+    flexmock(module.logging.getLogger()).should_receive('setLevel')
+    module.initialize_monitor(
+        hook_config, flexmock(), config_filename, monitoring_log_level=10, dry_run=False
+    )
 
     for handler in tuple(logging.getLogger().handlers):
         if isinstance(handler, module.Loki_log_handler):
@@ -63,11 +66,12 @@ def test_initialize_monitor_adds_log_handler():
     Assert that calling initialize_monitor adds our logger to the root logger.
     '''
     hook_config = {'url': 'http://localhost:3100/loki/api/v1/push', 'labels': {'app': 'borgmatic'}}
+    flexmock(module.logging.getLogger()).should_receive('setLevel')
     module.initialize_monitor(
         hook_config,
         flexmock(),
         config_filename='test.yaml',
-        monitoring_log_level=flexmock(),
+        monitoring_log_level=10,
         dry_run=True,
     )
 
@@ -99,7 +103,10 @@ def test_ping_monitor_sends_log_message():
 
     flexmock(module.requests).should_receive('post').replace_with(post)
 
-    module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run=False)
+    flexmock(module.logging.getLogger()).should_receive('setLevel')
+    module.initialize_monitor(
+        hook_config, flexmock(), config_filename, monitoring_log_level=10, dry_run=False
+    )
     module.ping_monitor(
         hook_config,
         flexmock(),
@@ -108,7 +115,7 @@ def test_ping_monitor_sends_log_message():
         flexmock(),
         dry_run=False,
     )
-    module.destroy_monitor(hook_config, flexmock(), flexmock(), dry_run=False)
+    module.destroy_monitor(hook_config, flexmock(), monitoring_log_level=10, dry_run=False)
 
     assert post_called
 
@@ -121,9 +128,11 @@ def test_destroy_monitor_removes_log_handler():
     config_filename = 'test.yaml'
     flexmock(module.requests).should_receive('post').never()
 
-    module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run=False)
-    module.destroy_monitor(hook_config, flexmock(), flexmock(), dry_run=False)
+    flexmock(module.logging.getLogger()).should_receive('setLevel')
+    module.initialize_monitor(
+        hook_config, flexmock(), config_filename, monitoring_log_level=10, dry_run=False
+    )
+    module.destroy_monitor(hook_config, flexmock(), monitoring_log_level=10, dry_run=False)
 
     for handler in tuple(logging.getLogger().handlers):
-        if isinstance(handler, module.Loki_log_handler):
-            raise AssertionError()
+        assert not isinstance(handler, module.Loki_log_handler)

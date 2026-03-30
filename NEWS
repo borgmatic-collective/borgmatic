@@ -3,6 +3,7 @@
    to install borgmatic. Consider this binary a beta feature.
  * #1286: Fix a regression in which running borgmatic with no arguments and no configuration files
    doesn't error as expected.
+ * #1257: Fix for the Loki monitoring hook not respecting the monitoring verbosity.
  * When Borg exits with a warning exit code, show a description of it, so you don't have to lookup
    the code.
  * Split out borgmatic installation documentation to its own page, so it's easier to find.

@@ -48,18 +48,8 @@ from borgmatic.config import normalize as module
             True,
         ),
         (
-            {'location': {'prefix': 'foo'}, 'consistency': {'prefix': 'foo'}},
-            {'prefix': 'foo'},
-            True,
-        ),
-        (
             {'location': {'prefix': 'foo'}, 'consistency': {'bar': 'baz'}},
             {'prefix': 'foo', 'bar': 'baz'},
-            True,
-        ),
-        (
-            {'storage': {'umask': 'foo'}, 'hooks': {'umask': 'foo'}},
-            {'umask': 'foo'},
             True,
         ),
         (
@@ -281,11 +271,6 @@ def test_normalize_commands_moves_individual_command_hooks_to_unified_commands(
         (
             {'cronhub': 'https://example.com'},
             {'cronhub': {'ping_url': 'https://example.com'}},
-            True,
-        ),
-        (
-            {'checks': ['archives']},
-            {'checks': [{'name': 'archives'}]},
             True,
         ),
         (

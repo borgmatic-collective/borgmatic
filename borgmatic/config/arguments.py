@@ -116,7 +116,7 @@ def convert_value_type(value, option_type):
         raise ValueError(f'Argument value "{value}" is invalid: {error.problem}')
 
     if not isinstance(parsed_value, borgmatic.config.schema.parse_type(option_type)):
-        raise ValueError(f'Argument value "{value}" is not of the expected type: {option_type}')
+        raise ValueError(f'Argument value "{value}" is not of the expected type: {option_type}')  # noqa: TRY004
 
     return parsed_value
 

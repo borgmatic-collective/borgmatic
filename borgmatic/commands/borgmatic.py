@@ -1123,7 +1123,7 @@ def main(extra_summary_logs=()):  # pragma: no cover
         exit_with_help_link()
     except SystemExit as error:
         if error.code == 0:
-            raise error
+            raise
 
         configure_logging(logging.CRITICAL)
         logger.critical(f"Error parsing arguments: {' '.join(sys.argv)}")

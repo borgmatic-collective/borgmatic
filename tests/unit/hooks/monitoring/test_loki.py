@@ -50,10 +50,7 @@ def test_loki_log_buffer_json_serializes_log_lines():
     assert json.loads(buffer.to_request())['streams'][0]['values'][0][1] == 'Some test log line'
 
 
-def test_loki_log_handler_add_label_gets_labels():
-    '''
-    Assert that adding labels works.
-    '''
+def test_loki_log_buffer_add_label_gets_labels():
     buffer = module.Loki_log_buffer(flexmock(), dry_run=False)
 
     buffer.add_label('test', 'label')
@@ -64,22 +61,20 @@ def test_loki_log_handler_add_label_gets_labels():
 
 
 def test_loki_log_handler_emit_with_send_logs_records_log_message():
-    handler = module.Loki_log_handler(flexmock(), send_logs=True, dry_run=False)
+    handler = module.Loki_log_handler(flexmock(), send_logs=True, log_level=10, dry_run=False)
     flexmock(handler).should_receive('raw').once()
 
     handler.emit(flexmock(getMessage=lambda: 'Some test log line'))
 
 
 def test_loki_log_handler_emit_without_send_logs_skips_log_message():
-    handler = module.Loki_log_handler(flexmock(), send_logs=False, dry_run=False)
+    handler = module.Loki_log_handler(flexmock(), send_logs=False, log_level=10, dry_run=False)
     flexmock(handler).should_receive('raw').never()
 
     handler.emit(flexmock(getMessage=lambda: 'Some test log line'))
 
 
 def test_loki_log_handler_flush_with_empty_buffer_does_not_raise():
-    '''
-    Test that flushing an empty buffer does indeed nothing.
-    '''
-    handler = module.Loki_log_handler(flexmock(), send_logs=False, dry_run=False)
+    handler = module.Loki_log_handler(flexmock(), send_logs=False, log_level=10, dry_run=False)
+
     handler.flush()
