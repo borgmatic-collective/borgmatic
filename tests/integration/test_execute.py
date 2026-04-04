@@ -105,18 +105,15 @@ def test_log_outputs_logs_each_line_separately():
         (),
     ).and_return((there_process.stdout,))
 
-    assert (
-        tuple(
-            module.log_outputs(
-                (hi_process, there_process),
-                exclude_stdouts=(),
-                output_log_level=logging.INFO,
-                borg_local_path='borg',
-                borg_exit_codes=None,
-            )
+    assert tuple(
+        module.log_outputs(
+            (hi_process, there_process),
+            exclude_stdouts=(),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
         )
-        == ()
-    )
+    ) == ('there',)
 
 
 def test_log_outputs_logs_stderr_as_error():
@@ -140,18 +137,15 @@ def test_log_outputs_logs_stderr_as_error():
         (),
     ).and_return((echo_process.stdout, echo_process.stderr))
 
-    assert (
-        tuple(
-            module.log_outputs(
-                (echo_process,),
-                exclude_stdouts=(),
-                output_log_level=logging.INFO,
-                borg_local_path='borg',
-                borg_exit_codes=None,
-            )
+    assert tuple(
+        module.log_outputs(
+            (echo_process,),
+            exclude_stdouts=(),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
         )
-        == ()
-    )
+    ) == ('error',)
 
 
 def test_log_outputs_skips_logs_for_process_with_none_stdout():
@@ -180,18 +174,15 @@ def test_log_outputs_skips_logs_for_process_with_none_stdout():
         (),
     ).and_return((there_process.stdout,))
 
-    assert (
-        tuple(
-            module.log_outputs(
-                (hi_process, there_process),
-                exclude_stdouts=(),
-                output_log_level=logging.INFO,
-                borg_local_path='borg',
-                borg_exit_codes=None,
-            )
+    assert tuple(
+        module.log_outputs(
+            (hi_process, there_process),
+            exclude_stdouts=(),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
         )
-        == ()
-    )
+    ) == ('there',)
 
 
 def test_log_outputs_returns_output_without_logging_for_output_log_level_none():

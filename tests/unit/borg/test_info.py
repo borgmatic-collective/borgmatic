@@ -565,15 +565,14 @@ def test_make_info_command_with_date_based_matching_passes_through_to_command():
     )
 
 
-def test_display_archives_info_calls_two_commands():
+def test_display_archives_info_calls_borg_command():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_info_command')
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('execute_command_and_capture_output').and_yield().once()
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield('').once()
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
-    flexmock(module).should_receive('execute_command').once()
 
     module.display_archives_info(
         repository_path='repo',
@@ -592,7 +591,6 @@ def test_display_archives_info_with_json_calls_json_command_only():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').and_yield('{}')
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags').never()
-    flexmock(module).should_receive('execute_command').never()
 
     assert (
         module.display_archives_info(
@@ -616,20 +614,13 @@ def test_display_archives_info_calls_borg_with_working_directory():
     )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         full_command=object,
+        output_log_level=int,
         environment=object,
         working_directory='/working/dir',
         borg_local_path=object,
         borg_exit_codes=object,
-    ).and_yield().once()
+    ).and_yield('').once()
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
-    flexmock(module).should_receive('execute_command').with_args(
-        full_command=object,
-        output_log_level=object,
-        environment=object,
-        working_directory='/working/dir',
-        borg_local_path=object,
-        borg_exit_codes=object,
-    ).once()
 
     module.display_archives_info(
         repository_path='repo',

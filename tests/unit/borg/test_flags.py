@@ -246,10 +246,10 @@ def test_make_match_archives_flags_accepts_default_archive_name_format():
     )
 
 
-def test_warn_for_aggressive_archive_flags_without_archive_flags_bails():
+def test_warn_for_aggressive_archive_flags_without_archive_flags_does_not_warn():
     flexmock(module.logger).should_receive('warning').never()
 
-    module.warn_for_aggressive_archive_flags(('borg', '--do-stuff'), '{}')
+    module.warn_for_aggressive_archive_flags(('borg', '--do-stuff'), ())
 
 
 def test_warn_for_aggressive_archive_flags_with_glob_archives_and_zero_archives_warns():
@@ -257,7 +257,7 @@ def test_warn_for_aggressive_archive_flags_with_glob_archives_and_zero_archives_
 
     module.warn_for_aggressive_archive_flags(
         ('borg', '--glob-archives', 'foo*'),
-        '{"archives": []}',
+        (),
     )
 
 
@@ -266,7 +266,16 @@ def test_warn_for_aggressive_archive_flags_with_match_archives_and_zero_archives
 
     module.warn_for_aggressive_archive_flags(
         ('borg', '--match-archives', 'foo*'),
-        '{"archives": []}',
+        (),
+    )
+
+
+def test_warn_for_aggressive_archive_flags_with_match_archives_and_just_exit_code_warns():
+    flexmock(module.logger).should_receive('warning').twice()
+
+    module.warn_for_aggressive_archive_flags(
+        ('borg', '--match-archives', 'foo*'),
+        ('terminating with success status, rc 0',),
     )
 
 
@@ -275,7 +284,7 @@ def test_warn_for_aggressive_archive_flags_with_glob_archives_and_one_archive_do
 
     module.warn_for_aggressive_archive_flags(
         ('borg', '--glob-archives', 'foo*'),
-        '{"archives": [{"name": "foo"]}',
+        ('this is an archive line',),
     )
 
 
@@ -284,20 +293,8 @@ def test_warn_for_aggressive_archive_flags_with_match_archives_and_one_archive_d
 
     module.warn_for_aggressive_archive_flags(
         ('borg', '--match-archives', 'foo*'),
-        '{"archives": [{"name": "foo"]}',
+        ('this is an archive line',),
     )
-
-
-def test_warn_for_aggressive_archive_flags_with_glob_archives_and_invalid_json_does_not_warn():
-    flexmock(module.logger).should_receive('warning').never()
-
-    module.warn_for_aggressive_archive_flags(('borg', '--glob-archives', 'foo*'), '{"archives": [}')
-
-
-def test_warn_for_aggressive_archive_flags_with_glob_archives_and_json_missing_archives_does_not_warn():
-    flexmock(module.logger).should_receive('warning').never()
-
-    module.warn_for_aggressive_archive_flags(('borg', '--glob-archives', 'foo*'), '{}')
 
 
 def test_omit_flag_removes_flag_from_arguments():

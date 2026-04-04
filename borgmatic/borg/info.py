@@ -5,7 +5,7 @@ import shlex
 import borgmatic.config.paths
 import borgmatic.logger
 from borgmatic.borg import environment, feature, flags
-from borgmatic.execute import execute_command, execute_command_and_capture_output
+from borgmatic.execute import execute_command_and_capture_output
 
 logger = logging.getLogger(__name__)
 
@@ -103,9 +103,21 @@ def display_archives_info(
     borg_exit_codes = config.get('borg_exit_codes')
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    json_info = '\n'.join(
+    if info_arguments.json:
+        return '\n'.join(
+            execute_command_and_capture_output(
+                json_command,
+                environment=environment.make_environment(config),
+                working_directory=working_directory,
+                borg_local_path=local_path,
+                borg_exit_codes=borg_exit_codes,
+            )
+        )
+
+    output_lines = tuple(
         execute_command_and_capture_output(
-            json_command,
+            main_command,
+            output_log_level=logging.ANSWER,
             environment=environment.make_environment(config),
             working_directory=working_directory,
             borg_local_path=local_path,
@@ -113,18 +125,6 @@ def display_archives_info(
         )
     )
 
-    if info_arguments.json:
-        return json_info
-
-    flags.warn_for_aggressive_archive_flags(json_command, json_info)
-
-    execute_command(
-        main_command,
-        output_log_level=logging.ANSWER,
-        environment=environment.make_environment(config),
-        working_directory=working_directory,
-        borg_local_path=local_path,
-        borg_exit_codes=borg_exit_codes,
-    )
+    flags.warn_for_aggressive_archive_flags(main_command, output_lines)
 
     return None

@@ -4,6 +4,9 @@
  * #1286: Fix a regression in which running borgmatic with no arguments and no configuration files
    doesn't error as expected.
  * #1257: Fix for the Loki monitoring hook not respecting the monitoring verbosity.
+ * #1264: Improve performance of the "info" and "repo-list" actions by eliminating a second "borg
+   info" call that supports a "no matching archives" warning. The warning still occurs; it's just
+   done now without the extra "borg info" call.
  * When Borg exits with a warning exit code, show a description of it, so you don't have to lookup
    the code.
  * Split out borgmatic installation documentation to its own page, so it's easier to find.

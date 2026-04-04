@@ -314,8 +314,9 @@ def log_buffer_lines(
     '''
     Given a dict from buffer object to Buffer_reader, a dict from subprocess.Popen() instance to
     Process_metadata instance, a requested output log level for stdout, Borg's local path, and
-    whether to capture stderr, read and log any ready output lines from the buffers.  Additionally,
-    if the log level is None for any log record, then yield those log messages for capture.
+    whether to capture stderr, read and log any ready output lines from the buffers. Additionally,
+    for any log records with a log level that meets or exceeds the output log level, yield those log
+    messages for capture.
 
     This function just does one "turn of the crank" of logging buffer output. It is intended to be
     called repeatedly to continue to process buffers.
@@ -365,7 +366,9 @@ def log_buffer_lines(
                 last_lines=process_metadatas[reader.process].last_lines,
             )
 
-            if log_record.levelno is None and process_metadatas[reader.process].capture:
+            if (
+                log_record.levelno is None or log_record.levelno >= output_log_level
+            ) and process_metadatas[reader.process].capture:
                 yield log_record.getMessage()
 
 
@@ -424,8 +427,8 @@ def log_remaining_buffer_lines(
     Given a dict from buffer object to Buffer_reader, a dict from subprocess.Popen() instance to
     Process_metadata instance, a requested output log level for stdout, Borg's local path, and
     whether to capture stderr, drain and log any remaining output lines from the buffers until
-    they're empty. Additionally, if the log level is None for any log record, then yield those log
-    messages for capture.
+    they're empty. Additionally, for any log records with a log level that meets or exceeds the
+    output log level, yield those log messages for capture.
     '''
     for output_buffer, reader in buffer_readers.items():
         if not reader.process:
@@ -445,7 +448,9 @@ def log_remaining_buffer_lines(
                     ),
                 )
 
-                if log_record.levelno is None and process_metadatas[reader.process].capture:
+                if (
+                    log_record.levelno is None or log_record.levelno >= output_log_level
+                ) and process_metadatas[reader.process].capture:
                     yield log_record.getMessage()
 
 
@@ -628,6 +633,7 @@ def execute_command(
 
 def execute_command_and_capture_output(
     full_command,
+    output_log_level=None,
     input_file=None,
     capture_stderr=False,
     shell=False,
@@ -642,13 +648,15 @@ def execute_command_and_capture_output(
     output (stdout) as a generator that yields one line at a time. The generator must be consumed in
     order for the called command to execute.
 
-    If an input file descriptor is given, then pipe it to the command's stdin. If capture stderr is
-    True, then capture stderr in addition to stdout. If shell is True, execute the command within a
-    shell. If an environment variables dict is given, then pass it into the command. If a working
-    directory is given, use that as the present working directory when running the command. If a
-    Borg local path is given, and the command matches it (regardless of arguments), treat exit code
-    1 as a warning instead of an error. But if Borg exit codes are given as a sequence of exit code
-    configuration dicts, then use that configuration to decide what's an error and what's a warning.
+    If an output log level is given, then instead of suppressing log output, also output the
+    captured lines at the given log level.  If an input file descriptor is given, then pipe it to
+    the command's stdin. If capture stderr is True, then capture stderr in addition to stdout. If
+    shell is True, execute the command within a shell. If an environment variables dict is given,
+    then pass it into the command. If a working directory is given, use that as the present working
+    directory when running the command. If a Borg local path is given, and the command matches it
+    (regardless of arguments), treat exit code 1 as a warning instead of an error. But if Borg exit
+    codes are given as a sequence of exit code configuration dicts, then use that configuration to
+    decide what's an error and what's a warning.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
@@ -684,7 +692,7 @@ def execute_command_and_capture_output(
         yield from log_outputs(
             (process,),
             (input_file,),
-            None,
+            output_log_level,
             borg_local_path,
             borg_exit_codes,
             capture_stderr=capture_stderr,
