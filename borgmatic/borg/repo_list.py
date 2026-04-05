@@ -80,6 +80,13 @@ def get_latest_archive(
         *('--log-json',),
         *flags.make_flags('lock-wait', config.get('lock_wait')),
         *(
+            flags.make_match_archives_flags(
+                config.get('match_archives'),
+                config.get('archive_name_format'),
+                local_borg_version,
+            )
+        ),
+        *(
             flags.make_flags('consider-checkpoints', consider_checkpoints)
             if not feature.available(feature.Feature.REPO_LIST, local_borg_version)
             else ()

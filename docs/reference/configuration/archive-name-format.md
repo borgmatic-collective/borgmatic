@@ -97,4 +97,3 @@ option for limiting the archives used for the `check` action was a separate
 `prefix` in the `consistency` section. Both of these options are deprecated in
 favor of the auto-matching behavior (or `match_archives`/`--match-archives`)
 in newer versions of borgmatic.
-

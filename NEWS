@@ -7,6 +7,9 @@
  * #1264: Improve performance of the "info" and "repo-list" actions by eliminating a second "borg
    info" call that supports a "no matching archives" warning. The warning still occurs; it's just
    done now without the extra "borg info" call.
+ * #1268: Fix the "spot" check, "extract" check, and all uses of the archive name "latest" to
+   respect the "match_archives" and "archives_name_format" options. This means that borgmatic now
+   uses the "latest" archive that also matches those options instead of the latest archive overall.
  * When Borg exits with a warning exit code, show a description of it, so you don't have to lookup
    the code.
  * Split out borgmatic installation documentation to its own page, so it's easier to find.
