@@ -391,7 +391,7 @@ def create_archive(
     borg_exit_codes = config.get('borg_exit_codes')
 
     if stream_processes:
-        return '\n'.join(
+        output = '\n'.join(
             execute_command_with_processes(
                 create_flags + create_positional_arguments,
                 stream_processes,
@@ -403,9 +403,10 @@ def create_archive(
                 borg_exit_codes=borg_exit_codes,
             )
         )
+        return output if json else None
 
     if output_log_level is None:
-        return '\n'.join(
+        output = '\n'.join(
             execute_command_and_capture_output(
                 create_flags + create_positional_arguments,
                 working_directory=working_directory,
@@ -414,6 +415,7 @@ def create_archive(
                 borg_exit_codes=borg_exit_codes,
             )
         )
+        return output if json else None
 
     execute_command(
         create_flags + create_positional_arguments,

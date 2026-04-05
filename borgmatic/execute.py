@@ -367,7 +367,9 @@ def log_buffer_lines(
             )
 
             if (
-                log_record.levelno is None or log_record.levelno >= output_log_level
+                log_record.levelno is None
+                or output_log_level is None
+                or log_record.levelno >= output_log_level
             ) and process_metadatas[reader.process].capture:
                 yield log_record.getMessage()
 
@@ -449,7 +451,9 @@ def log_remaining_buffer_lines(
                 )
 
                 if (
-                    log_record.levelno is None or log_record.levelno >= output_log_level
+                    log_record.levelno is None
+                    or output_log_level is None
+                    or log_record.levelno >= output_log_level
                 ) and process_metadatas[reader.process].capture:
                     yield log_record.getMessage()
 
