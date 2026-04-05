@@ -1473,6 +1473,43 @@ def test_compare_spot_check_hashes_considers_symlink_path_as_not_matching():
     ) == ('/bar',)
 
 
+def test_compare_spot_check_hashes_considers_borg_2_symlink_path_as_not_matching():
+    flexmock(module.random).should_receive('SystemRandom').and_return(
+        flexmock(sample=lambda population, count: population[:count]),
+    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        None,
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('islink').with_args('/foo').and_return(False)
+    flexmock(module.os.path).should_receive('islink').with_args('/bar').and_return(True)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output',
+    ).with_args(('xxh64sum', '/foo'), working_directory=None).and_yield('hash1  /foo')
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'xxh64': 'hash1', 'path': 'foo', 'target': ''},
+        {'xxh64': 'hash2', 'path': 'bar', 'target': ''},
+    )
+
+    assert module.compare_spot_check_hashes(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={
+            'checks': [
+                {
+                    'name': 'spot',
+                    'data_sample_percentage': 50,
+                },
+            ],
+        },
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+        source_paths=('/foo', '/bar', '/baz', '/quux'),
+    ) == ('/bar',)
+
+
 def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching():
     flexmock(module.random).should_receive('SystemRandom').and_return(
         flexmock(sample=lambda population, count: population[:count]),

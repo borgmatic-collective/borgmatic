@@ -605,7 +605,7 @@ def compare_spot_check_hashes(
             local_borg_version,
             global_arguments,
             list_paths=source_sample_paths_subset,
-            path_format='{xxh64}{path}{linktarget}',
+            path_format='{xxh64}{path}{linktarget}{target}',
             local_path=local_path,
             remote_path=remote_path,
         ):
@@ -614,7 +614,7 @@ def compare_spot_check_hashes(
 
             # Borg can't get hashes of stored hard links. So if this is a hard link path (and not
             # deemed as the "original" by Borg), then skip hashing of it.
-            if entry['linktarget']:
+            if entry.get('linktarget') or entry.get('target'):
                 source_hashes.pop(os.path.join('/', entry['path']), None)
                 continue
 
