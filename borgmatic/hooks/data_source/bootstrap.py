@@ -28,17 +28,20 @@ def resolve_config_path_symlinks(path):
     Given a path, resolve and yield each successive symlink until the final non-symlink target. If
     the given path isn't a symlink, then just yield it.
 
+    The purpose of this is to ensure that configuration files that are behind a symbolic link (or
+    several) actually get backed up.
+
     Raise ValueError if we have to follow too many symlinks without getting to the final target.
     '''
-    original_path = path
+    original_path = os.path.normpath(path)
 
     for _ in range(MAXIMUM_CONFIG_SYMLINKS_TO_FOLLOW):
-        yield os.path.abspath(path)
+        yield path
 
         if not os.path.islink(path):
             return
 
-        path = os.readlink(path)
+        path = os.path.normpath(os.path.join(os.path.dirname(path), os.readlink(path)))
 
     raise ValueError(f'Too many symlinks to follow for configuration path: {original_path}')
 

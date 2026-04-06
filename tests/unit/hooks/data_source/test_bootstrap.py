@@ -7,14 +7,12 @@ from borgmatic.hooks.data_source import bootstrap as module
 
 
 def test_resolve_config_path_symlinks_passes_through_non_symlink():
-    flexmock(module.os.path).should_receive('abspath').replace_with(lambda path: path)
     flexmock(module.os.path).should_receive('islink').and_return(False)
 
     assert tuple(module.resolve_config_path_symlinks('test.yaml')) == ('test.yaml',)
 
 
 def test_resolve_config_path_symlinks_follows_each_symlink():
-    flexmock(module.os.path).should_receive('abspath').replace_with(lambda path: path)
     flexmock(module.os.path).should_receive('islink').with_args('test.yaml').and_return(True)
     flexmock(module.os.path).should_receive('islink').with_args('dest1.yaml').and_return(True)
     flexmock(module.os.path).should_receive('islink').with_args('dest2.yaml').and_return(False)
@@ -29,9 +27,29 @@ def test_resolve_config_path_symlinks_follows_each_symlink():
     )
 
 
+def test_resolve_config_path_symlinks_follows_each_relative_symlink():
+    flexmock(module.os.path).should_receive('islink').with_args('foo/bar/test.yaml').and_return(
+        True
+    )
+    flexmock(module.os.path).should_receive('islink').with_args('foo/dest1.yaml').and_return(True)
+    flexmock(module.os.path).should_receive('islink').with_args('dest2.yaml').and_return(False)
+    flexmock(module.os).should_receive('readlink').with_args('foo/bar/test.yaml').and_return(
+        '../dest1.yaml'
+    )
+    flexmock(module.os).should_receive('readlink').with_args('foo/dest1.yaml').and_return(
+        '../dest2.yaml'
+    )
+    flexmock(module.os).should_receive('readlink').with_args('dest2.yaml').never()
+
+    assert tuple(module.resolve_config_path_symlinks('foo/bar/test.yaml')) == (
+        'foo/bar/test.yaml',
+        'foo/dest1.yaml',
+        'dest2.yaml',
+    )
+
+
 def test_resolve_config_path_symlinks_with_too_many_symlinks_raises():
     flexmock(module).MAXIMUM_CONFIG_SYMLINKS_TO_FOLLOW = 2
-    flexmock(module.os.path).should_receive('abspath').replace_with(lambda path: path)
     flexmock(module.os.path).should_receive('islink').with_args('test.yaml').and_return(True)
     flexmock(module.os.path).should_receive('islink').with_args('dest1.yaml').and_return(True)
     flexmock(module.os.path).should_receive('islink').with_args('dest2.yaml').and_return(True)
