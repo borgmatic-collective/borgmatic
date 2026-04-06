@@ -1,4 +1,4 @@
-2.1.4.dev0
+2.1.4
  * #1266: Add a stand-alone borgmatic Linux binary to the release downloads to serve as another way
    to install borgmatic. Consider this binary a beta feature.
  * #1286: Fix a regression in which running borgmatic with no arguments and no configuration files
