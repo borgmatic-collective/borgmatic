@@ -10,7 +10,7 @@
  * #1268: Fix the "spot" check, "extract" check, and all uses of the archive name "latest" to
    respect the "match_archives" and "archives_name_format" options. This means that borgmatic now
    uses the "latest" archive that also matches those options instead of the latest archive overall.
- * When Borg exits with a warning exit code, show a description of it, so you don't have to lookup
+ * When Borg exits with a warning exit code, show a description of it, so you don't have to look up
    the code.
  * Split out borgmatic installation documentation to its own page, so it's easier to find.
  * Switch the default borgmatic installation method from pipx to uv, as uv is faster and used for

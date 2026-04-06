@@ -80,6 +80,7 @@ installing borgmatic:
 
  * [container image with scheduled backups](https://github.com/borgmatic-collective/docker-borgmatic) (+ Docker Compose files)
  * [container image with multi-arch and Docker CLI support](https://github.com/modem7/docker-borgmatic)
+ * [Borgmatic Director UI](https://github.com/SpeedbitsInfinityTools/borgmatic-ui-community)
 
 #### Operating system packages
 
