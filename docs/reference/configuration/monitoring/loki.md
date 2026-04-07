@@ -89,3 +89,27 @@ for more information.
 <span class="minilink minilink-addedin">New in version 2.0.0</span>Set the
 defaults for these flags in your borgmatic configuration via the
 `monitoring_verbosity`, `list`, and `statistics` options.
+
+
+### Mutual TLS authentication
+
+<span class="minilink minilink-addedin">New in version **TBD**</span> Since
+Loki does not come with a built-in authentication layer [(doc)](https://grafana.com/docs/loki/latest/operations/authentication/), this feature is typically used
+alongside a reverse proxy (such as [nginx](https://docs.nginx.com/waf/configure/secure-mtls/) or
+[Traefik](https://doc.traefik.io/traefik/reference/routing-configuration/http/tls/tls-options/#client-authentication-mtls)) that handles mTLS termination.
+If your setup is configured for mTLS authentication, you can provide a client certificate and private key:
+
+```yaml
+loki:
+    url: https://loki.fqdn/loki/api/v1/push
+
+    labels:
+        app: borgmatic
+
+    tls:
+        cert_path: /etc/borgmatic/loki-client.crt
+        key_path: /etc/borgmatic/loki-client.key
+```
+
+Both `cert_path` and `key_path` must be [PEM-encoded](https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail). They are passed directly
+to the underlying HTTP client, so the standard mutual TLS handshake is performed for every request borgmatic sends to Loki.

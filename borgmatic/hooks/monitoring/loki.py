@@ -27,9 +27,16 @@ class Loki_log_buffer:
     adding labels to the log stream and takes care of communication with Loki.
     '''
 
-    def __init__(self, url, dry_run):
+    def __init__(self, url, dry_run, tls_cert_path=None, tls_key_path=None):
+        '''
+        Given a Loki URL, a dry run flag, and optional TLS certificate and key paths for mTLS authentication,
+        create an instance of Loki_log_buffer.
+        '''
+
         self.url = url
         self.dry_run = dry_run
+        self.tls_cert_path = tls_cert_path
+        self.tls_key_path = tls_key_path
         self.root = {'streams': [{'stream': {}, 'values': []}]}
 
     def add_value(self, value):
@@ -77,6 +84,7 @@ class Loki_log_buffer:
                     'Content-Type': 'application/json',
                     'User-Agent': 'borgmatic',
                 },
+                cert=(self.tls_cert_path, self.tls_key_path) if self.tls_cert_path else None,
             )
             result.raise_for_status()
         except requests.RequestException:
@@ -88,7 +96,7 @@ class Loki_log_handler(logging.Handler):
     A log handler that sends logs to Loki.
     '''
 
-    def __init__(self, url, send_logs, log_level, dry_run):
+    def __init__(self, url, send_logs, log_level, dry_run, tls_cert_path=None, tls_key_path=None):
         '''
         Given a URL to send logs to, whether all borgmatic logs should be sent (or just explicitly
         added messages from this hook), the log level to use (influencing which logs get sent), and
@@ -96,7 +104,9 @@ class Loki_log_handler(logging.Handler):
         '''
         super().__init__()
 
-        self.buffer = Loki_log_buffer(url, dry_run)
+        self.buffer = Loki_log_buffer(
+            url, dry_run, tls_cert_path=tls_cert_path, tls_key_path=tls_key_path
+        )
         self.send_logs = send_logs
         self.setLevel(log_level)
 
@@ -139,7 +149,24 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
     Add a handler to the root logger to regularly send the logs to Loki.
     '''
     url = hook_config.get('url')
-    loki = Loki_log_handler(url, hook_config.get('send_logs', False), monitoring_log_level, dry_run)
+    tls = hook_config.get('tls', {})
+
+    if bool(tls.get('cert_path')) != bool(tls.get('key_path')):
+        logger.critical(
+            'Invalid Loki TLS configuration: cert_path and key_path must both be set or both be unset'
+        )
+        raise ValueError(
+            'Invalid Loki TLS configuration: cert_path and key_path must both be set or both be unset'
+        )
+
+    loki = Loki_log_handler(
+        url,
+        hook_config.get('send_logs', False),
+        monitoring_log_level,
+        dry_run,
+        tls_cert_path=tls.get('cert_path'),
+        tls_key_path=tls.get('key_path'),
+    )
 
     for key, value in hook_config.get('labels').items():
         if value == '__hostname':

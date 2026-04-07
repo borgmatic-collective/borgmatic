@@ -3098,6 +3098,24 @@ properties:
                     Grafana Loki log URL to notify when a backup begins,
                     ends, or fails.
                 example: "http://localhost:3100/loki/api/v1/push"
+            tls:
+                type: object
+                additionalProperties: false
+                properties:
+                    cert_path:
+                        type: string
+                        description: |
+                            Path to a PEM client certificate file for mutual
+                            TLS authentication.
+                        example: /etc/borgmatic/loki-client.crt
+                    key_path:
+                        type: string
+                        description: |
+                            Path to a PEM private key file for the client
+                            certificate.
+                        example: /etc/borgmatic/loki-client.key
+                description: |
+                    TLS options for mutual TLS (mTLS) authentication with Loki.
             labels:
                 type: object
                 additionalProperties:

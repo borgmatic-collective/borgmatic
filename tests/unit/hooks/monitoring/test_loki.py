@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from flexmock import flexmock
 
 from borgmatic.hooks.monitoring import loki as module
@@ -78,3 +79,49 @@ def test_loki_log_handler_flush_with_empty_buffer_does_not_raise():
     handler = module.Loki_log_handler(flexmock(), send_logs=False, log_level=10, dry_run=False)
 
     handler.flush()
+
+
+def test_loki_log_buffer_init_with_tls_stores_cert_and_key_paths():
+    buffer = module.Loki_log_buffer(
+        flexmock(),
+        dry_run=False,
+        tls_cert_path='/path/to/cert.crt',
+        tls_key_path='/path/to/key.key',
+    )
+
+    assert buffer.tls_cert_path == '/path/to/cert.crt'
+    assert buffer.tls_key_path == '/path/to/key.key'
+
+
+def test_loki_log_handler_init_with_tls_passes_paths_to_buffer():
+    handler = module.Loki_log_handler(
+        flexmock(),
+        send_logs=False,
+        log_level=10,
+        dry_run=False,
+        tls_cert_path='/path/to/cert.crt',
+        tls_key_path='/path/to/key.key',
+    )
+
+    assert handler.buffer.tls_cert_path == '/path/to/cert.crt'
+    assert handler.buffer.tls_key_path == '/path/to/key.key'
+
+
+def test_initialize_monitor_with_only_cert_path_raises():
+    hook_config = {
+        'url': 'http://localhost:3100/loki/api/v1/push',
+        'tls': {'cert_path': '/path/to/cert.crt'},
+    }
+
+    with pytest.raises(ValueError):
+        module.initialize_monitor(hook_config, {}, 'test.yaml', 1, False)
+
+
+def test_initialize_monitor_with_only_key_path_raises():
+    hook_config = {
+        'url': 'http://localhost:3100/loki/api/v1/push',
+        'tls': {'key_path': '/path/to/key.key'},
+    }
+
+    with pytest.raises(ValueError):
+        module.initialize_monitor(hook_config, {}, 'test.yaml', 1, False)
