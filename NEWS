@@ -1,6 +1,7 @@
 2.1.5.dev0
  * #1292: Fix a "source directories do not exist" regression when configuration paths are relative
    symlinks and the bootstrap data source hook is enabled.
+ * #1294: Fix a regression in which SSH warnings from remote repositories broke the "spot" check.
 
 2.1.4
  * #1266: Add a stand-alone borgmatic Linux binary to the release downloads to serve as another way

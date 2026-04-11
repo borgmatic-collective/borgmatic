@@ -486,7 +486,7 @@ def test_log_buffer_lines_with_ready_buffer_and_higher_log_level_and_capture_pro
     )
 
 
-def test_log_buffer_lines_with_ready_buffer_and_lower_log_level_and_capture_process_yields_each_line():
+def test_log_buffer_lines_with_ready_buffer_and_log_level_equal_to_output_log_level_and_capture_process_yields_each_line():
     process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
     buffer_readers = {
         flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
@@ -497,7 +497,7 @@ def test_log_buffer_lines_with_ready_buffer_and_lower_log_level_and_capture_proc
     ).and_return(list(buffer_readers.keys()), [], [])
     flexmock(module).should_receive('parse_log_line').and_return(flexmock())
     flexmock(module).should_receive('handle_log_record').and_return(
-        flexmock(levelno=module.logging.ERROR, getMessage=lambda: 'message')
+        flexmock(levelno=module.logging.INFO, getMessage=lambda: 'message')
     ).twice()
 
     assert tuple(
@@ -1256,7 +1256,7 @@ def test_log_remaining_buffer_lines_with_higher_log_level_and_capture_process_do
     )
 
 
-def test_log_remaining_buffer_lines_with_lower_log_level_and_capture_process_does_yields_each_line():
+def test_log_remaining_buffer_lines_with_log_level_equal_to_output_log_level_and_capture_process_yields_each_line():
     process = flexmock(stderr=flexmock(), args=flexmock())
     buffer_readers = {
         flexmock(): module.Buffer_reader(
@@ -1269,7 +1269,7 @@ def test_log_remaining_buffer_lines_with_lower_log_level_and_capture_process_doe
         line=str, log_level=object, elevate_stderr=False, borg_local_path=object, command=object
     ).and_return(flexmock()).twice()
     flexmock(module).should_receive('handle_log_record').and_return(
-        flexmock(levelno=module.logging.ERROR, getMessage=lambda: 'message')
+        flexmock(levelno=module.logging.INFO, getMessage=lambda: 'message')
     ).twice()
 
     assert tuple(

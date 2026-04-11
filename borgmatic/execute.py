@@ -315,8 +315,8 @@ def log_buffer_lines(
     Given a dict from buffer object to Buffer_reader, a dict from subprocess.Popen() instance to
     Process_metadata instance, a requested output log level for stdout, Borg's local path, and
     whether to capture stderr, read and log any ready output lines from the buffers. Additionally,
-    for any log records with a log level that meets or exceeds the output log level, yield those log
-    messages for capture.
+    for any log records with a log level the same as the output log level, yield those log messages
+    for capture.
 
     This function just does one "turn of the crank" of logging buffer output. It is intended to be
     called repeatedly to continue to process buffers.
@@ -367,9 +367,7 @@ def log_buffer_lines(
             )
 
             if (
-                log_record.levelno is None
-                or output_log_level is None
-                or log_record.levelno >= output_log_level
+                log_record.levelno is None or log_record.levelno == output_log_level
             ) and process_metadatas[reader.process].capture:
                 yield log_record.getMessage()
 
@@ -429,8 +427,8 @@ def log_remaining_buffer_lines(
     Given a dict from buffer object to Buffer_reader, a dict from subprocess.Popen() instance to
     Process_metadata instance, a requested output log level for stdout, Borg's local path, and
     whether to capture stderr, drain and log any remaining output lines from the buffers until
-    they're empty. Additionally, for any log records with a log level that meets or exceeds the
-    output log level, yield those log messages for capture.
+    they're empty. Additionally, for any log records with a log level the same as the output log
+    level, yield those log messages for capture.
     '''
     for output_buffer, reader in buffer_readers.items():
         if not reader.process:
@@ -451,9 +449,7 @@ def log_remaining_buffer_lines(
                 )
 
                 if (
-                    log_record.levelno is None
-                    or output_log_level is None
-                    or log_record.levelno >= output_log_level
+                    log_record.levelno is None or log_record.levelno == output_log_level
                 ) and process_metadatas[reader.process].capture:
                     yield log_record.getMessage()
 
