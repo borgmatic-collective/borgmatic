@@ -90,7 +90,7 @@ def test_ping_monitor_sends_log_message():
     config_filename = 'test.yaml'
     post_called = False
 
-    def post(url, data, timeout, headers):
+    def post(url, data, timeout, headers, **kwargs):
         nonlocal post_called
         post_called = True
 
