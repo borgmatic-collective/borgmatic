@@ -66,7 +66,7 @@ Or you can perform schema-level grants if you prefer.
 
 For more information, see the PostgreSQL documentation on [PostgreSQL predefined
 roles](https://www.postgresql.org/docs/current/predefined-roles.html) and
-[privileges](https://www.postgresql.org/docs/current/ddl-priv.html)
+[privileges](https://www.postgresql.org/docs/current/ddl-priv.html).
 
 
 ## Full configuration
