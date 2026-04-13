@@ -1,4 +1,6 @@
 2.1.5.dev0
+ * #1229: Document the permissions needed for the PostgreSQL database hook:
+   https://torsion.org/borgmatic/reference/configuration/data-sources/postgresql/
  * #1289: Add mutual TLS support for the Loki monitoring hook. See the documentation for more
    information: https://torsion.org/borgmatic/reference/configuration/monitoring/loki/
  * #1292: Fix a "source directories do not exist" regression when configuration paths are relative
