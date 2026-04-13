@@ -1,4 +1,5 @@
 2.1.5.dev0
+ * #1289: Add mutual TLS support for the Loki monitoring hook.
  * #1292: Fix a "source directories do not exist" regression when configuration paths are relative
    symlinks and the bootstrap data source hook is enabled.
  * #1294: Fix a regression in which SSH warnings from remote repositories broke the "spot" check.

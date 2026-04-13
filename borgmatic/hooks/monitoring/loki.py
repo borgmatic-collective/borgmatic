@@ -152,9 +152,6 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
     tls = hook_config.get('tls', {})
 
     if bool(tls.get('cert_path')) != bool(tls.get('key_path')):
-        logger.critical(
-            'Invalid Loki TLS configuration: cert_path and key_path must both be set or both be unset'
-        )
         raise ValueError(
             'Invalid Loki TLS configuration: cert_path and key_path must both be set or both be unset'
         )
