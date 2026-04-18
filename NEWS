@@ -7,6 +7,7 @@
    symlinks and the bootstrap data source hook is enabled.
  * #1294: Fix a regression in which SSH warnings from remote repositories broke the "spot" check
    and other actions as well.
+ * #1295: Fix the ZFS hook to properly unmount snapshots for empty datasets.
 
 2.1.4
  * #1266: Add a stand-alone borgmatic Linux binary to the release downloads to serve as another way

@@ -2,6 +2,7 @@ import collections
 import glob
 import hashlib
 import logging
+import operator
 import os
 import shutil
 import subprocess
@@ -123,7 +124,8 @@ def get_datasets_to_backup(zfs_command, patterns):
 
 def get_all_dataset_mount_points(zfs_command):
     '''
-    Given a ZFS command to run, return all ZFS datasets as a sequence of sorted mount points.
+    Given a ZFS command to run, return a dict from ZFS dataset name to mount point (reverse sorted
+    by mount point).
     '''
     list_lines = borgmatic.execute.execute_command_and_capture_output(
         (
@@ -133,19 +135,23 @@ def get_all_dataset_mount_points(zfs_command):
             '-t',
             'filesystem',
             '-o',
-            'mountpoint',
+            'name,mountpoint',
         ),
         close_fds=True,
     )
 
-    return tuple(
+    return dict(
         sorted(
-            {
-                mount_point
+            (
+                (dataset_name, mount_point)
                 for line in list_lines
-                for mount_point in (line.rstrip(),)
+                for (dataset_name, mount_point) in (line.rstrip().split('\t'),)
                 if mount_point != 'none'
-            },
+            ),
+            key=operator.itemgetter(1),
+            # Reversing the sorted datasets ensures that we unmount the longer mount point paths of
+            # child datasets before the shorter mount point paths of parent datasets.
+            reverse=True,
         ),
     )
 
@@ -376,7 +382,8 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, p
     zfs_command = hook_config.get('zfs_command', 'zfs')
 
     try:
-        dataset_mount_points = get_all_dataset_mount_points(zfs_command)
+        dataset_name_to_mount_point = get_all_dataset_mount_points(zfs_command)
+        full_snapshot_names = get_all_snapshots(zfs_command)
     except FileNotFoundError:
         logger.debug(f'Could not find "{zfs_command}" command')
         return
@@ -393,19 +400,20 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, p
     )
     logger.debug(f'Looking for snapshots to remove in {snapshots_glob}{dry_run_label}')
     umount_command = hook_config.get('umount_command', 'umount')
+    snapshot_dataset_names = {
+        full_snapshot_name.split('@')[0] for full_snapshot_name in full_snapshot_names
+    }
 
     for snapshots_directory in glob.glob(snapshots_glob):
         if not os.path.isdir(snapshots_directory):
             continue
 
-        # Reversing the sorted datasets ensures that we unmount the longer mount point paths of
-        # child datasets before the shorter mount point paths of parent datasets.
-        for mount_point in reversed(dataset_mount_points):
+        for dataset_name, mount_point in dataset_name_to_mount_point.items():
             snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
 
-            # If the snapshot mount path is empty, this is probably just a "shadow" of a nested
-            # dataset and therefore there's nothing to unmount.
-            if not os.path.isdir(snapshot_mount_path) or not os.listdir(snapshot_mount_path):
+            # If this dataset name does not correspond to a known snapshot, then this is probably
+            # just a "shadow" of a nested dataset and therefore there's nothing to unmount.
+            if not os.path.isdir(snapshot_mount_path) or dataset_name not in snapshot_dataset_names:
                 continue
 
             # This might fail if the path is already mounted, but we swallow errors here since we'll
@@ -435,8 +443,6 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, p
             shutil.rmtree(snapshot_mount_path, ignore_errors=True)
 
     # Destroy snapshots.
-    full_snapshot_names = get_all_snapshots(zfs_command)
-
     for full_snapshot_name in full_snapshot_names:
         # Only destroy snapshots that borgmatic actually created!
         if not full_snapshot_name.split('@')[-1].startswith(BORGMATIC_SNAPSHOT_PREFIX):
