@@ -222,11 +222,11 @@ def test_parse_configuration_merges_include():
     assert logs == []
 
 
-def test_parse_configuration_raises_for_missing_config_file():
+def test_parse_configuration_raises_for_missing_config_file(tmp_path):
     with pytest.raises(FileNotFoundError):
         module.parse_configuration(
-            '/tmp/config.yaml',
-            '/tmp/schema.yaml',
+            str(tmp_path / 'nonexistent' / 'config.yaml'),
+            str(tmp_path / 'nonexistent' / 'schema.yaml'),
             arguments={'global': flexmock()},
         )
 

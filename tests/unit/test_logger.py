@@ -699,7 +699,7 @@ def test_configure_logging_skips_log_file_if_log_file_logging_is_disabled():
     )
 
 
-def test_configure_logging_to_log_file_instead_of_syslog():
+def test_configure_logging_to_log_file_instead_of_syslog(tmp_path):
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     fake_formatter = flexmock()
@@ -716,20 +716,21 @@ def test_configure_logging_to_log_file_instead_of_syslog():
     )
     flexmock(module.os.path).should_receive('exists').never()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
-    file_handler = logging.handlers.WatchedFileHandler('/tmp/logfile')
+    log_file = str(tmp_path / 'logfile')
+    file_handler = logging.handlers.WatchedFileHandler(log_file)
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').with_args(
-        '/tmp/logfile',
+        log_file,
     ).and_return(file_handler).once()
 
     module.configure_logging(
         console_log_level=logging.INFO,
         syslog_log_level=logging.DISABLED,
         log_file_log_level=logging.DEBUG,
-        log_file='/tmp/logfile',
+        log_file=log_file,
     )
 
 
-def test_configure_logging_to_both_log_file_and_syslog():
+def test_configure_logging_to_both_log_file_and_syslog(tmp_path):
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     fake_formatter = flexmock()
@@ -752,20 +753,21 @@ def test_configure_logging_to_both_log_file_and_syslog():
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
         address='/dev/log',
     ).and_return(syslog_handler).once()
-    file_handler = logging.handlers.WatchedFileHandler('/tmp/logfile')
+    log_file = str(tmp_path / 'logfile')
+    file_handler = logging.handlers.WatchedFileHandler(log_file)
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').with_args(
-        '/tmp/logfile',
+        log_file,
     ).and_return(file_handler).once()
 
     module.configure_logging(
         console_log_level=logging.INFO,
         syslog_log_level=logging.DEBUG,
         log_file_log_level=logging.DEBUG,
-        log_file='/tmp/logfile',
+        log_file=log_file,
     )
 
 
-def test_configure_logging_to_log_file_formats_with_custom_log_format():
+def test_configure_logging_to_log_file_formats_with_custom_log_format(tmp_path):
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Log_prefix_formatter').with_args(
@@ -786,15 +788,16 @@ def test_configure_logging_to_log_file_formats_with_custom_log_format():
     )
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
-    file_handler = logging.handlers.WatchedFileHandler('/tmp/logfile')
+    log_file = str(tmp_path / 'logfile')
+    file_handler = logging.handlers.WatchedFileHandler(log_file)
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').with_args(
-        '/tmp/logfile',
+        log_file,
     ).and_return(file_handler).once()
 
     module.configure_logging(
         console_log_level=logging.INFO,
         log_file_log_level=logging.DEBUG,
-        log_file='/tmp/logfile',
+        log_file=log_file,
         log_file_format='{message}',
     )
 
