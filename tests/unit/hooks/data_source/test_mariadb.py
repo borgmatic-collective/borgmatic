@@ -64,6 +64,23 @@ def test_make_defaults_file_escapes_password_containing_backslash():
     )
 
 
+def test_make_defaults_file_escapes_password_containing_quote():
+    read_descriptor = 99
+    write_descriptor = flexmock()
+
+    flexmock(module.os).should_receive('pipe').and_return(read_descriptor, write_descriptor)
+    flexmock(module.os).should_receive('write').with_args(
+        write_descriptor,
+        b'[client]\nuser=root\n' + rb'password="trust\"some1"',
+    ).once()
+    flexmock(module.os).should_receive('close')
+    flexmock(module.os).should_receive('set_inheritable')
+
+    assert module.make_defaults_file_options(username='root', password=r'trust"some1') == (
+        '--defaults-extra-file=/dev/fd/99',
+    )
+
+
 def test_make_defaults_file_pipe_with_only_username_writes_it_to_file_descriptor():
     read_descriptor = 99
     write_descriptor = flexmock()

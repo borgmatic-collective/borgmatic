@@ -2,6 +2,8 @@
  * Add the NEWS changelog file to release tarball (#1298).
  * Enable reply by email on projects.torsion.org, so replies to notification emails get posted as
    comments on tickets.
+ * For the MariaDB and MySQL database hooks, escape quotes in passwords when the
+   "password_transport" option is "pipe".
 
 2.1.5
  * #1229: Document the permissions needed for the PostgreSQL database hook:
