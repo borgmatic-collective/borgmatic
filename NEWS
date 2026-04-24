@@ -4,6 +4,7 @@
    comments on tickets.
  * For the MariaDB and MySQL database hooks, escape quotes in passwords when the
    "password_transport" option is "pipe".
+ * Add a development script for upgrading pinned dependencies.
 
 2.1.5
  * #1229: Document the permissions needed for the PostgreSQL database hook:
