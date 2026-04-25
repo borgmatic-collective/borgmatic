@@ -172,13 +172,22 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_usernam
 
 
 def test_database_names_to_dump_with_all_and_format_lists_databases_with_options():
-    database = {'name': 'all', 'format': 'custom', 'list_options': '--harder'}
+    database = {'name': 'all', 'format': 'custom', 'list_options': '--harder "foo bar"'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('psql', '--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only', '--harder'),
+        (
+            'psql',
+            '--list',
+            '--no-password',
+            '--no-psqlrc',
+            '--csv',
+            '--tuples-only',
+            '--harder',
+            "'foo bar'",
+        ),
         environment=object,
         working_directory=None,
     ).and_yield('foo,test,', 'bar,test,"stuff and such"')
@@ -803,7 +812,7 @@ def test_dump_data_sources_runs_pg_dump_with_integer_compression():
 
 
 def test_dump_data_sources_runs_pg_dump_with_options():
-    databases = [{'name': 'foo', 'options': '--stuff=such'}]
+    databases = [{'name': 'foo', 'options': '--stuff "foo bar"'}]
     process = flexmock()
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -826,7 +835,8 @@ def test_dump_data_sources_runs_pg_dump_with_options():
             '--if-exists',
             '--format',
             'custom',
-            '--stuff=such',
+            '--stuff',
+            "'foo bar'",
             'foo',
             '>',
             'databases/localhost/foo',
@@ -1340,8 +1350,8 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
     hook_config = [
         {
             'name': 'foo',
-            'restore_options': '--harder',
-            'analyze_options': '--smarter',
+            'restore_options': '--harder "foo bar"',
+            'analyze_options': '--smarter "baz quux"',
             'schemas': None,
         },
     ]
@@ -1364,6 +1374,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
             '--dbname',
             'foo',
             '--harder',
+            "'foo bar'",
         ),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
@@ -1381,6 +1392,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
             '--dbname',
             'foo',
             '--smarter',
+            "'baz quux'",
             '--command',
             'ANALYZE',
         ),

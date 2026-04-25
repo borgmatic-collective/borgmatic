@@ -100,7 +100,11 @@ def database_names_to_dump(database, config, environment, dry_run):
             if 'username' in database
             else ()
         )
-        + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
+        + (
+            tuple(shlex.quote(part) for part in shlex.split(database['list_options']))
+            if 'list_options' in database
+            else ()
+        )
     )
     logger.debug('Querying for "all" PostgreSQL databases to dump')
     list_lines = execute_command_and_capture_output(
@@ -226,7 +230,7 @@ def dump_data_sources(
                 + (('--compress', shlex.quote(str(compression))) if compression is not None else ())
                 + (('--file', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
                 + (
-                    tuple(shlex.quote(option) for option in database['options'].split(' '))
+                    tuple(shlex.quote(part) for part in shlex.split(database['options']))
                     if 'options' in database
                     else ()
                 )
@@ -393,7 +397,7 @@ def restore_data_source_dump(
         + (('--username', username) if username else ())
         + (('--dbname', data_source['name']) if not all_databases else ())
         + (
-            tuple(data_source['analyze_options'].split(' '))
+            tuple(shlex.quote(part) for part in shlex.split(data_source['analyze_options']))
             if 'analyze_options' in data_source
             else ()
         )
@@ -414,7 +418,7 @@ def restore_data_source_dump(
         + (('--username', username) if username else ())
         + (('--no-owner',) if data_source.get('no_owner', False) else ())
         + (
-            tuple(data_source['restore_options'].split(' '))
+            tuple(shlex.quote(part) for part in shlex.split(data_source['restore_options']))
             if 'restore_options' in data_source
             else ()
         )
