@@ -88,16 +88,16 @@ def write_patterns_file(patterns, borgmatic_runtime_directory, patterns_file=Non
     return patterns_file
 
 
-def check_all_root_patterns_exist(patterns):
+def check_all_root_patterns_exist(patterns, working_directory):
     '''
-    Given a sequence of Pattern instances, check that all root pattern paths exist. If any don't,
-    raise an exception.
+    Given a sequence of Pattern instances and the current working directory, check that all root
+    pattern paths exist. If any don't, raise an exception.
     '''
     missing_paths = [
         pattern.path
         for pattern in patterns
         if pattern.type == Pattern_type.ROOT
-        if not os.path.exists(pattern.path)
+        if not os.path.exists(os.path.join(working_directory or '', pattern.path))
     ]
 
     if missing_paths:

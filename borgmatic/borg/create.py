@@ -180,7 +180,9 @@ def make_base_create_command(  # noqa: PLR0912
     open pattern file handle).
     '''
     if config.get('source_directories_must_exist', True):
-        borgmatic.borg.pattern.check_all_root_patterns_exist(patterns)
+        borgmatic.borg.pattern.check_all_root_patterns_exist(
+            patterns, borgmatic.config.paths.get_working_directory(config)
+        )
 
     patterns_file = borgmatic.borg.pattern.write_patterns_file(
         patterns,
