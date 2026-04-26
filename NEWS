@@ -8,6 +8,7 @@
    "password_transport" option is "pipe".
  * Add a development script for upgrading pinned dependencies.
  * Fix the PostgreSQL database hook to properly parse "*options" values containing quoted spaces.
+ * Update the documentation to use Pagefind's component-based search UI.
 
 2.1.5
  * #1229: Document the permissions needed for the PostgreSQL database hook:

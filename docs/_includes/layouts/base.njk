@@ -23,6 +23,7 @@
 {% if feedTitle and feedUrl %}
 		<link rel="alternate" href="{{ feedUrl }}" title="{{ feedTitle }}" type="application/atom+xml">
 {% endif %}
+    {{ head_additions | safe }}
 	</head>
 	<body>
 
