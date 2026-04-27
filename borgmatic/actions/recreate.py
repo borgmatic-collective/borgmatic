@@ -30,10 +30,12 @@ def run_recreate(
     else:
         logger.answer(f'Recreating repository{dry_run_label}')
 
+    working_directory = borgmatic.config.paths.get_working_directory(config)
+
     # Collect and process patterns.
     processed_patterns = borgmatic.actions.pattern.process_patterns(
         (
-            *borgmatic.actions.pattern.collect_patterns(config),
+            *borgmatic.actions.pattern.collect_patterns(config, working_directory),
             # Also add borgmatic-specific paths, so they don't get excluded from the recreated
             # archive. Note that this doesn't currently work for archives created with Borg 1.2 or
             # below.
@@ -42,7 +44,7 @@ def run_recreate(
             ),
         ),
         config,
-        borgmatic.config.paths.get_working_directory(config),
+        working_directory,
     )
 
     archive = borgmatic.borg.repo_list.resolve_archive_name(

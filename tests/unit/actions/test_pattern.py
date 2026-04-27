@@ -35,7 +35,7 @@ def test_parse_pattern_with_invalid_pattern_line_errors():
 
 
 def test_collect_patterns_converts_source_directories():
-    assert module.collect_patterns({'source_directories': ['/foo', '/bar']}) == (
+    assert module.collect_patterns({'source_directories': ['/foo', '/bar']}, '/working') == (
         Pattern('/foo', source=Pattern_source.CONFIG),
         Pattern('/bar', source=Pattern_source.CONFIG),
     )
@@ -48,14 +48,18 @@ def test_collect_patterns_parses_config_patterns():
     flexmock(module).should_receive('parse_pattern').with_args('   ').never()
     flexmock(module).should_receive('parse_pattern').with_args('R /bar').and_return(Pattern('/bar'))
 
-    assert module.collect_patterns({'patterns': ['R /foo', '# comment', '', '   ', 'R /bar']}) == (
+    assert module.collect_patterns(
+        {'patterns': ['R /foo', '# comment', '', '   ', 'R /bar']}, '/working'
+    ) == (
         Pattern('/foo'),
         Pattern('/bar'),
     )
 
 
 def test_collect_patterns_converts_exclude_patterns():
-    assert module.collect_patterns({'exclude_patterns': ['/foo', '/bar', 'sh:**/baz']}) == (
+    assert module.collect_patterns(
+        {'exclude_patterns': ['/foo', '/bar', 'sh:**/baz']}, '/working'
+    ) == (
         Pattern(
             '/foo',
             Pattern_type.NO_RECURSE,
@@ -78,6 +82,12 @@ def test_collect_patterns_converts_exclude_patterns():
 
 
 def test_collect_patterns_reads_config_patterns_from_file():
+    flexmock(module).should_receive('expand_directory').with_args(
+        'file1.txt', '/working'
+    ).and_return(['file1.txt'])
+    flexmock(module).should_receive('expand_directory').with_args(
+        'file2.txt', '/working'
+    ).and_return(['file2.txt'])
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('file1.txt', encoding='utf-8').and_return(
         io.StringIO('R /foo')
@@ -92,7 +102,7 @@ def test_collect_patterns_reads_config_patterns_from_file():
     flexmock(module).should_receive('parse_pattern').with_args('R /bar').and_return(Pattern('/bar'))
     flexmock(module).should_receive('parse_pattern').with_args('R /baz').and_return(Pattern('/baz'))
 
-    assert module.collect_patterns({'patterns_from': ['file1.txt', 'file2.txt']}) == (
+    assert module.collect_patterns({'patterns_from': ['file1.txt', 'file2.txt']}, '/working') == (
         Pattern('/foo'),
         Pattern('/bar'),
         Pattern('/baz'),
@@ -101,16 +111,25 @@ def test_collect_patterns_reads_config_patterns_from_file():
 
 def test_collect_patterns_errors_on_missing_config_patterns_from_file():
     builtins = flexmock(sys.modules['builtins'])
+    flexmock(module).should_receive('expand_directory').with_args(
+        'file1.txt', '/working'
+    ).and_return(['file1.txt'])
     builtins.should_receive('open').with_args('file1.txt', encoding='utf-8').and_raise(
         FileNotFoundError
     )
     flexmock(module).should_receive('parse_pattern').never()
 
     with pytest.raises(ValueError):
-        module.collect_patterns({'patterns_from': ['file1.txt', 'file2.txt']})
+        module.collect_patterns({'patterns_from': ['file1.txt', 'file2.txt']}, '/working')
 
 
 def test_collect_patterns_reads_config_exclude_from_file():
+    flexmock(module).should_receive('expand_directory').with_args(
+        'file1.txt', '/working'
+    ).and_return(['file1.txt'])
+    flexmock(module).should_receive('expand_directory').with_args(
+        'file2.txt', '/working'
+    ).and_return(['file2.txt'])
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('file1.txt', encoding='utf-8').and_return(
         io.StringIO('/foo')
@@ -134,7 +153,7 @@ def test_collect_patterns_reads_config_exclude_from_file():
         default_style=Pattern_style.FNMATCH,
     ).and_return(Pattern('/baz', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH))
 
-    assert module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']}) == (
+    assert module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']}, '/working') == (
         Pattern('/foo', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
         Pattern('/bar', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
         Pattern('/baz', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
@@ -142,12 +161,15 @@ def test_collect_patterns_reads_config_exclude_from_file():
 
 
 def test_collect_patterns_errors_on_missing_config_exclude_from_file():
+    flexmock(module).should_receive('expand_directory').with_args(
+        'file1.txt', '/working'
+    ).and_return(['file1.txt'])
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('file1.txt', encoding='utf-8').and_raise(OSError)
     flexmock(module).should_receive('parse_pattern').never()
 
     with pytest.raises(ValueError):
-        module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']})
+        module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']}, '/working')
 
 
 def test_expand_directory_with_basic_path_passes_it_through():

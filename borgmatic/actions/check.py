@@ -383,7 +383,7 @@ def collect_spot_check_source_paths(
         # Omit "progress" because it interferes with "list_details".
         config=dict(config, progress=False, list_details=True),
         patterns=borgmatic.actions.pattern.process_patterns(
-            borgmatic.actions.pattern.collect_patterns(config)
+            borgmatic.actions.pattern.collect_patterns(config, working_directory)
             + tuple(
                 borgmatic.borg.pattern.Pattern(
                     config_path,

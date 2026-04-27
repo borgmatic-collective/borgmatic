@@ -34,10 +34,11 @@ def parse_pattern(pattern_line, default_style=borgmatic.borg.pattern.Pattern_sty
     )
 
 
-def collect_patterns(config):
+def collect_patterns(config, working_directory):
     '''
-    Given a configuration dict, produce a single sequence of patterns comprised of the configured
-    source directories, patterns, excludes, pattern files, and exclude files.
+    Given a configuration dict and the working directory, produce a single sequence of patterns
+    comprised of the configured source directories, patterns, excludes, pattern files, and exclude
+    files.
 
     The idea is that Borg has all these different ways of specifying includes, excludes, source
     directories, etc., but we'd like to collapse them all down to one common format (patterns) for
@@ -68,7 +69,8 @@ def collect_patterns(config):
             + tuple(
                 parse_pattern(pattern_line.strip())
                 for filename in config.get('patterns_from', ())
-                for pattern_line in open(filename, encoding='utf-8')
+                for expanded_path in expand_directory(filename, working_directory)
+                for pattern_line in open(expanded_path, encoding='utf-8')
                 if not pattern_line.lstrip().startswith('#')
                 if pattern_line.strip()
             )
@@ -78,7 +80,8 @@ def collect_patterns(config):
                     borgmatic.borg.pattern.Pattern_style.FNMATCH,
                 )
                 for filename in config.get('exclude_from', ())
-                for exclude_line in open(filename, encoding='utf-8')
+                for expanded_path in expand_directory(filename, working_directory)
+                for exclude_line in open(expanded_path, encoding='utf-8')
                 if not exclude_line.lstrip().startswith('#')
                 if exclude_line.strip()
             )

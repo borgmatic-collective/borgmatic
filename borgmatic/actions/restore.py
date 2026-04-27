@@ -539,7 +539,7 @@ def run_restore(
 
     with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
         patterns = borgmatic.actions.pattern.process_patterns(
-            borgmatic.actions.pattern.collect_patterns(config),
+            borgmatic.actions.pattern.collect_patterns(config, working_directory),
             config,
             working_directory,
         )

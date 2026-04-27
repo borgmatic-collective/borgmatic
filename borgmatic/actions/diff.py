@@ -21,10 +21,11 @@ def run_diff(
 
     # Only process patterns if only_patterns flag is set
     if diff_arguments.only_patterns:
+        working_directory = borgmatic.config.paths.get_working_directory(config)
         processed_patterns = borgmatic.actions.pattern.process_patterns(
-            (*borgmatic.actions.pattern.collect_patterns(config),),
+            (*borgmatic.actions.pattern.collect_patterns(config, working_directory),),
             config,
-            borgmatic.config.paths.get_working_directory(config),
+            working_directory,
         )
     else:
         processed_patterns = None

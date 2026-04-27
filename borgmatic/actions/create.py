@@ -45,7 +45,7 @@ def run_create(
 
     with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
         patterns = pattern.process_patterns(
-            pattern.collect_patterns(config),
+            pattern.collect_patterns(config, working_directory),
             config,
             working_directory,
             borgmatic_runtime_directory,

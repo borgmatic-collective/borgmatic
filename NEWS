@@ -1,6 +1,8 @@
 2.1.6.dev0
  * #1300: Fix the "source_directories_must_exist" option to support source directories relative to a
    "working_directory".
+ * #1301: Expand the "patterns_from" and "exclude_from" options to support paths containing tildes
+   and globs.
  * Add the NEWS changelog file to release tarball (#1298).
  * Enable reply by email on projects.torsion.org, so replies to notification emails get posted as
    comments on tickets.
