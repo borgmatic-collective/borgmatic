@@ -31,6 +31,55 @@ def test_load_credential_with_missing_database_raises():
         )
 
 
+def test_load_credential_with_secret_service_database_path_fetches_password_via_secret_tool():
+    flexmock(module.os.path).should_receive('expanduser').never()
+    flexmock(module.os.path).should_receive('exists').never()
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output',
+    ).with_args(
+        (
+            'secret-tool',
+            'lookup',
+            'Path',
+            'mypassword',
+        ),
+    ).and_yield('password').once()
+
+    assert (
+        module.load_credential(
+            hook_config={},
+            config={},
+            credential_parameters=('secret-service', 'mypassword'),
+        )
+        == 'password'
+    )
+
+
+def test_load_credential_with_secret_service_database_path_and_secret_tool_command_calls_it():
+    flexmock(module.os.path).should_receive('expanduser').never()
+    flexmock(module.os.path).should_receive('exists').never()
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output',
+    ).with_args(
+        (
+            '/usr/local/bin/secret-tool',
+            '--some-option',
+            'lookup',
+            'Path',
+            'mypassword',
+        ),
+    ).and_yield('password').once()
+
+    assert (
+        module.load_credential(
+            hook_config={'secret_tool_command': '/usr/local/bin/secret-tool --some-option'},
+            config={},
+            credential_parameters=('secret-service', 'mypassword'),
+        )
+        == 'password'
+    )
+
+
 def test_load_credential_with_present_database_fetches_password_from_keepassxc():
     flexmock(module.os.path).should_receive('expanduser').with_args('database.kdbx').and_return(
         'database.kdbx',

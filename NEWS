@@ -3,6 +3,9 @@
    "working_directory".
  * #1301: Expand the "patterns_from" and "exclude_from" options to support paths containing tildes
    and globs.
+ * Update the KeePassXC credential hook to support KeePassXC's secret service integration. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/reference/configuration/credentials/keepassxc/
  * Add the NEWS changelog file to release tarball (#1298).
  * Enable reply by email on projects.torsion.org, so replies to notification emails get posted as
    comments on tickets.

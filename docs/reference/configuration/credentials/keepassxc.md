@@ -43,14 +43,15 @@ postgresql_databases:
 ```
 
 
-### Custom command
+### Custom commands
 
-You can also optionally override the `keepassxc-cli` command that borgmatic calls to load
-passwords:
+You can also optionally override the `keepassxc-cli` or `secret-tool` commands
+that borgmatic call to load passwords:
 
 ```yaml
 keepassxc:
     keepassxc_cli_command: /usr/local/bin/keepassxc-cli
+    secret_tool_command: /usr/local/bin/secret-tool
 ```
 
 Another example:
@@ -98,3 +99,30 @@ keepassxc:
 The value here is the YubiKey slot number (e.g., `1` or `2`) and optional serial
 number (e.g., `7370001`) used to access the KeePassXC database. Join the two
 values with a colon, but omit the colon if you're leaving out the serial number.
+
+
+### Secret service integration
+
+<span class="minilink minilink-addedin">New in version 2.1.6</span> borgmatic
+supports [KeePassXC's secret service
+integration](https://keepassxc.org/docs/KeePassXC_UserGuide#_secret_service_integration)
+that integrates with the [freedesktop secret service
+API](https://specifications.freedesktop.org/secret-service/latest/) and allows
+clients like borgmatic to access your passwords.
+
+To use this feature from borgmatic, specify `secret-service` instead of a
+KeePassXC database path when calling this credential hook. For instance:
+
+```yaml
+encryption_passphrase: "{credential keepassxc secret-service borgmatic}"
+```
+
+With this in place, borgmatic runs libsecret's `secret-tool` command to retrieve
+the password titled "borgmatic" on demand. KeePassXC may then prompt you to
+approve the password access, depending on how you've configured it.
+
+One benefit of using the KeePassXC's secret service integration like this is
+that you don't have to type a KeePassXC database passhprase (or use a keyfile)
+whenever borgmatic accesses your passwords. Instead, you can configure
+KeePassXC to prompt you to approve or deny each access. Or you can even
+pre-approve password access to support automated borgmatic runs.

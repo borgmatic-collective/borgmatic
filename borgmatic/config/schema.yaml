@@ -3309,24 +3309,32 @@ properties:
                 description: |
                     Command to use instead of "keepassxc-cli".
                 example: /usr/local/bin/keepassxc-cli
+            secret_tool_command:
+                type: string
+                description: |
+                    Command to use instead of "secret-tool".
+                example: /usr/local/bin/secret-tool
             ask_for_password:
                 type: boolean
                 description: |
                     Whether keepassxc-cli should prompt the user for a password.
                     Disabling this is only really useful if you're unlocking
                     your KeePassXC database with a key file instead of a
-                    password. Defaults to true.
+                    password. Ignored when using KeePassXC's secret service
+                    integration. Defaults to true.
                 example: false
             key_file:
                 type: string
                 description: |
                     Path to a key file for unlocking the KeePassXC database.
+                    Ignored when using KeePassXC's secret service integration.
                 example: /path/to/keyfile
             yubikey:
                 type: string
                 description: |
                     YubiKey slot and optional serial number used to access the
-                    KeePassXC database. The format is "<slot[:serial]>", where:
+                    KeePassXC database. Ignored when using KeePassXC's secret
+                    service integration. The format is "<slot[:serial]>", where:
                      * <slot> is the YubiKey slot number (e.g., `1` or `2`).
                      * <serial> (optional) is the YubiKey's serial number (e.g.,
                        `7370001`).
