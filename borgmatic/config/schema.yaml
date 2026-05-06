@@ -489,6 +489,9 @@ properties:
         description: |
             Umask used for when executing Borg or calling hooks. Defaults to
             0077 for Borg or the umask that borgmatic is run with for hooks.
+            Even though this value is a YAML integer, borgmatic interprets it as
+            octal. YAML's "0o"-prefixed octal notation is not currently
+            supported.
         example: 0077
     lock_wait:
         type: integer
