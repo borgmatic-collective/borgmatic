@@ -381,6 +381,15 @@ def run_actions(  # noqa: PLR0912, PLR0915
         logger.debug('Skipping actions because the requested --repository does not match')
         return
 
+    repository['id'] = borgmatic.borg.repo_info.get_repository_id(
+        repository['path'],
+        config,
+        local_borg_version,
+        global_arguments,
+        local_path=local_path,
+        remote_path=remote_path,
+    )
+
     with borgmatic.hooks.command.Before_after_hooks(
         command_hooks=config.get('commands'),
         before_after='repository',

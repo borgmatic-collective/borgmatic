@@ -272,54 +272,6 @@ def test_make_check_name_flags_with_extract_omits_extract_flag():
     assert flags == ()
 
 
-def test_get_repository_id_with_valid_json_does_not_raise():
-    config = {}
-    flexmock(module.repo_info).should_receive('display_repository_info').and_return(
-        '{"repository": {"id": "repo"}}',
-    )
-
-    assert module.get_repository_id(
-        repository_path='repo',
-        config=config,
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        local_path='borg',
-        remote_path=None,
-    )
-
-
-def test_get_repository_id_with_json_error_raises():
-    config = {}
-    flexmock(module.repo_info).should_receive('display_repository_info').and_return(
-        '{"unexpected": {"id": "repo"}}',
-    )
-
-    with pytest.raises(ValueError):
-        module.get_repository_id(
-            repository_path='repo',
-            config=config,
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(),
-            local_path='borg',
-            remote_path=None,
-        )
-
-
-def test_get_repository_id_with_missing_json_keys_raises():
-    config = {}
-    flexmock(module.repo_info).should_receive('display_repository_info').and_return('{invalid JSON')
-
-    with pytest.raises(ValueError):
-        module.get_repository_id(
-            repository_path='repo',
-            config=config,
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(),
-            local_path='borg',
-            remote_path=None,
-        )
-
-
 def test_check_archives_with_progress_passes_through_to_borg():
     config = {'progress': True}
     flexmock(module).should_receive('make_check_name_flags').with_args(

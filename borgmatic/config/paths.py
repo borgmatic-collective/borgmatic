@@ -2,6 +2,7 @@ import contextlib
 import logging
 import os
 import tempfile
+import shutil
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -84,6 +85,24 @@ def replace_temporary_subdirectory_with_glob(
     )
 
 
+class Fixed_name_temporary_directory:
+    '''
+    A class whose instances can stand-in for tempfile.TemporaryDirectory's, except the temporary
+    filename path is fixed rather than randomly generated.
+    '''
+    def __init__(self, path):
+        '''
+        Given a temporary directory path, save it off for later.
+        '''
+        self.name = path
+
+    def cleanup(self):
+        '''
+        Remove the temporary directory path.
+        '''
+        shutil.rmtree(self.name)
+
+
 class Runtime_directory:
     '''
     A Python context manager for creating and cleaning up the borgmatic runtime directory used for
@@ -98,16 +117,15 @@ class Runtime_directory:
     automatically gets cleaned up as necessary.
     '''
 
-    def __init__(self, config):
+    def __init__(self, config, repository_id):
         '''
-        Given a configuration dict determine the borgmatic runtime directory, creating a secure,
-        temporary directory within it if necessary. Defaults to $XDG_RUNTIME_DIR/./borgmatic or
-        $RUNTIME_DIRECTORY/./borgmatic or $TMPDIR/borgmatic-[random]/./borgmatic or
-        $TEMP/borgmatic-[random]/./borgmatic or /tmp/borgmatic-[random]/./borgmatic where "[random]"
-        is a randomly generated string intended to avoid path collisions.
-
-        If XDG_RUNTIME_DIR or RUNTIME_DIRECTORY is set and already ends in "/borgmatic", then don't
-        tack on a second "/borgmatic" path component.
+        Given a configuration dict and the Borg ID for a repository, determine the borgmatic runtime
+        directory, creating a secure, temporary directory within it if necessary. Defaults to
+        $XDG_RUNTIME_DIR/[repository_id]/./borgmatic or $RUNTIME_DIRECTORY/[repository_id]/./borgmatic or
+        $TMPDIR/borgmatic-[random]/./borgmatic or $TEMP/borgmatic-[random]/./borgmatic or
+        /tmp/borgmatic-[random]/./borgmatic where "[random]" is a randomly generated string and
+        "[repository_id]" is the Borg repository ID. Both are intended to avoid path collisions, and
+        the random string helps avoid temporary file attacks.
 
         The "/./" is taking advantage of a Borg feature such that the part of the path before the "/./"
         does not get stored in the file path within an archive. That way, the path of the runtime
@@ -125,7 +143,8 @@ class Runtime_directory:
             if not runtime_directory.startswith(os.path.sep):
                 raise ValueError('The runtime directory must be an absolute path')
 
-            self.temporary_directory = None
+            runtime_directory = os.path.join(runtime_directory, f'borgmatic-{repository_id}')
+            self.temporary_directory = Fixed_name_temporary_directory(runtime_directory)
         else:
             base_directory = (
                 os.environ.get('TMPDIR') or os.environ.get('TEMP') or '/tmp'  # noqa: S108
@@ -141,11 +160,9 @@ class Runtime_directory:
             )
             runtime_directory = self.temporary_directory.name
 
-        (base_path, final_directory) = os.path.split(runtime_directory.rstrip(os.path.sep))
-
         self.runtime_path = expand_user_in_path(
             os.path.join(
-                base_path if final_directory == 'borgmatic' else runtime_directory,
+                runtime_directory,
                 '.',  # Borg 1.4+ "slashdot" hack.
                 'borgmatic',
             ),
@@ -162,14 +179,13 @@ class Runtime_directory:
 
     def __exit__(self, exception_type, exception, traceback):
         '''
-        Delete any temporary directory that was created as part of initialization.
+        Delete the temporary directory that was created as part of initialization.
         '''
-        if self.temporary_directory:
-            # The cleanup() call errors if, for instance, there's still a
-            # mounted filesystem within the temporary directory. There's
-            # nothing we can do about that here, so swallow the error.
-            with contextlib.suppress(OSError):
-                self.temporary_directory.cleanup()
+        # The cleanup() call errors if, for instance, there's still a
+        # mounted filesystem within the temporary directory. There's
+        # nothing we can do about that here, so swallow the error.
+        with contextlib.suppress(OSError):
+            self.temporary_directory.cleanup()
 
 
 def make_runtime_directory_glob(borgmatic_runtime_directory):

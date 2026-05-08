@@ -1,3 +1,5 @@
+import argparse
+import json
 import logging
 import shlex
 
@@ -81,3 +83,33 @@ def display_repository_info(
     )
 
     return None
+
+
+def get_repository_id(
+    repository_path,
+    config,
+    local_borg_version,
+    global_arguments,
+    local_path,
+    remote_path,
+):
+    '''
+    Given a local or remote repository path, a configuration dict, the local Borg version, global
+    arguments, and local/remote commands to run, return the corresponding Borg repository ID.
+
+    Raise ValueError if the Borg repository ID cannot be determined.
+    '''
+    try:
+        return json.loads(
+            display_repository_info(
+                repository_path,
+                config,
+                local_borg_version,
+                argparse.Namespace(json=True),
+                global_arguments,
+                local_path,
+                remote_path,
+            ),
+        )['repository']['id']
+    except (json.JSONDecodeError, KeyError):
+        raise ValueError(f'Cannot determine Borg repository ID for {repository_path}')

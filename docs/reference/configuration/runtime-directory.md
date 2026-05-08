@@ -29,11 +29,18 @@ probes the following values:
 You can see the runtime directory path that borgmatic selects by running with
 `--verbosity 2` and looking for `Using runtime directory` in the output.
 
-Regardless of the runtime directory selected, borgmatic stores its files
-within a `borgmatic` subdirectory of the runtime directory. Additionally, in
-the case of `TMPDIR`, `TEMP`, and the hard-coded `/tmp`, borgmatic creates a
-randomly named subdirectory in an effort to reduce path collisions in shared
-system temporary directories.
+Regardless of the runtime directory selected, borgmatic stores its files within
+a `borgmatic` subdirectory of the runtime directory. Additionally, in the case
+of `TMPDIR`, `TEMP`, and the hard-coded `/tmp`, borgmatic creates a randomly
+named subdirectory in an effort to reduce path collisions and temporary file
+attacks in shared system temporary directories.
+
+<span class="minilink minilink-addedin">New in version 2.1.6</span> When
+constructing the runtime directory, borgmatic now creates a subdirectory named
+after the Borg ID of the current repository. This means that borgmatic supports
+multiple borgmatic instances run [in
+parallel](https://torsion.org/borgmatic/how-to/make-per-application-backups/#parallelism)—as
+long as they're operating on different Borg repositories.
 
 <span class="minilink minilink-addedin">Prior to version 1.9.0</span>
 borgmatic created temporary streaming database dumps within the `~/.borgmatic`

@@ -1,4 +1,9 @@
 2.1.6.dev0
+ * #1267: Support multiple borgmatic instances run in parallel—as long as they're operating on
+   different Borg repositories. This required an internal change to the runtime directory path,
+   which may cause a one-time performance hit (Borg cache misses) for Borg 1.x users of database and
+   filesystem hooks. See the documentation for more information:
+   https://torsion.org/borgmatic/how-to/make-per-application-backups/#parallelism
  * #1300: Fix the "source_directories_must_exist" option to support source directories relative to a
    "working_directory".
  * #1301: Expand the "patterns_from" and "exclude_from" options to support paths containing tildes

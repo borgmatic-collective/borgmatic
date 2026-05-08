@@ -1,5 +1,6 @@
 import logging
 
+import pytest
 from flexmock import flexmock
 
 from borgmatic.borg import repo_info as module
@@ -612,3 +613,51 @@ def test_display_repository_info_calls_borg_with_working_directory():
         repo_info_arguments=flexmock(json=False),
         global_arguments=flexmock(),
     )
+
+
+def test_get_repository_id_with_valid_json_does_not_raise():
+    config = {}
+    flexmock(module).should_receive('display_repository_info').and_return(
+        '{"repository": {"id": "repo"}}',
+    )
+
+    assert module.get_repository_id(
+        repository_path='repo',
+        config=config,
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        local_path='borg',
+        remote_path=None,
+    )
+
+
+def test_get_repository_id_with_json_error_raises():
+    config = {}
+    flexmock(module).should_receive('display_repository_info').and_return(
+        '{"unexpected": {"id": "repo"}}',
+    )
+
+    with pytest.raises(ValueError):
+        module.get_repository_id(
+            repository_path='repo',
+            config=config,
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            local_path='borg',
+            remote_path=None,
+        )
+
+
+def test_get_repository_id_with_missing_json_keys_raises():
+    config = {}
+    flexmock(module).should_receive('display_repository_info').and_return('{invalid JSON')
+
+    with pytest.raises(ValueError):
+        module.get_repository_id(
+            repository_path='repo',
+            config=config,
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            local_path='borg',
+            remote_path=None,
+        )

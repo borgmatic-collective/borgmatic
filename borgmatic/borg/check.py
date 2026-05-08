@@ -1,10 +1,8 @@
-import argparse
-import json
 import logging
 import shlex
 
 import borgmatic.config.paths
-from borgmatic.borg import environment, feature, flags, repo_info
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -80,36 +78,6 @@ def make_check_name_flags(checks, archive_filter_flags):
         tuple(f'--{check}-only' for check in checks if check in {'repository', 'archives'})
         + common_flags
     )
-
-
-def get_repository_id(
-    repository_path,
-    config,
-    local_borg_version,
-    global_arguments,
-    local_path,
-    remote_path,
-):
-    '''
-    Given a local or remote repository path, a configuration dict, the local Borg version, global
-    arguments, and local/remote commands to run, return the corresponding Borg repository ID.
-
-    Raise ValueError if the Borg repository ID cannot be determined.
-    '''
-    try:
-        return json.loads(
-            repo_info.display_repository_info(
-                repository_path,
-                config,
-                local_borg_version,
-                argparse.Namespace(json=True),
-                global_arguments,
-                local_path,
-                remote_path,
-            ),
-        )['repository']['id']
-    except (json.JSONDecodeError, KeyError):
-        raise ValueError(f'Cannot determine Borg repository ID for {repository_path}')
 
 
 def check_archives(

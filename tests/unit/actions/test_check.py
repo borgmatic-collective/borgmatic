@@ -1838,7 +1838,9 @@ def test_spot_check_without_any_source_paths_errors():
 
 def test_run_check_checks_archives_for_configured_repository():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.borg.check).should_receive('get_repository_id').and_return(flexmock())
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return(
+        flexmock()
+    )
     flexmock(module).should_receive('upgrade_check_times')
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
@@ -1873,7 +1875,9 @@ def test_run_check_checks_archives_for_configured_repository():
 
 def test_run_check_runs_configured_extract_check():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.borg.check).should_receive('get_repository_id').and_return(flexmock())
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return(
+        flexmock()
+    )
     flexmock(module).should_receive('upgrade_check_times')
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
@@ -1906,7 +1910,9 @@ def test_run_check_runs_configured_extract_check():
 
 def test_run_check_runs_configured_spot_check():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.borg.check).should_receive('get_repository_id').and_return(flexmock())
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return(
+        flexmock()
+    )
     flexmock(module).should_receive('upgrade_check_times')
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
@@ -1942,7 +1948,9 @@ def test_run_check_runs_configured_spot_check():
 
 def test_run_check_without_checks_runs_nothing_except_hooks():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.borg.check).should_receive('get_repository_id').and_return(flexmock())
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return(
+        flexmock()
+    )
     flexmock(module).should_receive('upgrade_check_times')
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())

@@ -58,19 +58,25 @@ choice](https://torsion.org/borgmatic/how-to/set-up-backups/#autopilot), each
 entry using borgmatic's `--config` flag instead of relying on
 `/etc/borgmatic.d`.
 
+<a id="limitations"></a>
 
-## Limitations
+## Parallelism
 
-borgmatic does not currently support its own parallelism—being run multiple
-times on the same machine simultaneously. In particular, many of the [data
-source
-hooks](https://torsion.org/borgmatic/reference/configuration/data-sources/) rely
-on global borgmatic runtime files which can't be shared across processes, and
-therefore multiple borgmatic instances on the same machine would interfere with
-each other.
+<span class="minilink minilink-addedin">New in version 2.1.6</span> borgmatic
+supports multiple borgmatic instances run on the same machine in parallel—as
+long as they're operating on different Borg repositories.
 
-A single borgmatic instance also doesn't currently support running multiple Borg
-instances in parallel on the same machine.
+However, note that a single borgmatic instance doesn't currently support running
+multiple Borg instances in parallel on the same machine.
+
+
+<span class="minilink minilink-addedin">Prior to version 2.1.6</span> borgmatic
+did not support parallel borgmatic runs on the same machine simultaneously. In
+particular, many of the [data source
+hooks](https://torsion.org/borgmatic/reference/configuration/data-sources/)
+relied on global borgmatic runtime files which couldn't be shared across
+processes, and therefore multiple borgmatic instances on the same machine
+interfered with each other.
 
 
 <a id="archive-naming"></a>

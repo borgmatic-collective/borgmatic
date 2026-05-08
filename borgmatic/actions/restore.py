@@ -537,7 +537,7 @@ def run_restore(
     logger.info(f'Restoring data sources from archive {restore_arguments.archive}')
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
+    with borgmatic.config.paths.Runtime_directory(config, repository['id']) as borgmatic_runtime_directory:
         patterns = borgmatic.actions.pattern.process_patterns(
             borgmatic.actions.pattern.collect_patterns(config, working_directory),
             config,
