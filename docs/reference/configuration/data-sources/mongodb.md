@@ -14,10 +14,15 @@ mongodb_databases:
 ```
 
 
-### Full configuration
+## Full configuration
 
 {% include snippet/configuration/sample.md %}
 
 ```yaml
 {% include borgmatic/mongodb_databases.yaml %}
 ```
+
+
+## Related documentation
+
+ * [How to backup your databases](https://torsion.org/borgmatic/how-to/backup-your-databases/)

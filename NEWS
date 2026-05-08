@@ -3,6 +3,11 @@
    "working_directory".
  * #1301: Expand the "patterns_from" and "exclude_from" options to support paths containing tildes
    and globs.
+ * #1303: For the MariaDB and MySQL database hooks, include events, routines, and tablespaces when
+   dumping a database.
+ * #1303: For the MariaDB hook, include only a subset of system data when dumping the "mysql" system
+   database (or "all" databases), so the dump is actually restorable. See the documentation for more
+   information: https://torsion.org/borgmatic/reference/configuration/data-sources/mariadb/
  * Update the KeePassXC credential hook to support KeePassXC's secret service integration. See the
    documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/credentials/keepassxc/

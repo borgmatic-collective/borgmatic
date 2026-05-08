@@ -76,3 +76,8 @@ roles](https://www.postgresql.org/docs/current/predefined-roles.html) and
 ```yaml
 {% include borgmatic/postgresql_databases.yaml %}
 ```
+
+
+## Related documentation
+
+ * [How to backup your databases](https://torsion.org/borgmatic/how-to/backup-your-databases/)

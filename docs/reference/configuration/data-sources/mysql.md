@@ -21,3 +21,8 @@ mysql_databases:
 ```yaml
 {% include borgmatic/mysql_databases.yaml %}
 ```
+
+
+## Related documentation
+
+ * [How to backup your databases](https://torsion.org/borgmatic/how-to/backup-your-databases/)

@@ -22,3 +22,8 @@ sqlite_databases:
 ```yaml
 {% include borgmatic/sqlite_databases.yaml %}
 ```
+
+
+## Related documentation
+
+ * [How to backup your databases](https://torsion.org/borgmatic/how-to/backup-your-databases/)

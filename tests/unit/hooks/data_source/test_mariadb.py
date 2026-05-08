@@ -218,7 +218,7 @@ def test_database_names_to_dump_queries_mariadb_for_database_names():
         ),
         environment=environment,
         working_directory='/path/to/working/dir',
-    ).and_yield('foo', 'bar', 'mysql').once()
+    ).and_yield('foo', 'bar').once()
 
     names = module.database_names_to_dump(
         {'name': 'all'},
@@ -256,7 +256,7 @@ def test_database_names_to_dump_with_database_name_all_and_skip_names_filters_ou
         ),
         environment=environment,
         working_directory=None,
-    ).and_yield('foo', 'bar', 'baz', 'mysql').once()
+    ).and_yield('foo', 'bar', 'baz').once()
 
     names = module.database_names_to_dump(
         {'name': 'all', 'skip_names': ('foo', 'bar')},
@@ -296,7 +296,7 @@ def test_database_names_to_dump_runs_mariadb_with_socket_path():
         ),
         environment=environment,
         working_directory=None,
-    ).and_yield('foo', 'bar', 'mysql').once()
+    ).and_yield('foo', 'bar').once()
 
     names = module.database_names_to_dump(
         {'name': 'all', 'socket_path': '/socket'},
@@ -331,7 +331,7 @@ def test_database_names_to_dump_with_environment_password_transport_skips_defaul
         ),
         environment=environment,
         working_directory=None,
-    ).and_yield('foo', 'bar', 'mysql').once()
+    ).and_yield('foo', 'bar').once()
 
     names = module.database_names_to_dump(
         {'name': 'all', 'password_transport': 'environment'},
@@ -370,7 +370,7 @@ def test_database_names_to_dump_runs_mariadb_with_tls():
         ),
         environment=environment,
         working_directory=None,
-    ).and_yield('foo', 'bar', 'mysql').once()
+    ).and_yield('foo', 'bar').once()
 
     names = module.database_names_to_dump(
         {'name': 'all', 'tls': True},
@@ -409,7 +409,7 @@ def test_database_names_to_dump_runs_mariadb_without_tls():
         ),
         environment=environment,
         working_directory=None,
-    ).and_yield('foo', 'bar', 'mysql').once()
+    ).and_yield('foo', 'bar').once()
 
     names = module.database_names_to_dump(
         {'name': 'all', 'tls': False},
@@ -856,6 +856,9 @@ def test_execute_dump_command_runs_mariadb_dump():
             '--add-drop-database',
             '--single-transaction',
             '--databases',
+            '--events',
+            '--routines',
+            '--all-tablespaces',
             'foo',
             '--result-file',
             'dump',
@@ -873,6 +876,58 @@ def test_execute_dump_command_runs_mariadb_dump():
             password='trustsome1',
             dump_path=flexmock(),
             database_names=('foo',),
+            environment=None,
+            dry_run=False,
+            dry_run_label='',
+        )
+        == process
+    )
+
+
+def test_execute_dump_command_substitutes_system_flag_for_system_database_name():
+    process = flexmock()
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive('parse_extra_options').and_return((), None)
+    flexmock(module.database_config).should_receive('resolve_database_option').and_return(None)
+    flexmock(module).should_receive('make_defaults_file_options').with_args(
+        'root',
+        'trustsome1',
+        None,
+    ).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'mariadb-dump',
+            '--defaults-extra-file=/dev/fd/99',
+            '--add-drop-database',
+            '--single-transaction',
+            '--databases',
+            '--events',
+            '--routines',
+            '--all-tablespaces',
+            '--system=users,udfs,servers',
+            '--result-file',
+            'dump',
+        ),
+        environment=None,
+        run_to_completion=False,
+        working_directory=None,
+    ).and_return(process).once()
+
+    assert (
+        module.execute_dump_command(
+            database={'name': 'mysql'},
+            config={},
+            username='root',
+            password='trustsome1',
+            dump_path=flexmock(),
+            database_names=('mysql',),
             environment=None,
             dry_run=False,
             dry_run_label='',
@@ -902,6 +957,9 @@ def test_execute_dump_command_with_environment_password_transport_skips_defaults
             '--user',
             'root',
             '--databases',
+            '--events',
+            '--routines',
+            '--all-tablespaces',
             'foo',
             '--result-file',
             'dump',
@@ -950,6 +1008,9 @@ def test_execute_dump_command_runs_mariadb_dump_without_add_drop_database():
             '--defaults-extra-file=/dev/fd/99',
             '--single-transaction',
             '--databases',
+            '--events',
+            '--routines',
+            '--all-tablespaces',
             'foo',
             '--result-file',
             'dump',
@@ -1007,6 +1068,9 @@ def test_execute_dump_command_runs_mariadb_dump_with_hostname_and_port():
             '--protocol',
             'tcp',
             '--databases',
+            '--events',
+            '--routines',
+            '--all-tablespaces',
             'foo',
             '--result-file',
             'dump',
@@ -1057,6 +1121,9 @@ def test_execute_dump_command_runs_mariadb_dump_with_tls():
             '--single-transaction',
             '--ssl',
             '--databases',
+            '--events',
+            '--routines',
+            '--all-tablespaces',
             'foo',
             '--result-file',
             'dump',
@@ -1107,6 +1174,9 @@ def test_execute_dump_command_runs_mariadb_dump_without_tls():
             '--single-transaction',
             '--skip-ssl',
             '--databases',
+            '--events',
+            '--routines',
+            '--all-tablespaces',
             'foo',
             '--result-file',
             'dump',
@@ -1156,6 +1226,9 @@ def test_execute_dump_command_runs_mariadb_dump_with_username_and_password():
             '--add-drop-database',
             '--single-transaction',
             '--databases',
+            '--events',
+            '--routines',
+            '--all-tablespaces',
             'foo',
             '--result-file',
             'dump',
@@ -1206,6 +1279,9 @@ def test_execute_dump_command_runs_mariadb_dump_with_options():
             '--add-drop-database',
             '--single-transaction',
             '--databases',
+            '--events',
+            '--routines',
+            '--all-tablespaces',
             'foo',
             '--result-file',
             'dump',
@@ -1256,6 +1332,9 @@ def test_execute_dump_command_runs_non_default_mariadb_dump_with_options():
             '--add-drop-database',
             '--single-transaction',
             '--databases',
+            '--events',
+            '--routines',
+            '--all-tablespaces',
             'foo',
             '--result-file',
             'dump',

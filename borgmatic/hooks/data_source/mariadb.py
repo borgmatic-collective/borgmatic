@@ -1,4 +1,3 @@
-import copy
 import logging
 import os
 import re
@@ -108,6 +107,10 @@ def make_defaults_file_options(username=None, password=None, defaults_extra_file
     return (f'--defaults-extra-file=/dev/fd/{read_file_descriptor}',)
 
 
+EXCLUDED_SYSTEM_DATABASE_NAMES = ('information_schema', 'performance_schema', 'sys')
+SYSTEM_DATABASE_NAME = 'mysql'
+
+
 def database_names_to_dump(database, config, username, password, environment, dry_run):
     '''
     Given a requested database config, a configuration dict, a database username and password, an
@@ -166,15 +169,16 @@ def database_names_to_dump(database, config, username, password, environment, dr
         working_directory=borgmatic.config.paths.get_working_directory(config),
     )
 
+    # Dumping system databases directly doesn't work; too much gets dumped (including virtual tables
+    # that MariaDB recreates on startup) and so the dump isn't restorable. Therefore several system
+    # databases are excluded here. But also see below where select system tables from the "mysql"
+    # system table are dumped via the "--system" flag.
     return tuple(
         show_name.strip()
         for show_name in show_lines
-        if show_name not in SYSTEM_DATABASE_NAMES
+        if show_name not in EXCLUDED_SYSTEM_DATABASE_NAMES
         if not skip_names or show_name not in skip_names
     )
-
-
-SYSTEM_DATABASE_NAMES = ('information_schema', 'mysql', 'performance_schema', 'sys')
 
 
 def execute_dump_command(
@@ -237,8 +241,9 @@ def execute_dump_command(
         + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if database.get('tls') is True else ())
         + (('--skip-ssl',) if database.get('tls') is False else ())
-        + ('--databases',)
-        + database_names
+        + ('--databases', '--events', '--routines', '--all-tablespaces')
+        + (('--system=users,udfs,servers',) if SYSTEM_DATABASE_NAME in database_names else ())
+        + tuple(name for name in database_names if name != SYSTEM_DATABASE_NAME)
         + ('--result-file', dump_filename)
     )
 
@@ -325,6 +330,7 @@ def dump_data_sources(
 
             raise ValueError('Cannot find any MariaDB databases to dump.')
 
+        # Database dumps to individual files.
         if database['name'] == 'all' and database.get('format'):
             for database_name in dump_database_names:
                 dumps_metadata.append(
@@ -337,8 +343,7 @@ def dump_data_sources(
                         database.get('container'),
                     )
                 )
-                renamed_database = copy.copy(database)
-                renamed_database['name'] = database_name
+                renamed_database = dict(database, name=database_name)
                 processes.append(
                     execute_dump_command(
                         renamed_database,
@@ -352,6 +357,7 @@ def dump_data_sources(
                         dry_run_label,
                     ),
                 )
+        # Database dumps all to one file.
         else:
             dumps_metadata.append(
                 borgmatic.actions.restore.Dump(

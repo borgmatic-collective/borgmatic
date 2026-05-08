@@ -1,4 +1,3 @@
-import copy
 import logging
 import os
 import shlex
@@ -166,7 +165,7 @@ def execute_dump_command(
         + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if database.get('tls') is True else ())
         + (('--skip-ssl',) if database.get('tls') is False else ())
-        + ('--databases',)
+        + ('--databases', '--events', '--routines', '--all-tablespaces')
         + database_names
         + ('--result-file', dump_filename)
     )
@@ -266,8 +265,7 @@ def dump_data_sources(
                         database.get('container'),
                     )
                 )
-                renamed_database = copy.copy(database)
-                renamed_database['name'] = database_name
+                renamed_database = dict(database, name=database_name)
                 processes.append(
                     execute_dump_command(
                         renamed_database,
