@@ -3,6 +3,7 @@ import logging
 import os
 
 import borgmatic.borg.extract
+import borgmatic.borg.repo_info
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
 
@@ -118,7 +119,9 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
         remote_path=bootstrap_arguments.remote_path,
     )
 
-    with borgmatic.config.paths.Runtime_directory(config, repository_id) as borgmatic_runtime_directory:
+    with borgmatic.config.paths.Runtime_directory(
+        config, repository_id
+    ) as borgmatic_runtime_directory:
         manifest_config_paths = load_config_paths_from_archive(
             bootstrap_arguments.repository,
             archive_name,

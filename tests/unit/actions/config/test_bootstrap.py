@@ -171,6 +171,7 @@ def test_run_bootstrap_does_not_raise():
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'archive',
     )
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('repo')
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
@@ -222,6 +223,7 @@ def test_run_bootstrap_translates_ssh_command_argument_to_config():
         local_path='borg7',
         remote_path='borg8',
     ).and_return('archive')
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('repo')
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )

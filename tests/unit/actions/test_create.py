@@ -34,7 +34,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
     list(
         module.run_create(
             config_filename='test.yaml',
-            repository={'path': 'repo'},
+            repository={'path': 'repo', 'id': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
             local_borg_version=None,
@@ -65,7 +65,7 @@ def test_run_create_with_both_list_and_json_errors():
         list(
             module.run_create(
                 config_filename='test.yaml',
-                repository={'path': 'repo'},
+                repository={'path': 'repo', 'id': 'repo'},
                 config={'list_details': True},
                 config_paths=['/tmp/test.yaml'],
                 local_borg_version=None,
@@ -96,7 +96,7 @@ def test_run_create_with_both_list_and_progress_errors():
         list(
             module.run_create(
                 config_filename='test.yaml',
-                repository={'path': 'repo'},
+                repository={'path': 'repo', 'id': 'repo'},
                 config={'list_details': True, 'progress': True},
                 config_paths=['/tmp/test.yaml'],
                 local_borg_version=None,
@@ -138,7 +138,7 @@ def test_run_create_produces_json():
     assert list(
         module.run_create(
             config_filename='test.yaml',
-            repository={'path': 'repo'},
+            repository={'path': 'repo', 'id': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
             local_borg_version=None,
@@ -194,7 +194,7 @@ def test_run_create_with_active_dumps_roundtrips_via_checkpoint_archive():
     list(
         module.run_create(
             config_filename='test.yaml',
-            repository={'path': 'repo'},
+            repository={'path': 'repo', 'id': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
             local_borg_version=None,
@@ -277,7 +277,7 @@ def test_run_create_with_active_dumps_json_updates_archive_info():
     assert list(
         module.run_create(
             config_filename='test.yaml',
-            repository={'path': 'repo'},
+            repository={'path': 'repo', 'id': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
             local_borg_version=None,
@@ -360,7 +360,7 @@ def test_run_create_with_active_dumps_removes_data_source_dumps_with_original_pa
     list(
         module.run_create(
             config_filename='test.yaml',
-            repository={'path': 'repo'},
+            repository={'path': 'repo', 'id': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
             local_borg_version=None,

@@ -62,8 +62,16 @@ def test_replace_temporary_subdirectory_with_glob_uses_custom_temporary_director
     )
 
 
+def test_fixed_name_temporary_directory_cleanup_does_not_raise():
+    flexmock(module.shutil).should_receive('rmtree')
+
+    module.Fixed_name_temporary_directory('/path').cleanup()
+
+
 def test_runtime_directory_uses_config_option():
-    flexmock(module).should_receive('Fixed_name_temporary_directory').and_return(flexmock(cleanup=lambda: None))
+    flexmock(module).should_receive('Fixed_name_temporary_directory').and_return(
+        flexmock(cleanup=lambda: None)
+    )
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     flexmock(module.os).should_receive('makedirs')
     config = {'user_runtime_directory': '/run', 'borgmatic_source_directory': '/nope'}
@@ -81,7 +89,9 @@ def test_runtime_directory_with_relative_config_option_errors():
 
 
 def test_runtime_directory_falls_back_to_xdg_runtime_dir(monkeypatch):
-    flexmock(module).should_receive('Fixed_name_temporary_directory').and_return(flexmock(cleanup=lambda: None))
+    flexmock(module).should_receive('Fixed_name_temporary_directory').and_return(
+        flexmock(cleanup=lambda: None)
+    )
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     monkeypatch.setenv('XDG_RUNTIME_DIR', '/run')
     flexmock(module.os).should_receive('makedirs')
@@ -99,7 +109,9 @@ def test_runtime_directory_with_relative_xdg_runtime_dir_errors(monkeypatch):
 
 
 def test_runtime_directory_falls_back_to_runtime_directory(monkeypatch):
-    flexmock(module).should_receive('Fixed_name_temporary_directory').and_return(flexmock(cleanup=lambda: None))
+    flexmock(module).should_receive('Fixed_name_temporary_directory').and_return(
+        flexmock(cleanup=lambda: None)
+    )
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(
@@ -126,7 +138,9 @@ def test_runtime_directory_with_relative_runtime_directory_errors(monkeypatch):
         pass
 
 
-def test_runtime_directory_falls_back_to_tmpdir_and_adds_temporary_subdirectory_that_get_cleaned_up(monkeypatch):
+def test_runtime_directory_falls_back_to_tmpdir_and_adds_temporary_subdirectory_that_get_cleaned_up(
+    monkeypatch,
+):
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(
@@ -162,7 +176,9 @@ def test_runtime_directory_with_relative_tmpdir_errors(monkeypatch):
         pass
 
 
-def test_runtime_directory_falls_back_to_temp_and_adds_temporary_subdirectory_that_get_cleaned_up(monkeypatch):
+def test_runtime_directory_falls_back_to_temp_and_adds_temporary_subdirectory_that_get_cleaned_up(
+    monkeypatch,
+):
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(
@@ -200,7 +216,9 @@ def test_runtime_directory_with_relative_temp_errors(monkeypatch):
         pass
 
 
-def test_runtime_directory_falls_back_to_hard_coded_tmp_path_and_adds_temporary_subdirectory_that_get_cleaned_up(monkeypatch):
+def test_runtime_directory_falls_back_to_hard_coded_tmp_path_and_adds_temporary_subdirectory_that_get_cleaned_up(
+    monkeypatch,
+):
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(

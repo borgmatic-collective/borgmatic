@@ -1222,7 +1222,7 @@ def test_run_restore_restores_each_data_source():
     flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
-        repository={'path': 'repo'},
+        repository={'path': 'repo', 'id': 'repo'},
         config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(
@@ -1283,7 +1283,7 @@ def test_run_restore_restores_data_source_by_falling_back_to_all_name():
     flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
-        repository={'path': 'repo'},
+        repository={'path': 'repo', 'id': 'repo'},
         config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(
@@ -1367,7 +1367,7 @@ def test_run_restore_restores_data_source_configured_with_all_name():
     flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
-        repository={'path': 'repo'},
+        repository={'path': 'repo', 'id': 'repo'},
         config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(
@@ -1451,7 +1451,7 @@ def test_run_restore_skips_missing_data_source():
     flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
-        repository={'path': 'repo'},
+        repository={'path': 'repo', 'id': 'repo'},
         config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(
@@ -1531,7 +1531,7 @@ def test_run_restore_restores_data_sources_from_different_hooks():
     flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
-        repository={'path': 'repo'},
+        repository={'path': 'repo', 'id': 'repo'},
         config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(

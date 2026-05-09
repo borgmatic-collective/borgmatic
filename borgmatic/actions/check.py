@@ -20,7 +20,6 @@ import borgmatic.borg.environment
 import borgmatic.borg.extract
 import borgmatic.borg.list
 import borgmatic.borg.pattern
-import borgmatic.borg.repo_info
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
 import borgmatic.execute
@@ -820,7 +819,9 @@ def run_check(
             remote_path=remote_path,
         )
         for check in borg_specific_checks:
-            write_check_time(make_check_time_path(config, repository['id'], check, archives_check_id))
+            write_check_time(
+                make_check_time_path(config, repository['id'], check, archives_check_id)
+            )
 
     if 'extract' in checks:
         logger.info('Running extract check')
@@ -837,7 +838,9 @@ def run_check(
 
     if 'spot' in checks:
         logger.info('Running spot check')
-        with borgmatic.config.paths.Runtime_directory(config, repository['id']) as borgmatic_runtime_directory:
+        with borgmatic.config.paths.Runtime_directory(
+            config, repository['id']
+        ) as borgmatic_runtime_directory:
             spot_check(
                 repository,
                 config,

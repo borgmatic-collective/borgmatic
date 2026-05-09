@@ -1,8 +1,8 @@
 import contextlib
 import logging
 import os
-import tempfile
 import shutil
+import tempfile
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -90,6 +90,7 @@ class Fixed_name_temporary_directory:
     A class whose instances can stand-in for tempfile.TemporaryDirectory's, except the temporary
     filename path is fixed rather than randomly generated.
     '''
+
     def __init__(self, path):
         '''
         Given a temporary directory path, save it off for later.
@@ -100,7 +101,7 @@ class Fixed_name_temporary_directory:
         '''
         Remove the temporary directory path.
         '''
-        shutil.rmtree(self.name)
+        shutil.rmtree(self.name, ignore_errors=True)
 
 
 class Runtime_directory:
