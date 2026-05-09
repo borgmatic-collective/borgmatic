@@ -1838,6 +1838,7 @@ def test_spot_check_without_any_source_paths_errors():
 
 def test_run_check_checks_archives_for_configured_repository():
     flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module).should_receive('upgrade_check_times')
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
@@ -1860,7 +1861,7 @@ def test_run_check_checks_archives_for_configured_repository():
 
     module.run_check(
         config_filename='test.yaml',
-        repository={'path': 'repo', 'id': 'repo'},
+        repository={'path': 'repo'},
         config={'repositories': ['repo']},
         local_borg_version=None,
         check_arguments=check_arguments,
@@ -1872,6 +1873,7 @@ def test_run_check_checks_archives_for_configured_repository():
 
 def test_run_check_runs_configured_extract_check():
     flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module).should_receive('upgrade_check_times')
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
@@ -1892,7 +1894,7 @@ def test_run_check_runs_configured_extract_check():
 
     module.run_check(
         config_filename='test.yaml',
-        repository={'path': 'repo', 'id': 'repo'},
+        repository={'path': 'repo'},
         config={'repositories': ['repo']},
         local_borg_version=None,
         check_arguments=check_arguments,
@@ -1904,6 +1906,7 @@ def test_run_check_runs_configured_extract_check():
 
 def test_run_check_runs_configured_spot_check():
     flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module).should_receive('upgrade_check_times')
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
@@ -1927,7 +1930,7 @@ def test_run_check_runs_configured_spot_check():
 
     module.run_check(
         config_filename='test.yaml',
-        repository={'path': 'repo', 'id': 'repo'},
+        repository={'path': 'repo'},
         config={'repositories': ['repo']},
         local_borg_version=None,
         check_arguments=check_arguments,
@@ -1939,6 +1942,7 @@ def test_run_check_runs_configured_spot_check():
 
 def test_run_check_without_checks_runs_nothing_except_hooks():
     flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module).should_receive('upgrade_check_times')
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
@@ -1959,7 +1963,7 @@ def test_run_check_without_checks_runs_nothing_except_hooks():
 
     module.run_check(
         config_filename='test.yaml',
-        repository={'path': 'repo', 'id': 'repo'},
+        repository={'path': 'repo'},
         config={'repositories': ['repo']},
         local_borg_version=None,
         check_arguments=check_arguments,

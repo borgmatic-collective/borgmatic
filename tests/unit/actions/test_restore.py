@@ -1175,6 +1175,7 @@ def test_run_restore_restores_each_data_source():
     }
 
     borgmatic_runtime_directory = flexmock()
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         borgmatic_runtime_directory,
     )
@@ -1222,7 +1223,7 @@ def test_run_restore_restores_each_data_source():
     flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
-        repository={'path': 'repo', 'id': 'repo'},
+        repository={'path': 'repo'},
         config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(
@@ -1249,6 +1250,7 @@ def test_run_restore_restores_data_source_by_falling_back_to_all_name():
     }
 
     borgmatic_runtime_directory = flexmock()
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         borgmatic_runtime_directory,
     )
@@ -1283,7 +1285,7 @@ def test_run_restore_restores_data_source_by_falling_back_to_all_name():
     flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
-        repository={'path': 'repo', 'id': 'repo'},
+        repository={'path': 'repo'},
         config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(
@@ -1311,6 +1313,7 @@ def test_run_restore_restores_data_source_configured_with_all_name():
     }
 
     borgmatic_runtime_directory = flexmock()
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         borgmatic_runtime_directory,
     )
@@ -1367,7 +1370,7 @@ def test_run_restore_restores_data_source_configured_with_all_name():
     flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
-        repository={'path': 'repo', 'id': 'repo'},
+        repository={'path': 'repo'},
         config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(
@@ -1395,6 +1398,7 @@ def test_run_restore_skips_missing_data_source():
     }
 
     borgmatic_runtime_directory = flexmock()
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         borgmatic_runtime_directory,
     )
@@ -1451,7 +1455,7 @@ def test_run_restore_skips_missing_data_source():
     flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
-        repository={'path': 'repo', 'id': 'repo'},
+        repository={'path': 'repo'},
         config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(
@@ -1479,6 +1483,7 @@ def test_run_restore_restores_data_sources_from_different_hooks():
     }
 
     borgmatic_runtime_directory = flexmock()
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         borgmatic_runtime_directory,
     )
@@ -1531,7 +1536,7 @@ def test_run_restore_restores_data_sources_from_different_hooks():
     flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
-        repository={'path': 'repo', 'id': 'repo'},
+        repository={'path': 'repo'},
         config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(

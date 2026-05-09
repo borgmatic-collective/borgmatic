@@ -11,6 +11,7 @@ from borgmatic.actions import create as module
 
 def test_run_create_executes_and_calls_hooks_for_configured_repository():
     flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
@@ -34,7 +35,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
     list(
         module.run_create(
             config_filename='test.yaml',
-            repository={'path': 'repo', 'id': 'repo'},
+            repository={'path': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
             local_borg_version=None,
@@ -49,6 +50,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
 
 def test_run_create_with_both_list_and_json_errors():
     flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').never()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').never()
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').never()
     create_arguments = flexmock(
@@ -65,7 +67,7 @@ def test_run_create_with_both_list_and_json_errors():
         list(
             module.run_create(
                 config_filename='test.yaml',
-                repository={'path': 'repo', 'id': 'repo'},
+                repository={'path': 'repo'},
                 config={'list_details': True},
                 config_paths=['/tmp/test.yaml'],
                 local_borg_version=None,
@@ -80,6 +82,7 @@ def test_run_create_with_both_list_and_json_errors():
 
 def test_run_create_with_both_list_and_progress_errors():
     flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').never()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').never()
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').never()
     create_arguments = flexmock(
@@ -96,7 +99,7 @@ def test_run_create_with_both_list_and_progress_errors():
         list(
             module.run_create(
                 config_filename='test.yaml',
-                repository={'path': 'repo', 'id': 'repo'},
+                repository={'path': 'repo'},
                 config={'list_details': True, 'progress': True},
                 config_paths=['/tmp/test.yaml'],
                 local_borg_version=None,
@@ -111,6 +114,7 @@ def test_run_create_with_both_list_and_progress_errors():
 
 def test_run_create_produces_json():
     flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
@@ -138,7 +142,7 @@ def test_run_create_produces_json():
     assert list(
         module.run_create(
             config_filename='test.yaml',
-            repository={'path': 'repo', 'id': 'repo'},
+            repository={'path': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
             local_borg_version=None,
@@ -156,6 +160,7 @@ def test_run_create_with_active_dumps_roundtrips_via_checkpoint_archive():
     mock_dump_process.should_receive('poll').and_return(None).and_return(0)
 
     flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
@@ -194,7 +199,7 @@ def test_run_create_with_active_dumps_roundtrips_via_checkpoint_archive():
     list(
         module.run_create(
             config_filename='test.yaml',
-            repository={'path': 'repo', 'id': 'repo'},
+            repository={'path': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
             local_borg_version=None,
@@ -234,6 +239,7 @@ def test_run_create_with_active_dumps_json_updates_archive_info():
     }
 
     flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
@@ -277,7 +283,7 @@ def test_run_create_with_active_dumps_json_updates_archive_info():
     assert list(
         module.run_create(
             config_filename='test.yaml',
-            repository={'path': 'repo', 'id': 'repo'},
+            repository={'path': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
             local_borg_version=None,
@@ -316,6 +322,7 @@ def mock_dump_cleanup(config, borgmatic_runtime_directory, patterns, dry_run):
 
 def test_run_create_with_active_dumps_removes_data_source_dumps_with_original_patterns():
     flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.borg.repo_info).should_receive('get_repository_id').and_return('id')
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
@@ -360,7 +367,7 @@ def test_run_create_with_active_dumps_removes_data_source_dumps_with_original_pa
     list(
         module.run_create(
             config_filename='test.yaml',
-            repository={'path': 'repo', 'id': 'repo'},
+            repository={'path': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
             local_borg_version=None,

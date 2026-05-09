@@ -42,9 +42,17 @@ def run_create(
 
     logger.info(f'Creating archive{dry_run_label}')
     working_directory = borgmatic.config.paths.get_working_directory(config)
+    repository_id = borgmatic.borg.repo_info.get_repository_id(
+        repository['path'],
+        config,
+        local_borg_version,
+        global_arguments,
+        local_path=local_path,
+        remote_path=remote_path,
+    )
 
     with borgmatic.config.paths.Runtime_directory(
-        config, repository['id']
+        config, repository_id
     ) as borgmatic_runtime_directory:
         patterns = pattern.process_patterns(
             pattern.collect_patterns(config, working_directory),

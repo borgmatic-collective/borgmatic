@@ -788,7 +788,15 @@ def run_check(
     '''
     logger.info('Running consistency checks')
 
-    upgrade_check_times(config, repository['id'])
+    repository_id = borgmatic.borg.repo_info.get_repository_id(
+        repository['path'],
+        config,
+        local_borg_version,
+        global_arguments,
+        local_path=local_path,
+        remote_path=remote_path,
+    )
+    upgrade_check_times(config, repository_id)
     configured_checks = parse_checks(config, check_arguments.only_checks)
     archive_filter_flags = borgmatic.borg.check.make_archive_filter_flags(
         local_borg_version,
@@ -799,7 +807,7 @@ def run_check(
     archives_check_id = make_archives_check_id(archive_filter_flags)
     checks = filter_checks_on_frequency(
         config,
-        repository['id'],
+        repository_id,
         configured_checks,
         check_arguments.force,
         archives_check_id,
@@ -819,9 +827,7 @@ def run_check(
             remote_path=remote_path,
         )
         for check in borg_specific_checks:
-            write_check_time(
-                make_check_time_path(config, repository['id'], check, archives_check_id)
-            )
+            write_check_time(make_check_time_path(config, repository_id, check, archives_check_id))
 
     if 'extract' in checks:
         logger.info('Running extract check')
@@ -834,12 +840,12 @@ def run_check(
             local_path,
             remote_path,
         )
-        write_check_time(make_check_time_path(config, repository['id'], 'extract'))
+        write_check_time(make_check_time_path(config, repository_id, 'extract'))
 
     if 'spot' in checks:
         logger.info('Running spot check')
         with borgmatic.config.paths.Runtime_directory(
-            config, repository['id']
+            config, repository_id
         ) as borgmatic_runtime_directory:
             spot_check(
                 repository,
@@ -851,4 +857,4 @@ def run_check(
                 borgmatic_runtime_directory,
             )
 
-        write_check_time(make_check_time_path(config, repository['id'], 'spot'))
+        write_check_time(make_check_time_path(config, repository_id, 'spot'))
