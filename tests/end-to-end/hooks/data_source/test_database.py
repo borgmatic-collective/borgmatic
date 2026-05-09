@@ -57,11 +57,15 @@ mariadb_databases:
       hostname: mariadb
       username: root
       password: test
+      # Needed for restoring users to the system database, because we're not actually dropping
+      # users first. (Dropping root and mariadb.sys would cause problems.)
+      restore_options: --force
     - name: all
       {mariadb_mysql_dump_format_option}
       hostname: mariadb
       username: root
       password: test
+      restore_options: --force
 mysql_databases:
     - name: test
       hostname: not-actually-mysql
@@ -132,6 +136,7 @@ mariadb_databases:
       restore_port: 3307
       restore_username: root
       restore_password: test2
+      restore_options: --force
 mysql_databases:
     - name: test
       container: not-actually-mysql
@@ -201,6 +206,7 @@ mariadb_databases:
       restore_port: 3307
       restore_username: root
       restore_password: test2
+      restore_options: --force
 mysql_databases:
     - name: test
       hostname: not-actually-mysql
