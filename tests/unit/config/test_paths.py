@@ -63,64 +63,45 @@ def test_replace_temporary_subdirectory_with_glob_uses_custom_temporary_director
 
 
 def test_runtime_directory_uses_config_option():
+    flexmock(module).should_receive('Fixed_name_temporary_directory').and_return(flexmock(cleanup=lambda: None))
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     flexmock(module.os).should_receive('makedirs')
     config = {'user_runtime_directory': '/run', 'borgmatic_source_directory': '/nope'}
 
-    with module.Runtime_directory(config) as borgmatic_runtime_directory:
-        assert borgmatic_runtime_directory == '/run/./borgmatic'
-
-
-def test_runtime_directory_uses_config_option_without_adding_duplicate_borgmatic_subdirectory():
-    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os).should_receive('makedirs')
-    config = {'user_runtime_directory': '/run/borgmatic', 'borgmatic_source_directory': '/nope'}
-
-    with module.Runtime_directory(config) as borgmatic_runtime_directory:
-        assert borgmatic_runtime_directory == '/run/./borgmatic'
+    with module.Runtime_directory(config, repository_id='id') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/run/borgmatic-id/./borgmatic'
 
 
 def test_runtime_directory_with_relative_config_option_errors():
     flexmock(module.os).should_receive('makedirs').never()
     config = {'user_runtime_directory': 'run', 'borgmatic_source_directory': '/nope'}
 
-    with pytest.raises(ValueError), module.Runtime_directory(config):
+    with pytest.raises(ValueError), module.Runtime_directory(config, repository_id='id'):
         pass
 
 
-def test_runtime_directory_falls_back_to_xdg_runtime_dir():
+def test_runtime_directory_falls_back_to_xdg_runtime_dir(monkeypatch):
+    flexmock(module).should_receive('Fixed_name_temporary_directory').and_return(flexmock(cleanup=lambda: None))
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(
-        '/run',
-    )
+    monkeypatch.setenv('XDG_RUNTIME_DIR', '/run')
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
-        assert borgmatic_runtime_directory == '/run/./borgmatic'
+    with module.Runtime_directory({}, repository_id='id') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/run/borgmatic-id/./borgmatic'
 
 
-def test_runtime_directory_falls_back_to_xdg_runtime_dir_without_adding_duplicate_borgmatic_subdirectory():
-    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(
-        '/run/borgmatic',
-    )
-    flexmock(module.os).should_receive('makedirs')
-
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
-        assert borgmatic_runtime_directory == '/run/./borgmatic'
-
-
-def test_runtime_directory_with_relative_xdg_runtime_dir_errors():
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return('run')
+def test_runtime_directory_with_relative_xdg_runtime_dir_errors(monkeypatch):
+    monkeypatch.setenv('XDG_RUNTIME_DIR', 'run')
     flexmock(module.os).should_receive('makedirs').never()
 
-    with pytest.raises(ValueError), module.Runtime_directory({}):
+    with pytest.raises(ValueError), module.Runtime_directory({}, repository_id='id'):
         pass
 
 
-def test_runtime_directory_falls_back_to_runtime_directory():
+def test_runtime_directory_falls_back_to_runtime_directory(monkeypatch):
+    flexmock(module).should_receive('Fixed_name_temporary_directory').and_return(flexmock(cleanup=lambda: None))
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(
         module.Systemd_directories.RUNTIME_DIRECTORY
     ).and_return(
@@ -128,26 +109,12 @@ def test_runtime_directory_falls_back_to_runtime_directory():
     )
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
-        assert borgmatic_runtime_directory == '/run/./borgmatic'
+    with module.Runtime_directory({}, repository_id='id') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/run/borgmatic-id/./borgmatic'
 
 
-def test_runtime_directory_falls_back_to_runtime_directory_without_adding_duplicate_borgmatic_subdirectory():
-    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
-    flexmock(module).should_receive('resolve_systemd_directory').with_args(
-        module.Systemd_directories.RUNTIME_DIRECTORY
-    ).and_return(
-        '/run/borgmatic',
-    )
-    flexmock(module.os).should_receive('makedirs')
-
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
-        assert borgmatic_runtime_directory == '/run/./borgmatic'
-
-
-def test_runtime_directory_with_relative_runtime_directory_errors():
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+def test_runtime_directory_with_relative_runtime_directory_errors(monkeypatch):
+    monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(
         module.Systemd_directories.RUNTIME_DIRECTORY
     ).and_return(
@@ -155,19 +122,19 @@ def test_runtime_directory_with_relative_runtime_directory_errors():
     )
     flexmock(module.os).should_receive('makedirs').never()
 
-    with pytest.raises(ValueError), module.Runtime_directory({}):
+    with pytest.raises(ValueError), module.Runtime_directory({}, repository_id='id'):
         pass
 
 
-def test_runtime_directory_falls_back_to_tmpdir_and_adds_temporary_subdirectory_that_get_cleaned_up():
+def test_runtime_directory_falls_back_to_tmpdir_and_adds_temporary_subdirectory_that_get_cleaned_up(monkeypatch):
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(
         module.Systemd_directories.RUNTIME_DIRECTORY
     ).and_return(
         None,
     )
-    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return('/run')
+    monkeypatch.setenv('TMPDIR', '/run')
     temporary_directory = flexmock(name='/run/borgmatic-1234')
     temporary_directory.should_receive('cleanup').once()
     flexmock(module.tempfile).should_receive('TemporaryDirectory').with_args(
@@ -176,35 +143,35 @@ def test_runtime_directory_falls_back_to_tmpdir_and_adds_temporary_subdirectory_
     ).and_return(temporary_directory)
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
+    with module.Runtime_directory({}, repository_id='id') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/borgmatic-1234/./borgmatic'
 
 
-def test_runtime_directory_with_relative_tmpdir_errors():
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+def test_runtime_directory_with_relative_tmpdir_errors(monkeypatch):
+    monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(
         module.Systemd_directories.RUNTIME_DIRECTORY
     ).and_return(
         None,
     )
-    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return('run')
+    monkeypatch.setenv('TMPDIR', 'run')
     flexmock(module.tempfile).should_receive('TemporaryDirectory').never()
     flexmock(module.os).should_receive('makedirs').never()
 
-    with pytest.raises(ValueError), module.Runtime_directory({}):
+    with pytest.raises(ValueError), module.Runtime_directory({}, repository_id='id'):
         pass
 
 
-def test_runtime_directory_falls_back_to_temp_and_adds_temporary_subdirectory_that_get_cleaned_up():
+def test_runtime_directory_falls_back_to_temp_and_adds_temporary_subdirectory_that_get_cleaned_up(monkeypatch):
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(
         module.Systemd_directories.RUNTIME_DIRECTORY
     ).and_return(
         None,
     )
-    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return(None)
-    flexmock(module.os.environ).should_receive('get').with_args('TEMP').and_return('/run')
+    monkeypatch.delenv('TMPDIR', raising=False)
+    monkeypatch.setenv('TEMP', '/run')
     temporary_directory = flexmock(name='/run/borgmatic-1234')
     temporary_directory.should_receive('cleanup').once()
     flexmock(module.tempfile).should_receive('TemporaryDirectory').with_args(
@@ -213,36 +180,36 @@ def test_runtime_directory_falls_back_to_temp_and_adds_temporary_subdirectory_th
     ).and_return(temporary_directory)
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
+    with module.Runtime_directory({}, repository_id='id') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/borgmatic-1234/./borgmatic'
 
 
-def test_runtime_directory_with_relative_temp_errors():
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+def test_runtime_directory_with_relative_temp_errors(monkeypatch):
+    monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(
         module.Systemd_directories.RUNTIME_DIRECTORY
     ).and_return(
         None,
     )
-    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return(None)
-    flexmock(module.os.environ).should_receive('get').with_args('TEMP').and_return('run')
+    monkeypatch.delenv('TMPDIR', raising=False)
+    monkeypatch.setenv('TEMP', 'run')
     flexmock(module.tempfile).should_receive('TemporaryDirectory').never()
     flexmock(module.os).should_receive('makedirs')
 
-    with pytest.raises(ValueError), module.Runtime_directory({}):
+    with pytest.raises(ValueError), module.Runtime_directory({}, repository_id='id'):
         pass
 
 
-def test_runtime_directory_falls_back_to_hard_coded_tmp_path_and_adds_temporary_subdirectory_that_get_cleaned_up():
+def test_runtime_directory_falls_back_to_hard_coded_tmp_path_and_adds_temporary_subdirectory_that_get_cleaned_up(monkeypatch):
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(
         module.Systemd_directories.RUNTIME_DIRECTORY
     ).and_return(
         None,
     )
-    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return(None)
-    flexmock(module.os.environ).should_receive('get').with_args('TEMP').and_return(None)
+    monkeypatch.delenv('TMPDIR', raising=False)
+    monkeypatch.delenv('TEMP', raising=False)
     temporary_directory = flexmock(name='/tmp/borgmatic-1234')
     temporary_directory.should_receive('cleanup').once()
     flexmock(module.tempfile).should_receive('TemporaryDirectory').with_args(
@@ -251,20 +218,20 @@ def test_runtime_directory_falls_back_to_hard_coded_tmp_path_and_adds_temporary_
     ).and_return(temporary_directory)
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
+    with module.Runtime_directory({}, repository_id='id') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/tmp/borgmatic-1234/./borgmatic'
 
 
-def test_runtime_directory_with_erroring_cleanup_does_not_raise():
+def test_runtime_directory_with_erroring_cleanup_does_not_raise(monkeypatch):
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    monkeypatch.delenv('XDG_RUNTIME_DIR', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(
         module.Systemd_directories.RUNTIME_DIRECTORY
     ).and_return(
         None,
     )
-    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return(None)
-    flexmock(module.os.environ).should_receive('get').with_args('TEMP').and_return(None)
+    monkeypatch.delenv('TMPDIR', raising=False)
+    monkeypatch.delenv('TEMP', raising=False)
     temporary_directory = flexmock(name='/tmp/borgmatic-1234')
     temporary_directory.should_receive('cleanup').and_raise(OSError).once()
     flexmock(module.tempfile).should_receive('TemporaryDirectory').with_args(
@@ -273,7 +240,7 @@ def test_runtime_directory_with_erroring_cleanup_does_not_raise():
     ).and_return(temporary_directory)
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
+    with module.Runtime_directory({}, repository_id='id') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/tmp/borgmatic-1234/./borgmatic'
 
 
@@ -291,7 +258,6 @@ def test_make_runtime_directory_glob(borgmatic_runtime_directory, expected_glob)
 
 def test_get_borgmatic_state_directory_uses_config_option():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').never()
 
     assert (
         module.get_borgmatic_state_directory(
@@ -301,16 +267,16 @@ def test_get_borgmatic_state_directory_uses_config_option():
     )
 
 
-def test_get_borgmatic_state_directory_falls_back_to_xdg_state_home():
+def test_get_borgmatic_state_directory_falls_back_to_xdg_state_home(monkeypatch):
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_STATE_HOME').and_return('/tmp')
+    monkeypatch.setenv('XDG_STATE_HOME', '/tmp')
 
     assert module.get_borgmatic_state_directory({}) == '/tmp/borgmatic'
 
 
-def test_get_borgmatic_state_directory_falls_back_to_state_directory():
+def test_get_borgmatic_state_directory_falls_back_to_state_directory(monkeypatch):
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').with_args('XDG_STATE_HOME').and_return(None)
+    monkeypatch.delenv('XDG_STATE_HOME', raising=False)
     flexmock(module).should_receive('resolve_systemd_directory').with_args(
         module.Systemd_directories.STATE_DIRECTORY
     ).and_return(
@@ -320,32 +286,26 @@ def test_get_borgmatic_state_directory_falls_back_to_state_directory():
     assert module.get_borgmatic_state_directory({}) == '/tmp/borgmatic'
 
 
-def test_get_borgmatic_state_directory_defaults_to_hard_coded_path():
+def test_get_borgmatic_state_directory_defaults_to_hard_coded_path(monkeypatch):
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').and_return(None)
+    monkeypatch.delenv('XDG_STATE_HOME', raising=False)
     assert module.get_borgmatic_state_directory({}) == '~/.local/state/borgmatic'
 
 
-def test_resolve_systemd_directory_none():
-    flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
-        None
-    )
-    flexmock(module.os.environ).should_receive('get').with_args('STATE_DIRECTORY').and_return(None)
+def test_resolve_systemd_directory_none(monkeypatch):
+    monkeypatch.delenv('RUNTIME_DIRECTORY', raising=False)
+    monkeypatch.delenv('STATE_DIRECTORY', raising=False)
 
     assert module.resolve_systemd_directory(module.Systemd_directories.RUNTIME_DIRECTORY) is None
     assert module.resolve_systemd_directory(module.Systemd_directories.STATE_DIRECTORY) is None
 
 
-def test_resolve_systemd_directory_single():
+def test_resolve_systemd_directory_single(monkeypatch):
     runtime_dir = '/run/borgmatic'
     state_dir = '/var/lib/borgmatic'
 
-    flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
-        runtime_dir
-    )
-    flexmock(module.os.environ).should_receive('get').with_args('STATE_DIRECTORY').and_return(
-        state_dir
-    )
+    monkeypatch.setenv('RUNTIME_DIRECTORY', runtime_dir)
+    monkeypatch.setenv('STATE_DIRECTORY', state_dir)
 
     assert (
         module.resolve_systemd_directory(module.Systemd_directories.RUNTIME_DIRECTORY)
@@ -354,16 +314,12 @@ def test_resolve_systemd_directory_single():
     assert module.resolve_systemd_directory(module.Systemd_directories.STATE_DIRECTORY) == state_dir
 
 
-def test_resolve_systemd_directory_multiple():
+def test_resolve_systemd_directory_multiple(monkeypatch):
     runtime_dirs = '/run/borgmatic:/run/second:/run/third'
     state_dirs = '/var/lib/borgmatic:/var/lib/second:/var/lib/third'
 
-    flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
-        runtime_dirs
-    )
-    flexmock(module.os.environ).should_receive('get').with_args('STATE_DIRECTORY').and_return(
-        state_dirs
-    )
+    monkeypatch.setenv('RUNTIME_DIRECTORY', runtime_dirs)
+    monkeypatch.setenv('STATE_DIRECTORY', state_dirs)
 
     assert (
         module.resolve_systemd_directory(module.Systemd_directories.RUNTIME_DIRECTORY)

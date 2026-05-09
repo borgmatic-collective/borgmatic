@@ -121,11 +121,13 @@ class Runtime_directory:
         '''
         Given a configuration dict and the Borg ID for a repository, determine the borgmatic runtime
         directory, creating a secure, temporary directory within it if necessary. Defaults to
-        $XDG_RUNTIME_DIR/[repository_id]/./borgmatic or $RUNTIME_DIRECTORY/[repository_id]/./borgmatic or
+        $XDG_RUNTIME_DIR/borgmatic-[repository_id]/./borgmatic or
+        $RUNTIME_DIRECTORY/borgmatic-[repository_id]/./borgmatic or
         $TMPDIR/borgmatic-[random]/./borgmatic or $TEMP/borgmatic-[random]/./borgmatic or
         /tmp/borgmatic-[random]/./borgmatic where "[random]" is a randomly generated string and
-        "[repository_id]" is the Borg repository ID. Both are intended to avoid path collisions, and
-        the random string helps avoid temporary file attacks.
+        "[repository_id]" is the Borg repository ID being operated on. Both strings are intended to
+        avoid path collisions, and the random string helps avoid predictable temporary path attacks
+        in shared temporary directories.
 
         The "/./" is taking advantage of a Borg feature such that the part of the path before the "/./"
         does not get stored in the file path within an archive. That way, the path of the runtime

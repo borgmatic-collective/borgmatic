@@ -32,8 +32,8 @@ You can see the runtime directory path that borgmatic selects by running with
 Regardless of the runtime directory selected, borgmatic stores its files within
 a `borgmatic` subdirectory of the runtime directory. Additionally, in the case
 of `TMPDIR`, `TEMP`, and the hard-coded `/tmp`, borgmatic creates a randomly
-named subdirectory in an effort to reduce path collisions and temporary file
-attacks in shared system temporary directories.
+named subdirectory in an effort to reduce path collisions and predictable
+temporary path attacks in shared temporary directories.
 
 <span class="minilink minilink-addedin">New in version 2.1.6</span> When
 constructing the runtime directory, borgmatic now creates a subdirectory named
