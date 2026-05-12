@@ -372,13 +372,21 @@ def log_buffer_lines(
                 yield log_record.getMessage()
 
 
-def raise_for_process_errors(buffer_readers, process_metadatas, borg_local_path, borg_exit_codes):
+def raise_for_process_errors(
+    buffer_readers,
+    process_metadatas,
+    borg_local_path,
+    borg_exit_codes,
+    output_log_level=None,
+    capture_stderr=False,
+):
     '''
     Given a dict from buffer object to Buffer_reader, a dict from subprocess.Popen() instance to
-    Process_metadata instance, Borg's local path, a sequence of exit code configuration dicts, check
-    the given processes for error or warning exit codes. If found, vent or kill any running
-    processes. In the case of an error exit code, raise. In the case of warning, return
-    Exit_status.WARNING. Otherwise, return None.
+    Process_metadata instance, a requested output log level for stdout, Borg's local path, a
+    sequence of exit code configuration dicts, and whether to capture stderr, check the given
+    processes for error or warning exit codes. If found, vent or kill any running processes and
+    drain any remaining buffer lines. In the case of an error exit code, raise.  In the case of
+    warning, return Exit_status.WARNING. Otherwise, return None.
     '''
     result_status = None
 
@@ -404,6 +412,13 @@ def raise_for_process_errors(buffer_readers, process_metadatas, borg_local_path,
             result_status = Exit_status.WARNING
             continue
 
+        # Drain and log remaining buffer lines, so no output gets lost. But swallow captured output,
+        # since we're raising below instead of yielding captured lines.
+        tuple(
+            log_remaining_buffer_lines(
+                buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr
+            )
+        )
         last_lines = process_metadatas[process].last_lines
 
         # If an error occurs, include its output in the raised exception so that we don't
@@ -429,6 +444,9 @@ def log_remaining_buffer_lines(
     whether to capture stderr, drain and log any remaining output lines from the buffers until
     they're empty. Additionally, for any log records with a log level the same as the output log
     level, yield those log messages for capture.
+
+    The main difference between this function and log_buffer_lines() is that this one doesn't just
+    do one "turn of the crank" of logging buffer output; it completely drains any remaining output.
     '''
     for output_buffer, reader in buffer_readers.items():
         if not reader.process:
@@ -446,6 +464,7 @@ def log_remaining_buffer_lines(
                         borg_local_path=borg_local_path,
                         command=reader.process.args,
                     ),
+                    last_lines=process_metadatas[reader.process].last_lines,
                 )
 
                 if (
@@ -494,7 +513,7 @@ def log_outputs(
         for buffer in output_buffers_for_process(process, exclude_stdouts)
     }
 
-    # Log output lines for each process until they all exit.
+    # Log output lines for each process until they all exit or one errors.
     while True:
         yield from log_buffer_lines(
             buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr
@@ -502,7 +521,12 @@ def log_outputs(
 
         if (
             raise_for_process_errors(
-                buffer_readers, process_metadatas, borg_local_path, borg_exit_codes
+                buffer_readers,
+                process_metadatas,
+                borg_local_path,
+                borg_exit_codes,
+                output_log_level,
+                capture_stderr,
             )
             == Exit_status.WARNING
         ):

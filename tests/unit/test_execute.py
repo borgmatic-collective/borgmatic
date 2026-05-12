@@ -860,6 +860,7 @@ def test_raise_for_process_errors_with_error_process_raises():
         process: module.Process_metadata(last_lines=['hi', 'there'], capture=False)
     }
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.ERROR)
+    flexmock(module).should_receive('log_remaining_buffer_lines').and_return(())
     command = flexmock()
     flexmock(module).should_receive('command_for_process').and_return(command)
 
@@ -890,6 +891,7 @@ def test_raise_for_process_errors_with_success_process_and_warning_process_retur
     flexmock(module).should_receive('interpret_exit_code').with_args(
         object, 1, object, object
     ).and_return(module.Exit_status.WARNING)
+    flexmock(module).should_receive('log_remaining_buffer_lines').and_return(())
     flexmock(module).should_receive('command_for_process').never()
 
     assert (
@@ -917,6 +919,7 @@ def test_raise_for_process_errors_with_warning_process_and_error_process_raises(
     flexmock(module).should_receive('interpret_exit_code').with_args(
         object, 3, object, object
     ).and_return(module.Exit_status.ERROR)
+    flexmock(module).should_receive('log_remaining_buffer_lines').and_return(())
     command = flexmock()
     flexmock(module).should_receive('command_for_process').and_return(command)
 
@@ -947,6 +950,7 @@ def test_raise_for_process_errors_with_warning_process_and_running_process_kills
     flexmock(module).should_receive('interpret_exit_code').with_args(
         object, 1, object, object
     ).and_return(module.Exit_status.WARNING)
+    flexmock(module).should_receive('log_remaining_buffer_lines').and_return(())
     command = flexmock()
     flexmock(module).should_receive('command_for_process').and_return(command)
 
@@ -975,6 +979,7 @@ def test_raise_for_process_errors_with_error_process_and_running_process_kills_a
     flexmock(module).should_receive('interpret_exit_code').with_args(
         object, 3, object, object
     ).and_return(module.Exit_status.ERROR)
+    flexmock(module).should_receive('log_remaining_buffer_lines').and_return(())
     command = flexmock()
     flexmock(module).should_receive('command_for_process').and_return(command)
 
@@ -998,6 +1003,7 @@ def test_raise_for_process_errors_with_warning_process_and_long_output_raises_wi
         process: module.Process_metadata(last_lines=['hi', 'there'], capture=False)
     }
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.ERROR)
+    flexmock(module).should_receive('log_remaining_buffer_lines').and_return(())
     command = flexmock()
     flexmock(module).should_receive('command_for_process').and_return(command)
 

@@ -557,6 +557,43 @@ def test_log_outputs_with_unfinished_process_re_polls():
     )
 
 
+def test_log_outputs_includes_error_output_when_output_spans_multiple_chunks():
+    flexmock(module.logger).should_receive('log')
+    flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.ERROR)
+    flexmock(module).should_receive('command_for_process').and_return('python')
+
+    process = subprocess.Popen(
+        [
+            sys.executable,
+            '-c',
+            (
+                'import os, sys; '
+                f'os.write(sys.stdout.fileno(), b"x" * {module.READ_CHUNK_SIZE + 10}); '
+                'os.write(sys.stdout.fileno(), b"\\nERROR: critical failure"); '
+                'os.close(1); '
+                'os._exit(2)'
+            ),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    flexmock(module).should_receive('output_buffers_for_process').and_return((process.stdout,))
+
+    with pytest.raises(subprocess.CalledProcessError) as error:
+        tuple(
+            module.log_outputs(
+                (process,),
+                exclude_stdouts=(),
+                output_log_level=logging.INFO,
+                borg_local_path='borg',
+                borg_exit_codes=None,
+            )
+        )
+
+    assert error.value.output
+    assert 'ERROR: critical failure' in error.value.output
+
+
 def test_read_lines_uses_system_locale_when_decoding_output():
     flexmock(module.locale).should_receive('getpreferredencoding').and_return('ISO-8859-1')
     process = subprocess.Popen(['echo', b'\xc4pple'], stdout=subprocess.PIPE)
