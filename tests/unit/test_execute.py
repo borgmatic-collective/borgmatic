@@ -779,6 +779,7 @@ def test_raise_for_process_errors_with_no_processes_bails():
         module.raise_for_process_errors(
             buffer_readers,
             process_metadatas={},
+            output_log_level=None,
             borg_local_path=flexmock(),
             borg_exit_codes=flexmock(),
         )
@@ -795,6 +796,7 @@ def test_raise_for_process_errors_with_running_process_bails():
         module.raise_for_process_errors(
             buffer_readers,
             process_metadatas,
+            output_log_level=None,
             borg_local_path=flexmock(),
             borg_exit_codes=flexmock(),
         )
@@ -812,6 +814,7 @@ def test_raise_for_process_errors_with_running_process_and_no_buffer_readers_wai
         module.raise_for_process_errors(
             buffer_readers={},
             process_metadatas=process_metadatas,
+            output_log_level=None,
             borg_local_path=flexmock(),
             borg_exit_codes=flexmock(),
         )
@@ -829,6 +832,7 @@ def test_raise_for_process_errors_with_successful_process_bails():
         module.raise_for_process_errors(
             buffer_readers,
             process_metadatas,
+            output_log_level=None,
             borg_local_path=flexmock(),
             borg_exit_codes=flexmock(),
         )
@@ -846,6 +850,7 @@ def test_raise_for_process_errors_with_warning_process_returns_warning_status():
         module.raise_for_process_errors(
             buffer_readers,
             process_metadatas,
+            output_log_level=None,
             borg_local_path=flexmock(),
             borg_exit_codes=flexmock(),
         )
@@ -868,6 +873,7 @@ def test_raise_for_process_errors_with_error_process_raises():
         module.raise_for_process_errors(
             buffer_readers,
             process_metadatas,
+            output_log_level=None,
             borg_local_path=flexmock(),
             borg_exit_codes=flexmock(),
         )
@@ -898,6 +904,7 @@ def test_raise_for_process_errors_with_success_process_and_warning_process_retur
         module.raise_for_process_errors(
             buffer_readers,
             process_metadatas,
+            output_log_level=None,
             borg_local_path=flexmock(),
             borg_exit_codes=flexmock(),
         )
@@ -927,6 +934,7 @@ def test_raise_for_process_errors_with_warning_process_and_error_process_raises(
         module.raise_for_process_errors(
             buffer_readers,
             process_metadatas,
+            output_log_level=None,
             borg_local_path=flexmock(),
             borg_exit_codes=flexmock(),
         )
@@ -958,6 +966,7 @@ def test_raise_for_process_errors_with_warning_process_and_running_process_kills
         module.raise_for_process_errors(
             buffer_readers,
             process_metadatas,
+            output_log_level=None,
             borg_local_path=flexmock(),
             borg_exit_codes=flexmock(),
         )
@@ -987,6 +996,7 @@ def test_raise_for_process_errors_with_error_process_and_running_process_kills_a
         module.raise_for_process_errors(
             buffer_readers,
             process_metadatas,
+            output_log_level=None,
             borg_local_path=flexmock(),
             borg_exit_codes=flexmock(),
         )
@@ -1011,6 +1021,7 @@ def test_raise_for_process_errors_with_warning_process_and_long_output_raises_wi
         flexmock(module, ERROR_OUTPUT_MAX_LINE_COUNT=2).raise_for_process_errors(
             buffer_readers,
             process_metadatas,
+            output_log_level=None,
             borg_local_path=flexmock(),
             borg_exit_codes=flexmock(),
         )

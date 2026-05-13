@@ -375,9 +375,9 @@ def log_buffer_lines(
 def raise_for_process_errors(
     buffer_readers,
     process_metadatas,
+    output_log_level,
     borg_local_path,
     borg_exit_codes,
-    output_log_level=None,
     capture_stderr=False,
 ):
     '''
@@ -523,9 +523,9 @@ def log_outputs(
             raise_for_process_errors(
                 buffer_readers,
                 process_metadatas,
+                output_log_level,
                 borg_local_path,
                 borg_exit_codes,
-                output_log_level,
                 capture_stderr,
             )
             == Exit_status.WARNING
