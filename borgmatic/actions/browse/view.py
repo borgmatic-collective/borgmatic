@@ -1,16 +1,10 @@
-import argparse
 import contextlib
 import enum
 import functools
-import json
 import os
 import logging
 
-import borgmatic.actions.pattern
-import borgmatic.borg.diff
-import borgmatic.borg.repo_list
-import borgmatic.borg.version
-import borgmatic.logger
+import borgmatic.actions.browse.controller
 
 import rich.text
 import textual._context
@@ -18,8 +12,6 @@ import textual.app
 import textual.binding
 import textual.reactive
 import textual.widgets
-
-logger = logging.getLogger(__name__)
 
 
 class Node_type(enum.Enum):
@@ -50,37 +42,9 @@ PATH_TYPE_EXPANDED_ICONS = {Node_type.DIRECTORY: '📂'}
 
 @textual.work(thread=True)
 async def get_repository_archives(browse_tree, repository_node, config, repository, timer):
-    with borgmatic.logger.Log_prefix(repository.get('label', repository['path'])):
-        logger.answer('Listing repository')
-        repo_list_arguments = argparse.Namespace(
-            repository=repository['path'],
-            short=None,
-            format=None,
-            json=True,
-            prefix=None,
-            match_archives=None,
-            sort_by=None,
-            first=None,
-            last=None,
-        )
-        global_arguments = argparse.Namespace()
-        local_path = config.get('local_path', 'borg')
-        remote_path = config.get('remote_path')
-        local_borg_version = borgmatic.borg.version.local_borg_version(config, local_path)
+    archives_data = borgmatic.actions.browse.controller.get_repository_archives(config, repository)
 
-        archives_data = json.loads(
-            borgmatic.borg.repo_list.list_repository(
-                repository['path'],
-                config,
-                local_borg_version,
-                repo_list_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        )
-
-        browse_tree.app.call_from_thread(add_repository_archives, repository_node, archives_data, timer)
+    browse_tree.app.call_from_thread(add_repository_archives, repository_node, archives_data, timer)
 
 
 def add_repository_archives(repository_node, archives_data, timer):
@@ -105,28 +69,12 @@ def add_repository_archives(repository_node, archives_data, timer):
 
 @textual.work(thread=True)
 def get_archive_files(browse_tree, archive_node, config, repository, archive, timer):
-    with borgmatic.logger.Log_prefix(repository.get('label', repository['path'])):
-        logger.answer(f"Listing archive {archive['archive']}")
+    files_data = borgmatic.actions.browse.controller.get_archive_files(config, repository, archive)
 
-        global_arguments = argparse.Namespace()
-        local_path = config.get('local_path', 'borg')
-        remote_path = config.get('remote_path')
-        local_borg_version = borgmatic.borg.version.local_borg_version(config, local_path)
-
-        file_data = borgmatic.borg.list.capture_archive_listing(
-            repository['path'],
-            archive['archive'],
-            config,
-            local_borg_version,
-            global_arguments,
-            local_path=local_path,
-            remote_path=remote_path,
-        )
-
-        browse_tree.app.call_from_thread(add_archive_files, archive_node, file_data, timer)
+    browse_tree.app.call_from_thread(add_archive_files, archive_node, files_data, timer)
 
 
-def add_archive_files(archive_node, file_data, timer):
+def add_archive_files(archive_node, files_data, timer):
     config = archive_node.data['config']
     repository = archive_node.data['repository']
     archive = archive_node.data['archive']
@@ -136,7 +84,7 @@ def add_archive_files(archive_node, file_data, timer):
     for child in archive_node.children:
         child.remove()
 
-    for file in file_data:
+    for file in files_data:
         archive_node.add(
             file['path'],
             data={
@@ -242,6 +190,71 @@ def unexpand_path(config_path):
     return config_path
 
 
+class Browse_app(textual.app.App):
+    BINDINGS = [
+        textual.binding.Binding(key='escape', action='quit', description='quit'),
+        textual.binding.Binding(
+            key='alt+m', action='command_palette', description='menu', show=False
+        ),
+    ]
+    COMMAND_PALETTE_BINDING = 'alt+m'
+
+    def __init__(self, configs):
+        self.configs = configs
+
+        super().__init__()
+
+    def compose(self):
+        tree = Browse_tree()
+        tree.styles.border = ('round', 'gray')
+
+        for config_path, config in self.configs.items():
+            config_node = tree.root.add(
+                unexpand_path(config_path), data={'type': Node_type.CONFIGURATION, 'config': config}
+            )
+
+            for repository in config['repositories']:
+                config_node.add(
+                    repository['path'],
+                    data={'type': Node_type.REPOSITORY, 'config': config, 'repository': repository},
+                )
+
+        first_child = tree.root.children[0]
+        tree.select_node(first_child)
+        tree.scroll_to_node(first_child)
+
+        yield textual.widgets.Header()
+        yield tree
+        log_widget = textual.widgets.RichLog(markup=True)
+        log_widget.styles.border = ('round', 'gray')
+        yield log_widget
+        yield textual.widgets.Footer()
+
+        handler = Browse_log_handler(self, log_widget)
+        handler.setFormatter(Rich_color_formatter())
+        logger = logging.getLogger()
+        logger.setLevel(min(handler.level for handler in logger.handlers))
+        logger.addHandler(handler)
+
+        # Remove the console log handler so it doesn't try to log all over our UI; we have our own
+        # log handler for surfacing logs within the UI.
+        with contextlib.suppress(StopIteration):
+            console_handler = next(
+                handler
+                for handler in logging.getLogger().handlers
+                if isinstance(handler, borgmatic.logger.Multi_stream_handler)
+            )
+            logger.removeHandler(console_handler)
+
+    def on_mount(self):
+        self.title = 'borgmatic browse'
+        self.theme = 'ansi-light'
+        tree = self.query_one(textual.widgets.Tree)
+
+        for child in tree.root.children:
+            child.expand()
+
+
 class Browse_log_handler(logging.Handler):
     def __init__(self, app, log_widget):
         self.app = app
@@ -284,72 +297,6 @@ class Rich_color_formatter(logging.Formatter):
         record.prefix = f'{self.prefix}: ' if self.prefix else ''
 
         return f'[{color}]{super().format(record)}[/{color}]'
-
-
-class Browse_app(textual.app.App):
-    BINDINGS = [
-        textual.binding.Binding(key='escape', action='quit', description='quit'),
-        textual.binding.Binding(
-            key='alt+m', action='command_palette', description='menu', show=False
-        ),
-    ]
-    COMMAND_PALETTE_BINDING = 'alt+m'
-
-    def __init__(self, configs):
-        self.configs = configs
-
-        super().__init__()
-
-    def compose(self):
-        tree = Browse_tree()
-        tree.styles.border = ('round', 'gray')
-
-        for config_path, config in self.configs.items():
-            config_node = tree.root.add(
-                unexpand_path(config_path), data={'type': Node_type.CONFIGURATION, 'config': config}
-            )
-
-            for repository in config['repositories']:
-                config_node.add(
-                    repository['path'],
-                    data={'type': Node_type.REPOSITORY, 'config': config, 'repository': repository},
-                )
-
-        first_child = tree.root.children[0]
-        tree.select_node(first_child)
-        tree.scroll_to_node(first_child)
-
-        yield textual.widgets.Header()
-        yield tree
-        log_widget = textual.widgets.RichLog(markup=True)
-        log_widget.styles.border = ('round', 'gray')
-        yield log_widget
-        yield textual.widgets.Footer()
-
-        logger = logging.getLogger()
-
-        handler = Browse_log_handler(self, log_widget)
-        handler.setFormatter(Rich_color_formatter())
-        logger.setLevel(min(handler.level for handler in logger.handlers))
-        logger.addHandler(handler)
-
-        # Remove the console log handler so it doesn't try to log all over our UI; we have our own
-        # log handler for surfacing logs within the UI.
-        with contextlib.suppress(StopIteration):
-            console_handler = next(
-                handler
-                for handler in logging.getLogger().handlers
-                if isinstance(handler, borgmatic.logger.Multi_stream_handler)
-            )
-            logger.removeHandler(console_handler)
-
-    def on_mount(self):
-        self.title = 'borgmatic browse'
-        self.theme = 'ansi-light'
-        tree = self.query_one(textual.widgets.Tree)
-
-        for child in tree.root.children:
-            child.expand()
 
 
 def run_browse(
