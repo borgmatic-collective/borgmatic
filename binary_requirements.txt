@@ -16,6 +16,8 @@ pyyaml==6.0.3             # via apprise, -r binary_requirements.in
 referencing==0.37.0       # via jsonschema, jsonschema-specifications, -r binary_requirements.in
 requests==2.34.0          # via apprise, borgmatic, requests-oauthlib, -r binary_requirements.in
 requests-oauthlib==2.0.0  # via apprise, -r binary_requirements.in
+rich==15.0.0
 rpds-py==0.30.0           # via jsonschema, referencing, -r binary_requirements.in
 ruamel-yaml==0.19.1       # via borgmatic, -r binary_requirements.in
+textual==8.2.5
 urllib3==2.7.0            # via requests, -r binary_requirements.in

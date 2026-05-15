@@ -31,9 +31,10 @@ ACTION_ALIASES = {
     'transfer': [],
     'break-lock': [],
     'key': [],
-    'borg': [],
     'recreate': [],
     'diff': [],
+    'browse': [],
+    'borg': [],
 }
 
 
@@ -1997,8 +1998,9 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     diff_parser = action_parsers.add_parser(
         'diff',
         aliases=ACTION_ALIASES['diff'],
-        help='This command finds differences (file contents, user/group/mode) between archives',
-        description='This command finds differences (file contents, user/group/mode) between archives',
+        help='Find differences (file contents, user/group/mode) between archives',
+        description='Find differences (file contents, user/group/mode) between archives',
+        add_help=False,
     )
     diff_group = diff_parser.add_argument_group('diff arguments')
     diff_group.add_argument(
@@ -2035,6 +2037,18 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         action='store_true',
         help='Run the diff according to borgmatic configured patterns (ie do not diff entire archives)',
     )
+    diff_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    browse_parser = action_parsers.add_parser(
+        'browse',
+        aliases=ACTION_ALIASES['browse'],
+        help='Browse repositories, archives, and files in a console UI',
+        description='Browse repositories, archives, and files in a console UI',
+        add_help=False,
+    )
+    browse_group = browse_parser.add_argument_group('browse arguments')
+    browse_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
     borg_parser = action_parsers.add_parser(
         'borg',
         aliases=ACTION_ALIASES['borg'],

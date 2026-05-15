@@ -24,7 +24,9 @@ pyyaml>5.0.0
 referencing==0.37.0       # via jsonschema, jsonschema-specifications, -r test_requirements.in
 requests==2.34.0          # via apprise, requests-oauthlib, -r test_requirements.in
 requests-oauthlib==2.0.0  # via apprise, -r test_requirements.in
+rich==15.0.0
 rpds-py==0.30.0           # via jsonschema, referencing, -r test_requirements.in
 ruamel-yaml>0.15.0
+textual==8.2.5
 typing-extensions==4.15.0  # via -r test_requirements.in
 urllib3==2.7.0            # via requests, -r test_requirements.in

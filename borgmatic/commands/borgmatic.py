@@ -12,6 +12,7 @@ import ruamel.yaml
 
 import borgmatic.actions.borg
 import borgmatic.actions.break_lock
+import borgmatic.actions.browse
 import borgmatic.actions.change_passphrase
 import borgmatic.actions.check
 import borgmatic.actions.compact
@@ -825,8 +826,8 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
     try:
         if 'bootstrap' in arguments:
             try:
-                # No configuration file is needed for bootstrap.
                 local_borg_version = borg_version.local_borg_version(
+                    # No configuration file is needed for bootstrap.
                     {},
                     arguments['bootstrap'].local_path,
                 )
@@ -896,6 +897,13 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
             borgmatic.actions.config.show.run_show(arguments['show'], configs)
 
             return
+
+        if 'browse' in arguments:
+            borgmatic.actions.browse.run_browse(
+                arguments['browse'],
+                arguments['global'],
+                configs,
+            )
 
     except (
         CalledProcessError,
