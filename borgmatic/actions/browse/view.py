@@ -74,6 +74,39 @@ def get_archive_files(browse_tree, archive_node, config, repository, archive, ti
     browse_tree.app.call_from_thread(add_archive_files, archive_node, files_data, timer)
 
 
+def add_path(archive_node, config, repository, archive, file_data):
+    path_pieces = file_data['path'].split(os.path.sep)
+    path_leftover = path_pieces[1:]
+
+    # Get or add a child with a particular label.
+    try:
+        path_node = next(
+            child for child in archive_node.children if str(child.label) == path_pieces[0]
+        )
+    except StopIteration:
+        path_node = archive_node.add(
+            path_pieces[0],
+            data={
+                'type': Node_type.DIRECTORY
+                if file_data['type'] == 'd' or path_leftover
+                else Node_type.FILE,
+                'config': config,
+                'repository': repository,
+                'archive': archive,
+                'file': file_data,
+            },
+        )
+
+    if path_leftover:
+        add_path(
+            path_node,
+            config,
+            repository,
+            archive,
+            dict(file_data, **{'path': os.path.sep.join(path_leftover)}),
+        )
+
+
 def add_archive_files(archive_node, files_data, timer):
     config = archive_node.data['config']
     repository = archive_node.data['repository']
@@ -84,17 +117,8 @@ def add_archive_files(archive_node, files_data, timer):
     for child in archive_node.children:
         child.remove()
 
-    for file in files_data:
-        archive_node.add(
-            file['path'],
-            data={
-                'type': Node_type.DIRECTORY if file['type'] == 'd' else Node_type.FILE,
-                'config': config,
-                'repository': repository,
-                'archive': archive,
-                'file': file,
-            },
-        )
+    for file_data in files_data:
+        add_path(archive_node, config, repository, archive, file_data)
 
 
 class Browse_tree(textual.widgets.Tree):
