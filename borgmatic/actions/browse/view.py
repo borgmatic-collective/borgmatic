@@ -58,33 +58,28 @@ async def add_repository_archives(
 
     # Reverse the archives, so the common case of accessing the latest archive is easy because it's
     # at the top.
-    browse_app.call_from_thread(
-        archives_list.add_options,
-        (
-            textual.widgets.option_list.Option(archive['archive'], id=archive['archive'])
-            for archive in reversed(archives_data['archives'])
-        ),
-    )
+    for archive in reversed(archives_data['archives']):
+        browse_app.call_from_thread(
+            archives_list.add_option,
+            textual.widgets.option_list.Option(archive['archive'], id=archive['archive']),
+        )
 
     browse_app.call_from_thread(timer.stop)
     browse_app.call_from_thread(archives_list.remove_option, 'loading-indicator')
 
 
-# FIXME: Revamp for option list instead of tree.
 @textual.work(thread=True)
-def add_archive_files(browse_tree, archive_node, config, repository, archive, timer, loading_node):
-    files_data = borgmatic.actions.browse.controller.get_archive_files(config, repository, archive)
-    config = archive_node.data['config']
-    repository = archive_node.data['repository']
-    archive = archive_node.data['archive']
+def add_archive_files(browse_app, files_list, config, repository, archive_name, timer):
+    paths = borgmatic.actions.browse.controller.get_archive_files(config, repository, archive_name)
 
-    for file_data in files_data:
-        add_path(
-            browse_tree, archive_node, config, repository, archive, timer, loading_node, file_data
+    for path in paths:
+        browse_app.call_from_thread(
+            files_list.add_option,
+            textual.widgets.option_list.Option(path, id=path),
         )
 
-    browse_tree.app.call_from_thread(loading_node.remove)
-    browse_tree.app.call_from_thread(timer.stop)
+    browse_app.call_from_thread(timer.stop)
+    browse_app.call_from_thread(files_list.remove_option, 'loading-indicator')
 
 
 class Configuration_files_list(textual.widgets.OptionList):
@@ -124,6 +119,12 @@ class Archives_list(textual.widgets.OptionList):
         self.border_title = 'archives'
 
 
+class Files_list(textual.widgets.OptionList):
+    def __init__(self):
+        super().__init__(id='files-list', classes='panel')
+        self.border_title = 'files'
+
+
 class Logs(textual.widgets.RichLog):
     def __init__(self):
         super().__init__(markup=True, classes='panel')
@@ -159,6 +160,10 @@ class Browse_app(textual.app.App):
             display: none;
         }
 
+        #files-list {
+            display: none;
+        }
+
         #logs-container {
             height: 50%;
             display: none;
@@ -174,12 +179,14 @@ class Browse_app(textual.app.App):
         self.configuration_files_list = Configuration_files_list(self.configs)
         self.repositories_list = Repositories_list()
         self.archives_list = Archives_list()
+        self.files_list = Files_list()
 
         yield textual.widgets.Header()
         with textual.containers.Horizontal():
             yield self.configuration_files_list
             yield self.repositories_list
             yield self.archives_list
+            yield self.files_list
 
         with textual.containers.Horizontal(id='logs-container'):
             logs_widget = Logs()
@@ -219,6 +226,17 @@ class Browse_app(textual.app.App):
                 repository=self.repositories_list.repositories[event.option_id],
                 timer=timer,
             )
+        elif event.option_list == self.archives_list:
+            timer = add_inline_loading_indicator(self.files_list)
+
+            add_archive_files(
+                self,
+                files_list=self.files_list,
+                config=self.repositories_list.config,
+                repository=self.repositories_list.repositories[self.repositories_list.highlighted_option.id],
+                archive_name=event.option_id,
+                timer=timer,
+            )
 
     def on_option_list_option_selected(self, event):
         if event.option_list == self.configuration_files_list:
@@ -226,6 +244,11 @@ class Browse_app(textual.app.App):
             self.archives_list.styles.display = 'block'
             self.repositories_list.focus()
             self.repositories_list.highlighted = 0
+        elif event.option_list == self.repositories_list:
+            self.repositories_list.styles.display = 'none'
+            self.files_list.styles.display = 'block'
+            self.archives_list.focus()
+            self.archives_list.highlighted = 0
 
     def action_toggle_logs(self):
         logs_container = self.query_one('#logs-container')
