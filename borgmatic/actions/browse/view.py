@@ -55,6 +55,8 @@ async def add_repository_archives(
     browse_app, archives_list, config, repository, timer
 ):
     archives_data = borgmatic.actions.browse.controller.get_repository_archives(config, repository)
+    browse_app.call_from_thread(archives_list.remove_option, 'loading-indicator')
+    browse_app.call_from_thread(timer.stop)
 
     # Reverse the archives, so the common case of accessing the latest archive is easy because it's
     # at the top.
@@ -64,13 +66,12 @@ async def add_repository_archives(
             textual.widgets.option_list.Option(archive['archive'], id=archive['archive']),
         )
 
-    browse_app.call_from_thread(timer.stop)
-    browse_app.call_from_thread(archives_list.remove_option, 'loading-indicator')
-
 
 @textual.work(thread=True)
 def add_archive_files(browse_app, files_list, config, repository, archive_name, timer):
     paths = borgmatic.actions.browse.controller.get_archive_files(config, repository, archive_name)
+    browse_app.call_from_thread(timer.stop)
+    browse_app.call_from_thread(files_list.remove_option, 'loading-indicator')
 
     for path in paths:
         browse_app.call_from_thread(
@@ -78,66 +79,144 @@ def add_archive_files(browse_app, files_list, config, repository, archive_name, 
             textual.widgets.option_list.Option(path, id=path),
         )
 
-    browse_app.call_from_thread(timer.stop)
-    browse_app.call_from_thread(files_list.remove_option, 'loading-indicator')
-
 
 class Configuration_files_list(textual.widgets.OptionList):
     def __init__(self, configs):
+        self.configs = configs
+        home_directory = os.path.expanduser('~')
+
         super().__init__(
             *(
-                textual.widgets.option_list.Option(f'{config_path}', id=config_path)
+                textual.widgets.option_list.Option(f'{unexpanded_path}', id=config_path)
                 for config_path in configs.keys()
+                for unexpanded_path in (config_path.replace(home_directory, '~'),)
+
             ),
             id='configuration-files-list',
             classes='panel',
         )
-        self.configs = configs
         self.border_title = 'configuration files'
+
+    def make_preview(self, option_id):
+        return Repositories_list(config=self.configs[option_id])
 
 
 class Repositories_list(textual.widgets.OptionList):
-    def __init__(self):
-        super().__init__(id='repositories-list', classes='panel')
-        self.border_title = 'repositories'
-
-    def set_repositories(self, config):
+    def __init__(self, config):
         self.config = config
         self.repositories = config['repositories']
 
-        self.clear_options()
-        self.add_options(
-            textual.widgets.option_list.Option(label, id=index)
-            for index, repository in enumerate(self.repositories)
-            for label in (repository.get('label', repository.get('path')),)
+        super().__init__(
+            *(
+                textual.widgets.option_list.Option(label, id=index)
+                for index, repository in enumerate(self.repositories)
+                for label in (repository.get('label', repository.get('path')),)
+            ),
+            id='repositories-list',
+            classes='panel',
         )
+        self.border_title = 'repositories'
+
+    def make_preview(self, option_id):
+        return Archives_list(config=self.config, repository=self.repositories[option_id])
 
 
 class Archives_list(textual.widgets.OptionList):
-    def __init__(self):
+    def __init__(self, config, repository):
+        self.config = config
+        self.repository = repository
+
         super().__init__(id='archives-list', classes='panel')
         self.border_title = 'archives'
 
+        timer = add_inline_loading_indicator(self)
+
+        add_repository_archives(
+            self.app,
+            archives_list=self,
+            config=self.config,
+            repository=self.repository,
+            timer=timer,
+        )
+
+    def make_preview(self, option_id):
+        return Files_list(config=self.config, repository=self.repository, archive_name=option_id)
+
 
 class Files_list(textual.widgets.OptionList):
-    def __init__(self):
+    def __init__(self, config, repository, archive_name):
+        self.config = config
+        self.repository = repository
+        self.archive_name = archive_name
+
         super().__init__(id='files-list', classes='panel')
         self.border_title = 'files'
+
+        timer = add_inline_loading_indicator(self)
+
+        add_archive_files(
+            self.app,
+            files_list=self,
+            config=self.config,
+            repository=self.repository,
+            archive_name=self.archive_name,
+            timer=timer,
+        )
+
+
+class Carousel(textual.containers.Horizontal):
+    def __init__(self, option_lists):
+        self.option_lists = option_lists
+        self.focused_option_list = option_lists[0]
+        self.preview_option_list = None
+
+        super().__init__()
+
+    def compose(self):
+        for option_list in self.option_lists:
+            yield option_list
+
+        self.focused_option_list.focus()
+
+    def on_option_list_option_highlighted(self, event):
+        if event.option_list != self.focused_option_list:
+            return
+
+        # Remove any existing preview from the option list.
+        focused_index = self.option_lists.index(event.option_list)
+        del(self.option_lists[(focused_index + 1):])
+
+        # Add a fresh preview.
+        self.preview_option_list = event.option_list.make_preview(event.option_id)
+        self.option_lists.append(self.preview_option_list)
+        self.refresh(recompose=True)
+
+    def on_option_list_option_selected(self, event):
+        if event.option_list != self.focused_option_list or not self.preview_option_list:
+            return
+
+        self.focused_option_list.styles.display = 'none'
+        self.focused_option_list = self.preview_option_list
+        self.preview_option_list = None
+
+        self.focused_option_list.styles.display = 'block'
+        self.focused_option_list.focus()
+        self.focused_option_list.highlighted = 0
+
+        # Trigger on_option_list_option_highlighted() for the newly focused option list.
+        self.focused_option_list.post_message(
+            self.focused_option_list.OptionHighlighted(
+                self.focused_option_list,
+                self.focused_option_list.options[0],
+                0,
+            )
+        )
 
 
 class Logs(textual.widgets.RichLog):
     def __init__(self):
         super().__init__(markup=True, classes='panel')
         self.border_title = 'logs'
-
-
-def unexpand_path(config_path):
-    home_directory = os.path.expanduser('~')
-
-    if config_path.startswith(home_directory):
-        return config_path.replace(home_directory, '~')
-
-    return config_path
 
 
 class Browse_app(textual.app.App):
@@ -156,14 +235,6 @@ class Browse_app(textual.app.App):
             height: 100%;
         }
 
-        #archives-list {
-            display: none;
-        }
-
-        #files-list {
-            display: none;
-        }
-
         #logs-container {
             height: 50%;
             display: none;
@@ -176,17 +247,8 @@ class Browse_app(textual.app.App):
         super().__init__()
 
     def compose(self):
-        self.configuration_files_list = Configuration_files_list(self.configs)
-        self.repositories_list = Repositories_list()
-        self.archives_list = Archives_list()
-        self.files_list = Files_list()
-
         yield textual.widgets.Header()
-        with textual.containers.Horizontal():
-            yield self.configuration_files_list
-            yield self.repositories_list
-            yield self.archives_list
-            yield self.files_list
+        yield Carousel([Configuration_files_list(self.configs)])
 
         with textual.containers.Horizontal(id='logs-container'):
             logs_widget = Logs()
@@ -211,44 +273,6 @@ class Browse_app(textual.app.App):
 
     def on_mount(self):
         self.title = 'borgmatic browse'
-
-    def on_option_list_option_highlighted(self, event):
-        if event.option_list == self.configuration_files_list:
-            config = self.configuration_files_list.configs[event.option_id]
-            self.repositories_list.set_repositories(config)
-        elif event.option_list == self.repositories_list:
-            timer = add_inline_loading_indicator(self.archives_list)
-
-            add_repository_archives(
-                self,
-                archives_list=self.archives_list,
-                config=self.repositories_list.config,
-                repository=self.repositories_list.repositories[event.option_id],
-                timer=timer,
-            )
-        elif event.option_list == self.archives_list:
-            timer = add_inline_loading_indicator(self.files_list)
-
-            add_archive_files(
-                self,
-                files_list=self.files_list,
-                config=self.repositories_list.config,
-                repository=self.repositories_list.repositories[self.repositories_list.highlighted_option.id],
-                archive_name=event.option_id,
-                timer=timer,
-            )
-
-    def on_option_list_option_selected(self, event):
-        if event.option_list == self.configuration_files_list:
-            self.configuration_files_list.styles.display = 'none'
-            self.archives_list.styles.display = 'block'
-            self.repositories_list.focus()
-            self.repositories_list.highlighted = 0
-        elif event.option_list == self.repositories_list:
-            self.repositories_list.styles.display = 'none'
-            self.files_list.styles.display = 'block'
-            self.archives_list.focus()
-            self.archives_list.highlighted = 0
 
     def action_toggle_logs(self):
         logs_container = self.query_one('#logs-container')
