@@ -115,10 +115,10 @@ def capture_archive_listing(
     Given a local or remote repository path, an archive name, a configuration dict, the local Borg
     version, global arguments as an argparse.Namespace, the archive paths (or Borg patterns) in
     which to list files, the Borg path format indicating keys to include in the output, and local
-    and remote Borg paths, capture the output of listing that archive and return it as a sequence of
-    dicts, one per path.
+    and remote Borg paths, capture the output of listing that archive and return it as a generator
+    of dicts, one per path.
     '''
-    return tuple(
+    return (
         json.loads(entry)
         for entry in execute_command_and_capture_output(
             make_list_command(

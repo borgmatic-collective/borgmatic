@@ -9,15 +9,13 @@ import borgmatic.actions.browse.controller
 import rich.text
 import textual._context
 import textual.app
+import textual.color
 import textual.binding
 import textual.reactive
 import textual.widgets
 
 
-class Node_type(enum.Enum):
-    CONFIGURATION = 0
-    REPOSITORY = 1
-    ARCHIVE = 2
+class Path_type(enum.Enum):
     DIRECTORY = 3
     FILE = 4
     DUMP = 5
@@ -26,183 +24,110 @@ class Node_type(enum.Enum):
 
 
 PATH_TYPE_ICONS = {
-    Node_type.CONFIGURATION: '⚙️ ',
-    Node_type.REPOSITORY: '🗃️ ',
-    Node_type.ARCHIVE: '🗂️ ',
-    Node_type.DIRECTORY: '📁',
-    Node_type.FILE: '📄',
-    Node_type.DUMP: '🗄️',
-    Node_type.BOOTSTRAP: '🥾',
-    Node_type.LOADING: '⏳',
+    Path_type.DIRECTORY: '📁',
+    Path_type.FILE: '📄',
+    Path_type.DUMP: '🗄️',
+    Path_type.BOOTSTRAP: '🥾',
 }
+PATH_TYPE_EXPANDED_ICONS = {Path_type.DIRECTORY: '📂'}
+LOADING_DOT_INTERVAL_SECONDS = 0.3
 
 
-PATH_TYPE_EXPANDED_ICONS = {Node_type.DIRECTORY: '📂'}
+def update_inline_loading_indicator(option_list, loading_option):
+    option_list.replace_option_prompt(
+        'loading-indicator', (str(loading_option.prompt) + '.').replace('....', '')
+    )
+
+
+def add_inline_loading_indicator(option_list):
+    option_list.clear_options()
+    loading_option = textual.widgets.option_list.Option(f'⏳ Loading...', id='loading-indicator')
+    option_list.add_option(loading_option)
+
+    return option_list.set_interval(
+        LOADING_DOT_INTERVAL_SECONDS,
+        functools.partial(update_inline_loading_indicator, option_list, loading_option),
+    )
 
 
 @textual.work(thread=True)
-async def get_repository_archives(browse_tree, repository_node, config, repository, timer):
+async def add_repository_archives(
+    browse_app, archives_list, config, repository, timer
+):
     archives_data = borgmatic.actions.browse.controller.get_repository_archives(config, repository)
-
-    browse_tree.app.call_from_thread(add_repository_archives, repository_node, archives_data, timer)
-
-
-def add_repository_archives(repository_node, archives_data, timer):
-    timer.stop()
-
-    for child in repository_node.children:
-        child.remove()
 
     # Reverse the archives, so the common case of accessing the latest archive is easy because it's
     # at the top.
-    for archive in reversed(archives_data['archives']):
-        repository_node.add(
-            archive['archive'],
-            data={
-                'type': Node_type.ARCHIVE,
-                'config': repository_node.data['config'],
-                'repository': repository_node.data['repository'],
-                'archive': archive,
-            },
-        )
+    browse_app.call_from_thread(
+        archives_list.add_options,
+        (
+            textual.widgets.option_list.Option(archive['archive'], id=archive['archive'])
+            for archive in reversed(archives_data['archives'])
+        ),
+    )
+
+    browse_app.call_from_thread(timer.stop)
+    browse_app.call_from_thread(archives_list.remove_option, 'loading-indicator')
 
 
+# FIXME: Revamp for option list instead of tree.
 @textual.work(thread=True)
-def get_archive_files(browse_tree, archive_node, config, repository, archive, timer):
+def add_archive_files(browse_tree, archive_node, config, repository, archive, timer, loading_node):
     files_data = borgmatic.actions.browse.controller.get_archive_files(config, repository, archive)
-
-    browse_tree.app.call_from_thread(add_archive_files, archive_node, files_data, timer)
-
-
-def add_path(archive_node, config, repository, archive, file_data):
-    path_pieces = file_data['path'].split(os.path.sep)
-    path_leftover = path_pieces[1:]
-
-    # Get or add a child with a particular label.
-    try:
-        path_node = next(
-            child for child in archive_node.children if str(child.label) == path_pieces[0]
-        )
-    except StopIteration:
-        path_node = archive_node.add(
-            path_pieces[0],
-            data={
-                'type': Node_type.DIRECTORY
-                if file_data['type'] == 'd' or path_leftover
-                else Node_type.FILE,
-                'config': config,
-                'repository': repository,
-                'archive': archive,
-                'file': file_data,
-            },
-        )
-
-    if path_leftover:
-        add_path(
-            path_node,
-            config,
-            repository,
-            archive,
-            dict(file_data, **{'path': os.path.sep.join(path_leftover)}),
-        )
-
-
-def add_archive_files(archive_node, files_data, timer):
     config = archive_node.data['config']
     repository = archive_node.data['repository']
     archive = archive_node.data['archive']
 
-    timer.stop()
-
-    for child in archive_node.children:
-        child.remove()
-
     for file_data in files_data:
-        add_path(archive_node, config, repository, archive, file_data)
+        add_path(
+            browse_tree, archive_node, config, repository, archive, timer, loading_node, file_data
+        )
+
+    browse_tree.app.call_from_thread(loading_node.remove)
+    browse_tree.app.call_from_thread(timer.stop)
 
 
-class Browse_tree(textual.widgets.Tree):
-    COMPONENT_CLASSES = textual.widgets.DirectoryTree.COMPONENT_CLASSES
-    DEFAULT_CSS = textual.widgets.DirectoryTree.DEFAULT_CSS
-    LOADING_DOT_INTERVAL_SECONDS = 0.3
+class Configuration_files_list(textual.widgets.OptionList):
+    def __init__(self, configs):
+        super().__init__(
+            *(
+                textual.widgets.option_list.Option(f'{config_path}', id=config_path)
+                for config_path in configs.keys()
+            ),
+            id='configuration-files-list',
+            classes='panel',
+        )
+        self.configs = configs
+        self.border_title = 'configuration files'
 
+
+class Repositories_list(textual.widgets.OptionList):
     def __init__(self):
-        super().__init__('root')
+        super().__init__(id='repositories-list', classes='panel')
+        self.border_title = 'repositories'
 
-        self.show_root = False
+    def set_repositories(self, config):
+        self.config = config
+        self.repositories = config['repositories']
 
-    def render_label(self, node, base_style, style):
-        node_label = node._label.copy()
-        node_label.stylize(style)
+        self.clear_options()
+        self.add_options(
+            textual.widgets.option_list.Option(label, id=index)
+            for index, repository in enumerate(self.repositories)
+            for label in (repository.get('label', repository.get('path')),)
+        )
 
-        if not self.is_mounted:
-            return node_label
 
-        if node._allow_expand:
-            icon = PATH_TYPE_ICONS.get(node.data['type'] if node.data else Node_type.FILE)
-            expanded_icon = PATH_TYPE_EXPANDED_ICONS.get(
-                node.data['type'] if node.data else Node_type.FILE, icon
-            )
-            prefix = (f'{expanded_icon} ' if node.is_expanded else f'{icon} ', base_style)
-            node_label.stylize_before(
-                self.get_component_rich_style("directory-tree--folder", partial=True)
-            )
-        else:
-            prefix = (f'{PATH_TYPE_ICONS.get(node.data["type"])} ', base_style)
-            node_label.stylize_before(
-                self.get_component_rich_style("directory-tree--file", partial=True),
-            )
-            node_label.highlight_regex(
-                r"\..+$",
-                self.get_component_rich_style("directory-tree--extension", partial=True),
-            )
+class Archives_list(textual.widgets.OptionList):
+    def __init__(self):
+        super().__init__(id='archives-list', classes='panel')
+        self.border_title = 'archives'
 
-        if node_label.plain.startswith('.'):
-            node_label.stylize_before(
-                self.get_component_rich_style("directory-tree--hidden", partial=True)
-            )
 
-        return rich.text.Text.assemble(prefix, node_label)
-
-    def update_loading_dots(self, loading_node):
-        loading_node.label = (str(loading_node.label) + '.').replace('....', '')
-
-    def on_tree_node_expanded(self, event):
-        if event.node.data['type'] == Node_type.REPOSITORY and len(event.node.children) == 0:
-            loading_node = event.node.add_leaf(
-                'Loading archives...', data={'type': Node_type.LOADING}
-            )
-            timer = self.set_interval(
-                self.LOADING_DOT_INTERVAL_SECONDS,
-                functools.partial(self.update_loading_dots, loading_node=loading_node),
-            )
-            self.call_after_refresh(
-                functools.partial(
-                    get_repository_archives,
-                    self,
-                    repository_node=event.node,
-                    config=event.node.data['config'],
-                    repository=event.node.data['repository'],
-                    timer=timer,
-                )
-            )
-        elif event.node.data['type'] == Node_type.ARCHIVE and len(event.node.children) == 0:
-            loading_node = event.node.add_leaf('Loading files...', data={'type': Node_type.LOADING})
-            timer = self.set_interval(
-                self.LOADING_DOT_INTERVAL_SECONDS,
-                functools.partial(self.update_loading_dots, loading_node=loading_node),
-            )
-            self.call_after_refresh(
-                functools.partial(
-                    get_archive_files,
-                    self,
-                    archive_node=event.node,
-                    config=event.node.data['config'],
-                    repository=event.node.data['repository'],
-                    archive=event.node.data['archive'],
-                    timer=timer,
-                )
-            )
+class Logs(textual.widgets.RichLog):
+    def __init__(self):
+        super().__init__(markup=True, classes='panel')
+        self.border_title = 'logs'
 
 
 def unexpand_path(config_path):
@@ -216,12 +141,29 @@ def unexpand_path(config_path):
 
 class Browse_app(textual.app.App):
     BINDINGS = [
-        textual.binding.Binding(key='escape', action='quit', description='quit'),
+        textual.binding.Binding(key='q', action='quit', description='quit'),
+        textual.binding.Binding(key='l', action='toggle_logs', description='logs'),
         textual.binding.Binding(
-            key='alt+m', action='command_palette', description='menu', show=False
+            key='c', action='command_palette', description='commands', show=False
         ),
     ]
-    COMMAND_PALETTE_BINDING = 'alt+m'
+    COMMAND_PALETTE_BINDING = 'c'
+    CSS = '''
+        .panel {
+            border: round $primary;
+            border-title-color: $text-primary;
+            height: 100%;
+        }
+
+        #archives-list {
+            display: none;
+        }
+
+        #logs-container {
+            height: 50%;
+            display: none;
+        }
+    '''
 
     def __init__(self, configs):
         self.configs = configs
@@ -229,32 +171,22 @@ class Browse_app(textual.app.App):
         super().__init__()
 
     def compose(self):
-        tree = Browse_tree()
-        tree.styles.border = ('round', 'gray')
-
-        for config_path, config in self.configs.items():
-            config_node = tree.root.add(
-                unexpand_path(config_path), data={'type': Node_type.CONFIGURATION, 'config': config}
-            )
-
-            for repository in config['repositories']:
-                config_node.add(
-                    repository['path'],
-                    data={'type': Node_type.REPOSITORY, 'config': config, 'repository': repository},
-                )
-
-        first_child = tree.root.children[0]
-        tree.select_node(first_child)
-        tree.scroll_to_node(first_child)
+        self.configuration_files_list = Configuration_files_list(self.configs)
+        self.repositories_list = Repositories_list()
+        self.archives_list = Archives_list()
 
         yield textual.widgets.Header()
-        yield tree
-        log_widget = textual.widgets.RichLog(markup=True)
-        log_widget.styles.border = ('round', 'gray')
-        yield log_widget
+        with textual.containers.Horizontal():
+            yield self.configuration_files_list
+            yield self.repositories_list
+            yield self.archives_list
+
+        with textual.containers.Horizontal(id='logs-container'):
+            logs_widget = Logs()
+            yield logs_widget
         yield textual.widgets.Footer()
 
-        handler = Browse_log_handler(self, log_widget)
+        handler = Browse_log_handler(self, logs_widget)
         handler.setFormatter(Rich_color_formatter())
         logger = logging.getLogger()
         logger.setLevel(min(handler.level for handler in logger.handlers))
@@ -272,17 +204,40 @@ class Browse_app(textual.app.App):
 
     def on_mount(self):
         self.title = 'borgmatic browse'
-        self.theme = 'ansi-light'
-        tree = self.query_one(textual.widgets.Tree)
 
-        for child in tree.root.children:
-            child.expand()
+    def on_option_list_option_highlighted(self, event):
+        if event.option_list == self.configuration_files_list:
+            config = self.configuration_files_list.configs[event.option_id]
+            self.repositories_list.set_repositories(config)
+        elif event.option_list == self.repositories_list:
+            timer = add_inline_loading_indicator(self.archives_list)
+
+            add_repository_archives(
+                self,
+                archives_list=self.archives_list,
+                config=self.repositories_list.config,
+                repository=self.repositories_list.repositories[event.option_id],
+                timer=timer,
+            )
+
+    def on_option_list_option_selected(self, event):
+        if event.option_list == self.configuration_files_list:
+            self.configuration_files_list.styles.display = 'none'
+            self.archives_list.styles.display = 'block'
+            self.repositories_list.focus()
+            self.repositories_list.highlighted = 0
+
+    def action_toggle_logs(self):
+        logs_container = self.query_one('#logs-container')
+        logs_container.styles.display = (
+            'none' if logs_container.styles.display == 'block' else 'block'
+        )
 
 
 class Browse_log_handler(logging.Handler):
-    def __init__(self, app, log_widget):
+    def __init__(self, app, logs_widget):
         self.app = app
-        self.log_widget = log_widget
+        self.logs_widget = logs_widget
 
         super().__init__()
 
@@ -291,10 +246,10 @@ class Browse_log_handler(logging.Handler):
 
         try:
             worker = textual.worker.get_current_worker()
-            self.app.call_from_thread(self.log_widget.write, message)
-        except textual.worker.NoActiveWorker:
+            self.app.call_from_thread(self.logs_widget.write, message)
+        except (RuntimeError, textual.worker.NoActiveWorker):
             with contextlib.suppress(textual._context.NoActiveAppError):
-                self.log_widget.write(message)
+                self.logs_widget.write(message)
 
 
 class Rich_color_formatter(logging.Formatter):

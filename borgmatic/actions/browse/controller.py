@@ -56,6 +56,7 @@ def get_archive_files(config, repository, archive):
             config,
             local_borg_version,
             global_arguments,
+            list_paths=(r're:^([^/]+/){1,2}[^/]+$',),  # TODO
             local_path=local_path,
             remote_path=remote_path,
         )
