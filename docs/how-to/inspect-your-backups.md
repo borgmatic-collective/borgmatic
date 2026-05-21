@@ -142,8 +142,11 @@ documentation for information on output format, what is compared, and more.
 <span class="minilink minilink-addedin">New in version 2.1.6</span> <span
 class="minilink minilink-addedin">Experimental feature</span> borgmatic has an
 experimental console UI for browsing your repositories, archives, and files.
-This is handy if you want to quickly look at the contents of your backups—but
-without messing with borgmatic's command-line.
+
+This feature is not intended to be a general-purpose Borg UI with every
+borgmatic feature, but rather it's for use cases like quickly looking at the
+contents of your backups when you're feeling too lazy to type out a full
+borgmatic command-line.
 
 Depending on how you installed borgmatic, it may not have come with the
 necessary Python libraries to support the browse action. For instance, if you
@@ -163,13 +166,15 @@ Once the libraries are installed, run the following to access the browse action:
 borgmatic browse
 ```
 
-This launches a console UI where you can select a borgmatic configuration file,
-select a Borg repository from it, select an archive in that repository, and even
-browse the backed up files in that archive.
+This launches a console UI where you can select a borgmatic configuration file
+(if there's more than one), select a Borg repository, select an archive in that
+repository, and even browse the backed up files in that archive.
 
 Use the keyboard or the mouse to navigate the UI. The footer at the bottom of
-the screen shows some of the available keys. Logs shows up directly in the UI,
-although hidden by default.
+the screen shows some of the available keys. Logs shows up directly in the UI at
+the [selected
+verbosity](https://torsion.org/borgmatic/reference/command-line/logging/),
+although logs are hidden by default.
 
 Please [provide
 feedback](https://torsion.org/borgmatic/#support-and-contributing) if you find
