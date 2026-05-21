@@ -171,7 +171,7 @@ This launches a console UI where you can select a borgmatic configuration file
 repository, and even browse the backed up files in that archive.
 
 Use the keyboard or the mouse to navigate the UI. The footer at the bottom of
-the screen shows some of the available keys. Logs shows up directly in the UI at
+the screen shows some of the available keys. Logs show up directly in the UI at
 the [selected
 verbosity](https://torsion.org/borgmatic/reference/command-line/logging/),
 although logs are hidden by default.

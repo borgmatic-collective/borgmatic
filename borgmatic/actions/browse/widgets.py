@@ -33,9 +33,6 @@ class Configuration_files_list(textual.widgets.OptionList):
         )
         self.border_title = 'configuration files'
 
-    def make_next_panel(self, option_id):
-        return Repositories_list(config=self.configs[option_id])
-
 
 class Repositories_list(textual.widgets.OptionList):
     BINDINGS = OPTION_LIST_BINDINGS
@@ -53,9 +50,6 @@ class Repositories_list(textual.widgets.OptionList):
             classes='panel',
         )
         self.border_title = 'repositories'
-
-    def make_next_panel(self, option_id):
-        return Archives_list(config=self.config, repository=self.repositories[option_id])
 
 
 class Archives_list(textual.widgets.OptionList):
@@ -77,11 +71,6 @@ class Archives_list(textual.widgets.OptionList):
             config=self.config,
             repository=self.repository,
             timer=timer,
-        )
-
-    def make_next_panel(self, option_id):
-        return Directory_list(
-            config=self.config, repository=self.repository, archive_name=option_id
         )
 
     def on_option_list_option_highlighted(self, event):
@@ -124,28 +113,6 @@ class Directory_list(textual.widgets.OptionList):
             timer=timer,
         )
 
-    def make_next_panel(self, option_id):
-        option = self.get_option(option_id)
-
-        if option.prompt.startswith(
-            borgmatic.actions.browse.paths.PATH_TYPE_ICONS[
-                borgmatic.actions.browse.paths.Path_type.DIRECTORY.value
-            ]
-        ):
-            return Directory_list(
-                self.config,
-                self.repository,
-                self.archive_name,
-                path_components=self.path_components + (option_id,),
-            )
-
-        return File_preview(
-            self.config,
-            self.repository,
-            self.archive_name,
-            file_path=os.path.sep.join(self.path_components + (option_id,)),
-        )
-
     def on_option_list_option_highlighted(self, event):
         if self.highlighted not in (None, 0):
             self.highlighted_option_changed = True
@@ -182,8 +149,42 @@ class File_preview(textual.widgets.Static):
             timer=timer,
         )
 
-    def make_next_panel(self, option_id):
-        return None
+
+def make_next_panel(focused_panel, option_id):
+    if isinstance(focused_panel, Configuration_files_list):
+        return Repositories_list(config=focused_panel.configs[option_id])
+
+    if isinstance(focused_panel, Repositories_list):
+        return Archives_list(config=focused_panel.config, repository=focused_panel.repositories[option_id])
+
+    if isinstance(focused_panel, Archives_list):
+        return Directory_list(
+            config=focused_panel.config, repository=focused_panel.repository, archive_name=option_id
+        )
+
+    if isinstance(focused_panel, Directory_list):
+        option = focused_panel.get_option(option_id)
+
+        if option.prompt.startswith(
+            borgmatic.actions.browse.paths.PATH_TYPE_ICONS[
+                borgmatic.actions.browse.paths.Path_type.DIRECTORY.value
+            ]
+        ):
+            return Directory_list(
+                focused_panel.config,
+                focused_panel.repository,
+                focused_panel.archive_name,
+                path_components=focused_panel.path_components + (option_id,),
+            )
+
+        return File_preview(
+            focused_panel.config,
+            focused_panel.repository,
+            focused_panel.archive_name,
+            file_path=os.path.sep.join(focused_panel.path_components + (option_id,)),
+        )
+
+    return None
 
 
 class Carousel(textual.containers.Horizontal):
@@ -231,7 +232,7 @@ class Carousel(textual.containers.Horizontal):
             self.focused_panel = self.panels[next_panel_index]
             self.focused_panel.styles.display = 'block'
         else:
-            self.focused_panel = self.focused_panel.make_next_panel(option_id)
+            self.focused_panel = make_next_panel(self.focused_panel, option_id)
             self.panels.append(self.focused_panel)
             self.focused_panel.highlighted = 0
 
