@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def get_repository_archives(config, repository):
     with borgmatic.logger.Log_prefix(repository.get('label', repository['path'])):
-        logger.answer('Listing repository')
+        logger.info('Listing repository')
         repo_list_arguments = argparse.Namespace(
             repository=repository['path'],
             short=None,
@@ -45,7 +45,10 @@ def get_repository_archives(config, repository):
 
 def get_archive_files(config, repository, archive_name, list_path=None):
     with borgmatic.logger.Log_prefix(repository.get('label', repository['path'])):
-        logger.answer(f"Listing archive {archive_name}")
+        if list_path:
+            logger.info(f"Listing archive {archive_name} at path {list_path}")
+        else:
+            logger.info(f"Listing archive {archive_name}")
 
         global_arguments = argparse.Namespace()
         local_path = config.get('local_path', 'borg')
@@ -80,24 +83,26 @@ READLINES_HINT_BYTES = 2000
 
 
 def get_archive_file_content(config, repository, archive_name, file_path):
-    local_path = config.get('local_path', 'borg')
-    remote_path = config.get('remote_path')
+    with borgmatic.logger.Log_prefix(repository.get('label', repository['path'])):
+        logger.info(f'Getting archive content of file {file_path}')
+        local_path = config.get('local_path', 'borg')
+        remote_path = config.get('remote_path')
 
-    lines = borgmatic.borg.extract.extract_archive(
-        dry_run=False,
-        repository=repository['path'],
-        archive=archive_name,
-        paths=(file_path,),
-        config=config,
-        local_borg_version=borgmatic.borg.version.local_borg_version(config, local_path),
-        global_arguments=argparse.Namespace(),
-        local_path=local_path,
-        remote_path=remote_path,
-        destination_path=None,
-        strip_components=None,
-        extract_to_stdout=True,
-    ).stdout.readlines(READLINES_HINT_BYTES)
+        lines = borgmatic.borg.extract.extract_archive(
+            dry_run=False,
+            repository=repository['path'],
+            archive=archive_name,
+            paths=(file_path,),
+            config=config,
+            local_borg_version=borgmatic.borg.version.local_borg_version(config, local_path),
+            global_arguments=argparse.Namespace(),
+            local_path=local_path,
+            remote_path=remote_path,
+            destination_path=None,
+            strip_components=None,
+            extract_to_stdout=True,
+        ).stdout.readlines(READLINES_HINT_BYTES)
 
-    content = ''.join(line.decode() for line in lines)
+        content = ''.join(line.decode() for line in lines)
 
-    return content if len(content) < READLINES_HINT_BYTES else f'{content}[...]'
+        return content if len(content) < READLINES_HINT_BYTES else f'{content}[...]'
