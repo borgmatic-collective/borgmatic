@@ -9,8 +9,9 @@ import borgmatic.actions.browse.workers
 
 
 OPTION_LIST_BINDINGS = textual.widgets.OptionList.BINDINGS + [
-    textual.binding.Binding(key='j', action='cursor_down', description='down', show=False),
-    textual.binding.Binding(key='k', action='cursor_up', description='up', show=False),
+    textual.binding.Binding(key='up,k', action='cursor_up', description='up', show=True, priority=True),
+    textual.binding.Binding(key='down,j', action='cursor_down', description='down', show=True, priority=True),
+    textual.binding.Binding(key='enter', action='select', description='select', show=True, priority=True),
     textual.binding.Binding(key='right,l', action='select', description='select', show=False),
 ]
 
