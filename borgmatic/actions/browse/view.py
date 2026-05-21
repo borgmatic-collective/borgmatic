@@ -465,20 +465,3 @@ class Rich_color_formatter(logging.Formatter):
         record.prefix = f'{self.prefix}: ' if self.prefix else ''
 
         return f'[{color}]{super().format(record)}[/{color}]'
-
-
-def run_browse(
-    diff_arguments,
-    global_arguments,
-    configs,
-):
-    '''
-    Run the "browse" action for the given repository.
-    '''
-    if not configs:
-        return
-
-    logging.getLogger('asyncio').setLevel(logging.WARNING)
-
-    app = Browse_app(configs)
-    app.run()

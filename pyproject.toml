@@ -21,7 +21,6 @@ dependencies = [
     "packaging",
     "requests",
     "ruamel.yaml>0.15.0",
-    "textual",
 ]
 
 [project.scripts]
@@ -31,7 +30,8 @@ validate-borgmatic-config = "borgmatic.commands.validate_config:main"
 
 [project.optional-dependencies]
 Apprise = ["apprise"]
-dev = ["textual-dev"]
+browse = ["textual"]
+browse-dev = ["textual-dev"]
 
 [project.urls]
 Homepage = "https://torsion.org/borgmatic"
