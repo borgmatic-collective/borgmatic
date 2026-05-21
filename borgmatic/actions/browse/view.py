@@ -132,7 +132,16 @@ def load_file_preview(browse_app, file_preview, config, repository, archive_name
     browse_app.call_from_thread(file_preview.update, file_content)
 
 
+OPTION_LIST_BINDINGS = textual.widgets.OptionList.BINDINGS + [
+    textual.binding.Binding(key='j', action='cursor_down', description='down', show=False),
+    textual.binding.Binding(key='k', action='cursor_up', description='up', show=False),
+    textual.binding.Binding(key='right,l', action='select', description='select', show=False),
+]
+
+
 class Configuration_files_list(textual.widgets.OptionList):
+    BINDINGS = OPTION_LIST_BINDINGS
+
     def __init__(self, configs):
         self.configs = configs
         home_directory = os.path.expanduser('~')
@@ -153,6 +162,8 @@ class Configuration_files_list(textual.widgets.OptionList):
 
 
 class Repositories_list(textual.widgets.OptionList):
+    BINDINGS = OPTION_LIST_BINDINGS
+
     def __init__(self, config):
         self.config = config
         self.repositories = config['repositories']
@@ -172,6 +183,8 @@ class Repositories_list(textual.widgets.OptionList):
 
 
 class Archives_list(textual.widgets.OptionList):
+    BINDINGS = OPTION_LIST_BINDINGS
+
     def __init__(self, config, repository):
         self.config = config
         self.repository = repository
@@ -199,6 +212,8 @@ class Archives_list(textual.widgets.OptionList):
 
 
 class Directory_list(textual.widgets.OptionList):
+    BINDINGS = OPTION_LIST_BINDINGS
+
     def __init__(self, config, repository, archive_name, path_components=None):
         self.config = config
         self.repository = repository
@@ -346,7 +361,7 @@ class Logs(textual.widgets.RichLog):
 class Browse_app(textual.app.App):
     BINDINGS = [
         textual.binding.Binding(key='q', action='quit', description='quit'),
-        textual.binding.Binding(key='l', action='toggle_logs', description='logs'),
+        textual.binding.Binding(key='v', action='toggle_logs', description='view logs'),
         textual.binding.Binding(
             key='c', action='command_palette', description='commands', show=False
         ),
