@@ -89,7 +89,7 @@ async def add_repository_archives(
                 loading_option,
             )
         )
-        archives_list.highlighted = archives_list.get_option_index(highlighted_option.id) if highlighted_option and archives_list.highlighted != 0 else 0
+        archives_list.highlighted = archives_list.get_option_index(highlighted_option.id) if highlighted_option and archives_list.highlighted_option_changed else 0
 
     browse_app.call_from_thread(archives_list.remove_option, 'loading-indicator')
     browse_app.call_from_thread(timer.stop)
@@ -118,7 +118,7 @@ def add_archive_files(browse_app, directory_list, config, repository, archive_na
             key=lambda option: ((option.id == 'loading-indicator'), option.prompt)
         )
         browse_app.call_from_thread(directory_list.set_options, sorted_options)
-        directory_list.highlighted = directory_list.get_option_index(highlighted_option.id) if highlighted_option and directory_list.highlighted != 0 else 0
+        directory_list.highlighted = directory_list.get_option_index(highlighted_option.id) if highlighted_option and directory_list.highlighted_option_changed else 0
 
     browse_app.call_from_thread(timer.stop)
     browse_app.call_from_thread(directory_list.remove_option, 'loading-indicator')
@@ -148,12 +148,6 @@ class Configuration_files_list(textual.widgets.OptionList):
         )
         self.border_title = 'configuration files'
 
-    def focus(self):
-        super().focus()
-
-        if self.highlighted is None and self.options:
-            self.highlighted = 0
-
     def make_next_panel(self, option_id):
         return Repositories_list(config=self.configs[option_id])
 
@@ -172,19 +166,6 @@ class Repositories_list(textual.widgets.OptionList):
             classes='panel',
         )
         self.border_title = 'repositories'
-        self.highlighted = None
-
-    def add_option(self, option):
-        super().add_option(option)
-
-        if self.highlighted is None and self.options:
-            self.highlighted = 0
-
-    def focus(self):
-        super().focus()
-
-        if self.highlighted is None and self.options:
-            self.highlighted = 0
 
     def make_next_panel(self, option_id):
         return Archives_list(config=self.config, repository=self.repositories[option_id])
@@ -197,6 +178,7 @@ class Archives_list(textual.widgets.OptionList):
 
         super().__init__(classes='panel')
         self.border_title = 'archives'
+        self.highlighted_option_changed = False
 
         timer = add_inline_loading_indicator(self)
 
@@ -208,20 +190,12 @@ class Archives_list(textual.widgets.OptionList):
             timer=timer,
         )
 
-    def add_option(self, option):
-        super().add_option(option)
-
-        if self.highlighted is None and self.options and self.can_focus:
-            self.highlighted = 0
-
-    def focus(self):
-        super().focus()
-
-        if self.highlighted is None and self.options:
-            self.highlighted = 0
-
     def make_next_panel(self, option_id):
         return Directory_list(config=self.config, repository=self.repository, archive_name=option_id)
+
+    def on_option_list_option_highlighted(self, event):
+        if self.highlighted not in (None, 0):
+            self.highlighted_option_changed = True
 
 
 class Directory_list(textual.widgets.OptionList):
@@ -230,6 +204,7 @@ class Directory_list(textual.widgets.OptionList):
         self.repository = repository
         self.archive_name = archive_name
         self.path_components = path_components or ()
+        self.highlighted_option_changed = False
 
         super().__init__(classes='panel')
         self.border_title = os.path.sep.join(self.path_components) if self.path_components else f'{archive_name}'
@@ -247,18 +222,6 @@ class Directory_list(textual.widgets.OptionList):
             timer=timer,
         )
 
-    def add_option(self, option):
-        super().add_option(option)
-
-        if self.highlighted is None and self.options and self.can_focus:
-            self.highlighted = 0
-
-    def focus(self):
-        super().focus()
-
-        if self.highlighted is None and self.options:
-            self.highlighted = 0
-
     def make_next_panel(self, option_id):
         option = self.get_option(option_id)
 
@@ -269,6 +232,10 @@ class Directory_list(textual.widgets.OptionList):
             return Directory_list(self.config, self.repository, self.archive_name, path_components=self.path_components + (option_id,))
 
         return File_preview(self.config, self.repository, self.archive_name, file_path=os.path.sep.join(self.path_components + (option_id,)))
+
+    def on_option_list_option_highlighted(self, event):
+        if self.highlighted not in (None, 0):
+            self.highlighted_option_changed = True
 
 
 class Null_list(textual.widgets.OptionList):
@@ -327,28 +294,38 @@ class Carousel(textual.containers.Horizontal):
         if previous_panel_index < 0:
             return
 
-        self.focused_panel.highlighted = None
         self.focused_panel.styles.display = 'none'
 
         self.focused_panel = self.panels[previous_panel_index]
         self.focused_panel.styles.display = 'block'
         self.focused_panel.can_focus = True
         self.focused_panel.focus()
-        self.focused_panel.highlighted = 0
 
     def action_next(self, option_id):
         '''
         Hide the current focused panel and create the next one.
         '''
         self.focused_panel.styles.display = 'none'
+        next_panel_index = self.panels.index(self.focused_panel) + 1
 
-        # TODO: If a panel already exists after this one, use it instead of creating a new instance.
+        if next_panel_index < len(self.panels):
+            self.focused_panel = self.panels[next_panel_index]
+            self.focused_panel.styles.display = 'block'
+        else:
+            self.focused_panel = self.focused_panel.make_next_panel(option_id)
+            self.panels.append(self.focused_panel)
+            self.focused_panel.highlighted = 0
 
-        self.focused_panel = self.focused_panel.make_next_panel(option_id)
-        self.panels.append(self.focused_panel)
         self.focused_panel.focus()
-        self.focused_panel.highlighted = 0
         self.refresh(recompose=True)
+
+    def on_option_list_option_highlighted(self, event):
+        '''
+        The highlighted option has changed, so truncate any next panels.
+        '''
+        next_panel_index = self.panels.index(self.focused_panel) + 1
+
+        del(self.panels[next_panel_index:])
 
     def on_option_list_option_selected(self, event):
         if event.option_list != self.focused_panel or event.option_id == 'loading-indicator':
