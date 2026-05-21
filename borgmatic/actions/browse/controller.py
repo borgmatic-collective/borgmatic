@@ -70,7 +70,7 @@ def get_archive_files(config, repository, archive_name, list_path=None):
         )
 
 
-READLINES_HINT_BYTES = 1000
+READLINES_HINT_BYTES = 2000
 
 
 def get_archive_file_content(config, repository, archive_name, file_path):

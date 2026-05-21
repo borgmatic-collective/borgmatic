@@ -6,6 +6,7 @@ import logging
 
 import borgmatic.actions.browse.controller
 
+import rich.syntax
 import rich.text
 import textual._context
 import textual.app
@@ -129,7 +130,8 @@ def load_file_preview(browse_app, file_preview, config, repository, archive_name
     file_content = borgmatic.actions.browse.controller.get_archive_file_content(config, repository, archive_name, file_path)
 
     browse_app.call_from_thread(timer.stop)
-    browse_app.call_from_thread(file_preview.update, file_content)
+    syntax_lexer = rich.syntax.Syntax.guess_lexer(file_path, file_content)
+    browse_app.call_from_thread(file_preview.update, rich.syntax.Syntax(file_content, syntax_lexer))
 
 
 OPTION_LIST_BINDINGS = textual.widgets.OptionList.BINDINGS + [
