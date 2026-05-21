@@ -76,6 +76,7 @@ async def add_repository_archives(
     # at the top.
     for index, archive in enumerate(reversed(archives_data['archives'])):
         label_pieces = (archive['archive'], '[dim](latest)[/dim]') if index == 0 else (archive['archive'],)
+        highlighted_option = archives_list.highlighted_option
 
         browse_app.call_from_thread(
             archives_list.remove_option,
@@ -88,6 +89,7 @@ async def add_repository_archives(
                 loading_option,
             )
         )
+        archives_list.highlighted = archives_list.get_option_index(highlighted_option.id) if highlighted_option and archives_list.highlighted != 0 else 0
 
     browse_app.call_from_thread(archives_list.remove_option, 'loading-indicator')
     browse_app.call_from_thread(timer.stop)
@@ -110,11 +112,13 @@ def add_archive_files(browse_app, directory_list, config, repository, archive_na
 
     for (path_type, file_path, link_target) in file_type_paths:
         pieces = (PATH_TYPE_ICONS.get(path_type, '?'), file_path) + (('→', link_target) if link_target else ())
+        highlighted_option = directory_list.highlighted_option
         sorted_options = sorted(
             directory_list.options + [textual.widgets.option_list.Option(' '.join(pieces), id=file_path)],
             key=lambda option: ((option.id == 'loading-indicator'), option.prompt)
         )
         browse_app.call_from_thread(directory_list.set_options, sorted_options)
+        directory_list.highlighted = directory_list.get_option_index(highlighted_option.id) if highlighted_option and directory_list.highlighted != 0 else 0
 
     browse_app.call_from_thread(timer.stop)
     browse_app.call_from_thread(directory_list.remove_option, 'loading-indicator')
@@ -150,7 +154,7 @@ class Configuration_files_list(textual.widgets.OptionList):
         if self.highlighted is None and self.options:
             self.highlighted = 0
 
-    def make_preview(self, option_id):
+    def make_next_panel(self, option_id):
         return Repositories_list(config=self.configs[option_id])
 
 
@@ -182,7 +186,7 @@ class Repositories_list(textual.widgets.OptionList):
         if self.highlighted is None and self.options:
             self.highlighted = 0
 
-    def make_preview(self, option_id):
+    def make_next_panel(self, option_id):
         return Archives_list(config=self.config, repository=self.repositories[option_id])
 
 
@@ -216,7 +220,7 @@ class Archives_list(textual.widgets.OptionList):
         if self.highlighted is None and self.options:
             self.highlighted = 0
 
-    def make_preview(self, option_id):
+    def make_next_panel(self, option_id):
         return Directory_list(config=self.config, repository=self.repository, archive_name=option_id)
 
 
@@ -255,7 +259,7 @@ class Directory_list(textual.widgets.OptionList):
         if self.highlighted is None and self.options:
             self.highlighted = 0
 
-    def make_preview(self, option_id):
+    def make_next_panel(self, option_id):
         option = self.get_option(option_id)
 
         if option_id == '..':
@@ -293,7 +297,7 @@ class File_preview(textual.widgets.Static):
             timer=timer,
         )
 
-    def make_preview(self, option_id):
+    def make_next_panel(self, option_id):
         return None
 
 
@@ -305,7 +309,6 @@ class Carousel(textual.containers.Horizontal):
     def __init__(self, panels):
         self.panels = panels
         self.focused_panel = panels[0]
-        self.preview_panel = None
 
         super().__init__()
 
@@ -317,8 +320,7 @@ class Carousel(textual.containers.Horizontal):
 
     def action_previous(self):
         '''
-        Hide the preview panel, demote the current focused panel to be the new preview, and make the
-        previous panel into the focused panel.
+        Make the previous panel into the focused panel.
         '''
         previous_panel_index = self.panels.index(self.focused_panel) - 1
 
@@ -326,11 +328,7 @@ class Carousel(textual.containers.Horizontal):
             return
 
         self.focused_panel.highlighted = None
-
-        if self.preview_panel:
-            self.preview_panel.styles.display = 'none'
-
-        self.preview_panel = self.focused_panel
+        self.focused_panel.styles.display = 'none'
 
         self.focused_panel = self.panels[previous_panel_index]
         self.focused_panel.styles.display = 'block'
@@ -338,38 +336,18 @@ class Carousel(textual.containers.Horizontal):
         self.focused_panel.focus()
         self.focused_panel.highlighted = 0
 
-    def action_next(self):
+    def action_next(self, option_id):
         '''
-        Hide the current focused panel. Then promote the preview panel to be the new focused panel.
+        Hide the current focused panel and create the next one.
         '''
-        if not self.preview_panel:
-            return
-
         self.focused_panel.styles.display = 'none'
-        self.focused_panel = self.preview_panel
-        self.preview_panel = None
 
-        self.focused_panel.styles.display = 'block'
-        self.focused_panel.can_focus = True
+        # TODO: If a panel already exists after this one, use it instead of creating a new instance.
+
+        self.focused_panel = self.focused_panel.make_next_panel(option_id)
+        self.panels.append(self.focused_panel)
         self.focused_panel.focus()
         self.focused_panel.highlighted = 0
-
-    def on_option_list_option_highlighted(self, event):
-        if event.option_list != self.focused_panel:
-            return
-
-        # Remove any existing preview from the carousel.
-        focused_index = self.panels.index(event.option_list)
-        del(self.panels[(focused_index + 1):])
-
-        # Add a fresh preview.
-        if event.option_id == 'loading-indicator':
-            self.preview_panel = Null_list()
-        else:
-            self.preview_panel = event.option_list.make_preview(event.option_id)
-
-        self.preview_panel.can_focus = False
-        self.panels.append(self.preview_panel)
         self.refresh(recompose=True)
 
     def on_option_list_option_selected(self, event):
@@ -379,7 +357,7 @@ class Carousel(textual.containers.Horizontal):
         if event.option_id == '..':
             self.action_previous()
         else:
-            self.action_next()
+            self.action_next(event.option_id)
 
 
 class Logs(textual.widgets.RichLog):
@@ -401,7 +379,7 @@ class Browse_app(textual.app.App):
         .panel {
             border: round $primary;
             border-title-color: $text-primary;
-            width: 50%;
+            width: 100%;
             height: 100%;
         }
 
