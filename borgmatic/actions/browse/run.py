@@ -21,7 +21,7 @@ def run_browse(
             'Unable to import the Textual library for the browse action; try installing "borgmatic[browse]"'
         )
 
-    import borgmatic.actions.browse.view
+    import borgmatic.actions.browse.app
 
-    app = borgmatic.actions.browse.view.Browse_app(configs)
+    app = borgmatic.actions.browse.app.Browse_app(configs)
     app.run()
