@@ -17,7 +17,9 @@ def run_browse(
     try:
         import textual
     except ImportError:  # pragma: no cover
-        raise ValueError('Unable to import the Textual library for the browse action; try installing "borgmatic[browse]"')
+        raise ValueError(
+            'Unable to import the Textual library for the browse action; try installing "borgmatic[browse]"'
+        )
 
     import borgmatic.actions.browse.view
 

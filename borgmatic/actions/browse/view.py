@@ -37,7 +37,8 @@ def update_inline_loading_indicator(widget):
     if isinstance(widget, textual.widgets.OptionList):
         try:
             widget.replace_option_prompt(
-                'loading-indicator', (str(widget.get_option('loading-indicator').prompt) + '.').replace('....', '')
+                'loading-indicator',
+                (str(widget.get_option('loading-indicator').prompt) + '.').replace('....', ''),
             )
         except textual.widgets.option_list.OptionDoesNotExist:
             pass
@@ -67,38 +68,43 @@ def add_inline_loading_indicator(widget):
 
 
 @textual.work(thread=True)
-async def add_repository_archives(
-    browse_app, archives_list, config, repository, timer
-):
+async def add_repository_archives(browse_app, archives_list, config, repository, timer):
     archives_data = borgmatic.actions.browse.controller.get_repository_archives(config, repository)
     loading_option = archives_list.get_option('loading-indicator')
 
     # Reverse the archives, so the common case of accessing the latest archive is easy because it's
     # at the top.
     for index, archive in enumerate(reversed(archives_data['archives'])):
-        label_pieces = (archive['archive'], '[dim](latest)[/dim]') if index == 0 else (archive['archive'],)
+        label_pieces = (
+            (archive['archive'], '[dim](latest)[/dim]') if index == 0 else (archive['archive'],)
+        )
         highlighted_option = archives_list.highlighted_option
 
-        browse_app.call_from_thread(
-            archives_list.remove_option,
-            'loading-indicator'
-        )
+        browse_app.call_from_thread(archives_list.remove_option, 'loading-indicator')
         browse_app.call_from_thread(
             archives_list.add_options,
             (
                 textual.widgets.option_list.Option(' '.join(label_pieces), id=archive['archive']),
                 loading_option,
-            )
+            ),
         )
-        archives_list.highlighted = archives_list.get_option_index(highlighted_option.id) if highlighted_option and archives_list.highlighted_option_changed else 0
+        archives_list.highlighted = (
+            archives_list.get_option_index(highlighted_option.id)
+            if highlighted_option and archives_list.highlighted_option_changed
+            else 0
+        )
 
     browse_app.call_from_thread(archives_list.remove_option, 'loading-indicator')
     browse_app.call_from_thread(timer.stop)
 
 
 @textual.work(thread=True)
-def add_archive_files(browse_app, directory_list, config, repository, archive_name, list_path, root_directory, timer):
-    file_type_paths = borgmatic.actions.browse.controller.get_archive_files(config, repository, archive_name, list_path)
+def add_archive_files(
+    browse_app, directory_list, config, repository, archive_name, list_path, root_directory, timer
+):
+    file_type_paths = borgmatic.actions.browse.controller.get_archive_files(
+        config, repository, archive_name, list_path
+    )
     loading_option = directory_list.get_option('loading-indicator')
 
     if not root_directory:
@@ -106,20 +112,29 @@ def add_archive_files(browse_app, directory_list, config, repository, archive_na
         browse_app.call_from_thread(
             directory_list.add_options,
             (
-                textual.widgets.option_list.Option(f'{PATH_TYPE_ICONS[Path_type.DIRECTORY.value]} ..', id='..'),
+                textual.widgets.option_list.Option(
+                    f'{PATH_TYPE_ICONS[Path_type.DIRECTORY.value]} ..', id='..'
+                ),
                 loading_option,
-            )
+            ),
         )
 
-    for (path_type, file_path, link_target) in file_type_paths:
-        pieces = (PATH_TYPE_ICONS.get(path_type, '?'), file_path) + (('→', link_target) if link_target else ())
+    for path_type, file_path, link_target in file_type_paths:
+        pieces = (PATH_TYPE_ICONS.get(path_type, '?'), file_path) + (
+            ('→', link_target) if link_target else ()
+        )
         highlighted_option = directory_list.highlighted_option
         sorted_options = sorted(
-            directory_list.options + [textual.widgets.option_list.Option(' '.join(pieces), id=file_path)],
-            key=lambda option: ((option.id == 'loading-indicator'), option.prompt)
+            directory_list.options
+            + [textual.widgets.option_list.Option(' '.join(pieces), id=file_path)],
+            key=lambda option: ((option.id == 'loading-indicator'), option.prompt),
         )
         browse_app.call_from_thread(directory_list.set_options, sorted_options)
-        directory_list.highlighted = directory_list.get_option_index(highlighted_option.id) if highlighted_option and directory_list.highlighted_option_changed else 0
+        directory_list.highlighted = (
+            directory_list.get_option_index(highlighted_option.id)
+            if highlighted_option and directory_list.highlighted_option_changed
+            else 0
+        )
 
     browse_app.call_from_thread(timer.stop)
     browse_app.call_from_thread(directory_list.remove_option, 'loading-indicator')
@@ -127,7 +142,9 @@ def add_archive_files(browse_app, directory_list, config, repository, archive_na
 
 @textual.work(thread=True)
 def load_file_preview(browse_app, file_preview, config, repository, archive_name, file_path, timer):
-    file_content = borgmatic.actions.browse.controller.get_archive_file_content(config, repository, archive_name, file_path)
+    file_content = borgmatic.actions.browse.controller.get_archive_file_content(
+        config, repository, archive_name, file_path
+    )
 
     browse_app.call_from_thread(timer.stop)
     syntax_lexer = rich.syntax.Syntax.guess_lexer(file_path, file_content)
@@ -153,7 +170,6 @@ class Configuration_files_list(textual.widgets.OptionList):
                 textual.widgets.option_list.Option(f'{unexpanded_path}', id=config_path)
                 for config_path in configs.keys()
                 for unexpanded_path in (config_path.replace(home_directory, '~'),)
-
             ),
             classes='panel',
         )
@@ -206,7 +222,9 @@ class Archives_list(textual.widgets.OptionList):
         )
 
     def make_next_panel(self, option_id):
-        return Directory_list(config=self.config, repository=self.repository, archive_name=option_id)
+        return Directory_list(
+            config=self.config, repository=self.repository, archive_name=option_id
+        )
 
     def on_option_list_option_highlighted(self, event):
         if self.highlighted not in (None, 0):
@@ -224,7 +242,9 @@ class Directory_list(textual.widgets.OptionList):
         self.highlighted_option_changed = False
 
         super().__init__(classes='panel')
-        self.border_title = os.path.sep.join(self.path_components) if self.path_components else f'{archive_name}'
+        self.border_title = (
+            os.path.sep.join(self.path_components) if self.path_components else f'{archive_name}'
+        )
 
         timer = add_inline_loading_indicator(self)
 
@@ -246,9 +266,19 @@ class Directory_list(textual.widgets.OptionList):
             return Null_list()
 
         if option.prompt.startswith(PATH_TYPE_ICONS[Path_type.DIRECTORY.value]):
-            return Directory_list(self.config, self.repository, self.archive_name, path_components=self.path_components + (option_id,))
+            return Directory_list(
+                self.config,
+                self.repository,
+                self.archive_name,
+                path_components=self.path_components + (option_id,),
+            )
 
-        return File_preview(self.config, self.repository, self.archive_name, file_path=os.path.sep.join(self.path_components + (option_id,)))
+        return File_preview(
+            self.config,
+            self.repository,
+            self.archive_name,
+            file_path=os.path.sep.join(self.path_components + (option_id,)),
+        )
 
     def on_option_list_option_highlighted(self, event):
         if self.highlighted not in (None, 0):
@@ -288,7 +318,9 @@ class File_preview(textual.widgets.Static):
 
 class Carousel(textual.containers.Horizontal):
     BINDINGS = [
-        textual.binding.Binding(key='left,h', action='previous', description='previous', priority=True),
+        textual.binding.Binding(
+            key='left,h', action='previous', description='previous', priority=True
+        ),
     ]
 
     def __init__(self, panels):
@@ -342,7 +374,7 @@ class Carousel(textual.containers.Horizontal):
         '''
         next_panel_index = self.panels.index(self.focused_panel) + 1
 
-        del(self.panels[next_panel_index:])
+        del self.panels[next_panel_index:]
 
     def on_option_list_option_selected(self, event):
         if event.option_list != self.focused_panel or event.option_id == 'loading-indicator':
@@ -391,7 +423,11 @@ class Browse_app(textual.app.App):
 
     def compose(self):
         yield textual.widgets.Header()
-        yield Carousel([Configuration_files_list(self.configs)])
+        yield Carousel(
+            [Configuration_files_list(self.configs)]
+            if len(self.configs) > 1
+            else [Repositories_list(tuple(self.configs.values())[0])]
+        )
 
         logs_widget = Logs()
         yield logs_widget

@@ -54,14 +54,20 @@ def get_archive_files(config, repository, archive_name, list_path=None):
         seen = set()
 
         return (
-            (path_data['type'] if os.path.join(list_path, base_path) == path_data['path'] else 'd', base_path, path_data.get('linktarget'))
+            (
+                path_data['type']
+                if os.path.join(list_path, base_path) == path_data['path']
+                else 'd',
+                base_path,
+                path_data.get('linktarget'),
+            )
             for path_data in borgmatic.borg.list.capture_archive_listing(
                 repository['path'],
                 archive_name,
                 config,
                 local_borg_version,
                 global_arguments,
-                list_paths=(fr're:^{list_path}/[^/]+',) if list_path else (r're:^[^/]+',),
+                list_paths=(rf're:^{list_path}/[^/]+',) if list_path else (r're:^[^/]+',),
                 local_path=local_path,
                 remote_path=remote_path,
             )

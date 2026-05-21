@@ -44,7 +44,9 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         import apprise  # noqa: PLC0415
         from apprise import NotifyFormat, NotifyType  # noqa: PLC0415
     except ImportError:  # pragma: no cover
-        logger.warning('Unable to import Apprise in its monitoring hook; try installing "borgmatic[Apprise]"')
+        logger.warning(
+            'Unable to import Apprise in its monitoring hook; try installing "borgmatic[Apprise]"'
+        )
         return
 
     state_to_notify_type = {
