@@ -249,6 +249,7 @@ class File_preview(textual.widgets.Static):
         self.repository = repository
         self.archive_name = archive_name
         self.file_path = file_path
+        self.can_focus = True
 
         super().__init__(classes='panel')
         self.border_title = f'{PATH_TYPE_ICONS[Path_type.FILE.value]} {self.file_path} preview'
@@ -298,7 +299,6 @@ class Carousel(textual.containers.Horizontal):
 
         self.focused_panel = self.panels[previous_panel_index]
         self.focused_panel.styles.display = 'block'
-        self.focused_panel.can_focus = True
         self.focused_panel.focus()
 
     def action_next(self, option_id):
