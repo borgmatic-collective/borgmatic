@@ -59,4 +59,3 @@ class Browse_app(textual.app.App):
         logs_container.styles.display = (
             'none' if logs_container.styles.display == 'block' else 'block'
         )
-

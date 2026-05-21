@@ -9,9 +9,15 @@ import borgmatic.actions.browse.workers
 
 
 OPTION_LIST_BINDINGS = textual.widgets.OptionList.BINDINGS + [
-    textual.binding.Binding(key='up,k', action='cursor_up', description='up', show=True, priority=True),
-    textual.binding.Binding(key='down,j', action='cursor_down', description='down', show=True, priority=True),
-    textual.binding.Binding(key='enter', action='select', description='select', show=True, priority=True),
+    textual.binding.Binding(
+        key='up,k', action='cursor_up', description='up', show=True, priority=True
+    ),
+    textual.binding.Binding(
+        key='down,j', action='cursor_down', description='down', show=True, priority=True
+    ),
+    textual.binding.Binding(
+        key='enter', action='select', description='select', show=True, priority=True
+    ),
     textual.binding.Binding(key='right,l', action='select', description='select', show=False),
 ]
 
@@ -155,7 +161,9 @@ def make_next_panel(focused_panel, option_id):
         return Repositories_list(config=focused_panel.configs[option_id])
 
     if isinstance(focused_panel, Repositories_list):
-        return Archives_list(config=focused_panel.config, repository=focused_panel.repositories[option_id])
+        return Archives_list(
+            config=focused_panel.config, repository=focused_panel.repositories[option_id]
+        )
 
     if isinstance(focused_panel, Archives_list):
         return Directory_list(
