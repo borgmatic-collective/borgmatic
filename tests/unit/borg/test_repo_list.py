@@ -126,6 +126,7 @@ def test_get_latest_archive_calls_borg_with_flags():
         environment=None,
         working_directory=None,
     ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
 
     assert (
         module.get_latest_archive(
@@ -218,6 +219,7 @@ def test_get_latest_archive_with_local_path_calls_borg_via_local_path():
         borg_local_path='borg1',
         borg_exit_codes=None,
     ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
 
     assert (
         module.get_latest_archive(
@@ -250,6 +252,7 @@ def test_get_latest_archive_with_exit_codes_calls_borg_using_them():
         borg_local_path='borg',
         borg_exit_codes=borg_exit_codes,
     ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
 
     assert (
         module.get_latest_archive(
@@ -283,6 +286,7 @@ def test_get_latest_archive_with_remote_path_calls_borg_with_remote_path_flags()
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
 
     assert (
         module.get_latest_archive(
@@ -317,6 +321,7 @@ def test_get_latest_archive_with_umask_calls_borg_with_umask_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
 
     assert (
         module.get_latest_archive(
@@ -346,6 +351,7 @@ def test_get_latest_archive_without_archives_raises():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_yield(json.dumps({'archives': []}))
+    insert_logging_mock(logging.WARNING)
 
     with pytest.raises(ValueError):
         module.get_latest_archive(
@@ -377,6 +383,7 @@ def test_get_latest_archive_with_lock_wait_calls_borg_with_lock_wait_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
 
     assert (
         module.get_latest_archive(
@@ -409,6 +416,7 @@ def test_get_latest_archive_with_match_archives_calls_borg_with_match_archives_f
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
 
     assert (
         module.get_latest_archive(
@@ -447,6 +455,7 @@ def test_get_latest_archive_calls_borg_with_list_extra_borg_options():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
 
     assert (
         module.get_latest_archive(
@@ -485,6 +494,7 @@ def test_get_latest_archive_with_feature_available_calls_borg_with_repo_list_ext
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
 
     assert (
         module.get_latest_archive(
@@ -518,6 +528,7 @@ def test_get_latest_archive_with_consider_checkpoints_calls_borg_with_consider_c
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
 
     assert (
         module.get_latest_archive(
@@ -552,6 +563,7 @@ def test_get_latest_archive_with_consider_checkpoints_and_feature_available_call
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
 
     assert (
         module.get_latest_archive(
@@ -585,6 +597,7 @@ def test_get_latest_archive_calls_borg_with_working_directory():
         environment=None,
         working_directory='/working/dir',
     ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
 
     assert (
         module.get_latest_archive(
@@ -758,6 +771,7 @@ def test_make_repo_list_command_includes_lock_wait():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -787,6 +801,7 @@ def test_make_repo_list_command_includes_list_extra_borg_options():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -816,6 +831,7 @@ def test_make_repo_list_command_with_feature_available_includes_repo_list_extra_
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -845,6 +861,7 @@ def test_make_repo_list_command_includes_local_path():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -877,6 +894,7 @@ def test_make_repo_list_command_includes_remote_path():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -909,6 +927,7 @@ def test_make_repo_list_command_includes_umask():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -940,6 +959,7 @@ def test_make_repo_list_command_transforms_prefix_into_match_archives():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -962,6 +982,7 @@ def test_make_repo_list_command_prefers_prefix_over_archive_name_format():
     flexmock(module.flags).should_receive('make_match_archives_flags').never()
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -986,6 +1007,7 @@ def test_make_repo_list_command_transforms_archive_name_format_into_match_archiv
     ).and_return(('--match-archives', 'sh:bar-*'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -1017,6 +1039,7 @@ def test_make_repo_list_command_includes_format_from_command_line():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -1047,6 +1070,7 @@ def test_make_repo_list_command_includes_short():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--short',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -1091,6 +1115,7 @@ def test_make_repo_list_command_includes_additional_flags(argument_name):
         (f"--{argument_name.replace('_', '-')}", 'value'),
     )
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -1134,6 +1159,7 @@ def test_make_repo_list_command_with_match_archives_calls_borg_with_match_archiv
     ).and_return(('--match-archives', 'foo-*'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -1161,6 +1187,7 @@ def test_list_repository_calls_borg_command():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').and_yield('').once()
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
 
     module.list_repository(
@@ -1178,6 +1205,7 @@ def test_list_repository_with_json_calls_borg_json_command_only():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').and_yield('{}')
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags').never()
 
     assert (
@@ -1204,6 +1232,7 @@ def test_make_repo_list_command_with_date_based_matching_calls_borg_with_date_ba
         ('--newer', '1d', '--newest', '1y', '--older', '1m', '--oldest', '1w'),
     )
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_repo_list_command(
         repository_path='repo',
@@ -1256,6 +1285,7 @@ def test_list_repository_calls_borg_with_working_directory():
         borg_local_path=object,
         borg_exit_codes=object,
     ).and_yield('').once()
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
 
     module.list_repository(

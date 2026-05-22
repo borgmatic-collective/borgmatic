@@ -46,7 +46,7 @@ namespaces = false
 
 [tool.pytest.ini_options]
 testpaths = "tests"
-addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --no-cov-on-fail --cov-fail-under=100 --ignore=tests/end-to-end --timeout=120 --asyncio-mode=auto"
+addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --no-cov-on-fail --cov-fail-under=100 --ignore=tests/end-to-end --timeout=120"
 
 [tool.ruff]
 line-length = 100

@@ -1,5 +1,14 @@
+import asyncio
+
 import borgmatic.actions.browse.app
 import borgmatic.actions.browse.panels
+
+import pytest
+from flexmock import flexmock
+
+
+pytestmark = pytest.mark.asyncio(loop_scope="module")
+loop: asyncio.AbstractEventLoop
 
 
 async def test_browse_app_with_multiple_configs_uses_configuration_files_list():
@@ -9,6 +18,7 @@ async def test_browse_app_with_multiple_configs_uses_configuration_files_list():
             'test2.yaml': {'repositories': [{'path': 'test2.borg'}]},
         }
     )
+    flexmock(borgmatic.actions.browse.logs).should_receive('log_to_widget')
 
     async with app.run_test() as pilot:
         header = app.query_one(selector='Header')
@@ -31,6 +41,7 @@ async def test_browse_app_with_one_config_uses_repositories_list():
             'test1.yaml': {'repositories': [{'path': 'test1.borg'}]},
         }
     )
+    flexmock(borgmatic.actions.browse.logs).should_receive('log_to_widget')
 
     async with app.run_test() as pilot:
         header = app.query_one(selector='Header')
@@ -51,6 +62,7 @@ async def test_browse_app_key_toggles_logs_panel():
             'test1.yaml': {'repositories': [{'path': 'test1.borg'}]},
         }
     )
+    flexmock(borgmatic.actions.browse.logs).should_receive('log_to_widget')
 
     async with app.run_test() as pilot:
         logs_panel = app.query_one('#logs')

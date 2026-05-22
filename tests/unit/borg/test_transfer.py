@@ -26,6 +26,7 @@ def test_transfer_archives_calls_borg_with_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -63,6 +64,7 @@ def test_transfer_archives_with_dry_run_calls_borg_with_dry_run_flag():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=True,
@@ -98,6 +100,7 @@ def test_transfer_archives_with_log_info_calls_borg_with_info_flag():
         borg_exit_codes=None,
     )
     insert_logging_mock(logging.INFO)
+
     module.transfer_archives(
         dry_run=False,
         repository_path='repo',
@@ -170,6 +173,7 @@ def test_transfer_archives_with_archive_calls_borg_with_match_archives_flag():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -208,6 +212,7 @@ def test_transfer_archives_with_match_archives_calls_borg_with_match_archives_fl
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -246,6 +251,7 @@ def test_transfer_archives_with_archive_name_format_calls_borg_with_match_archiv
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -280,6 +286,7 @@ def test_transfer_archives_with_local_path_calls_borg_via_local_path():
         borg_local_path='borg2',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -316,6 +323,7 @@ def test_transfer_archives_with_exit_codes_calls_borg_using_them():
         borg_local_path='borg',
         borg_exit_codes=borg_exit_codes,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -354,6 +362,7 @@ def test_transfer_archives_with_remote_path_calls_borg_with_remote_path_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -391,6 +400,7 @@ def test_transfer_archives_with_umask_calls_borg_with_umask_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -429,6 +439,7 @@ def test_transfer_archives_with_lock_wait_calls_borg_with_lock_wait_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -464,6 +475,7 @@ def test_transfer_archives_calls_borg_with_extra_borg_options():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -501,6 +513,7 @@ def test_transfer_archives_with_progress_calls_borg_with_progress_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -538,6 +551,7 @@ def test_transfer_archives_with_log_json_and_progress_calls_borg_with_both_flags
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -576,6 +590,7 @@ def test_transfer_archives_passes_through_arguments_to_borg(argument_name):
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -613,6 +628,7 @@ def test_transfer_archives_with_source_repository_calls_borg_with_other_repo_fla
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -662,6 +678,7 @@ def test_transfer_archives_with_date_based_matching_calls_borg_with_date_based_f
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -701,6 +718,7 @@ def test_transfer_archives_calls_borg_with_working_directory():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,

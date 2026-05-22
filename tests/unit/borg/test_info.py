@@ -17,6 +17,7 @@ def test_make_info_command_constructs_borg_info_command():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -112,6 +113,7 @@ def test_make_info_command_with_log_debug_and_json_omits_borg_logging_flags():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -135,6 +137,7 @@ def test_make_info_command_with_json_passes_through_to_command():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -158,6 +161,7 @@ def test_make_info_command_with_archive_uses_match_archives_flags():
     ).and_return(('--match-archives', 'archive'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -189,6 +193,7 @@ def test_make_info_command_with_local_path_passes_through_to_command():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -216,6 +221,7 @@ def test_make_info_command_with_remote_path_passes_through_to_command():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -241,6 +247,7 @@ def test_make_info_command_with_umask_passes_through_to_command():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -268,6 +275,7 @@ def test_make_info_command_with_lock_wait_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     config = {'lock_wait': 5}
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -292,6 +300,7 @@ def test_make_info_command_with_extra_borg_options_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     config = {'extra_borg_options': {'info': '--extra "value with space"'}}
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -327,6 +336,7 @@ def test_make_info_command_transforms_prefix_into_match_archives_flags():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -362,6 +372,7 @@ def test_make_info_command_prefers_prefix_over_archive_name_format():
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -393,6 +404,7 @@ def test_make_info_command_transforms_archive_name_format_into_match_archives_fl
     ).and_return(('--match-archives', 'sh:bar-*'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -425,6 +437,7 @@ def test_make_info_command_with_match_archives_option_passes_through_to_command(
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -460,6 +473,7 @@ def test_make_info_command_with_match_archives_flag_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -496,6 +510,7 @@ def test_make_info_command_passes_arguments_through_to_command(argument_name):
     )
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',
@@ -537,6 +552,7 @@ def test_make_info_command_with_date_based_matching_passes_through_to_command():
         older='1m',
         oldest='1w',
     )
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_info_command(
         repository_path='repo',

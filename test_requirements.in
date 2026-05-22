@@ -16,6 +16,7 @@ packaging
 pluggy
 pygments
 pytest
+pytest-asyncio
 pytest-cov
 pytest-timeout
 pyyaml>5.0.0

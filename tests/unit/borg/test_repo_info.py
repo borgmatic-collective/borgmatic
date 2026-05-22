@@ -38,6 +38,7 @@ def test_display_repository_info_calls_borg_with_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.display_repository_info(
         repository_path='repo',
@@ -74,6 +75,7 @@ def test_display_repository_info_without_borg_features_calls_borg_with_info_sub_
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.display_repository_info(
         repository_path='repo',
@@ -116,6 +118,7 @@ def test_display_repository_info_with_log_info_calls_borg_with_info_flag():
         borg_exit_codes=None,
     )
     insert_logging_mock(logging.INFO)
+
     module.display_repository_info(
         repository_path='repo',
         config={},
@@ -148,8 +151,8 @@ def test_display_repository_info_with_log_info_and_json_suppresses_most_borg_out
         borg_exit_codes=None,
     ).and_yield('[]')
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags').never()
-
     insert_logging_mock(logging.INFO)
+
     json_output = module.display_repository_info(
         repository_path='repo',
         config={},
@@ -226,8 +229,8 @@ def test_display_repository_info_with_log_debug_and_json_suppresses_most_borg_ou
         borg_exit_codes=None,
     ).and_yield('[]')
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags').never()
-
     insert_logging_mock(logging.DEBUG)
+
     json_output = module.display_repository_info(
         repository_path='repo',
         config={},
@@ -262,6 +265,7 @@ def test_display_repository_info_with_json_calls_borg_with_json_flag():
         borg_exit_codes=None,
     ).and_yield('[]')
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags').never()
+    insert_logging_mock(logging.WARNING)
 
     json_output = module.display_repository_info(
         repository_path='repo',
@@ -305,6 +309,7 @@ def test_display_repository_info_with_local_path_calls_borg_via_local_path():
         borg_local_path='borg1',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.display_repository_info(
         repository_path='repo',
@@ -348,6 +353,7 @@ def test_display_repository_info_with_exit_codes_calls_borg_using_them():
         borg_local_path='borg',
         borg_exit_codes=borg_exit_codes,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.display_repository_info(
         repository_path='repo',
@@ -389,6 +395,7 @@ def test_display_repository_info_with_remote_path_calls_borg_with_remote_path_fl
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.display_repository_info(
         repository_path='repo',
@@ -431,6 +438,7 @@ def test_display_repository_info_with_umask_calls_borg_with_umask_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.display_repository_info(
         repository_path='repo',
@@ -467,6 +475,7 @@ def test_display_repository_info_with_lock_wait_calls_borg_with_lock_wait_flags(
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.display_repository_info(
         repository_path='repo',
@@ -509,6 +518,7 @@ def test_display_repository_info_without_feature_available_calls_borg_with_info_
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.display_repository_info(
         repository_path='repo',
@@ -561,6 +571,7 @@ def test_display_repository_info_with_feature_available_calls_borg_with_repo_inf
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.display_repository_info(
         repository_path='repo',
@@ -604,6 +615,7 @@ def test_display_repository_info_calls_borg_with_working_directory():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.display_repository_info(
         repository_path='repo',

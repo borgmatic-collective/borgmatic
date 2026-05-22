@@ -3,6 +3,7 @@ import logging
 from flexmock import flexmock
 
 from borgmatic.borg import diff as module
+from ..test_verbosity import insert_logging_mock
 
 LOGGING_ANSWER = flexmock()
 
@@ -40,6 +41,7 @@ def test_diff_calls_borg_with_archives():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -94,6 +96,7 @@ def test_diff_with_local_path_calls_borg_with_it():
         borg_local_path='borg6',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -150,6 +153,7 @@ def test_diff_with_remote_path_calls_borg_with_it():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -206,6 +210,7 @@ def test_diff_with_lock_wait_calls_borg_with_it():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -262,6 +267,7 @@ def test_diff_with_log_level_info_calls_borg_with_info_flag():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -319,6 +325,7 @@ def test_diff_with_log_level_debug_calls_borg_with_debug_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -376,6 +383,7 @@ def test_diff_with_only_patterns_calls_borg_with_configured_pattern_paths():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -434,6 +442,7 @@ def test_diff_with_exclude_config_calls_borg_with_exclude_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -489,6 +498,7 @@ def test_diff_with_numeric_ids_calls_borg_with_numeric_ids_flag():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -549,6 +559,7 @@ def test_diff_with_numeric_ids_and_feature_not_available_calls_borg_with_numeric
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -604,6 +615,7 @@ def test_diff_with_same_chunker_params_calls_borg_with_it():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -660,6 +672,7 @@ def test_diff_with_sort_keys_calls_borg_with_formatted_sort_by_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -715,6 +728,7 @@ def test_diff_with_content_only_calls_borg_with_it():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -771,6 +785,7 @@ def test_diff_with_extra_borg_options_calls_borg_with_them():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -828,6 +843,7 @@ def test_diff_without_separate_repository_archive_feature_available_calls_borg_j
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
