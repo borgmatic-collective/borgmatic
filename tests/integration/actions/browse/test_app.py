@@ -7,7 +7,7 @@ import pytest
 from flexmock import flexmock
 
 
-pytestmark = pytest.mark.asyncio(loop_scope="module")
+pytestmark = pytest.mark.asyncio(loop_scope='module')
 loop: asyncio.AbstractEventLoop
 
 

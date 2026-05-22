@@ -12,7 +12,7 @@ from flexmock import flexmock
 import textual.widgets.option_list
 
 
-pytestmark = pytest.mark.asyncio(loop_scope="module")
+pytestmark = pytest.mark.asyncio(loop_scope='module')
 loop: asyncio.AbstractEventLoop
 
 
@@ -61,9 +61,7 @@ async def test_carousel_next_action_with_multiple_configs_advances_panels():
         )
         assert carousel.panels[0].styles.display == 'none'
 
-        assert isinstance(
-            carousel.panels[1], borgmatic.actions.browse.panels.Repositories_list
-        )
+        assert isinstance(carousel.panels[1], borgmatic.actions.browse.panels.Repositories_list)
         assert carousel.panels[1].styles.display == 'block'
         assert carousel.panels[1].highlighted == 0
         assert app.focused == carousel.panels[1]
@@ -84,14 +82,10 @@ async def test_carousel_next_action_with_one_config_advances_to_next_panel():
         carousel = app.query_one(selector='Carousel')
         assert len(carousel.panels) == 2
 
-        assert isinstance(
-            carousel.panels[0], borgmatic.actions.browse.panels.Repositories_list
-        )
+        assert isinstance(carousel.panels[0], borgmatic.actions.browse.panels.Repositories_list)
         assert carousel.panels[0].styles.display == 'none'
 
-        assert isinstance(
-            carousel.panels[1], borgmatic.actions.browse.panels.Archives_list
-        )
+        assert isinstance(carousel.panels[1], borgmatic.actions.browse.panels.Archives_list)
         assert carousel.panels[1].styles.display == 'block'
         assert carousel.panels[1].highlighted == 0
         assert app.focused == carousel.panels[1]
@@ -119,9 +113,7 @@ async def test_carousel_next_action_and_previous_action_returns_to_original_pane
         assert carousel.panels[0].styles.display == 'block'
         assert carousel.panels[0].highlighted == 0
 
-        assert isinstance(
-            carousel.panels[1], borgmatic.actions.browse.panels.Repositories_list
-        )
+        assert isinstance(carousel.panels[1], borgmatic.actions.browse.panels.Repositories_list)
         assert carousel.panels[1].styles.display == 'none'
         assert app.focused == carousel.panels[0]
 
@@ -149,9 +141,7 @@ async def test_carousel_next_action_and_previous_action_and_next_action_reuses_n
         )
         assert carousel.panels[0].styles.display == 'none'
 
-        assert isinstance(
-            carousel.panels[1], borgmatic.actions.browse.panels.Repositories_list
-        )
+        assert isinstance(carousel.panels[1], borgmatic.actions.browse.panels.Repositories_list)
         assert carousel.panels[1].styles.display == 'block'
         assert carousel.panels[1].highlighted == 0
         assert app.focused == carousel.panels[1]
@@ -277,8 +267,6 @@ async def test_carousel_next_action_and_select_dot_dot_returns_to_original_panel
         assert carousel.panels[0].styles.display == 'block'
         assert carousel.panels[0].highlighted == 0
 
-        assert isinstance(
-            carousel.panels[1], borgmatic.actions.browse.panels.Repositories_list
-        )
+        assert isinstance(carousel.panels[1], borgmatic.actions.browse.panels.Repositories_list)
         assert carousel.panels[1].styles.display == 'none'
         assert app.focused == carousel.panels[0]
