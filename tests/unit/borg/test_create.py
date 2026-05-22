@@ -1477,6 +1477,44 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats():
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'statistics': True,
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        borgmatic_runtime_directory='/borgmatic/run',
+    )
+
+
+def test_create_archive_with_quick_stats_and_dry_run_calls_borg_without_quick_stats():
+    # --dry-run and --quick-stats are mutually exclusive, see:
+    # https://borgbackup.readthedocs.io/en/stable/usage/create.html#description
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module).should_receive('make_base_create_command').and_return(
+        (('borg', 'create', '--dry-run'), REPO_ARCHIVE, flexmock()),
+    )
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'create', '--dry-run', '--info', *REPO_ARCHIVE),
+        output_log_level=logging.INFO,
+        output_file=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+        working_directory=None,
+        environment=None,
+    )
+    insert_logging_mock(logging.INFO)
+
+    module.create_archive(
+        dry_run=True,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+            'quick_statistics': True,
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
@@ -1806,6 +1844,42 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_flag():
             'source_directories': ['foo*'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'statistics': True,
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        borgmatic_runtime_directory='/borgmatic/run',
+        json=True,
+    )
+
+    assert json_output == '[]'
+
+
+def test_create_archive_with_quick_stats_and_json_calls_borg_without_quick_stats_flag():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module).should_receive('make_base_create_command').and_return(
+        (('borg', 'create'), REPO_ARCHIVE, flexmock()),
+    )
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        ('borg', 'create', '--json', *REPO_ARCHIVE),
+        working_directory=None,
+        environment=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ).and_yield('[]')
+
+    json_output = module.create_archive(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo*'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+            'quick_statistics': True,
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',

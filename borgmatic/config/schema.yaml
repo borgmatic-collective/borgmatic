@@ -1091,6 +1091,15 @@ properties:
             Corresponds to the "--stats" flag on those actions. Defaults to
             false.
         example: true
+    quick_statistics:
+        type: boolean
+        description: |
+            Display statistics for an archive when running supported actions,
+            skipping the repository-wide "All archives" and chunk index
+            statistics to save some time. Corresponds to the "--quick-stats"
+            flag on those actions. Defaults to false. (This option is supported 
+            for Borg 1.4.5+ only.)
+        example: true
     list_details:
         type: boolean
         description: |

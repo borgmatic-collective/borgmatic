@@ -374,7 +374,9 @@ def create_archive(
 
     if json:
         output_log_level = None
-    elif config.get('list_details') or (config.get('statistics') and not dry_run):
+    elif config.get('list_details') or (
+        (config.get('statistics') or config.get('quick_statistics')) and not dry_run
+    ):
         output_log_level = logging.ANSWER
     else:
         output_log_level = logging.INFO
@@ -386,6 +388,11 @@ def create_archive(
     create_flags += (
         (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())
         + (('--stats',) if config.get('statistics') and not json and not dry_run else ())
+        + (
+            ('--quick-stats',)
+            if config.get('quick_statistics') and not json and not dry_run
+            else ()
+        )
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) and not json else ())
         + (('--progress',) if config.get('progress') else ())
         + (('--json',) if json else ())
