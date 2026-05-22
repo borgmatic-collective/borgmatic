@@ -23,6 +23,7 @@ pyyaml>5.0.0
 referencing
 requests
 requests-oauthlib
+rich
 rpds-py
 ruamel-yaml>0.15.0
 typing-extensions
