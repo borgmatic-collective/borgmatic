@@ -10,7 +10,7 @@
  * #1303: For the MariaDB hook, include only a subset of system data when dumping the "mysql" system
    database (or "all" databases), so the dump is actually restorable. See the documentation for more
    information: https://torsion.org/borgmatic/reference/configuration/data-sources/mariadb/
- * Add an experimental "borgmatic browse" action, a console UI for browsing your backups. See the
+ * Add an experimental "browse" action, a console UI for browsing your backups. See the
    documentation for more information:
    https://torsion.org/borgmatic/how-to/inspect-your-backups/#browsing-backups
  * Update the KeePassXC credential hook to support KeePassXC's secret service integration. See the
