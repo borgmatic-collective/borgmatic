@@ -2834,7 +2834,9 @@ properties:
                     properties:
                         url:
                             type: string
-                            description: URL of this Apprise service.
+                            description: |
+                                URL of this Apprise service. Supports the
+                                "{credential ...}" syntax.
                             example: "gotify://hostname/token"
                         label:
                             type: string

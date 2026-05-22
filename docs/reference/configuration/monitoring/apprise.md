@@ -5,9 +5,9 @@ eleventyNavigation:
   parent: 🚨 Monitoring
 ---
 <span class="minilink minilink-addedin">New in version 1.8.4</span>
-[Apprise](https://github.com/caronc/apprise/wiki) is a local notification library
+[Apprise](https://appriseit.com/) is a local notification library
 that "allows you to send a notification to almost all of the most popular
-[notification services](https://github.com/caronc/apprise/wiki) available to
+[notification services](https://appriseit.com/services/) available to
 us today such as: Telegram, Discord, Slack, Amazon SNS, Gotify, etc."
 
 Depending on how you installed borgmatic, it may not have come with Apprise.
@@ -22,7 +22,7 @@ sudo uv tool install borgmatic[Apprise]
 Omit `sudo` if borgmatic is installed as a non-root user.
 
 Once Apprise is installed, configure borgmatic to notify one or more [Apprise
-services](https://github.com/caronc/apprise/wiki). For example:
+services](https://appriseit.com/services/). For example:
 
 ```yaml
 apprise:
