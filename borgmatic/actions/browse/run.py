@@ -15,13 +15,13 @@ def run_browse(
     logging.getLogger('asyncio').setLevel(logging.WARNING)
 
     try:
-        import textual
+        import textual  # noqa: F401, PLC0415
     except ImportError:  # pragma: no cover
         raise ValueError(
             'Unable to import the Textual library for the browse action; try installing "borgmatic[browse]"'
         )
 
-    import borgmatic.actions.browse.app
+    import borgmatic.actions.browse.app  # noqa: PLC0415
 
     app = borgmatic.actions.browse.app.Browse_app(configs)
     app.run()

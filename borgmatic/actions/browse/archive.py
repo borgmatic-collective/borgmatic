@@ -1,12 +1,11 @@
-import os
 import argparse
 import json
 import logging
+import os
 
 import borgmatic.borg.extract
 import borgmatic.borg.repo_list
 import borgmatic.borg.version
-
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +45,9 @@ def get_repository_archives(config, repository):
 def get_archive_files(config, repository, archive_name, list_path=None):
     with borgmatic.logger.Log_prefix(repository.get('label', repository['path'])):
         if list_path:
-            logger.info(f"Listing archive {archive_name} at path {list_path}")
+            logger.info(f'Listing archive {archive_name} at path {list_path}')
         else:
-            logger.info(f"Listing archive {archive_name}")
+            logger.info(f'Listing archive {archive_name}')
 
         global_arguments = argparse.Namespace()
         local_path = config.get('local_path', 'borg')

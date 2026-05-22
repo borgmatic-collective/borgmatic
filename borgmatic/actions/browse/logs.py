@@ -1,10 +1,10 @@
 import contextlib
 import logging
 
-import borgmatic.logger
-
 import textual._context
 import textual.worker
+
+import borgmatic.logger
 
 
 class Rich_color_formatter(logging.Formatter):
@@ -43,7 +43,7 @@ class Browse_log_handler(logging.Handler):
         message = self.format(record)
 
         try:
-            worker = textual.worker.get_current_worker()
+            textual.worker.get_current_worker()
             self.logs_widget.app.call_from_thread(self.logs_widget.write, message)
         except (RuntimeError, textual.worker.NoActiveWorker):
             with contextlib.suppress(textual._context.NoActiveAppError):

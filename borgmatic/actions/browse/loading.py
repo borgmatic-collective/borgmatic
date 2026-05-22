@@ -1,21 +1,19 @@
+import contextlib
 import functools
 
 import textual.widgets
 import textual.widgets.option_list
-
 
 LOADING_DOT_INTERVAL_SECONDS = 0.3
 
 
 def update_inline_loading_indicator(widget):
     if isinstance(widget, textual.widgets.OptionList):
-        try:
+        with contextlib.suppress(textual.widgets.option_list.OptionDoesNotExist):
             widget.replace_option_prompt(
                 'loading-indicator',
                 (str(widget.get_option('loading-indicator').prompt) + '.').replace('....', ''),
             )
-        except textual.widgets.option_list.OptionDoesNotExist:
-            pass
     elif isinstance(widget, textual.widgets.Static):
         widget.update((str(widget.content) + '.').replace('....', ''))
     else:
@@ -23,7 +21,7 @@ def update_inline_loading_indicator(widget):
 
 
 def add_inline_loading_indicator(widget):
-    loading_message = f'⏳ loading...'
+    loading_message = '⏳ loading...'
 
     if isinstance(widget, textual.widgets.OptionList):
         widget.clear_options()

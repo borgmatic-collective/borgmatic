@@ -2,18 +2,18 @@ import textual.app
 import textual.binding
 import textual.widgets
 
+import borgmatic.actions.browse.carousel
 import borgmatic.actions.browse.logs
-import borgmatic.actions.browse.widgets
 
 
 class Browse_app(textual.app.App):
-    BINDINGS = [
+    BINDINGS = (
         textual.binding.Binding(key='q', action='quit', description='quit'),
         textual.binding.Binding(key='v', action='toggle_logs', description='view logs'),
         textual.binding.Binding(
             key='c', action='command_palette', description='commands', show=False
         ),
-    ]
+    )
     COMMAND_PALETTE_BINDING = 'c'
     CSS = '''
         .panel {
@@ -37,15 +37,15 @@ class Browse_app(textual.app.App):
 
     def compose(self):
         yield textual.widgets.Header()
-        yield borgmatic.actions.browse.widgets.Carousel(
-            [borgmatic.actions.browse.widgets.Configuration_files_list(self.configs)]
+        yield borgmatic.actions.browse.carousel.Carousel(
+            [borgmatic.actions.browse.panels.Configuration_files_list(self.configs)]
             if len(self.configs) > 1
             else [
-                borgmatic.actions.browse.widgets.Repositories_list(tuple(self.configs.values())[0])
+                borgmatic.actions.browse.panels.Repositories_list(next(iter(self.configs.values())))
             ]
         )
 
-        logs_widget = borgmatic.actions.browse.widgets.Logs()
+        logs_widget = borgmatic.actions.browse.panels.Logs()
         yield logs_widget
         yield textual.widgets.Footer()
 

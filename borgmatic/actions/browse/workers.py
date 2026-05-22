@@ -1,13 +1,12 @@
-import borgmatic.actions.browse.archive
-
 import rich.syntax
-import rich.text
 import textual
 import textual.widgets.option_list
 
+import borgmatic.actions.browse.archive
+
 
 @textual.work(thread=True)
-async def add_repository_archives(browse_app, archives_list, config, repository, timer):
+def add_repository_archives(browse_app, archives_list, config, repository, timer):
     archives_data = borgmatic.actions.browse.archive.get_repository_archives(config, repository)
     loading_option = archives_list.get_option('loading-indicator')
 
@@ -65,8 +64,10 @@ def add_archive_files(
         )
         highlighted_option = directory_list.highlighted_option
         sorted_options = sorted(
-            directory_list.options
-            + [textual.widgets.option_list.Option(' '.join(pieces), id=file_path)],
+            [
+                *directory_list.options,
+                textual.widgets.option_list.Option(' '.join(pieces), id=file_path),
+            ],
             key=lambda option: ((option.id == 'loading-indicator'), option.prompt),
         )
         browse_app.call_from_thread(directory_list.set_options, sorted_options)
