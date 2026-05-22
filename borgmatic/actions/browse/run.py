@@ -7,7 +7,9 @@ def run_browse(
     configs,
 ):
     '''
-    Run the "browse" action for the given repository.
+    Run the "browse" action for the given borgmatic configurations. This launches a console UI.
+
+    Raise ValueError if the Textual library (a prerequisite for this action) can't be imported.
     '''
     if not configs:
         return

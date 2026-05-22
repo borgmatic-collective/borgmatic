@@ -62,6 +62,9 @@ class Carousel(textual.containers.Horizontal):
         super().__init__()
 
     def compose(self):
+        '''
+        Compose with each of the contained panels and focus the first one.
+        '''
         yield from self.panels
 
         self.focused_panel.focus()
@@ -85,17 +88,22 @@ class Carousel(textual.containers.Horizontal):
         '''
         Hide the current focused panel and create the next one.
         '''
-        self.focused_panel.styles.display = 'none'
         next_panel_index = self.panels.index(self.focused_panel) + 1
 
         if next_panel_index < len(self.panels):
-            self.focused_panel = self.panels[next_panel_index]
-            self.focused_panel.styles.display = 'block'
+            next_panel = self.panels[next_panel_index]
+            next_panel.styles.display = 'block'
         else:
-            self.focused_panel = make_next_panel(self.focused_panel, option_id)
-            self.panels.append(self.focused_panel)
-            self.focused_panel.highlighted = 0
+            next_panel = make_next_panel(self.focused_panel, option_id)
 
+            if next_panel is None:
+                return
+
+            self.panels.append(next_panel)
+            next_panel.highlighted = 0
+
+        self.focused_panel.styles.display = 'none'
+        self.focused_panel = next_panel
         self.focused_panel.focus()
         self.refresh(recompose=True)
 

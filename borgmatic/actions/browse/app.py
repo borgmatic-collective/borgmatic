@@ -7,6 +7,10 @@ import borgmatic.actions.browse.logs
 
 
 class Browse_app(textual.app.App):
+    '''
+    The main app / entry point for the browse action UI.
+    '''
+
     BINDINGS = (
         textual.binding.Binding(key='q', action='quit', description='quit'),
         textual.binding.Binding(key='v', action='toggle_logs', description='view logs'),
@@ -36,6 +40,14 @@ class Browse_app(textual.app.App):
         super().__init__()
 
     def compose(self):
+        '''
+        Compose a UI consisting of:
+
+          * a header with the application name
+          * a carousel container that contains the main UI panels
+          * a logs panel where Python logs show up (panel hidden by default)
+          * a footer with available keys listed
+        '''
         yield textual.widgets.Header()
         yield borgmatic.actions.browse.carousel.Carousel(
             [borgmatic.actions.browse.panels.Configuration_files_list(self.configs)]
@@ -45,17 +57,21 @@ class Browse_app(textual.app.App):
             ]
         )
 
-        logs_widget = borgmatic.actions.browse.panels.Logs()
-        yield logs_widget
+        logs_panel = borgmatic.actions.browse.panels.Logs()
+        yield logs_panel
         yield textual.widgets.Footer()
 
-        borgmatic.actions.browse.logs.log_to_widget(logs_widget)
+        borgmatic.actions.browse.logs.log_to_widget(logs_panel)
 
     def on_mount(self):
+        '''
+        Set the application title, which ends up in the header.
+        '''
         self.title = 'borgmatic browse'
 
     def action_toggle_logs(self):
-        logs_container = self.query_one('#logs')
-        logs_container.styles.display = (
-            'none' if logs_container.styles.display == 'block' else 'block'
-        )
+        '''
+        Toggle the show/hide status of the logs panel.
+        '''
+        logs_panel = self.query_one('#logs')
+        logs_panel.styles.display = 'none' if logs_panel.styles.display == 'block' else 'block'

@@ -1131,8 +1131,9 @@ properties:
                 - info
                 - break-lock
                 - key
-                - borg
                 - diff
+                - browse
+                - borg
         description: |
             List of one or more actions to skip running for this configuration
             file, even if specified on the command-line (explicitly or
@@ -1348,8 +1349,9 @@ properties:
                                   - info
                                   - break-lock
                                   - key
-                                  - borg
                                   - diff
+                                  - browse
+                                  - borg
                           description: |
                               List of actions for which the commands will be
                               run. Defaults to running for all actions.
@@ -1414,8 +1416,9 @@ properties:
                                   - info
                                   - break-lock
                                   - key
-                                  - borg
                                   - diff
+                                  - browse
+                                  - borg
                           description: |
                               Only trigger the hook when borgmatic is run with
                               particular actions listed here. Defaults to

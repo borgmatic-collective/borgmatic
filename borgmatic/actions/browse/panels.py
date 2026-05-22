@@ -31,7 +31,7 @@ class Configuration_files_list(textual.widgets.OptionList):
 
         super().__init__(
             *(
-                textual.widgets.option_list.Option(f'{unexpanded_path}', id=config_path)
+                textual.widgets.option_list.Option(unexpanded_path, id=config_path)
                 for config_path in configs
                 for unexpanded_path in (config_path.replace(home_directory, '~'),)
             ),
