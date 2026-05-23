@@ -2,13 +2,13 @@
 #    uv pip compile --annotation-style line test_requirements.in -o test_requirements.txt
 apprise==1.10.0           # via -r test_requirements.in
 attrs==26.1.0             # via jsonschema, referencing, -r test_requirements.in
-certifi==2026.4.22        # via apprise, requests, -r test_requirements.in
+certifi==2026.5.20        # via apprise, requests, -r test_requirements.in
 charset-normalizer==3.4.7  # via requests, -r test_requirements.in
 click>=8.1.8
 codespell==2.4.2          # via -r test_requirements.in
 coverage==7.14.0          # via pytest-cov, -r test_requirements.in
 flexmock==0.13.0          # via -r test_requirements.in
-idna==3.14                # via requests, -r test_requirements.in
+idna==3.16                # via requests, -r test_requirements.in
 iniconfig==2.3.0          # via pytest, -r test_requirements.in
 jsonschema==4.26.0        # via -r test_requirements.in
 jsonschema-specifications==2025.9.1  # via jsonschema, -r test_requirements.in
@@ -22,7 +22,7 @@ pytest-cov==7.1.0         # via -r test_requirements.in
 pytest-timeout==2.4.0     # via -r test_requirements.in
 pyyaml>5.0.0
 referencing==0.37.0       # via jsonschema, jsonschema-specifications, -r test_requirements.in
-requests==2.34.0          # via apprise, requests-oauthlib, -r test_requirements.in
+requests==2.34.2          # via apprise, requests-oauthlib, -r test_requirements.in
 requests-oauthlib==2.0.0  # via apprise, -r test_requirements.in
 rpds-py==0.30.0           # via jsonschema, referencing, -r test_requirements.in
 ruamel-yaml>0.15.0
