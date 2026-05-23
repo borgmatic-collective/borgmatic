@@ -1,6 +1,7 @@
 import logging
 import operator
 
+import borgmatic.hooks.credential.parse
 import borgmatic.hooks.monitoring.logs
 import borgmatic.hooks.monitoring.monitor
 
@@ -78,7 +79,12 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     logger.info(f'Pinging Apprise services: {labels_string}{dry_run_string}')
 
     apprise_object = apprise.Apprise()
-    apprise_object.add(list(map(operator.itemgetter('url'), hook_config.get('services'))))
+    apprise_object.add(
+        [
+            borgmatic.hooks.credential.parse.resolve_credential(service['url'], config)
+            for service in hook_config.get('services')
+        ]
+    )
 
     if dry_run:
         return
