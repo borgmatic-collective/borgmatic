@@ -1,8 +1,12 @@
+import argparse
+import datetime
+import itertools
 import json
 import logging
 import os
 
 import borgmatic.borg.extract
+import borgmatic.borg.info
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
 
@@ -100,6 +104,39 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
     Raise CalledProcessError or OSError if Borg could not be run.
     '''
     config = make_bootstrap_config(bootstrap_arguments)
+
+    if bootstrap_arguments.archive == 'latest':
+        archives_data = json.loads(
+            borgmatic.borg.info.display_archives_info(
+                bootstrap_arguments.repository,
+                config,
+                local_borg_version,
+                info_arguments=argparse.Namespace(archive=None, prefix=None, json=True),
+                global_arguments=global_arguments,
+                local_path=bootstrap_arguments.local_path,
+                remote_path=bootstrap_arguments.remote_path,
+            )
+        )['archives']
+
+        get_repo_archive_format = lambda archive_data: archive_data['command_line'][-1]
+        get_archive_start = lambda archive_data: datetime.datetime.fromisoformat(
+            archive_data['start']
+        )
+
+        latest_archives = {
+            repo_archive_format: max(archives_data, key=get_archive_start)['name']
+            for repo_archive_format, archives_data in itertools.groupby(
+                sorted(archives_data, key=get_repo_archive_format),
+                key=get_repo_archive_format,
+            )
+            if not repo_archive_format.endswith('checkpoint')
+        }
+
+        if len(latest_archives) > 1:
+            raise ValueError(
+                f'The repository appears to have multiple "latest" archives, each with a different archive name format: {", ".join(sorted(latest_archives.values()))}. Please select one with --archive.'
+            )
+
     archive_name = borgmatic.borg.repo_list.resolve_archive_name(
         bootstrap_arguments.repository,
         bootstrap_arguments.archive,
