@@ -37,13 +37,17 @@ def make_next_panel(focused_panel, option_id):
                 focused_panel.archive_name,
                 path_components=(*focused_panel.path_components, option_id),
             )
-
-        return borgmatic.actions.browse.panels.File_preview(
-            focused_panel.config,
-            focused_panel.repository,
-            focused_panel.archive_name,
-            file_path=os.path.sep.join((*focused_panel.path_components, option_id)),
-        )
+        elif option.prompt.startswith(
+            borgmatic.actions.browse.paths.PATH_TYPE_ICONS[
+                borgmatic.actions.browse.paths.Path_type.FILE.value
+            ]
+        ):
+            return borgmatic.actions.browse.panels.File_preview(
+                focused_panel.config,
+                focused_panel.repository,
+                focused_panel.archive_name,
+                file_path=os.path.sep.join((*focused_panel.path_components, option_id)),
+            )
 
     return None
 
@@ -97,6 +101,7 @@ class Carousel(textual.containers.Horizontal):
             next_panel = make_next_panel(self.focused_panel, option_id)
 
             if next_panel is None:
+                self.notify('Cannot load this content', severity='warning')
                 return
 
             self.panels.append(next_panel)
