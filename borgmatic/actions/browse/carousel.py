@@ -116,6 +116,10 @@ class Carousel(textual.containers.Horizontal):
         del self.panels[next_panel_index:]
 
     def on_option_list_option_selected(self, event):
+        '''
+        An option has been selected, so advance to the next panel—unless the option selected is
+        "..", in which case go to the previous panel.
+        '''
         if event.option_list != self.focused_panel or event.option_id == 'loading-indicator':
             return
 
