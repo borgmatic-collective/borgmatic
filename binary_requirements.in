@@ -1,6 +1,7 @@
 .
 apprise
 attrs
+binaryornot
 certifi
 charset-normalizer
 click

@@ -2,6 +2,7 @@
 #    uv pip compile --annotation-style line test_requirements.in -o test_requirements.txt
 apprise==1.10.0           # via -r test_requirements.in
 attrs==26.1.0             # via jsonschema, referencing, -r test_requirements.in
+binaryornot==0.6.0        # via -r test_requirements.in
 certifi==2026.5.20        # via apprise, requests, -r test_requirements.in
 charset-normalizer==3.4.7  # via requests, -r test_requirements.in
 click>=8.1.8

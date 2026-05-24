@@ -31,7 +31,7 @@ validate-borgmatic-config = "borgmatic.commands.validate_config:main"
 
 [project.optional-dependencies]
 Apprise = ["apprise"]
-browse = ["textual"]
+browse = ["textual", "binaryornot"]
 browse-dev = ["textual-dev"]
 
 [project.urls]

@@ -2,6 +2,7 @@
 #    uv pip compile --annotation-style line binary_requirements.in -o binary_requirements.txt
 apprise==1.10.0           # via -r binary_requirements.in
 attrs==26.1.0             # via jsonschema, referencing, -r binary_requirements.in
+binaryornot==0.6.0        # via -r binary_requirements.in
 .                         # via -r binary_requirements.in
 certifi==2026.5.20        # via apprise, requests, -r binary_requirements.in
 charset-normalizer==3.4.7  # via requests, -r binary_requirements.in

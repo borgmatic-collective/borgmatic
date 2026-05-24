@@ -7,6 +7,9 @@ import borgmatic.borg.extract
 import borgmatic.borg.repo_list
 import borgmatic.borg.version
 
+import binaryornot.helpers
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -82,6 +85,10 @@ READLINES_HINT_BYTES = 100000
 
 
 def get_archive_file_content(config, repository, archive_name, file_path):
+    '''
+    Given a configuration dict, a repository dict, an archive name in that repository, and a file
+    path in that archive, return the file's contents or None if the file can't be loaded.
+    '''
     with borgmatic.logger.Log_prefix(repository.get('label', repository['path'])):
         logger.info(f'Getting archive content of file {file_path}')
         local_path = config.get('local_path', 'borg')
@@ -102,10 +109,16 @@ def get_archive_file_content(config, repository, archive_name, file_path):
             extract_to_stdout=True,
         ).stdout.readlines(READLINES_HINT_BYTES)
 
-        content = ''.join(line.decode() for line in lines)
+        content = b''.join(lines)
 
-        return (
-            content
-            if len(content) < READLINES_HINT_BYTES
-            else f'{content}[... truncated for display ...]'
-        )
+        if binaryornot.helpers.is_binary_string(content):
+            return None
+
+        try:
+            return (
+                content.decode()
+                if len(content) < READLINES_HINT_BYTES
+                else f'{content.decode()}\n[... truncated for display ...]'
+            )
+        except UnicodeDecodeError:
+            return None

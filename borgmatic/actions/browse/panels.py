@@ -16,6 +16,12 @@ OPTION_LIST_BINDINGS = (
         key='down,j', action='cursor_down', description='scroll down', show=True, priority=True
     ),
     textual.binding.Binding(
+        key='pageup', action='page_up', description='page up', show=True, priority=True
+    ),
+    textual.binding.Binding(
+        key='pagedown', action='page_down', description='page down', show=True, priority=True
+    ),
+    textual.binding.Binding(
         key='enter', action='select', description='select', show=True, priority=True
     ),
     textual.binding.Binding(key='right,l', action='select', description='select', show=False),
@@ -55,7 +61,7 @@ class Repositories_list(textual.widgets.OptionList):
             ),
             classes='panel',
         )
-        self.border_title = 'repositories'
+        self.border_title = '📦 repositories'
 
 
 class Archives_list(textual.widgets.OptionList):
@@ -66,7 +72,7 @@ class Archives_list(textual.widgets.OptionList):
         self.repository = repository
 
         super().__init__(classes='panel')
-        self.border_title = 'archives'
+        self.border_title = '📚 archives'
         self.highlighted_option_changed = False
 
         timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
@@ -128,10 +134,10 @@ class File_preview(textual.widgets.RichLog):
     BINDINGS = [
         *textual.widgets.RichLog.BINDINGS,
         textual.binding.Binding(
-            key='up', action='scroll_up', description='scroll up', show=True, priority=True
+            key='up,k', action='scroll_up', description='scroll up', show=True, priority=True
         ),
         textual.binding.Binding(
-            key='down', action='scroll_down', description='scroll down', show=True, priority=True
+            key='down,j', action='scroll_down', description='scroll down', show=True, priority=True
         ),
         textual.binding.Binding(
             key='pageup', action='page_up', description='page up', show=True, priority=True
@@ -175,4 +181,4 @@ class File_preview(textual.widgets.RichLog):
 class Logs(textual.widgets.RichLog):
     def __init__(self):
         super().__init__(markup=True, id='logs', classes='panel')
-        self.border_title = 'logs'
+        self.border_title = '🪵 logs'
