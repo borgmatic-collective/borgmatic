@@ -78,7 +78,7 @@ def get_archive_files(config, repository, archive_name, list_path=None):
         )
 
 
-READLINES_HINT_BYTES = 2000
+READLINES_HINT_BYTES = 100000
 
 
 def get_archive_file_content(config, repository, archive_name, file_path):
@@ -104,4 +104,8 @@ def get_archive_file_content(config, repository, archive_name, file_path):
 
         content = ''.join(line.decode() for line in lines)
 
-        return content if len(content) < READLINES_HINT_BYTES else f'{content}[...]'
+        return (
+            content
+            if len(content) < READLINES_HINT_BYTES
+            else f'{content}[... truncated for display ...]'
+        )

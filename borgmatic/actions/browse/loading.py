@@ -14,8 +14,11 @@ def update_inline_loading_indicator(widget):
                 'loading-indicator',
                 (str(widget.get_option('loading-indicator').prompt) + '.').replace('....', ''),
             )
-    elif isinstance(widget, textual.widgets.Static):
-        widget.update((str(widget.content) + '.').replace('....', ''))
+    elif isinstance(widget, textual.widgets.RichLog):
+        with contextlib.suppress(IndexError):
+            loading_message = str(widget.lines[0].text)
+            widget.clear()
+            widget.write((loading_message + '.').replace('....', ''))
     else:
         raise ValueError(f'Unsupported widget type: {type(widget)}')
 
@@ -28,8 +31,8 @@ def add_inline_loading_indicator(widget):
         loading_option = textual.widgets.option_list.Option(loading_message, id='loading-indicator')
         widget.add_option(loading_option)
         widget.highlighted = None
-    elif isinstance(widget, textual.widgets.Static):
-        widget.update(loading_message)
+    elif isinstance(widget, textual.widgets.RichLog):
+        widget.write(loading_message)
     else:
         raise ValueError(f'Unsupported widget type: {type(widget)}')
 

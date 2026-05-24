@@ -10,10 +10,10 @@ import borgmatic.actions.browse.workers
 OPTION_LIST_BINDINGS = (
     *textual.widgets.OptionList.BINDINGS,
     textual.binding.Binding(
-        key='up,k', action='cursor_up', description='up', show=True, priority=True
+        key='up,k', action='cursor_up', description='scroll up', show=True, priority=True
     ),
     textual.binding.Binding(
-        key='down,j', action='cursor_down', description='down', show=True, priority=True
+        key='down,j', action='cursor_down', description='scroll down', show=True, priority=True
     ),
     textual.binding.Binding(
         key='enter', action='select', description='select', show=True, priority=True
@@ -124,13 +124,28 @@ class Directory_list(textual.widgets.OptionList):
             self.highlighted_option_changed = True
 
 
-class File_preview(textual.widgets.Static):
+class File_preview(textual.widgets.RichLog):
+    BINDINGS = [
+        *textual.widgets.RichLog.BINDINGS,
+        textual.binding.Binding(
+            key='up', action='scroll_up', description='scroll up', show=True, priority=True
+        ),
+        textual.binding.Binding(
+            key='down', action='scroll_down', description='scroll down', show=True, priority=True
+        ),
+        textual.binding.Binding(
+            key='pageup', action='page_up', description='page up', show=True, priority=True
+        ),
+        textual.binding.Binding(
+            key='pagedown', action='page_down', description='page down', show=True, priority=True
+        ),
+    ]
+
     def __init__(self, config, repository, archive_name, file_path):
         self.config = config
         self.repository = repository
         self.archive_name = archive_name
         self.file_path = file_path
-        self.can_focus = True
 
         super().__init__(classes='panel')
         self.border_title = ' '.join(
@@ -142,6 +157,7 @@ class File_preview(textual.widgets.Static):
                 'preview',
             )
         )
+        self.auto_scroll = False
 
         timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
 

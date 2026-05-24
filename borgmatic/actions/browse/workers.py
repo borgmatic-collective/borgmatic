@@ -89,4 +89,5 @@ def load_file_preview(browse_app, file_preview, config, repository, archive_name
 
     browse_app.call_from_thread(timer.stop)
     syntax_lexer = rich.syntax.Syntax.guess_lexer(file_path, file_content)
-    browse_app.call_from_thread(file_preview.update, rich.syntax.Syntax(file_content, syntax_lexer))
+    browse_app.call_from_thread(file_preview.clear)
+    browse_app.call_from_thread(file_preview.write, rich.syntax.Syntax(file_content, syntax_lexer))
