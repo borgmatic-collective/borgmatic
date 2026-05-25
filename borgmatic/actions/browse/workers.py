@@ -1,8 +1,17 @@
+import collections
+import contextlib
+import logging
+import os
+
 import rich.syntax
 import textual
+import textual.signal
 import textual.widgets.option_list
 
 import borgmatic.actions.browse.archive
+
+
+logger = logging.getLogger('__name__')
 
 
 @textual.work(thread=True)
@@ -36,50 +45,62 @@ def add_repository_archives(browse_app, archives_list, config, repository, timer
     browse_app.call_from_thread(timer.stop)
 
 
+Archive_path = collections.namedtuple(
+    'Archive_path',
+    ('path_type', 'file_path', 'link_target'),
+)
+
+
+def record_path(archive_path, hierarchy, path_components):
+    if len(path_components) == 1:
+        hierarchy[path_components[0]] = {} if archive_path.path_type == 'd' else archive_path
+        return
+
+    record_path(archive_path, hierarchy.setdefault(path_components[0], {}), path_components[1:])
+
+
+def get_paths(hierarchy, path_components, full_path_components=None):
+    if full_path_components is None:
+        full_path_components = path_components
+
+    if len(path_components) == 1:
+        return (
+            archive_path
+            if isinstance(archive_path, Archive_path)
+            else Archive_path('d', os.path.join(*full_path_components, component), '')
+            for component, archive_path in hierarchy[path_components[0]].items()
+        )
+
+    return get_paths(hierarchy[path_components[0]], path_components[1:], full_path_components)
+
+
+LOADING_DONE = object()
+
+
+class Archive_path_loaded(textual.signal.Signal):
+    def __init__(self, owner, name):
+        self.path_hierarchy = {}
+        self.complete = False
+
+        super().__init__(owner, name)
+
+    def publish(self, data):
+        super().publish(data)
+
+        if data is LOADING_DONE:
+            self.complete = True
+        else:
+            record_path(data, self.path_hierarchy, data.file_path.split(os.path.sep))
+
+
 @textual.work(thread=True)
-def add_archive_files(
-    browse_app, directory_list, config, repository, archive_name, list_path, root_directory, timer
-):
-    file_type_paths = borgmatic.actions.browse.archive.get_archive_files(
-        config, repository, archive_name, list_path
-    )
-    loading_option = directory_list.get_option('loading-indicator')
+def load_archive_files(browse_app, directory_list, config, repository, archive_name):
+    for path_type, file_path, link_target in borgmatic.actions.browse.archive.get_archive_files(
+        config, repository, archive_name
+    ):
+        directory_list.path_loaded.publish(Archive_path(path_type, file_path, link_target))
 
-    if not root_directory:
-        browse_app.call_from_thread(directory_list.remove_option, 'loading-indicator')
-        browse_app.call_from_thread(
-            directory_list.add_options,
-            (
-                textual.widgets.option_list.Option(
-                    f'{borgmatic.actions.browse.paths.PATH_TYPE_ICONS[borgmatic.actions.browse.paths.Path_type.DIRECTORY.value]} ..',
-                    id='..',
-                ),
-                loading_option,
-            ),
-        )
-
-    for path_type, file_path, link_target in file_type_paths:
-        pieces = (
-            borgmatic.actions.browse.paths.PATH_TYPE_ICONS.get(path_type, '❓'),
-            file_path,
-        ) + (('→', link_target) if link_target else ())
-        highlighted_option = directory_list.highlighted_option
-        sorted_options = sorted(
-            [
-                *directory_list.options,
-                textual.widgets.option_list.Option(' '.join(pieces), id=file_path),
-            ],
-            key=lambda option: ((option.id == 'loading-indicator'), option.prompt),
-        )
-        browse_app.call_from_thread(directory_list.set_options, sorted_options)
-        directory_list.highlighted = (
-            directory_list.get_option_index(highlighted_option.id)
-            if highlighted_option and directory_list.highlighted_option_changed
-            else 0
-        )
-
-    browse_app.call_from_thread(timer.stop)
-    browse_app.call_from_thread(directory_list.remove_option, 'loading-indicator')
+    directory_list.path_loaded.publish(LOADING_DONE)
 
 
 @textual.work(thread=True)

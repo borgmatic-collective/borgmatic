@@ -45,12 +45,9 @@ def get_repository_archives(config, repository):
         )
 
 
-def get_archive_files(config, repository, archive_name, list_path=None):
+def get_archive_files(config, repository, archive_name):
     with borgmatic.logger.Log_prefix(repository.get('label', repository['path'])):
-        if list_path:
-            logger.info(f'Listing archive {archive_name} at path {list_path}')
-        else:
-            logger.info(f'Listing archive {archive_name}')
+        logger.info(f'Listing archive {archive_name}')
 
         global_arguments = argparse.Namespace()
         local_path = config.get('local_path', 'borg')
@@ -60,10 +57,8 @@ def get_archive_files(config, repository, archive_name, list_path=None):
 
         return (
             (
-                path_data['type']
-                if os.path.join(list_path, base_path) == path_data['path']
-                else 'd',
-                base_path,
+                path_data['type'],
+                path_data['path'],
                 path_data.get('linktarget'),
             )
             for path_data in borgmatic.borg.list.capture_archive_listing(
@@ -72,12 +67,9 @@ def get_archive_files(config, repository, archive_name, list_path=None):
                 config,
                 local_borg_version,
                 global_arguments,
-                list_paths=(rf're:^{list_path}/[^/]+',) if list_path else (r're:^[^/]+',),
                 local_path=local_path,
                 remote_path=remote_path,
             )
-            for base_path in (os.path.relpath(path_data['path'], list_path).split(os.path.sep)[0],)
-            if base_path not in seen and not seen.add(base_path)
         )
 
 

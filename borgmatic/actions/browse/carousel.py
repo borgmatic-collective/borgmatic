@@ -43,6 +43,7 @@ def make_next_panel(focused_panel, option_id):
                 focused_panel.config,
                 focused_panel.repository,
                 focused_panel.archive_name,
+                path_loaded=focused_panel.path_loaded,
                 path_components=(*focused_panel.path_components, option_id),
             )
         elif option.prompt.startswith(
@@ -118,7 +119,7 @@ class Carousel(textual.containers.Horizontal):
         self.focused_panel.styles.display = 'none'
         self.focused_panel = next_panel
         self.focused_panel.focus()
-        self.refresh(recompose=True)
+        self.mount(self.focused_panel)
 
     def on_option_list_option_highlighted(self, event):
         '''
@@ -133,7 +134,9 @@ class Carousel(textual.containers.Horizontal):
         An option has been selected, so advance to the next panel—unless the option selected is
         "..", in which case go to the previous panel.
         '''
-        if event.option_list != self.focused_panel or event.option_id == 'loading-indicator':  # pragma: no cover
+        if (
+            event.option_list != self.focused_panel or event.option_id == 'loading-indicator'
+        ):  # pragma: no cover
             return
 
         if event.option_id == '..':

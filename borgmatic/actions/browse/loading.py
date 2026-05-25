@@ -7,6 +7,10 @@ import textual.widgets.option_list
 LOADING_DOT_INTERVAL_SECONDS = 0.3
 
 
+import logging
+logger = logging.getLogger('__name__')
+
+
 def update_inline_loading_indicator(widget):
     if isinstance(widget, textual.widgets.OptionList):
         with contextlib.suppress(textual.widgets.option_list.OptionDoesNotExist):

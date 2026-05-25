@@ -96,7 +96,10 @@ def test_make_next_panel_with_non_root_directory_list_and_selected_directory_opt
         flexmock()
     )
     focused_panel = borgmatic.actions.browse.panels.Directory_list(
-        config, config['repositories'][0], 'archive', path_components=('etc',),
+        config,
+        config['repositories'][0],
+        'archive',
+        path_components=('etc',),
     )
     flexmock(focused_panel).should_receive('get_option').and_return(flexmock(prompt='📁 borgmatic'))
 
@@ -123,7 +126,9 @@ def test_make_next_panel_with_root_directory_list_and_selected_file_option_retur
     focused_panel = borgmatic.actions.browse.panels.Directory_list(
         config, config['repositories'][0], 'archive'
     )
-    flexmock(focused_panel).should_receive('get_option').and_return(flexmock(prompt='📄 config.yaml'))
+    flexmock(focused_panel).should_receive('get_option').and_return(
+        flexmock(prompt='📄 config.yaml')
+    )
 
     directory_list = module.make_next_panel(focused_panel=focused_panel, option_id='config.yaml')
 
@@ -146,9 +151,14 @@ def test_make_next_panel_with_non_root_directory_list_and_selected_file_option_r
         flexmock()
     )
     focused_panel = borgmatic.actions.browse.panels.Directory_list(
-        config, config['repositories'][0], 'archive', path_components=('etc', 'borgmatic'),
+        config,
+        config['repositories'][0],
+        'archive',
+        path_components=('etc', 'borgmatic'),
     )
-    flexmock(focused_panel).should_receive('get_option').and_return(flexmock(prompt='📄 config.yaml'))
+    flexmock(focused_panel).should_receive('get_option').and_return(
+        flexmock(prompt='📄 config.yaml')
+    )
 
     directory_list = module.make_next_panel(focused_panel=focused_panel, option_id='config.yaml')
 
@@ -174,7 +184,9 @@ def test_make_next_panel_with_directory_list_and_unsupported_selected_option_ret
     focused_panel = borgmatic.actions.browse.panels.Directory_list(
         config, config['repositories'][0], 'archive'
     )
-    flexmock(focused_panel).should_receive('get_option').and_return(flexmock(prompt=f'{icon} config.yaml'))
+    flexmock(focused_panel).should_receive('get_option').and_return(
+        flexmock(prompt=f'{icon} config.yaml')
+    )
 
     assert module.make_next_panel(focused_panel=focused_panel, option_id='config.yaml') is None
 
