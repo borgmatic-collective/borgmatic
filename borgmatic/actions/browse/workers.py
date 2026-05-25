@@ -59,9 +59,10 @@ def add_archive_files(
         )
 
     for path_type, file_path, link_target in file_type_paths:
-        pieces = (borgmatic.actions.browse.paths.PATH_TYPE_ICONS.get(path_type, '❓'), file_path) + (
-            ('→', link_target) if link_target else ()
-        )
+        pieces = (
+            borgmatic.actions.browse.paths.PATH_TYPE_ICONS.get(path_type, '❓'),
+            file_path,
+        ) + (('→', link_target) if link_target else ())
         highlighted_option = directory_list.highlighted_option
         sorted_options = sorted(
             [
@@ -91,7 +92,9 @@ def load_file_preview(browse_app, file_preview, config, repository, archive_name
     browse_app.call_from_thread(file_preview.clear)
 
     if file_content is None:
-        browse_app.call_from_thread(file_preview.write, 'Cannot load a preview for this file')
+        browse_app.call_from_thread(file_preview.write, 'Cannot display a preview for this file')
     else:
         syntax_lexer = rich.syntax.Syntax.guess_lexer(file_path, file_content)
-        browse_app.call_from_thread(file_preview.write, rich.syntax.Syntax(file_content, syntax_lexer))
+        browse_app.call_from_thread(
+            file_preview.write, rich.syntax.Syntax(file_content, syntax_lexer)
+        )

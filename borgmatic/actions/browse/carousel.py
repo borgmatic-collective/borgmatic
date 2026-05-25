@@ -8,6 +8,14 @@ import borgmatic.actions.browse.paths
 
 
 def make_next_panel(focused_panel, option_id):
+    '''
+    Given a focused panel widget and the selected option ID, return the next panel corresponding to
+    that selection. This is the mechanism by which the user can successively drill down from
+    configuration file to repository to archive to root directory to non-root directory or file.
+
+    If the particular option ID on the focused panel doesn't have a supported next panel, then
+    return None.
+    '''
     if isinstance(focused_panel, borgmatic.actions.browse.panels.Configuration_files_list):
         return borgmatic.actions.browse.panels.Repositories_list(
             config=focused_panel.configs[option_id]
@@ -101,7 +109,7 @@ class Carousel(textual.containers.Horizontal):
             next_panel = make_next_panel(self.focused_panel, option_id)
 
             if next_panel is None:
-                self.notify('Cannot load this content', severity='warning')
+                self.notify('Cannot display this content', severity='warning')
                 return
 
             self.panels.append(next_panel)
@@ -125,7 +133,7 @@ class Carousel(textual.containers.Horizontal):
         An option has been selected, so advance to the next panel—unless the option selected is
         "..", in which case go to the previous panel.
         '''
-        if event.option_list != self.focused_panel or event.option_id == 'loading-indicator':
+        if event.option_list != self.focused_panel or event.option_id == 'loading-indicator':  # pragma: no cover
             return
 
         if event.option_id == '..':

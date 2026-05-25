@@ -61,8 +61,6 @@ def log_to_widget(logs_widget):
     logger.setLevel(min(handler.level for handler in logger.handlers))
     logger.addHandler(handler)
 
-    # Remove the console log handler so it doesn't try to log all over our UI; we have our own
-    # log handler for surfacing logs within the UI.
     with contextlib.suppress(StopIteration):
         console_handler = next(
             handler

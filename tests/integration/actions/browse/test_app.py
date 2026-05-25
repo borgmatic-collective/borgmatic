@@ -1,14 +1,8 @@
-import asyncio
-
 import borgmatic.actions.browse.app
 import borgmatic.actions.browse.panels
 
 import pytest
 from flexmock import flexmock
-
-
-pytestmark = pytest.mark.asyncio(loop_scope='module')
-loop: asyncio.AbstractEventLoop
 
 
 async def test_browse_app_with_multiple_configs_uses_configuration_files_list():

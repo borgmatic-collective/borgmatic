@@ -27,5 +27,6 @@ requests-oauthlib
 rich
 rpds-py
 ruamel-yaml>0.15.0
+textual
 typing-extensions
 urllib3
