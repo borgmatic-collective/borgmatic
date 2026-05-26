@@ -96,6 +96,38 @@ class Archives_list(textual.widgets.OptionList):
             self.highlighted_option_changed = True
 
 
+def get_relative_archive_path_components(archive_path, current_directory_path_components):
+    '''
+    Given an Archive_path instance and a tuple of path components for the currently browsed
+    directory, get the path components for the archive path relative to that directory.
+
+    If the archive path is not actually relative to that directory, return None.
+    '''
+    archive_path_components = archive_path.file_path.split(os.path.sep)
+
+    if not current_directory_path_components:
+        return archive_path_components
+
+    # If the loaded path doesn't match this directory list's own path, then we don't care about
+    # it for purposes of displaying this particular directory.
+    if tuple(archive_path_components[: len(current_directory_path_components)]) != current_directory_path_components:
+        return None
+
+    # Strip off the portion of the archive path that matches the directory list's own path.
+    return archive_path_components[len(current_directory_path_components):]
+
+
+def make_directory_list_option(archive_path, archive_path_components):
+    pieces = (
+        borgmatic.actions.browse.paths.PATH_TYPE_ICONS.get(
+            archive_path.path_type if len(archive_path_components) == 1 else 'd', '❓'
+        ),
+        archive_path_components[0],
+    ) + (('→', archive_path.link_target) if archive_path.link_target else ())
+
+    return textual.widgets.option_list.Option(' '.join(pieces), id=archive_path_components[0])
+
+
 def add_archive_path(
     directory_list,
     config,
@@ -103,37 +135,56 @@ def add_archive_path(
     archive_name,
     archive_path,
 ):
-    archive_path_components = archive_path.file_path.split(os.path.sep)
+    archive_path_components = get_relative_archive_path_components(archive_path, directory_list.path_components)
 
-    if directory_list.path_components:
-        # If the loaded path doesn't match this directory list's own path, then we don't care about
-        # it for purposes of displaying this particular directory.
-        if tuple(archive_path_components[: len(directory_list.path_components)]) != directory_list.path_components:
-            return
-
-        # Strip off the portion of the archive path that matches the directory list's own path.
-        archive_path_components = archive_path_components[len(directory_list.path_components):]
-
-    base_path = archive_path_components[0]
+    if archive_path_components is None:
+        return
 
     # If the option is already in the list, bail.
     with contextlib.suppress(textual.widgets.option_list.OptionDoesNotExist):
-        directory_list.get_option(option_id=base_path)
+        directory_list.get_option(option_id=archive_path_components[0])
 
         return
 
-    pieces = (
-        borgmatic.actions.browse.paths.PATH_TYPE_ICONS.get(
-            archive_path.path_type if len(archive_path_components) == 1 else 'd', '❓'
-        ),
-        base_path,
-    ) + (('→', archive_path.link_target) if archive_path.link_target else ())
     highlighted_option = directory_list.highlighted_option
     sorted_options = sorted(
-        [
+        (
             *directory_list.options,
-            textual.widgets.option_list.Option(' '.join(pieces), id=base_path),
-        ],
+            make_directory_list_option(archive_path, archive_path_components),
+        ),
+        key=lambda option: ((option.id == 'loading-indicator'), option.prompt),
+    )
+
+    directory_list.set_options(sorted_options)
+    directory_list.highlighted = (
+        directory_list.get_option_index(highlighted_option.id)
+        if highlighted_option and directory_list.highlighted_option_changed
+        else 0
+    )
+
+
+def bulk_add_archive_paths(
+    directory_list,
+    config,
+    repository,
+    archive_name,
+    archive_paths,
+):
+    highlighted_option = directory_list.highlighted_option
+
+    sorted_options = sorted(
+        (
+            *directory_list.options,
+            *(
+                make_directory_list_option(archive_path, archive_path_components)
+                for archive_path in archive_paths
+                for archive_path_components in (get_relative_archive_path_components(
+                    archive_path,
+                    directory_list.path_components,
+                ),)
+                if archive_path_components is not None
+            ),
+        ),
         key=lambda option: ((option.id == 'loading-indicator'), option.prompt),
     )
 
@@ -184,11 +235,15 @@ class Directory_list(textual.widgets.OptionList):
             self.timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
 
         if self.path_components:
-            # FIXME: For performance reasons, maybe add these in bulk instead of in a loop one at a time.
-            for archive_path in borgmatic.actions.browse.workers.get_paths(
-                self.path_loaded.path_hierarchy, self.path_components
-            ):
-                self.on_archive_path_loaded(archive_path)
+            bulk_add_archive_paths(
+                directory_list=self,
+                config=self.config,
+                repository=self.repository,
+                archive_name=self.archive_name,
+                archive_paths=borgmatic.actions.browse.workers.get_paths(
+                    self.path_loaded.path_hierarchy, self.path_components
+                ),
+            )
         else:
             borgmatic.actions.browse.workers.load_archive_files(
                 self.app,
