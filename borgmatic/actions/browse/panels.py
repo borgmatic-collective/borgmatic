@@ -137,7 +137,7 @@ def add_archive_path(
 ):
     archive_path_components = get_relative_archive_path_components(archive_path, directory_list.path_components)
 
-    if archive_path_components is None:
+    if not archive_path_components:
         return
 
     # If the option is already in the list, bail.

@@ -1,3 +1,5 @@
+import signal
+
 import textual.app
 import textual.binding
 import textual.widgets
@@ -75,3 +77,9 @@ class Browse_app(textual.app.App):
         '''
         logs_panel = self.query_one('#logs')
         logs_panel.styles.display = 'none' if logs_panel.styles.display == 'block' else 'block'
+
+    def exit(self):
+        # Encourages a fast exit by triggering the signal handler in borgmatic/signals.py.
+        signal.raise_signal(signal.SIGTERM)
+
+        super().exit()
