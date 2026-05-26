@@ -31,7 +31,6 @@ def add_inline_loading_indicator(widget):
     loading_message = '⏳ loading...'
 
     if isinstance(widget, textual.widgets.OptionList):
-        widget.clear_options()
         loading_option = textual.widgets.option_list.Option(loading_message, id='loading-indicator')
         widget.add_option(loading_option)
         widget.highlighted = None

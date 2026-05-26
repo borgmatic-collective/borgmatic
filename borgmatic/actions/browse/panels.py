@@ -168,7 +168,6 @@ class Directory_list(textual.widgets.OptionList):
             )
         )
 
-        # FIXME: This isn't working when loading is still underway??? I don't see a ".."
         if self.path_components:
             self.add_option(
                 textual.widgets.option_list.Option(
@@ -182,10 +181,10 @@ class Directory_list(textual.widgets.OptionList):
         )
 
         if not self.path_loaded.complete:
-            # FIXME: After going back to a previous panel, the loading indicator is no longer animating.
             self.timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
 
         if self.path_components:
+            # FIXME: For performance reasons, maybe add these in bulk instead of in a loop one at a time.
             for archive_path in borgmatic.actions.browse.workers.get_paths(
                 self.path_loaded.path_hierarchy, self.path_components
             ):
