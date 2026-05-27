@@ -2,6 +2,7 @@ import contextlib
 import logging
 
 import textual._context
+import textual.widgets
 import textual.worker
 
 import borgmatic.logger
@@ -68,3 +69,9 @@ def log_to_widget(logs_widget):
             if isinstance(handler, borgmatic.logger.Multi_stream_handler)
         )
         logger.removeHandler(console_handler)
+
+
+class Logs(textual.widgets.RichLog):
+    def __init__(self):
+        super().__init__(markup=True, id='logs', classes='panel')
+        self.border_title = '🪵 logs'

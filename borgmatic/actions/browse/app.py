@@ -5,7 +5,9 @@ import textual.binding
 import textual.widgets
 
 import borgmatic.actions.browse.carousel
+import borgmatic.actions.browse.configuration_files_list
 import borgmatic.actions.browse.logs
+import borgmatic.actions.browse.repositories_list
 
 
 class Browse_app(textual.app.App):
@@ -52,14 +54,20 @@ class Browse_app(textual.app.App):
         '''
         yield textual.widgets.Header()
         yield borgmatic.actions.browse.carousel.Carousel(
-            [borgmatic.actions.browse.panels.Configuration_files_list(self.configs)]
+            [
+                borgmatic.actions.browse.configuration_files_list.Configuration_files_list(
+                    self.configs
+                )
+            ]
             if len(self.configs) > 1
             else [
-                borgmatic.actions.browse.panels.Repositories_list(next(iter(self.configs.values())))
+                borgmatic.actions.browse.repositories_list.Repositories_list(
+                    next(iter(self.configs.values()))
+                )
             ]
         )
 
-        logs_panel = borgmatic.actions.browse.panels.Logs()
+        logs_panel = borgmatic.actions.browse.logs.Logs()
         yield logs_panel
         yield textual.widgets.Footer()
 

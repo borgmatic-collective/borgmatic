@@ -1,99 +1,13 @@
 import contextlib
-import logging
 import os
 
 import textual.binding
 import textual.widgets
 
+import borgmatic.actions.browse.bindings
 import borgmatic.actions.browse.loading
 import borgmatic.actions.browse.paths
 import borgmatic.actions.browse.workers
-
-
-logger = logging.getLogger('__name__')
-
-
-OPTION_LIST_BINDINGS = (
-    *textual.widgets.OptionList.BINDINGS,
-    textual.binding.Binding(
-        key='up,k', action='cursor_up', description='scroll up', show=True, priority=True
-    ),
-    textual.binding.Binding(
-        key='down,j', action='cursor_down', description='scroll down', show=True, priority=True
-    ),
-    textual.binding.Binding(
-        key='pageup', action='page_up', description='page up', show=True, priority=True
-    ),
-    textual.binding.Binding(
-        key='pagedown', action='page_down', description='page down', show=True, priority=True
-    ),
-    textual.binding.Binding(
-        key='enter', action='select', description='select', show=True, priority=True
-    ),
-    textual.binding.Binding(key='right,l', action='select', description='select', show=False),
-)
-
-
-class Configuration_files_list(textual.widgets.OptionList):
-    BINDINGS = OPTION_LIST_BINDINGS
-
-    def __init__(self, configs):
-        self.configs = configs
-        home_directory = os.path.expanduser('~')
-
-        super().__init__(
-            *(
-                textual.widgets.option_list.Option(unexpanded_path, id=config_path)
-                for config_path in configs
-                for unexpanded_path in (config_path.replace(home_directory, '~'),)
-            ),
-            classes='panel',
-        )
-        self.border_title = 'configuration files'
-
-
-class Repositories_list(textual.widgets.OptionList):
-    BINDINGS = OPTION_LIST_BINDINGS
-
-    def __init__(self, config):
-        self.config = config
-        self.repositories = config['repositories']
-
-        super().__init__(
-            *(
-                textual.widgets.option_list.Option(label, id=index)
-                for index, repository in enumerate(self.repositories)
-                for label in (repository.get('label', repository.get('path')),)
-            ),
-            classes='panel',
-        )
-        self.border_title = '📦 repositories'
-
-
-class Archives_list(textual.widgets.OptionList):
-    BINDINGS = OPTION_LIST_BINDINGS
-
-    def __init__(self, config, repository):
-        self.config = config
-        self.repository = repository
-
-        super().__init__(classes='panel')
-        self.border_title = '📚 archives'
-        self.highlighted_option_changed = False
-
-        timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
-
-        borgmatic.actions.browse.workers.add_repository_archives(
-            self.app,
-            archives_list=self,
-            config=self.config,
-            repository=self.repository,
-            timer=timer,
-        )
-
-    def on_option_list_option_highlighted(self, event):
-        if self.highlighted not in {None, 0}:
-            self.highlighted_option_changed = True
 
 
 def get_relative_archive_path_components(archive_path, current_directory_path_components):
@@ -110,11 +24,14 @@ def get_relative_archive_path_components(archive_path, current_directory_path_co
 
     # If the loaded path doesn't match this directory list's own path, then we don't care about
     # it for purposes of displaying this particular directory.
-    if tuple(archive_path_components[: len(current_directory_path_components)]) != current_directory_path_components:
+    if (
+        tuple(archive_path_components[: len(current_directory_path_components)])
+        != current_directory_path_components
+    ):
         return None
 
     # Strip off the portion of the archive path that matches the directory list's own path.
-    return archive_path_components[len(current_directory_path_components):]
+    return archive_path_components[len(current_directory_path_components) :]
 
 
 def make_directory_list_option(archive_path, archive_path_components):
@@ -144,10 +61,12 @@ def add_archive_paths(
             *(
                 make_directory_list_option(archive_path, archive_path_components)
                 for archive_path in archive_paths
-                for archive_path_components in (get_relative_archive_path_components(
-                    archive_path,
-                    directory_list.path_components,
-                ),)
+                for archive_path_components in (
+                    get_relative_archive_path_components(
+                        archive_path,
+                        directory_list.path_components,
+                    ),
+                )
                 if archive_path_components
                 if not archive_path_components[0] in directory_list._id_to_option
             ),
@@ -168,7 +87,7 @@ def add_archive_paths(
 
 
 class Directory_list(textual.widgets.OptionList):
-    BINDINGS = OPTION_LIST_BINDINGS
+    BINDINGS = borgmatic.actions.browse.bindings.OPTION_LIST_BINDINGS
 
     def __init__(self, config, repository, archive_name, path_loaded=None, path_components=None):
         self.config = config
@@ -244,57 +163,3 @@ class Directory_list(textual.widgets.OptionList):
     def on_option_list_option_highlighted(self, event):
         if self.highlighted not in {None, 0}:
             self.highlighted_option_changed = True
-
-
-class File_preview(textual.widgets.RichLog):
-    BINDINGS = [
-        *textual.widgets.RichLog.BINDINGS,
-        textual.binding.Binding(
-            key='up,k', action='scroll_up', description='scroll up', show=True, priority=True
-        ),
-        textual.binding.Binding(
-            key='down,j', action='scroll_down', description='scroll down', show=True, priority=True
-        ),
-        textual.binding.Binding(
-            key='pageup', action='page_up', description='page up', show=True, priority=True
-        ),
-        textual.binding.Binding(
-            key='pagedown', action='page_down', description='page down', show=True, priority=True
-        ),
-    ]
-
-    def __init__(self, config, repository, archive_name, file_path):
-        self.config = config
-        self.repository = repository
-        self.archive_name = archive_name
-        self.file_path = file_path
-
-        super().__init__(classes='panel')
-        self.border_title = ' '.join(
-            (
-                borgmatic.actions.browse.paths.PATH_TYPE_ICONS[
-                    borgmatic.actions.browse.paths.Path_type.FILE.value
-                ],
-                self.file_path,
-                'preview',
-            )
-        )
-        self.auto_scroll = False
-
-        timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
-
-        borgmatic.actions.browse.workers.load_file_preview(
-            self.app,
-            file_preview=self,
-            config=self.config,
-            repository=self.repository,
-            archive_name=self.archive_name,
-            file_path=self.file_path,
-            timer=timer,
-        )
-
-
-class Logs(textual.widgets.RichLog):
-    def __init__(self):
-        super().__init__(markup=True, id='logs', classes='panel')
-        self.border_title = '🪵 logs'

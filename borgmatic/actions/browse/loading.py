@@ -8,6 +8,7 @@ LOADING_DOT_INTERVAL_SECONDS = 0.3
 
 
 import logging
+
 logger = logging.getLogger('__name__')
 
 
