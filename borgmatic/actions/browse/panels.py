@@ -128,42 +128,7 @@ def make_directory_list_option(archive_path, archive_path_components):
     return textual.widgets.option_list.Option(' '.join(pieces), id=archive_path_components[0])
 
 
-def add_archive_path(
-    directory_list,
-    config,
-    repository,
-    archive_name,
-    archive_path,
-):
-    archive_path_components = get_relative_archive_path_components(archive_path, directory_list.path_components)
-
-    if not archive_path_components:
-        return
-
-    # If the option is already in the list, bail.
-    with contextlib.suppress(textual.widgets.option_list.OptionDoesNotExist):
-        directory_list.get_option(option_id=archive_path_components[0])
-
-        return
-
-    highlighted_option = directory_list.highlighted_option
-    sorted_options = sorted(
-        (
-            *directory_list.options,
-            make_directory_list_option(archive_path, archive_path_components),
-        ),
-        key=lambda option: ((option.id == 'loading-indicator'), option.prompt),
-    )
-
-    directory_list.set_options(sorted_options)
-    directory_list.highlighted = (
-        directory_list.get_option_index(highlighted_option.id)
-        if highlighted_option and directory_list.highlighted_option_changed
-        else 0
-    )
-
-
-def bulk_add_archive_paths(
+def add_archive_paths(
     directory_list,
     config,
     repository,
@@ -171,6 +136,7 @@ def bulk_add_archive_paths(
     archive_paths,
 ):
     highlighted_option = directory_list.highlighted_option
+    original_options_count = len(directory_list.options)
 
     sorted_options = sorted(
         (
@@ -182,11 +148,16 @@ def bulk_add_archive_paths(
                     archive_path,
                     directory_list.path_components,
                 ),)
-                if archive_path_components is not None
+                if archive_path_components
+                if not archive_path_components[0] in directory_list._id_to_option
             ),
         ),
         key=lambda option: ((option.id == 'loading-indicator'), option.prompt),
     )
+
+    # If there aren't actually any options to add (due to deduplication), bail.
+    if len(sorted_options) == original_options_count:
+        return
 
     directory_list.set_options(sorted_options)
     directory_list.highlighted = (
@@ -235,7 +206,7 @@ class Directory_list(textual.widgets.OptionList):
             self.timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
 
         if self.path_components:
-            bulk_add_archive_paths(
+            add_archive_paths(
                 directory_list=self,
                 config=self.config,
                 repository=self.repository,
@@ -262,12 +233,12 @@ class Directory_list(textual.widgets.OptionList):
             self.remove_option('loading-indicator')
             return
 
-        add_archive_path(
+        add_archive_paths(
             directory_list=self,
             config=self.config,
             repository=self.repository,
             archive_name=self.archive_name,
-            archive_path=data,
+            archive_paths=(data,),
         )
 
     def on_option_list_option_highlighted(self, event):

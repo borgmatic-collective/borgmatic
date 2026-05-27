@@ -78,8 +78,11 @@ class Browse_app(textual.app.App):
         logs_panel = self.query_one('#logs')
         logs_panel.styles.display = 'none' if logs_panel.styles.display == 'block' else 'block'
 
-    def exit(self):
-        # Encourages a fast exit by triggering the signal handler in borgmatic/signals.py.
+    def exit(self):  # pragma: no cover
+        '''
+        Exit the application. But first raise a SIGTERM (handled in borgmatic/signals.py) to
+        encourage a fast exit by killing any ongoing Borg subprocesses.
+        '''
         signal.raise_signal(signal.SIGTERM)
 
         super().exit()
