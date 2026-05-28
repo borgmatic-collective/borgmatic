@@ -1,4 +1,3 @@
-import collections
 import contextlib
 import logging
 import os
@@ -45,12 +44,6 @@ def add_repository_archives(browse_app, archives_list, config, repository, timer
     browse_app.call_from_thread(timer.stop)
 
 
-Archive_path = collections.namedtuple(
-    'Archive_path',
-    ('path_type', 'file_path', 'link_target'),
-)
-
-
 def record_path(archive_path, hierarchy, path_components):
     if len(path_components) == 1:
         hierarchy[path_components[0]] = {} if archive_path.path_type == 'd' else archive_path
@@ -66,8 +59,10 @@ def get_paths(hierarchy, path_components, full_path_components=None):
     if len(path_components) == 1:
         return (
             archive_path
-            if isinstance(archive_path, Archive_path)
-            else Archive_path('d', os.path.join(*full_path_components, component), '')
+            if isinstance(archive_path, borgmatic.actions.browse.archive.Archive_path)
+            else borgmatic.actions.browse.archive.Archive_path(
+                'd', os.path.join(*full_path_components, component), ''
+            )
             for component, archive_path in hierarchy[path_components[0]].items()
         )
 
@@ -95,10 +90,10 @@ class Archive_path_loaded(textual.signal.Signal):
 
 @textual.work(thread=True)
 def load_archive_files(browse_app, directory_list, config, repository, archive_name):
-    for path_type, file_path, link_target in borgmatic.actions.browse.archive.get_archive_files(
+    for archive_path in borgmatic.actions.browse.archive.get_archive_paths(
         config, repository, archive_name
     ):
-        directory_list.path_loaded.publish(Archive_path(path_type, file_path, link_target))
+        directory_list.path_loaded.publish(archive_path)
 
     directory_list.path_loaded.publish(LOADING_DONE)
 
