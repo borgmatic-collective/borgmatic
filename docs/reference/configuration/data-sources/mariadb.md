@@ -24,9 +24,14 @@ databases](https://torsion.org/borgmatic/how-to/backup-your-databases/#all-datab
 borgmatic excludes most data coming from [MariaDB system
 databases](https://mariadb.com/docs/server/reference/system-tables),
 because much of it is populated on MariaDB startup and thus not restorable (or
-just unnecessary to backup). The system data that borgmatic does include in
-these dumps are: users, roles, grants, user-defined functions, and remote
-servers.
+just unnecessary to backup).
+
+The system data that borgmatic does include in these dumps are: users, roles,
+grants, user-defined functions, and remote servers—all from the `mysql` system
+database. This omits all other data from the `mysql` database, which includes
+index and table statistics, time zones, and installed server plugins. It also
+excludes the separate `information_schema`, `performance_schema`, and `sys`
+system databases. This is not currently configurable.
 
 Within a Borg archive, you can find this data stored in a dump named `mysql`—the
 name of the system table this data comes from. And if you'd like to dump this
