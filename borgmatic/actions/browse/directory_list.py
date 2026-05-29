@@ -14,11 +14,14 @@ import borgmatic.actions.browse.workers
 def get_relative_archive_path_components(archive_path, current_directory_path_components):
     '''
     Given an Archive_path instance and a tuple of path components for the currently browsed
-    directory, get the path components for the archive path relative to that directory.
+    directory, get the path components as a tuple for the archive path relative to that directory.
 
-    If the archive path is not actually relative to that directory, return None.
+    For instance, given an archive path with a path of 'foo/bar/baz/quux.txt' and current
+    directory path components of ('foo', 'bar'), return ('baz', 'quux.txt').
+
+    If the archive path is not actually relative to the current directory, return None.
     '''
-    archive_path_components = archive_path.file_path.split(os.path.sep)
+    archive_path_components = tuple(archive_path.file_path.split(os.path.sep))
 
     if not current_directory_path_components:
         return archive_path_components
@@ -35,15 +38,20 @@ def get_relative_archive_path_components(archive_path, current_directory_path_co
     return archive_path_components[len(current_directory_path_components) :]
 
 
-def make_directory_list_option(archive_path, archive_path_components):
+def make_directory_list_option(archive_path, relative_path_components):
+    '''
+    Given an Archive_path instance and a tuple of relative path components for it, make a
+    textual.widgets.option_list.Option for the path. Use an the icon based on whether this looks
+    like a terminal filename or a directory.
+    '''
     pieces = (
         borgmatic.actions.browse.icons.PATH_TYPE_ICONS.get(
-            archive_path.path_type if len(archive_path_components) == 1 else 'd', '❓'
+            archive_path.path_type if len(relative_path_components) == 1 else 'd', '❓'
         ),
-        archive_path_components[0],
+        relative_path_components[0],
     ) + (('→', archive_path.link_target) if archive_path.link_target else ())
 
-    return textual.widgets.option_list.Option(' '.join(pieces), id=archive_path_components[0])
+    return textual.widgets.option_list.Option(prompt=' '.join(pieces), id=relative_path_components[0])
 
 
 def add_archive_paths(
@@ -60,16 +68,16 @@ def add_archive_paths(
         (
             *directory_list.options,
             *(
-                make_directory_list_option(archive_path, archive_path_components)
+                make_directory_list_option(archive_path, relative_path_components)
                 for archive_path in archive_paths
-                for archive_path_components in (
+                for relative_path_components in (
                     get_relative_archive_path_components(
                         archive_path,
                         directory_list.path_components,
                     ),
                 )
-                if archive_path_components
-                if not archive_path_components[0] in directory_list._id_to_option
+                if relative_path_components
+                if not relative_path_components[0] in directory_list._id_to_option
             ),
         ),
         key=lambda option: ((option.id == 'loading-indicator'), option.prompt),

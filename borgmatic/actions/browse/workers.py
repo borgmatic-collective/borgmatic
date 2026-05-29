@@ -34,6 +34,8 @@ def add_repository_archives(browse_app, archives_list, config, repository, timer
                 loading_option,
             ),
         )
+
+        # Retain the highlighted option position even as other options load around it.
         archives_list.highlighted = (
             archives_list.get_option_index(highlighted_option.id)
             if highlighted_option and archives_list.highlighted_option_changed

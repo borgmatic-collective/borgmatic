@@ -4,13 +4,15 @@ import os
 import textual.binding
 import textual.widgets
 
-import borgmatic.actions.browse.archive
 import borgmatic.actions.browse.loading
-import borgmatic.actions.browse.icons
 import borgmatic.actions.browse.workers
 
 
 class File_preview(textual.widgets.RichLog):
+    '''
+    A widget for extracting and previewing the contents of a file stored in a Borg archive.
+    '''
+
     BINDINGS = [
         *textual.widgets.RichLog.BINDINGS,
         textual.binding.Binding(
@@ -28,21 +30,17 @@ class File_preview(textual.widgets.RichLog):
     ]
 
     def __init__(self, config, repository, archive_name, file_path):
+        '''
+        Given a configuration dict, a repository dict, an archive name, and the path of a file in
+        the archive, start loading the file's contents for eventual display in this widget.
+        '''
         self.config = config
         self.repository = repository
         self.archive_name = archive_name
         self.file_path = file_path
 
         super().__init__(classes='panel')
-        self.border_title = ' '.join(
-            (
-                borgmatic.actions.browse.icons.PATH_TYPE_ICONS[
-                    borgmatic.actions.browse.archive.Path_type.FILE.value
-                ],
-                self.file_path,
-                'preview',
-            )
-        )
+        self.border_title = ' '.join(('📄', self.file_path, 'preview'))
         self.auto_scroll = False
 
         timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)

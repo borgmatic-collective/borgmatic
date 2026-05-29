@@ -2132,7 +2132,6 @@ def test_collect_highlander_action_summary_logs_error_on_run_browse_failure():
     assert {log.levelno for log in logs} == {logging.CRITICAL}
 
 
-
 def test_collect_configuration_run_summary_logs_info_for_success():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module.command).should_receive('filter_hooks').with_args(

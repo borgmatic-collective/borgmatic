@@ -10,9 +10,18 @@ import borgmatic.actions.browse.workers
 
 
 class Repositories_list(textual.widgets.OptionList):
+    '''
+    A widget for selecting a single Borg repository from among the repositories in a borgmatic
+    configuratin file. The item selection event is handled in a Carousel instance, the parent widget
+    of a Repositories_list.
+    '''
+
     BINDINGS = borgmatic.actions.browse.bindings.OPTION_LIST_BINDINGS
 
     def __init__(self, config):
+        '''
+        Given a configuration dict, populate the repositories in this widget.
+        '''
         self.config = config
         self.repositories = config['repositories']
 
