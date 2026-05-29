@@ -89,7 +89,7 @@ class Archive_path_loaded(textual.signal.Signal):
 
 
 @textual.work(thread=True)
-def load_archive_files(browse_app, directory_list, config, repository, archive_name):
+def load_archive_paths(browse_app, directory_list, config, repository, archive_name):
     for archive_path in borgmatic.actions.browse.archive.get_archive_paths(
         config, repository, archive_name
     ):

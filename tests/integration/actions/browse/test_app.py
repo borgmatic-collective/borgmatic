@@ -1,5 +1,7 @@
 import borgmatic.actions.browse.app
-import borgmatic.actions.browse.panels
+import borgmatic.actions.browse.configuration_files_list
+import borgmatic.actions.browse.logs
+import borgmatic.actions.browse.repositories_list
 
 import pytest
 from flexmock import flexmock
@@ -21,7 +23,8 @@ async def test_browse_app_with_multiple_configs_uses_configuration_files_list():
         carousel = app.query_one(selector='Carousel')
         assert len(carousel.panels) == 1
         assert isinstance(
-            carousel.panels[0], borgmatic.actions.browse.panels.Configuration_files_list
+            carousel.panels[0],
+            borgmatic.actions.browse.configuration_files_list.Configuration_files_list,
         )
         assert carousel.panels[0].configs == app.configs
 
@@ -43,7 +46,9 @@ async def test_browse_app_with_one_config_uses_repositories_list():
 
         carousel = app.query_one(selector='Carousel')
         assert len(carousel.panels) == 1
-        assert isinstance(carousel.panels[0], borgmatic.actions.browse.panels.Repositories_list)
+        assert isinstance(
+            carousel.panels[0], borgmatic.actions.browse.repositories_list.Repositories_list
+        )
         assert carousel.panels[0].config == app.configs['test1.yaml']
 
         app.query_one(selector='Logs')

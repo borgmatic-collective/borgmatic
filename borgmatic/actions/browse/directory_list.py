@@ -135,7 +135,7 @@ class Directory_list(textual.widgets.OptionList):
                 ),
             )
         else:
-            borgmatic.actions.browse.workers.load_archive_files(
+            borgmatic.actions.browse.workers.load_archive_paths(
                 self.app,
                 directory_list=self,
                 config=self.config,
