@@ -50,7 +50,11 @@ def test_make_directory_list_option_with_contained_file_path_makes_directory_opt
     flexmock(module.textual.widgets.option_list).should_receive('Option').replace_with(flexmock)
 
     option = module.make_directory_list_option(
-        flexmock(path_type='d', file_path='foo/bar/baz.txt', link_target=''), ('bar', 'baz.txt',)
+        flexmock(path_type='d', file_path='foo/bar/baz.txt', link_target=''),
+        (
+            'bar',
+            'baz.txt',
+        ),
     )
 
     assert option.prompt == '📁 bar'

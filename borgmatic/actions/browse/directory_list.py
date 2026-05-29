@@ -51,7 +51,9 @@ def make_directory_list_option(archive_path, relative_path_components):
         relative_path_components[0],
     ) + (('→', archive_path.link_target) if archive_path.link_target else ())
 
-    return textual.widgets.option_list.Option(prompt=' '.join(pieces), id=relative_path_components[0])
+    return textual.widgets.option_list.Option(
+        prompt=' '.join(pieces), id=relative_path_components[0]
+    )
 
 
 def add_archive_paths(
@@ -61,6 +63,10 @@ def add_archive_paths(
     archive_name,
     archive_paths,
 ):
+    '''
+    Given a DirectoryList instance, a configuration dict, a repository dict, an archive name, and a
+    sequence of ArchivePath instances, add the archive paths to the directory list as options.
+    '''
     highlighted_option = directory_list.highlighted_option
     original_options_count = len(directory_list.options)
 
