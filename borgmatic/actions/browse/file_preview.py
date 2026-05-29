@@ -4,8 +4,9 @@ import os
 import textual.binding
 import textual.widgets
 
+import borgmatic.actions.browse.archive
 import borgmatic.actions.browse.loading
-import borgmatic.actions.browse.paths
+import borgmatic.actions.browse.icons
 import borgmatic.actions.browse.workers
 
 
@@ -35,8 +36,8 @@ class File_preview(textual.widgets.RichLog):
         super().__init__(classes='panel')
         self.border_title = ' '.join(
             (
-                borgmatic.actions.browse.paths.PATH_TYPE_ICONS[
-                    borgmatic.actions.browse.paths.Path_type.FILE.value
+                borgmatic.actions.browse.icons.PATH_TYPE_ICONS[
+                    borgmatic.actions.browse.archive.Path_type.FILE.value
                 ],
                 self.file_path,
                 'preview',

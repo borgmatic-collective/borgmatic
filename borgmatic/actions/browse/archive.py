@@ -1,5 +1,6 @@
 import argparse
 import collections
+import enum
 import json
 import logging
 import os
@@ -15,6 +16,14 @@ import binaryornot.helpers
 logger = logging.getLogger(__name__)
 
 
+class Path_type(enum.Enum):
+    DIRECTORY = 'd'
+    LINK = 'l'
+    PIPE = 'p'
+    FILE = '-'
+
+
+# A data structure capturing a path stored in a Borg archive.
 Archive_path = collections.namedtuple(
     'Archive_path',
     ('path_type', 'file_path', 'link_target'),

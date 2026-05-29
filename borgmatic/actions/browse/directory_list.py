@@ -4,9 +4,10 @@ import os
 import textual.binding
 import textual.widgets
 
+import borgmatic.actions.browse.archive
 import borgmatic.actions.browse.bindings
 import borgmatic.actions.browse.loading
-import borgmatic.actions.browse.paths
+import borgmatic.actions.browse.icons
 import borgmatic.actions.browse.workers
 
 
@@ -36,7 +37,7 @@ def get_relative_archive_path_components(archive_path, current_directory_path_co
 
 def make_directory_list_option(archive_path, archive_path_components):
     pieces = (
-        borgmatic.actions.browse.paths.PATH_TYPE_ICONS.get(
+        borgmatic.actions.browse.icons.PATH_TYPE_ICONS.get(
             archive_path.path_type if len(archive_path_components) == 1 else 'd', '❓'
         ),
         archive_path_components[0],
@@ -100,8 +101,8 @@ class Directory_list(textual.widgets.OptionList):
 
         self.border_title = ' '.join(
             (
-                borgmatic.actions.browse.paths.PATH_TYPE_ICONS[
-                    borgmatic.actions.browse.paths.Path_type.DIRECTORY.value
+                borgmatic.actions.browse.icons.PATH_TYPE_ICONS[
+                    borgmatic.actions.browse.archive.Path_type.DIRECTORY.value
                 ],
                 os.path.sep.join(self.path_components)
                 if self.path_components
@@ -112,7 +113,7 @@ class Directory_list(textual.widgets.OptionList):
         if self.path_components:
             self.add_option(
                 textual.widgets.option_list.Option(
-                    f'{borgmatic.actions.browse.paths.PATH_TYPE_ICONS[borgmatic.actions.browse.paths.Path_type.DIRECTORY.value]} ..',
+                    f'{borgmatic.actions.browse.icons.PATH_TYPE_ICONS[borgmatic.actions.browse.archive.Path_type.DIRECTORY.value]} ..',
                     id='..',
                 ),
             )

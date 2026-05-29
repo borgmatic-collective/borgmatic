@@ -6,7 +6,6 @@ import textual.widgets
 
 import borgmatic.actions.browse.bindings
 import borgmatic.actions.browse.loading
-import borgmatic.actions.browse.paths
 import borgmatic.actions.browse.workers
 
 
