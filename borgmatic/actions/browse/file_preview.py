@@ -52,5 +52,5 @@ class File_preview(textual.widgets.RichLog):
             repository=self.repository,
             archive_name=self.archive_name,
             file_path=self.file_path,
-            timer=timer,
+            loading_timer=timer,
         )

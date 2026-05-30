@@ -36,7 +36,7 @@ class Archives_list(textual.widgets.OptionList):
             archives_list=self,
             config=self.config,
             repository=self.repository,
-            timer=timer,
+            loading_timer=timer,
         )
 
     def on_option_list_option_highlighted(self, event):
