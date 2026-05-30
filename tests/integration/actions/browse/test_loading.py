@@ -8,9 +8,7 @@ import textual.widgets
 
 def test_update_inline_loading_indicator_with_option_list_adds_a_dot():
     widget = textual.widgets.OptionList()
-    widget.add_option(
-        textual.widgets.option_list.Option('HOLD.', id='loading-indicator')
-    )
+    widget.add_option(textual.widgets.option_list.Option('HOLD.', id='loading-indicator'))
 
     module.update_inline_loading_indicator(widget)
 
@@ -20,9 +18,7 @@ def test_update_inline_loading_indicator_with_option_list_adds_a_dot():
 
 def test_update_inline_loading_indicator_with_option_list_wraps_dots_beyond_three():
     widget = textual.widgets.OptionList()
-    widget.add_option(
-        textual.widgets.option_list.Option('HOLD...', id='loading-indicator')
-    )
+    widget.add_option(textual.widgets.option_list.Option('HOLD...', id='loading-indicator'))
 
     module.update_inline_loading_indicator(widget)
 

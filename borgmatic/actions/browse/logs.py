@@ -9,6 +9,11 @@ import borgmatic.logger
 
 
 class Rich_color_formatter(logging.Formatter):
+    '''
+    A Python logging formatter that formats log records with Rich-compatible color markup according
+    to their levels.
+    '''
+
     def __init__(self, *args, **kwargs):
         self.prefix = None
         super().__init__(
@@ -19,6 +24,10 @@ class Rich_color_formatter(logging.Formatter):
         )
 
     def format(self, record):
+        '''
+        Given a log record, format it with Rich-compatibe color markup correponding to its log
+        level.
+        '''
         borgmatic.logger.add_custom_log_levels()
 
         color = {
@@ -35,12 +44,23 @@ class Rich_color_formatter(logging.Formatter):
 
 
 class Browse_log_handler(logging.Handler):
+    '''
+    A Python log handler that writes any log records to a logging widget.
+    '''
+
     def __init__(self, logs_widget):
+        '''
+        Given a logs widget, save it for use below.
+        '''
         self.logs_widget = logs_widget
 
         super().__init__()
 
     def emit(self, record):
+        '''
+        Given a log record, format it and log it to the logs widgets. This works whether or not the
+        logging is happening in the main thread.
+        '''
         message = self.format(record)
 
         try:
@@ -72,6 +92,11 @@ def log_to_widget(logs_widget):
 
 
 class Logs(textual.widgets.RichLog):
+    '''
+    A widget for viewing borgmatic logs in realtime. The log level is determined by borgmatic's
+    current verbosity level.
+    '''
+
     def __init__(self):
         super().__init__(markup=True, id='logs', classes='panel')
         self.border_title = '🪵 logs'

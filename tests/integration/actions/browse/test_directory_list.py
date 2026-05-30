@@ -200,7 +200,9 @@ def test_directory_list_on_mount_with_non_root_directory_adds_archive_paths():
     ).and_return(flexmock())
     flexmock(module).should_receive('add_archive_paths').once()
     directory_list = module.Directory_list(
-        config=flexmock(), repository=flexmock(), archive_name='archive',
+        config=flexmock(),
+        repository=flexmock(),
+        archive_name='archive',
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': {}}),
         path_components=('etc',),
     )
@@ -216,7 +218,9 @@ def test_on_archive_path_loaded_with_loading_done_signal_removes_loading_indicat
     ).and_return(flexmock())
     flexmock(module).should_receive('add_archive_paths').never()
     directory_list = module.Directory_list(
-        config=flexmock(), repository=flexmock(), archive_name='archive',
+        config=flexmock(),
+        repository=flexmock(),
+        archive_name='archive',
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': {}}),
         path_components=('etc',),
     )
@@ -233,7 +237,9 @@ def test_on_archive_path_loaded_with_path_loaded_signal_adds_archive_path():
     ).and_return(flexmock())
     flexmock(module).should_receive('add_archive_paths').once()
     directory_list = module.Directory_list(
-        config=flexmock(), repository=flexmock(), archive_name='archive',
+        config=flexmock(),
+        repository=flexmock(),
+        archive_name='archive',
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': {}}),
         path_components=('etc',),
     )
@@ -248,7 +254,9 @@ def test_directory_list_on_option_list_option_highlighted_with_highlighted_none_
         'app'
     ).and_return(flexmock())
     directory_list = module.Directory_list(
-        config=flexmock(), repository=flexmock(), archive_name='archive',
+        config=flexmock(),
+        repository=flexmock(),
+        archive_name='archive',
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': {}}),
         path_components=('etc',),
     )
@@ -265,7 +273,9 @@ def test_directory_list_on_option_list_option_highlighted_with_highlighted_zero_
         'app'
     ).and_return(flexmock())
     directory_list = module.Directory_list(
-        config=flexmock(), repository=flexmock(), archive_name='archive',
+        config=flexmock(),
+        repository=flexmock(),
+        archive_name='archive',
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': {}}),
         path_components=('etc',),
     )
@@ -283,7 +293,9 @@ def test_directory_list_on_option_list_option_highlighted_with_highlighted_non_z
         'app'
     ).and_return(flexmock())
     directory_list = module.Directory_list(
-        config=flexmock(), repository=flexmock(), archive_name='archive',
+        config=flexmock(),
+        repository=flexmock(),
+        archive_name='archive',
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': {}}),
         path_components=('etc',),
     )
