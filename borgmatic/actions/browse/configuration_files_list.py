@@ -10,9 +10,18 @@ import borgmatic.actions.browse.workers
 
 
 class Configuration_files_list(textual.widgets.OptionList):
+    '''
+    A widget for selecting a single borgmatic configuration file from among available configuration
+    files. The item selection event is handled in a Carousel instance, the parent widget of an
+    Configuration_files_list.
+    '''
     BINDINGS = borgmatic.actions.browse.bindings.OPTION_LIST_BINDINGS
 
     def __init__(self, configs):
+        '''
+        Given a dict mapping from configuration path to corresponding configuration dict, add each
+        configuration path as an option to this widget.
+        '''
         self.configs = configs
         home_directory = os.path.expanduser('~')
 
