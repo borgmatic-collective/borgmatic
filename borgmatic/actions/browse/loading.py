@@ -13,6 +13,10 @@ logger = logging.getLogger('__name__')
 
 
 def update_inline_loading_indicator(widget):
+    '''
+    Given a textual.widgets.OptionList or a textual.widgets.RichLog instance, animate the existing
+    loading indicator inside it.
+    '''
     if isinstance(widget, textual.widgets.OptionList):
         with contextlib.suppress(textual.widgets.option_list.OptionDoesNotExist):
             widget.replace_option_prompt(
@@ -28,15 +32,20 @@ def update_inline_loading_indicator(widget):
         raise ValueError(f'Unsupported widget type: {type(widget)}')
 
 
-def add_inline_loading_indicator(widget):
-    loading_message = '⏳ loading...'
+LOADING_MESSAGE = '⏳ loading...'
 
+
+def add_inline_loading_indicator(widget):
+    '''
+    Given a textual.widgets.OptionList or a textual.widgets.RichLog instance, add a loading
+    indicator to it.
+    '''
     if isinstance(widget, textual.widgets.OptionList):
-        loading_option = textual.widgets.option_list.Option(loading_message, id='loading-indicator')
+        loading_option = textual.widgets.option_list.Option(LOADING_MESSAGE, id='loading-indicator')
         widget.add_option(loading_option)
         widget.highlighted = None
     elif isinstance(widget, textual.widgets.RichLog):
-        widget.write(loading_message)
+        widget.write(LOADING_MESSAGE)
     else:
         raise ValueError(f'Unsupported widget type: {type(widget)}')
 
