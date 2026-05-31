@@ -2,7 +2,6 @@ import contextlib
 import logging
 import os
 
-import rich.syntax
 import textual
 import textual.signal
 import textual.widgets.option_list
@@ -13,10 +12,27 @@ import borgmatic.actions.browse.archive
 logger = logging.getLogger('__name__')
 
 
-@textual.work(thread=True)
-def add_repository_archives(browse_app, archives_list, config, repository, loading_timer):
+LOADING_DONE = object()
+
+
+class Archive_loaded(textual.signal.Signal):
     '''
-    Given a running Browse_app instance, an Archives_list instance, a configuration dict, a
+    A signal that publishes when each subsequent archive is loaded from a repository, intended for
+    consumption in widgets that display archives as they are loaded. This signal also publishes
+    when loading is complete.
+
+    Each subscribed callback call includes the archive as an archive name string. Given the lack of
+    other identifying information (configuration file, repository), there should be a separate
+    Archive_loaded instance per repository.
+    '''
+
+    pass
+
+
+@textual.work(thread=True)
+def add_repository_archives(browse_app, archive_loaded, config, repository, loading_timer):
+    '''
+    Given a running Browse_app instance, an Archive_loaded instance, a configuration dict, a
     repository dict, and a loading indicator timer, load a list of the archives from the repository
     and add them as options in the archives list. Reverse the order so the most recent archive is
     first.
@@ -25,34 +41,13 @@ def add_repository_archives(browse_app, archives_list, config, repository, loadi
     loading indicator and stop its timer.
     '''
     archives_data = borgmatic.actions.browse.archive.get_repository_archives(config, repository)
-    loading_option = archives_list.get_option('loading-indicator')
 
     # Reverse the archives, so the common case of accessing the latest archive is easy because it's
     # at the top.
     for index, archive in enumerate(reversed(archives_data['archives'])):
-        label_pieces = (
-            (archive['archive'], '[dim](latest)[/dim]') if index == 0 else (archive['archive'],)
-        )
-        highlighted_option = archives_list.highlighted_option
+        archive_loaded.publish(archive['archive'])
 
-        browse_app.call_from_thread(archives_list.remove_option, 'loading-indicator')
-        browse_app.call_from_thread(
-            archives_list.add_options,
-            (
-                textual.widgets.option_list.Option(' '.join(label_pieces), id=archive['archive']),
-                loading_option,
-            ),
-        )
-
-        # Retain the highlighted option position even as other options load around it.
-        archives_list.highlighted = (
-            archives_list.get_option_index(highlighted_option.id)
-            if highlighted_option and archives_list.highlighted_option_changed
-            else 0
-        )
-
-    browse_app.call_from_thread(archives_list.remove_option, 'loading-indicator')
-    browse_app.call_from_thread(loading_timer.stop)
+    archive_loaded.publish(LOADING_DONE)
 
 
 def record_path(archive_path, hierarchy, path_components):
@@ -108,9 +103,6 @@ def get_paths(hierarchy, path_components, full_path_components=None):
     return get_paths(hierarchy[path_components[0]], path_components[1:], full_path_components)
 
 
-LOADING_DONE = object()
-
-
 class Archive_path_loaded(textual.signal.Signal):
     '''
     A signal that publishes when each subsequent path is loaded from an archive, intended for
@@ -118,7 +110,12 @@ class Archive_path_loaded(textual.signal.Signal):
     complete filesystem hierarchy seen thus far, so new widgets that get created after loading has
     started can "catch up" with existing known paths. Lastly, this signal publishes and tracks when
     loading is complete.
+
+    Each subscrided callback call includes the loaded path as an Archive_path instance. There is
+    intended to be a separate Archive_path_loaded instance per archive, but that instance should be
+    shared among several different widgets for the same archive for performance reasons.
     '''
+
     def __init__(self, owner, name):
         self.path_hierarchy = {}
         self.complete = False
@@ -135,9 +132,9 @@ class Archive_path_loaded(textual.signal.Signal):
 
 
 @textual.work(thread=True)
-def load_archive_paths(browse_app, directory_list, config, repository, archive_name):
+def load_archive_paths(browse_app, path_loaded, config, repository, archive_name):
     '''
-    Given a running Browse_app instance, a Directory_list instance, a configuration dict, a
+    Given a running Browse_app instance, an Archive_path_loaded instance, a configuration dict, a
     repository dict, and an archive name, load the paths in this archive and publish each one via
     the Archive_path_loaded signal, so interested widgets can subscribe. Also send a "loading done"
     signal when loading completes.
@@ -147,30 +144,35 @@ def load_archive_paths(browse_app, directory_list, config, repository, archive_n
     for archive_path in borgmatic.actions.browse.archive.get_archive_paths(
         config, repository, archive_name
     ):
-        directory_list.path_loaded.publish(archive_path)
+        path_loaded.publish(archive_path)
 
-    directory_list.path_loaded.publish(LOADING_DONE)
+    path_loaded.publish(LOADING_DONE)
+
+
+class File_preview_loaded(textual.signal.Signal):
+    '''
+    A signal that publishes when file contents are loaded from an archive, intended for consumption
+    in widgets that display loaded files. This signal also publishes when loading is complete.
+
+    Each published callback includes a the file's contents as a string. Given the lack of other
+    identifying information (configuration file, repository, archive), there should be a separate
+    Archive_loaded instance per previewed file.
+    '''
+
+    pass
 
 
 @textual.work(thread=True)
-def load_file_preview(browse_app, file_preview, config, repository, archive_name, file_path,
-                      loading_timer):
+def load_file_preview(
+    browse_app, file_preview_loaded, config, repository, archive_name, file_path, loading_timer
+):
     '''
-    Given a running Browse_app instance, a File_preview instance, a configuration dict, a repository
-    dict, an archive name, the path of a file in that archive, and a loading indicator timer, load
-    the contents of the file and write it into the given file preview widget.
+    Given a running Browse_app instance, a File_preview_loaded instance, a configuration dict, a
+    repository dict, an archive name, the path of a file in that archive, and a loading indicator
+    timer, load the contents of the file and write it into the given file preview widget.
     '''
-    file_content = borgmatic.actions.browse.archive.get_archive_file_content(
+    file_contents = borgmatic.actions.browse.archive.get_archive_file_content(
         config, repository, archive_name, file_path
     )
 
-    browse_app.call_from_thread(loading_timer.stop)
-    browse_app.call_from_thread(file_preview.clear)
-
-    if file_content is None:
-        browse_app.call_from_thread(file_preview.write, 'Cannot display a preview for this file')
-    else:
-        syntax_lexer = rich.syntax.Syntax.guess_lexer(file_path, file_content)
-        browse_app.call_from_thread(
-            file_preview.write, rich.syntax.Syntax(file_content, syntax_lexer)
-        )
+    file_preview_loaded.publish(file_contents)

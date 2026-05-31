@@ -159,7 +159,7 @@ class Directory_list(textual.widgets.OptionList):
         if not self.path_components:
             borgmatic.actions.browse.workers.load_archive_paths(
                 self.app,
-                directory_list=self,
+                path_loaded=self.path_loaded,
                 config=self.config,
                 repository=self.repository,
                 archive_name=self.archive_name,
@@ -167,7 +167,7 @@ class Directory_list(textual.widgets.OptionList):
 
     def on_mount(self):
         '''
-        When this widgets gets mounted in the DOM, subcribe to path loaded events so that we can
+        When this widget gets mounted in the DOM, subcribe to path loaded events so that we can
         find out about relevant archive paths as they load. And if this is a non-root directory
         list, add any already loaded archive paths to this widget as options. This is done *after*
         subscribing to path loaded signals so that there's not a gap where we might miss out on any

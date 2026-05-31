@@ -16,7 +16,8 @@ def test_log_to_widget_adds_our_handler_and_removes_default_handler():
 
         with contextlib.suppress(StopIteration):
             browse_log_handler = next(
-                handler for handler in root_logger.handlers
+                handler
+                for handler in root_logger.handlers
                 if isinstance(handler, module.Browse_log_handler)
             )
 
@@ -26,10 +27,10 @@ def test_log_to_widget_adds_our_handler_and_removes_default_handler():
             root_logger.removeHandler(browse_log_handler)
 
     assert not any(
-        handler for handler in root_logger.handlers
+        handler
+        for handler in root_logger.handlers
         if isinstance(handler, module.borgmatic.logger.Multi_stream_handler)
     )
-
 
 
 def test_logs_does_not_raise():

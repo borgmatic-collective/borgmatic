@@ -1,6 +1,7 @@
 import contextlib
 import os
 
+import rich.syntax
 import textual.binding
 import textual.widgets
 
@@ -42,15 +43,36 @@ class File_preview(textual.widgets.RichLog):
         super().__init__(classes='panel')
         self.border_title = ' '.join(('📄', self.file_path, 'preview'))
         self.auto_scroll = False
+        self.file_preview_loaded = borgmatic.actions.browse.workers.File_preview_loaded(
+            self, 'file preview loaded'
+        )
 
-        timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
+        self.loading_timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
 
         borgmatic.actions.browse.workers.load_file_preview(
             self.app,
-            file_preview=self,
+            file_preview_loaded=self.file_preview_loaded,
             config=self.config,
             repository=self.repository,
             archive_name=self.archive_name,
             file_path=self.file_path,
-            loading_timer=timer,
+            loading_timer=self.loading_timer,
         )
+
+    def on_mount(self):
+        '''
+        When this widget gets mounted in the DOM, subscribe to archive loaded events so that we can
+        find out about archives as they load.
+        '''
+        self.file_preview_loaded.subscribe(self, self.on_file_preview_loaded)
+
+    def on_file_preview_loaded(self, data):
+        self.loading_timer.stop()
+        self.clear()
+
+        if data is None:
+            self.write('Cannot display a preview for this file')
+        else:
+            self.write(
+                rich.syntax.Syntax(data, rich.syntax.Syntax.guess_lexer(self.file_path, data))
+            )

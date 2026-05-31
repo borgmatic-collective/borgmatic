@@ -28,15 +28,54 @@ class Archives_list(textual.widgets.OptionList):
         super().__init__(classes='panel')
         self.border_title = '📚 archives'
         self.highlighted_option_changed = False
+        self.archive_loaded = borgmatic.actions.browse.workers.Archive_loaded(
+            self, 'archive loaded'
+        )
 
-        timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
+        self.loading_timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
 
         borgmatic.actions.browse.workers.add_repository_archives(
             self.app,
-            archives_list=self,
+            archive_loaded=self.archive_loaded,
             config=self.config,
             repository=self.repository,
-            loading_timer=timer,
+            loading_timer=self.loading_timer,
+        )
+
+    def on_mount(self):
+        '''
+        When this widget gets mounted in the DOM, subscribe to archive loaded events so that we can
+        find out about archives as they load.
+        '''
+        self.archive_loaded.subscribe(self, self.on_archive_loaded)
+
+    def on_archive_loaded(self, data):
+        '''
+        When an archive loads, add it as an option to this archives list. But if we get a
+        signal that all path loading is complete, stop and remove our loading indicator.
+        '''
+        if data is borgmatic.actions.browse.workers.LOADING_DONE:
+            self.loading_timer.stop()
+            self.remove_option('loading-indicator')
+            return
+
+        label_pieces = (data, '[dim](latest)[/dim]') if len(self.options) == 1 else (data,)
+        highlighted_option = self.highlighted_option
+
+        loading_indicator = self.get_option('loading-indicator')
+        self.remove_option('loading-indicator')
+        self.add_options(
+            (
+                textual.widgets.option_list.Option(' '.join(label_pieces), id=data),
+                loading_indicator,
+            ),
+        )
+
+        # Retain the highlighted option position even as other options load around it.
+        self.highlighted = (
+            self.get_option_index(highlighted_option.id)
+            if highlighted_option and self.highlighted_option_changed
+            else 0
         )
 
     def on_option_list_option_highlighted(self, event):

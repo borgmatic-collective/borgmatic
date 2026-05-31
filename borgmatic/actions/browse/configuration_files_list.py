@@ -15,6 +15,7 @@ class Configuration_files_list(textual.widgets.OptionList):
     files. The item selection event is handled in a Carousel instance, the parent widget of an
     Configuration_files_list.
     '''
+
     BINDINGS = borgmatic.actions.browse.bindings.OPTION_LIST_BINDINGS
 
     def __init__(self, configs):
