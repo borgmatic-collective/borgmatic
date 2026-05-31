@@ -121,12 +121,8 @@ def test_add_archive_paths_retains_loading_indicator_at_bottom():
     assert directory_list.highlighted == 2
 
 
-def test_directory_list_with_root_directory_starts_loading_archive_paths():
-    flexmock(module.borgmatic.actions.browse.loading).should_receive('add_inline_loading_indicator')
-    flexmock(module.borgmatic.actions.browse.workers).should_receive('load_archive_paths').once()
-    flexmock(module.borgmatic.actions.browse.directory_list.Directory_list).should_receive(
-        'app'
-    ).and_return(flexmock())
+def test_directory_list_with_root_directory_adds_loading_indicator():
+    flexmock(module.borgmatic.actions.browse.loading).should_receive('add_inline_loading_indicator').once()
 
     directory_list = module.Directory_list(
         config=flexmock(), repository=flexmock(), archive_name='archive'
@@ -134,26 +130,6 @@ def test_directory_list_with_root_directory_starts_loading_archive_paths():
     assert directory_list.border_title == '📁 archive'
     assert len(directory_list.options) == 0
     assert not directory_list.path_loaded.complete
-
-
-def test_directory_list_with_non_root_directory_relies_on_existing_path_loading_worker():
-    flexmock(module.borgmatic.actions.browse.loading).should_receive('add_inline_loading_indicator')
-    flexmock(module.borgmatic.actions.browse.workers).should_receive('load_archive_paths').never()
-    flexmock(module.borgmatic.actions.browse.directory_list.Directory_list).should_receive(
-        'app'
-    ).and_return(flexmock())
-
-    directory_list = module.Directory_list(
-        config=flexmock(),
-        repository=flexmock(),
-        archive_name='archive',
-        path_loaded=flexmock(complete=False),
-        path_components=('etc',),
-    )
-    assert directory_list.border_title == '📁 etc'
-    assert len(directory_list.options) == 1
-    assert directory_list.options[0].prompt == '📁 ..'
-    assert directory_list.options[0].id == '..'
 
 
 def test_directory_list_with_already_complete_loading_skips_loading_indicator():
@@ -178,12 +154,12 @@ def test_directory_list_with_already_complete_loading_skips_loading_indicator():
     assert directory_list.options[0].id == '..'
 
 
-def test_directory_list_on_mount_with_root_directory_skips_adding_archives_paths():
+def test_directory_list_on_mount_with_root_directory_loads_archive_paths():
     flexmock(module.borgmatic.actions.browse.loading).should_receive('add_inline_loading_indicator')
-    flexmock(module.borgmatic.actions.browse.workers).should_receive('load_archive_paths')
     flexmock(module.borgmatic.actions.browse.directory_list.Directory_list).should_receive(
         'app'
     ).and_return(flexmock())
+    flexmock(module.borgmatic.actions.browse.workers).should_receive('load_archive_paths').once()
     flexmock(module).should_receive('add_archive_paths').never()
     directory_list = module.Directory_list(
         config=flexmock(), repository=flexmock(), archive_name='archive'
@@ -198,6 +174,7 @@ def test_directory_list_on_mount_with_non_root_directory_adds_archive_paths():
     flexmock(module.borgmatic.actions.browse.directory_list.Directory_list).should_receive(
         'app'
     ).and_return(flexmock())
+    flexmock(module.borgmatic.actions.browse.workers).should_receive('load_archive_paths').never()
     flexmock(module).should_receive('add_archive_paths').once()
     directory_list = module.Directory_list(
         config=flexmock(),

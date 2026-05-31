@@ -119,10 +119,9 @@ class Directory_list(textual.widgets.OptionList):
         '''
         Given a configuration dict, a repository dict, an archive name, an optional
         Archive_path_loaded instance for signalling new paths as they load, and an optional tuple of
-        path components indicating this directory's position in the backed up filesystem, start
-        loading paths from the archive for eventual display in this widget. Or, if paths have
-        already started loading (by the root directory list), just listen for new paths as they come
-        in.
+        path components indicating this directory's position in the backed up filesystem, prepare to
+        load paths from the archive for eventual display in this widget. Actual loading kicks off in
+        on_mount() below.
         '''
         self.config = config
         self.repository = repository
@@ -156,22 +155,15 @@ class Directory_list(textual.widgets.OptionList):
         if not self.path_loaded.complete:
             self.timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
 
-        if not self.path_components:
-            borgmatic.actions.browse.workers.load_archive_paths(
-                self.app,
-                path_loaded=self.path_loaded,
-                config=self.config,
-                repository=self.repository,
-                archive_name=self.archive_name,
-            )
-
     def on_mount(self):
         '''
-        When this widget gets mounted in the DOM, subcribe to path loaded events so that we can
-        find out about relevant archive paths as they load. And if this is a non-root directory
-        list, add any already loaded archive paths to this widget as options. This is done *after*
-        subscribing to path loaded signals so that there's not a gap where we might miss out on any
-        paths.
+        When this widget gets mounted in the DOM, subcribe to path loaded events so that we can find
+        out about relevant archive paths as they load. And if this is a root directory list, start
+        loading paths from the archive. If this is a non-root directory list, add any already loaded
+        archive paths to this widget as options.
+
+        Loading is started *after* subscribing to path loaded signals so that there's not a gap
+        where we might miss out on any paths.
         '''
         self.path_loaded.subscribe(self, self.on_archive_path_loaded)
 
@@ -184,6 +176,14 @@ class Directory_list(textual.widgets.OptionList):
                 archive_paths=borgmatic.actions.browse.workers.get_paths(
                     self.path_loaded.path_hierarchy, self.path_components
                 ),
+            )
+        else:
+            borgmatic.actions.browse.workers.load_archive_paths(
+                self.app,
+                path_loaded=self.path_loaded,
+                config=self.config,
+                repository=self.repository,
+                archive_name=self.archive_name,
             )
 
     def on_archive_path_loaded(self, data):

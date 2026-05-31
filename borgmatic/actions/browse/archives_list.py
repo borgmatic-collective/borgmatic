@@ -19,8 +19,9 @@ class Archives_list(textual.widgets.OptionList):
 
     def __init__(self, config, repository):
         '''
-        Given a configuration dict and a repository dict, start loading the archives from the
-        repository for eventual display in this widget.
+        Given a configuration dict and a repository dict, prepare to load the archives from the
+        repository for eventual display in this widget. Actual loading kicks off in on_mount()
+        below.
         '''
         self.config = config
         self.repository = repository
@@ -34,6 +35,16 @@ class Archives_list(textual.widgets.OptionList):
 
         self.loading_timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
 
+    def on_mount(self):
+        '''
+        When this widget gets mounted in the DOM, subscribe to archive loaded events so that we can
+        find out about archives as they load. Also start loading archives from the repository.
+
+        Loading is started *after* subscribing to archive loaded signals so that there's not a gap
+        where we might miss out on signal publishes.
+        '''
+        self.archive_loaded.subscribe(self, self.on_archive_loaded)
+
         borgmatic.actions.browse.workers.add_repository_archives(
             self.app,
             archive_loaded=self.archive_loaded,
@@ -42,31 +53,26 @@ class Archives_list(textual.widgets.OptionList):
             loading_timer=self.loading_timer,
         )
 
-    def on_mount(self):
-        '''
-        When this widget gets mounted in the DOM, subscribe to archive loaded events so that we can
-        find out about archives as they load.
-        '''
-        self.archive_loaded.subscribe(self, self.on_archive_loaded)
-
-    def on_archive_loaded(self, data):
+    def on_archive_loaded(self, archive_name):
         '''
         When an archive loads, add it as an option to this archives list. But if we get a
         signal that all path loading is complete, stop and remove our loading indicator.
         '''
-        if data is borgmatic.actions.browse.workers.LOADING_DONE:
+        if archive_name is borgmatic.actions.browse.workers.LOADING_DONE:
             self.loading_timer.stop()
             self.remove_option('loading-indicator')
             return
 
-        label_pieces = (data, '[dim](latest)[/dim]') if len(self.options) == 1 else (data,)
+        label_pieces = (
+            (archive_name, '[dim](latest)[/dim]') if len(self.options) == 1 else (archive_name,)
+        )
         highlighted_option = self.highlighted_option
 
         loading_indicator = self.get_option('loading-indicator')
         self.remove_option('loading-indicator')
         self.add_options(
             (
-                textual.widgets.option_list.Option(' '.join(label_pieces), id=data),
+                textual.widgets.option_list.Option(' '.join(label_pieces), id=archive_name),
                 loading_indicator,
             ),
         )

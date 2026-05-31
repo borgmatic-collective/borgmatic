@@ -1,3 +1,4 @@
+import logging
 import contextlib
 import os
 
@@ -7,6 +8,9 @@ import textual.widgets
 
 import borgmatic.actions.browse.loading
 import borgmatic.actions.browse.workers
+
+
+logger = logging.getLogger('__name__')
 
 
 class File_preview(textual.widgets.RichLog):
@@ -33,7 +37,8 @@ class File_preview(textual.widgets.RichLog):
     def __init__(self, config, repository, archive_name, file_path):
         '''
         Given a configuration dict, a repository dict, an archive name, and the path of a file in
-        the archive, start loading the file's contents for eventual display in this widget.
+        the archive, prepare to load the file's contents for eventual display in this widget. Actual
+        loading kicks off in on_mount() below.
         '''
         self.config = config
         self.repository = repository
@@ -49,6 +54,16 @@ class File_preview(textual.widgets.RichLog):
 
         self.loading_timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
 
+    def on_mount(self):
+        '''
+        When this widget gets mounted in the DOM, subscribe to archive loaded events so that we can
+        find out about archives as they load. Also start loading file contents from the archive.
+
+        Loading is started *after* subscribing to file preview loaded signals so that there's not a
+        gap where we might miss out on signal publishes.
+        '''
+        self.file_preview_loaded.subscribe(self, self.on_file_preview_loaded)
+
         borgmatic.actions.browse.workers.load_file_preview(
             self.app,
             file_preview_loaded=self.file_preview_loaded,
@@ -59,20 +74,20 @@ class File_preview(textual.widgets.RichLog):
             loading_timer=self.loading_timer,
         )
 
-    def on_mount(self):
-        '''
-        When this widget gets mounted in the DOM, subscribe to archive loaded events so that we can
-        find out about archives as they load.
-        '''
-        self.file_preview_loaded.subscribe(self, self.on_file_preview_loaded)
+    def on_file_preview_loaded(self, file_contents):
+        import time
 
-    def on_file_preview_loaded(self, data):
+        logger.debug(('on_file_preview_loaded', time.time()))
         self.loading_timer.stop()
         self.clear()
 
-        if data is None:
+        if file_contents is None:
             self.write('Cannot display a preview for this file')
         else:
+            logger.debug(('before write', time.time()))
             self.write(
-                rich.syntax.Syntax(data, rich.syntax.Syntax.guess_lexer(self.file_path, data))
+                rich.syntax.Syntax(
+                    file_contents, rich.syntax.Syntax.guess_lexer(self.file_path, file_contents)
+                )
             )
+            logger.debug(('after write', time.time()))
