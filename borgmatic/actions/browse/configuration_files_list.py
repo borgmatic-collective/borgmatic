@@ -34,4 +34,4 @@ class Configuration_files_list(textual.widgets.OptionList):
             ),
             classes='panel',
         )
-        self.border_title = 'configuration files'
+        self.border_title = '📄 configuration files'
