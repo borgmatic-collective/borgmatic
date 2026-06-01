@@ -57,7 +57,7 @@ exclude = ["*.*/*"]
 quote-style = "preserve"
 
 [tool.ruff.lint]
-preview = true
+preview = false
 extend-select = [
     "A",  # flake8-builtins: builtin shadowing
     "B",  # flake8-bugbear: bugs and design problems
@@ -133,9 +133,6 @@ known-first-party = ["borgmatic"]
 "tests/end-to-end/commands/**/*.py" = [
     "T201",  # print statement
 ]
-
-[tool.ruff.lint.pylint]
-max-statements-in-try = 35
 
 [tool.codespell]
 skip = ".git,.tox,build"

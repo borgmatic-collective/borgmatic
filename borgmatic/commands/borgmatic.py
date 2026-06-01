@@ -212,7 +212,7 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
             f"Skipping {'/'.join(skip_actions)} action{'s' if len(skip_actions) > 1 else ''} due to configured skip_actions",
         )
 
-    try:  # noqa: PLR1702
+    try:
         with (
             Monitoring_hooks(config_filename, config, arguments, global_arguments),
             borgmatic.hooks.command.Before_after_hooks(

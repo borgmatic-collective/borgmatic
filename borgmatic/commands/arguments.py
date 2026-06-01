@@ -325,7 +325,7 @@ def make_argument_description(schema, flag_name):
             ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).',
         )
 
-    if example and schema_type in ('array', 'object'):  # noqa: PLR6201
+    if example and schema_type in ('array', 'object'):
         example_buffer = io.StringIO()
         yaml = ruamel.yaml.YAML(typ='safe')
         yaml.default_flow_style = True
@@ -2128,7 +2128,7 @@ def parse_arguments(schema, *unparsed_arguments):
         )
 
     if (
-        ('list' in arguments and 'repo-info' in arguments and arguments['list'].json)  # noqa: PLR0916
+        ('list' in arguments and 'repo-info' in arguments and arguments['list'].json)
         or ('list' in arguments and 'info' in arguments and arguments['list'].json)
         or ('repo-info' in arguments and 'info' in arguments and arguments['repo-info'].json)
     ):
@@ -2146,7 +2146,7 @@ def parse_arguments(schema, *unparsed_arguments):
             'With the repo-list action, only one of --prefix or --match-archives flags can be used.',
         )
 
-    if 'info' in arguments and (  # noqa: PLR0916
+    if 'info' in arguments and (
         (arguments['info'].archive and arguments['info'].prefix)
         or (arguments['info'].archive and arguments['info'].match_archives)
         or (arguments['info'].prefix and arguments['info'].match_archives)
