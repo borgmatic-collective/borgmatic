@@ -59,8 +59,8 @@ class File_preview(textual.widgets.RichLog):
         When this widget gets mounted in the DOM, subscribe to archive loaded events so that we can
         find out about archives as they load. Also start loading file contents from the archive.
 
-        Loading is started *after* subscribing to file preview loaded signals so that there's not a
-        gap where we might miss out on signal publishes.
+        Loading is started *after* subscribing to the file preview loaded signal so that there's not
+        a gap where we might miss out on signal publishes.
         '''
         self.file_preview_loaded.subscribe(self, self.on_file_preview_loaded)
 
@@ -75,6 +75,9 @@ class File_preview(textual.widgets.RichLog):
         )
 
     def on_file_preview_loaded(self, file_contents):
+        '''
+        When a file loads, write its contents (syntax highlighted) to this file preview widget.
+        '''
         self.loading_timer.stop()
         self.clear()
 

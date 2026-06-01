@@ -42,6 +42,13 @@ change that last line to:
 uv tool install --editable .[dev,Apprise]
 ```
 
+Or to work on the [browse
+action](https://torsion.org/borgmatic/reference/command-line/actions/browse/):
+
+```bash
+uv tool install --editable .[dev,browse]
+```
+
 To get oriented with the borgmatic source code, have a look at the [source
 code reference](https://torsion.org/borgmatic/reference/source-code/).
 

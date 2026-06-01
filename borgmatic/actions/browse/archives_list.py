@@ -40,8 +40,8 @@ class Archives_list(textual.widgets.OptionList):
         When this widget gets mounted in the DOM, subscribe to archive loaded events so that we can
         find out about archives as they load. Also start loading archives from the repository.
 
-        Loading is started *after* subscribing to archive loaded signals so that there's not a gap
-        where we might miss out on signal publishes.
+        Loading is started *after* subscribing to the archive loaded signal so that there's not a
+        gap where we might miss out on signal publishes.
         '''
         self.archive_loaded.subscribe(self, self.on_archive_loaded)
 
