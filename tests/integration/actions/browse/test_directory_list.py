@@ -122,7 +122,9 @@ def test_add_archive_paths_retains_loading_indicator_at_bottom():
 
 
 def test_directory_list_with_root_directory_adds_loading_indicator():
-    flexmock(module.borgmatic.actions.browse.loading).should_receive('add_inline_loading_indicator').once()
+    flexmock(module.borgmatic.actions.browse.loading).should_receive(
+        'add_inline_loading_indicator'
+    ).once()
 
     directory_list = module.Directory_list(
         config=flexmock(), repository=flexmock(), archive_name='archive'

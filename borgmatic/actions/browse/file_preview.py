@@ -75,19 +75,14 @@ class File_preview(textual.widgets.RichLog):
         )
 
     def on_file_preview_loaded(self, file_contents):
-        import time
-
-        logger.debug(('on_file_preview_loaded', time.time()))
         self.loading_timer.stop()
         self.clear()
 
         if file_contents is None:
             self.write('Cannot display a preview for this file')
         else:
-            logger.debug(('before write', time.time()))
+            # Only pass the file path and not its contents to guess_lexer(). Passing the contents is
+            # more accurate, but also much slower.
             self.write(
-                rich.syntax.Syntax(
-                    file_contents, rich.syntax.Syntax.guess_lexer(self.file_path, file_contents)
-                )
+                rich.syntax.Syntax(file_contents, rich.syntax.Syntax.guess_lexer(self.file_path))
             )
-            logger.debug(('after write', time.time()))

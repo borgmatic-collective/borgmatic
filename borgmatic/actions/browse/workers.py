@@ -171,9 +171,6 @@ def load_file_preview(
     repository dict, an archive name, the path of a file in that archive, and a loading indicator
     timer, load the contents of the file and write it into the given file preview widget.
     '''
-    import time
-
-    logger.debug(('before get_archive_file_content', time.time()))
     file_contents = borgmatic.actions.browse.archive.get_archive_file_content(
         config, repository, archive_name, file_path
     )
