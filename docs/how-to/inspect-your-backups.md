@@ -135,3 +135,50 @@ is, patterns are _not_ taken into consideration. If you require this, supply the
 
 See the [Borg](https://borgbackup.readthedocs.io/en/stable/usage/diff.html)
 documentation for information on output format, what is compared, and more.
+
+
+## Browsing backups
+
+<span class="minilink minilink-addedin">New in version 2.1.6</span> <span
+class="minilink minilink-addedin">Experimental feature</span> borgmatic has an
+experimental console UI for browsing your repositories, archives, and files.
+Here's what it looks like:
+
+<img src="https://torsion.org/borgmatic/static/browse.png" alt="borgmatic browse screenshot" style="width: 100%">
+
+This feature is not intended to be a general-purpose Borg UI with every
+borgmatic feature, but rather it's for use cases like quickly looking at the
+contents of your backups when you're feeling too lazy to type out a full
+borgmatic command-line.
+
+Depending on how you installed borgmatic, it may not have come with the
+necessary Python libraries to support the browse action. For instance, if you
+originally [installed borgmatic with
+uv](https://torsion.org/borgmatic/how-to/install-borgmatic/), run the following
+to install the libraries needed for the browse action:
+
+```bash
+sudo uv tool install borgmatic[browse]
+```
+
+Omit `sudo` if borgmatic is installed as a non-root user.
+
+Once the libraries are installed, run the following to access the browse action:
+
+```bash
+borgmatic browse
+```
+
+This launches a console UI where you can select a borgmatic configuration file
+(if there's more than one), select a Borg repository, select an archive in that
+repository, and even browse the backed up files in that archive.
+
+Use the keyboard or the mouse to navigate the UI. The footer at the bottom of
+the screen shows some of the available keys. Logs show up directly in the UI at
+the [selected
+verbosity](https://torsion.org/borgmatic/reference/command-line/logging/),
+although logs are hidden by default.
+
+Please [provide
+feedback](https://torsion.org/borgmatic/#support-and-contributing) if you find
+this feature useful—or even if you don't, but would like it to become useful.

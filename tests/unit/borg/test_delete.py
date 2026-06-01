@@ -9,13 +9,13 @@ from ..test_verbosity import insert_logging_mock
 
 
 def test_make_delete_command_includes_log_info():
-    insert_logging_mock(logging.INFO)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo',),
     )
+    insert_logging_mock(logging.INFO)
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
@@ -31,13 +31,13 @@ def test_make_delete_command_includes_log_info():
 
 
 def test_make_delete_command_includes_log_debug():
-    insert_logging_mock(logging.DEBUG)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo',),
     )
+    insert_logging_mock(logging.DEBUG)
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
@@ -63,6 +63,7 @@ def test_make_delete_command_includes_dry_run():
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo',),
     )
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
@@ -88,6 +89,7 @@ def test_make_delete_command_includes_remote_path():
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo',),
     )
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
@@ -111,6 +113,7 @@ def test_make_delete_command_includes_umask():
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo',),
     )
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
@@ -136,6 +139,7 @@ def test_make_delete_command_includes_lock_wait():
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo',),
     )
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
@@ -157,6 +161,7 @@ def test_make_delete_command_includes_extra_borg_options():
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo',),
     )
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
@@ -182,6 +187,7 @@ def test_make_delete_command_with_list_config_calls_borg_with_list_flag():
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo',),
     )
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
@@ -203,6 +209,7 @@ def test_make_delete_command_includes_force():
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo',),
     )
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
@@ -224,6 +231,7 @@ def test_make_delete_command_includes_force_twice():
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo',),
     )
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
@@ -247,6 +255,7 @@ def test_make_delete_command_includes_archive():
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo',),
     )
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
@@ -275,6 +284,7 @@ def test_make_delete_command_includes_match_archives():
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo',),
     )
+    insert_logging_mock(logging.WARNING)
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
@@ -307,6 +317,7 @@ def test_delete_archives_with_archive_calls_borg_delete():
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.execute).should_receive('execute_command').once()
+    insert_logging_mock(logging.WARNING)
 
     module.delete_archives(
         repository={'path': 'repo'},
@@ -327,6 +338,7 @@ def test_delete_archives_with_match_archives_calls_borg_delete():
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.execute).should_receive('execute_command').once()
+    insert_logging_mock(logging.WARNING)
 
     module.delete_archives(
         repository={'path': 'repo'},
@@ -348,6 +360,7 @@ def test_delete_archives_with_archive_related_argument_calls_borg_delete(argumen
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.execute).should_receive('execute_command').once()
+    insert_logging_mock(logging.WARNING)
 
     module.delete_archives(
         repository={'path': 'repo'},
@@ -367,6 +380,7 @@ def test_delete_archives_without_archive_related_argument_calls_borg_repo_delete
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.execute).should_receive('execute_command').never()
+    insert_logging_mock(logging.WARNING)
 
     module.delete_archives(
         repository={'path': 'repo'},
@@ -403,6 +417,7 @@ def test_delete_archives_calls_borg_delete_with_working_directory():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.delete_archives(
         repository={'path': 'repo'},

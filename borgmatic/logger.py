@@ -169,7 +169,7 @@ class Json_formatter(logging.Formatter):
     def __init__(self, fmt='{message}', *args, style='{', **kwargs):
         super().__init__(*args, fmt=fmt, style=style, **kwargs)
 
-    def format(self, record):  # noqa: PLR6301
+    def format(self, record):
         return log_record_to_json(record)
 
 

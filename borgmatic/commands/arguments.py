@@ -31,9 +31,10 @@ ACTION_ALIASES = {
     'transfer': [],
     'break-lock': [],
     'key': [],
-    'borg': [],
     'recreate': [],
     'diff': [],
+    'browse': [],
+    'borg': [],
 }
 
 
@@ -324,7 +325,7 @@ def make_argument_description(schema, flag_name):
             ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).',
         )
 
-    if example and schema_type in ('array', 'object'):  # noqa: PLR6201
+    if example and schema_type in ('array', 'object'):
         example_buffer = io.StringIO()
         yaml = ruamel.yaml.YAML(typ='safe')
         yaml.default_flow_style = True
@@ -2004,8 +2005,9 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     diff_parser = action_parsers.add_parser(
         'diff',
         aliases=ACTION_ALIASES['diff'],
-        help='This command finds differences (file contents, user/group/mode) between archives',
-        description='This command finds differences (file contents, user/group/mode) between archives',
+        help='Find differences (file contents, user/group/mode) between archives',
+        description='Find differences (file contents, user/group/mode) between archives',
+        add_help=False,
     )
     diff_group = diff_parser.add_argument_group('diff arguments')
     diff_group.add_argument(
@@ -2042,6 +2044,18 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         action='store_true',
         help='Run the diff according to borgmatic configured patterns (ie do not diff entire archives)',
     )
+    diff_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    browse_parser = action_parsers.add_parser(
+        'browse',
+        aliases=ACTION_ALIASES['browse'],
+        help='Browse repositories, archives, and files in a console UI',
+        description='Browse repositories, archives, and files in a console UI',
+        add_help=False,
+    )
+    browse_group = browse_parser.add_argument_group('browse arguments')
+    browse_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
     borg_parser = action_parsers.add_parser(
         'borg',
         aliases=ACTION_ALIASES['borg'],
@@ -2114,7 +2128,7 @@ def parse_arguments(schema, *unparsed_arguments):
         )
 
     if (
-        ('list' in arguments and 'repo-info' in arguments and arguments['list'].json)  # noqa: PLR0916
+        ('list' in arguments and 'repo-info' in arguments and arguments['list'].json)
         or ('list' in arguments and 'info' in arguments and arguments['list'].json)
         or ('repo-info' in arguments and 'info' in arguments and arguments['repo-info'].json)
     ):
@@ -2132,7 +2146,7 @@ def parse_arguments(schema, *unparsed_arguments):
             'With the repo-list action, only one of --prefix or --match-archives flags can be used.',
         )
 
-    if 'info' in arguments and (  # noqa: PLR0916
+    if 'info' in arguments and (
         (arguments['info'].archive and arguments['info'].prefix)
         or (arguments['info'].archive and arguments['info'].match_archives)
         or (arguments['info'].prefix and arguments['info'].match_archives)

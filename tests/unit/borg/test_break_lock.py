@@ -24,6 +24,7 @@ def insert_execute_command_mock(command, working_directory=None, borg_exit_codes
 def test_break_lock_calls_borg_with_required_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'break-lock', '--log-json', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.break_lock(
         repository_path='repo',
@@ -36,6 +37,7 @@ def test_break_lock_calls_borg_with_required_flags():
 def test_break_lock_calls_borg_with_local_path():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg1', 'break-lock', '--log-json', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.break_lock(
         repository_path='repo',
@@ -49,6 +51,7 @@ def test_break_lock_calls_borg_with_local_path():
 def test_break_lock_calls_borg_using_exit_codes():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg1', 'break-lock', '--log-json', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.break_lock(
         repository_path='repo',
@@ -64,6 +67,7 @@ def test_break_lock_calls_borg_with_remote_path_flags():
     insert_execute_command_mock(
         ('borg', 'break-lock', '--remote-path', 'borg1', '--log-json', 'repo')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.break_lock(
         repository_path='repo',
@@ -77,6 +81,7 @@ def test_break_lock_calls_borg_with_remote_path_flags():
 def test_break_lock_calls_borg_with_umask_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'break-lock', '--umask', '0770', '--log-json', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.break_lock(
         repository_path='repo',
@@ -89,6 +94,7 @@ def test_break_lock_calls_borg_with_umask_flags():
 def test_break_lock_calls_borg_with_lock_wait_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'break-lock', '--log-json', '--lock-wait', '5', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.break_lock(
         repository_path='repo',
@@ -103,6 +109,7 @@ def test_break_lock_calls_borg_with_extra_borg_options():
     insert_execute_command_mock(
         ('borg', 'break-lock', '--log-json', '--extra', 'value with space', 'repo')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.break_lock(
         repository_path='repo',
@@ -145,6 +152,7 @@ def test_break_lock_calls_borg_with_working_directory():
     insert_execute_command_mock(
         ('borg', 'break-lock', '--log-json', 'repo'), working_directory='/working/dir'
     )
+    insert_logging_mock(logging.WARNING)
 
     module.break_lock(
         repository_path='repo',

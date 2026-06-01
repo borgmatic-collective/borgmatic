@@ -78,6 +78,7 @@ def test_make_list_command_includes_json_but_not_debug():
 
 
 def test_make_list_command_includes_json():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -94,6 +95,7 @@ def test_make_list_command_includes_json():
 
 
 def test_make_list_command_includes_lock_wait():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
         ('--lock-wait', '5'),
     ).and_return(())
@@ -112,6 +114,7 @@ def test_make_list_command_includes_lock_wait():
 
 
 def test_make_list_command_includes_format():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
         ()
     ).and_return(('--format', 'stuff'))
@@ -130,6 +133,7 @@ def test_make_list_command_includes_format():
 
 
 def test_make_list_command_includes_extra_borg_options():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -146,6 +150,7 @@ def test_make_list_command_includes_extra_borg_options():
 
 
 def test_make_list_command_includes_archive():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
@@ -164,6 +169,7 @@ def test_make_list_command_includes_archive():
 
 
 def test_make_list_command_includes_archive_and_path():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
@@ -182,6 +188,7 @@ def test_make_list_command_includes_archive_and_path():
 
 
 def test_make_list_command_includes_local_path():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -199,6 +206,7 @@ def test_make_list_command_includes_local_path():
 
 
 def test_make_list_command_includes_remote_path():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(
         'remote-path',
@@ -223,6 +231,7 @@ def test_make_list_command_includes_remote_path():
 
 
 def test_make_list_command_includes_umask():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').replace_with(
         lambda name, value: (f'--{name}', value) if value else (),
     )
@@ -241,6 +250,7 @@ def test_make_list_command_includes_umask():
 
 
 def test_make_list_command_includes_short():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--short',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -271,6 +281,7 @@ def test_make_list_command_includes_short():
     ),
 )
 def test_make_list_command_includes_additional_flags(argument_name):
+    insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
         (f"--{argument_name.replace('_', '-')}", 'value'),

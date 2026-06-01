@@ -22,6 +22,7 @@ def test_run_arbitrary_borg_calls_borg_with_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.run_arbitrary_borg(
         repository_path='repo',
@@ -99,6 +100,7 @@ def test_run_arbitrary_borg_with_lock_wait_calls_borg_with_lock_wait_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.run_arbitrary_borg(
         repository_path='repo',
@@ -123,6 +125,7 @@ def test_run_arbitrary_borg_with_archive_calls_borg_with_archive_flag():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.run_arbitrary_borg(
         repository_path='repo',
@@ -148,6 +151,7 @@ def test_run_arbitrary_borg_with_local_path_calls_borg_via_local_path():
         borg_local_path='borg1',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.run_arbitrary_borg(
         repository_path='repo',
@@ -174,6 +178,7 @@ def test_run_arbitrary_borg_with_exit_codes_calls_borg_using_them():
         borg_local_path='borg',
         borg_exit_codes=borg_exit_codes,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.run_arbitrary_borg(
         repository_path='repo',
@@ -200,6 +205,7 @@ def test_run_arbitrary_borg_with_remote_path_calls_borg_with_remote_path_flags()
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.run_arbitrary_borg(
         repository_path='repo',
@@ -227,6 +233,7 @@ def test_run_arbitrary_borg_with_remote_path_injection_attack_gets_escaped():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.run_arbitrary_borg(
         repository_path='repo',
@@ -252,6 +259,7 @@ def test_run_arbitrary_borg_passes_borg_specific_flags_to_borg():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.run_arbitrary_borg(
         repository_path='repo',
@@ -276,6 +284,7 @@ def test_run_arbitrary_borg_omits_dash_dash_in_flags_passed_to_borg():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.run_arbitrary_borg(
         repository_path='repo',
@@ -300,6 +309,7 @@ def test_run_arbitrary_borg_without_borg_specific_flags_does_not_raise():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.run_arbitrary_borg(
         repository_path='repo',
@@ -376,6 +386,7 @@ def test_run_arbitrary_borg_calls_borg_with_working_directory():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.run_arbitrary_borg(
         repository_path='repo',

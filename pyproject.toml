@@ -31,6 +31,8 @@ validate-borgmatic-config = "borgmatic.commands.validate_config:main"
 
 [project.optional-dependencies]
 Apprise = ["apprise"]
+browse = ["textual", "binaryornot"]
+browse-dev = ["textual-dev"]
 
 [project.urls]
 Homepage = "https://torsion.org/borgmatic"
@@ -45,7 +47,7 @@ namespaces = false
 
 [tool.pytest.ini_options]
 testpaths = "tests"
-addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --no-cov-on-fail --cov-fail-under=100 --ignore=tests/end-to-end --timeout=120"
+addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --no-cov-on-fail --cov-fail-under=100 --ignore=tests/end-to-end --timeout=120 --asyncio-mode=auto"
 
 [tool.ruff]
 line-length = 100
@@ -55,7 +57,7 @@ exclude = ["*.*/*"]
 quote-style = "preserve"
 
 [tool.ruff.lint]
-preview = true
+preview = false
 extend-select = [
     "A",  # flake8-builtins: builtin shadowing
     "B",  # flake8-bugbear: bugs and design problems

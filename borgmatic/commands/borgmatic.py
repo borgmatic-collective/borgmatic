@@ -12,6 +12,7 @@ import ruamel.yaml
 
 import borgmatic.actions.borg
 import borgmatic.actions.break_lock
+import borgmatic.actions.browse.run
 import borgmatic.actions.change_passphrase
 import borgmatic.actions.check
 import borgmatic.actions.compact
@@ -211,7 +212,7 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
             f"Skipping {'/'.join(skip_actions)} action{'s' if len(skip_actions) > 1 else ''} due to configured skip_actions",
         )
 
-    try:  # noqa: PLR1702
+    try:
         with (
             Monitoring_hooks(config_filename, config, arguments, global_arguments),
             borgmatic.hooks.command.Before_after_hooks(
@@ -825,8 +826,8 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
     try:
         if 'bootstrap' in arguments:
             try:
-                # No configuration file is needed for bootstrap.
                 local_borg_version = borg_version.local_borg_version(
+                    # No configuration file is needed for bootstrap.
                     {},
                     arguments['bootstrap'].local_path,
                 )
@@ -896,6 +897,13 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
             borgmatic.actions.config.show.run_show(arguments['show'], configs)
 
             return
+
+        if 'browse' in arguments:
+            borgmatic.actions.browse.run.run_browse(
+                arguments['browse'],
+                arguments['global'],
+                configs,
+            )
 
     except (
         CalledProcessError,
