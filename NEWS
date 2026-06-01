@@ -1,4 +1,4 @@
-2.1.6.dev0
+2.1.6
  * #1256: Fix a race condition in which borgmatic sometimes swallows Borg error output without
    logging it.
  * #1300: Fix the "source_directories_must_exist" option to support source directories relative to a
