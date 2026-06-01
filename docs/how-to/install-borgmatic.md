@@ -98,7 +98,7 @@ installing borgmatic:
 
 #### Etc.
 
- * [stand-alone Linux binary](https://projects.torsion.org/borgmatic-collective/borgmatic/releases) (This is a beta feature!)
+ * [stand-alone Linux binary](https://projects.torsion.org/borgmatic-collective/borgmatic/releases) (This is a beta feature! The minimal binary omits [Apprise support](https://torsion.org/borgmatic/reference/configuration/monitoring/apprise/).)
  * [Ansible role](https://github.com/borgbase/ansible-role-borgbackup)
  * [pipx](https://pipx.pypa.io/stable/)
 

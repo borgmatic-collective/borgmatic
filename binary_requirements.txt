@@ -2,7 +2,6 @@
 #    uv pip compile --annotation-style line binary_requirements.in -o binary_requirements.txt
 apprise==1.10.0           # via -r binary_requirements.in
 attrs==26.1.0             # via jsonschema, referencing, -r binary_requirements.in
-binaryornot==0.6.0        # via -r binary_requirements.in
 .                         # via -r binary_requirements.in
 certifi==2026.5.20        # via apprise, requests, -r binary_requirements.in
 charset-normalizer==3.4.7  # via requests, -r binary_requirements.in
@@ -10,23 +9,13 @@ click==8.4.1              # via apprise, -r binary_requirements.in
 idna==3.16                # via requests, -r binary_requirements.in
 jsonschema==4.26.0        # via borgmatic, -r binary_requirements.in
 jsonschema-specifications==2025.9.1  # via jsonschema, -r binary_requirements.in
-linkify-it-py==2.1.0      # via markdown-it-py
 markdown==3.10.2          # via apprise, -r binary_requirements.in
-markdown-it-py==4.2.0     # via mdit-py-plugins, rich, textual
-mdit-py-plugins==0.6.1    # via textual
-mdurl==0.1.2              # via markdown-it-py
 oauthlib==3.3.1           # via requests-oauthlib, -r binary_requirements.in
 packaging==26.2           # via borgmatic, -r binary_requirements.in
-platformdirs==4.9.6       # via textual
-pygments==2.20.0          # via rich, textual
 pyyaml==6.0.3             # via apprise, -r binary_requirements.in
 referencing==0.37.0       # via jsonschema, jsonschema-specifications, -r binary_requirements.in
 requests==2.34.2          # via apprise, borgmatic, requests-oauthlib, -r binary_requirements.in
 requests-oauthlib==2.0.0  # via apprise, -r binary_requirements.in
-rich==15.0.0              # via textual, -r binary_requirements.in
 rpds-py==0.30.0           # via jsonschema, referencing, -r binary_requirements.in
 ruamel-yaml==0.19.1       # via borgmatic, -r binary_requirements.in
-textual==8.2.7            # via -r binary_requirements.in
-typing-extensions==4.15.0  # via textual
-uc-micro-py==2.0.0        # via linkify-it-py
 urllib3==2.7.0            # via requests, -r binary_requirements.in

@@ -1,7 +1,6 @@
 .
 apprise
 attrs
-binaryornot
 certifi
 charset-normalizer
 click
@@ -15,8 +14,6 @@ pyyaml
 referencing
 requests
 requests-oauthlib
-rich
 rpds-py
 ruamel-yaml
-textual
 urllib3

@@ -152,8 +152,10 @@ contents of your backups when you're feeling too lazy to type out a full
 borgmatic command-line.
 
 Depending on how you installed borgmatic, it may not have come with the
-necessary Python libraries to support the browse action. For instance, if you
-originally [installed borgmatic with
+necessary Python libraries to support the browse action. (borgmatic's
+[stand-alone
+binary](https://projects.torsion.org/borgmatic-collective/borgmatic/releases)
+does not currently include them.) If you originally [installed borgmatic with
 uv](https://torsion.org/borgmatic/how-to/install-borgmatic/), run the following
 to install the libraries needed for the browse action:
 
