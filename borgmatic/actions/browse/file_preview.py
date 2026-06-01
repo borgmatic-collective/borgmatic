@@ -1,6 +1,4 @@
 import logging
-import contextlib
-import os
 
 import rich.syntax
 import textual.binding
@@ -8,7 +6,6 @@ import textual.widgets
 
 import borgmatic.actions.browse.loading
 import borgmatic.actions.browse.workers
-
 
 logger = logging.getLogger('__name__')
 
@@ -18,7 +15,7 @@ class File_preview(textual.widgets.RichLog):
     A widget for extracting and previewing the contents of a file stored in a Borg archive.
     '''
 
-    BINDINGS = [
+    BINDINGS = (
         *textual.widgets.RichLog.BINDINGS,
         textual.binding.Binding(
             key='up,k', action='scroll_up', description='scroll up', show=True, priority=True
@@ -32,7 +29,7 @@ class File_preview(textual.widgets.RichLog):
         textual.binding.Binding(
             key='pagedown', action='page_down', description='page down', show=True, priority=True
         ),
-    ]
+    )
 
     def __init__(self, config, repository, archive_name, file_path):
         '''
@@ -46,7 +43,7 @@ class File_preview(textual.widgets.RichLog):
         self.file_path = file_path
 
         super().__init__(classes='panel')
-        self.border_title = ' '.join(('📄', self.file_path, 'preview'))
+        self.border_title = f'📄 {self.file_path} preview'
         self.auto_scroll = False
         self.file_preview_loaded = borgmatic.actions.browse.workers.File_preview_loaded(
             self, 'file preview loaded'
@@ -71,7 +68,6 @@ class File_preview(textual.widgets.RichLog):
             repository=self.repository,
             archive_name=self.archive_name,
             file_path=self.file_path,
-            loading_timer=self.loading_timer,
         )
 
     def on_file_preview_loaded(self, file_contents):

@@ -1,12 +1,8 @@
-import contextlib
 import os
 
-import textual.binding
 import textual.widgets
 
 import borgmatic.actions.browse.bindings
-import borgmatic.actions.browse.loading
-import borgmatic.actions.browse.workers
 
 
 class Configuration_files_list(textual.widgets.OptionList):

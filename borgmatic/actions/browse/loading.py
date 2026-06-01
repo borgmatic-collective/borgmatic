@@ -1,13 +1,12 @@
 import contextlib
 import functools
+import logging
 
 import textual.widgets
 import textual.widgets.option_list
 
 LOADING_DOT_INTERVAL_SECONDS = 0.3
 
-
-import logging
 
 logger = logging.getLogger('__name__')
 

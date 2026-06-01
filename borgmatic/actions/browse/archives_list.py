@@ -1,7 +1,3 @@
-import contextlib
-import os
-
-import textual.binding
 import textual.widgets
 
 import borgmatic.actions.browse.bindings
@@ -50,7 +46,6 @@ class Archives_list(textual.widgets.OptionList):
             archive_loaded=self.archive_loaded,
             config=self.config,
             repository=self.repository,
-            loading_timer=self.loading_timer,
         )
 
     def on_archive_loaded(self, archive_name):

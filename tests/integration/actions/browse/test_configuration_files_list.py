@@ -1,6 +1,6 @@
-from borgmatic.actions.browse import configuration_files_list as module
-
 from flexmock import flexmock
+
+from borgmatic.actions.browse import configuration_files_list as module
 
 
 def test_configuration_files_list_adds_config_paths_as_options():

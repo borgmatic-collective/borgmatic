@@ -1,10 +1,7 @@
-import contextlib
 import os
 
-import textual.binding
 import textual.widgets
 
-import borgmatic.actions.browse.archive
 import borgmatic.actions.browse.bindings
 import borgmatic.actions.browse.icons
 import borgmatic.actions.browse.loading
@@ -86,7 +83,7 @@ def add_archive_paths(
                     ),
                 )
                 if relative_path_components
-                if not relative_path_components[0] in directory_list._id_to_option
+                if relative_path_components[0] not in directory_list._id_to_option
             ),
         ),
         # The loading indicator "option" always goes to the bottom.

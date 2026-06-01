@@ -1,7 +1,6 @@
 import textual.binding
 import textual.widgets
 
-
 OPTION_LIST_BINDINGS = (
     *textual.widgets.OptionList.BINDINGS,
     textual.binding.Binding(

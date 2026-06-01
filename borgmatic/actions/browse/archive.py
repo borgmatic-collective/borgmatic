@@ -3,15 +3,13 @@ import collections
 import enum
 import json
 import logging
-import os
+
+import binaryornot.helpers
 
 import borgmatic.borg.extract
 import borgmatic.borg.list
 import borgmatic.borg.repo_list
 import borgmatic.borg.version
-
-import binaryornot.helpers
-
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +67,7 @@ def get_repository_archives(config, repository):
 def get_archive_paths(config, repository, archive_name):
     '''
     Given a configuration dict, a repository dict, and an archive name in that repository, get a
-    list of files, directories, symlinks, etc. found in the archive, each as an Archive_path
+    generator of files, directories, symlinks, etc. found in the archive, each as an Archive_path
     instance.
     '''
     with borgmatic.logger.Log_prefix(repository.get('label', repository['path'])):

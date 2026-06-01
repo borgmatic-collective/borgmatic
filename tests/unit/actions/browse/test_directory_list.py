@@ -1,6 +1,6 @@
-from borgmatic.actions.browse import directory_list as module
-
 from flexmock import flexmock
+
+from borgmatic.actions.browse import directory_list as module
 
 
 def test_get_relative_archive_path_components_strips_off_current_directory():

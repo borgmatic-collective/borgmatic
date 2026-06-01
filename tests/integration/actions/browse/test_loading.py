@@ -1,9 +1,9 @@
-from borgmatic.actions.browse import loading as module
-
-from flexmock import flexmock
 import pytest
 import textual.app
 import textual.widgets
+from flexmock import flexmock
+
+from borgmatic.actions.browse import loading as module
 
 
 def test_update_inline_loading_indicator_with_option_list_adds_a_dot():
@@ -35,7 +35,7 @@ def test_update_inline_loading_indicator_with_option_list_and_missing_indicator_
 
 
 async def test_update_inline_loading_indicator_with_rich_log_adds_a_dot():
-    async with textual.app.App().run_test() as pilot:
+    async with textual.app.App().run_test():
         widget = textual.widgets.RichLog()
         widget._size_known = True
         widget.write('HOLD.')
@@ -46,7 +46,7 @@ async def test_update_inline_loading_indicator_with_rich_log_adds_a_dot():
 
 
 async def test_update_inline_loading_indicator_with_rich_log_wraps_dots_beyond_three():
-    async with textual.app.App().run_test() as pilot:
+    async with textual.app.App().run_test():
         widget = textual.widgets.RichLog()
         widget._size_known = True
         widget.write('HOLD...')
@@ -82,7 +82,7 @@ def test_add_inline_loading_indicator_with_option_list_adds_loading_indicator_op
 
 
 async def test_add_inline_loading_indicator_with_rich_log_writes_loading_indicator_text():
-    async with textual.app.App().run_test() as pilot:
+    async with textual.app.App().run_test():
         widget = textual.widgets.RichLog()
         widget._size_known = True
         flexmock(widget).should_receive('set_interval')

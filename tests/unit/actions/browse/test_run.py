@@ -1,7 +1,7 @@
 from flexmock import flexmock
 
-from borgmatic.actions.browse import run as module
 import borgmatic.actions.browse.app
+from borgmatic.actions.browse import run as module
 
 
 def test_run_browse_without_configs_bails():

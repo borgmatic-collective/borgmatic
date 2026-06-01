@@ -1,7 +1,5 @@
 from borgmatic.actions.browse import repositories_list as module
 
-from flexmock import flexmock
-
 
 def test_repositories_list_populates_options():
     config = {'repositories': [{'path': 'test1.borg'}, {'path': 'test2.borg', 'label': 'two'}]}

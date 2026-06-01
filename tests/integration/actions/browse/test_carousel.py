@@ -1,15 +1,13 @@
+import pytest
+import textual.widgets.option_list
+from flexmock import flexmock
+
 import borgmatic.actions.browse.app
 import borgmatic.actions.browse.archive
 import borgmatic.actions.browse.carousel
 import borgmatic.actions.browse.loading
 import borgmatic.actions.browse.logs
 import borgmatic.actions.browse.workers
-
-import pytest
-import pytest_asyncio
-from flexmock import flexmock
-
-import textual.widgets.option_list
 from borgmatic.actions.browse import carousel as module
 
 
@@ -392,7 +390,7 @@ async def test_carousel_next_action_and_previous_action_and_next_action_reuses_n
         assert app.focused == carousel.panels[1]
 
 
-async def test_carousel_next_action_with_no_next_panel_does_not_advance():
+async def test_carousel_next_action_with_multiple_configs_and_no_next_panel_does_not_advance():
     app = borgmatic.actions.browse.app.Browse_app(
         configs={
             'test1.yaml': {'repositories': [{'path': 'test1.borg'}]},
@@ -400,7 +398,7 @@ async def test_carousel_next_action_with_no_next_panel_does_not_advance():
         }
     )
     flexmock(borgmatic.actions.browse.logs).should_receive('log_to_widget')
-    flexmock(borgmatic.actions.browse.carousel).should_receive('make_next_panel').and_return(None)
+    flexmock(module).should_receive('make_next_panel').and_return(None)
 
     async with app.run_test() as pilot:
         await pilot.press('enter')

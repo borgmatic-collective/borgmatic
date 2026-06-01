@@ -129,7 +129,7 @@ def test_borgmatic_command(monitoring_hook_configuration, expected_request_count
     os.mkdir(extract_path)
     os.chdir(extract_path)
 
-    try:
+    try:  # noqa: PLW0717
         config_path = os.path.join(temporary_directory, 'test.yaml')
         generate_configuration(config_path, repository_path, monitoring_hook_configuration)
 

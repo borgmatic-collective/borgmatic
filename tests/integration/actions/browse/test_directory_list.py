@@ -1,8 +1,8 @@
-from borgmatic.actions.browse import directory_list as module
-
-from flexmock import flexmock
 import textual.widgets
 import textual.widgets.option_list
+from flexmock import flexmock
+
+from borgmatic.actions.browse import directory_list as module
 
 
 def test_add_archive_paths_with_only_duplicate_paths_bails():

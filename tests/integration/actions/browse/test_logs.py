@@ -1,8 +1,8 @@
 import contextlib
 
-from borgmatic.actions.browse import logs as module
-
 from flexmock import flexmock
+
+from borgmatic.actions.browse import logs as module
 
 
 def test_log_to_widget_adds_our_handler_and_removes_default_handler():

@@ -1,8 +1,8 @@
-from borgmatic.actions.browse import archives_list as module
-
-from flexmock import flexmock
 import textual.app
 import textual.widgets.option_list
+from flexmock import flexmock
+
+from borgmatic.actions.browse import archives_list as module
 
 
 async def test_archives_list_on_mount_does_not_raise():
@@ -11,7 +11,7 @@ async def test_archives_list_on_mount_does_not_raise():
     archives_list = module.Archives_list(config=flexmock(), repository=flexmock())
     flexmock(archives_list.archive_loaded).should_receive('subscribe')
 
-    async with textual.app.App().run_test() as pilot:
+    async with textual.app.App().run_test():
         archives_list.on_mount()
 
 
@@ -63,7 +63,7 @@ def test_archives_list_on_option_list_option_highlighted_with_highlighted_zero_m
     assert archives_list.highlighted_option_changed is False
 
 
-def test_archives_list_on_option_list_option_highlighted_with_highlighted_zero_marks_it_unchanged():
+def test_archives_list_on_option_list_option_highlighted_with_existing_option_and_highlighted_zero_marks_it_unchanged():
     flexmock(module.borgmatic.actions.browse.loading).should_receive('add_inline_loading_indicator')
 
     archives_list = module.Archives_list(config=flexmock(), repository=flexmock())

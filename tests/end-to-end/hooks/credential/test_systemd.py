@@ -38,7 +38,7 @@ def test_systemd_credential():
     original_working_directory = os.getcwd()
     os.chdir(temporary_directory)
 
-    try:
+    try:  # noqa: PLW0717
         config_path = os.path.join(temporary_directory, 'test.yaml')
         generate_configuration(config_path, repository_path)
 

@@ -1,13 +1,10 @@
-import contextlib
 import logging
 import os
 
 import textual
 import textual.signal
-import textual.widgets.option_list
 
 import borgmatic.actions.browse.archive
-
 
 logger = logging.getLogger('__name__')
 
@@ -26,25 +23,22 @@ class Archive_loaded(textual.signal.Signal):
     Archive_loaded instance per repository.
     '''
 
-    pass
-
 
 @textual.work(thread=True)
-def add_repository_archives(browse_app, archive_loaded, config, repository, loading_timer):
+def add_repository_archives(browse_app, archive_loaded, config, repository):
     '''
-    Given a running Browse_app instance, an Archive_loaded instance, a configuration dict, a
-    repository dict, and a loading indicator timer, load a list of the archives from the repository
-    and add them as options in the archives list. Reverse the order so the most recent archive is
-    first.
+    Given a running Browse_app instance, an Archive_loaded instance, a configuration dict, and a
+    repository dict, load a list of the archives from the repository and add them as options in the
+    archives list. Reverse the order so the most recent archive is first.
 
-    This function runs in a separate thread from the main UI. When loading is complete, remove the
-    loading indicator and stop its timer.
+    This function runs in a separate thread from the main UI. When loading is complete, publish a
+    loading done signal.
     '''
     archives_data = borgmatic.actions.browse.archive.get_repository_archives(config, repository)
 
     # Reverse the archives, so the common case of accessing the latest archive is easy because it's
     # at the top.
-    for index, archive in enumerate(reversed(archives_data['archives'])):
+    for archive in reversed(archives_data['archives']):
         archive_loaded.publish(archive['archive'])
 
     archive_loaded.publish(LOADING_DONE)
@@ -72,35 +66,42 @@ def record_path(archive_path, hierarchy, path_components):
 def get_paths(hierarchy, path_components, full_path_components=None):
     '''
     Given a dict capturing a filesystem hierarchy of paths (or a subset thereof), a tuple of path
-    components for an archive path relative to the hierarchy root, and an optional tuple of
-    *absolute* path components for the same archive path (if different), return the corresponding
-    Archive_path from the hierarchy.
+    components for a directory path relative to the hierarchy root, and an optional tuple of
+    *absolute* path components for the same path (if different), return a generator of the
+    contained file and directory Archive_path instances from the hierarchy.
 
     For instance, given the following hierarchy:
 
-        {'foo': {'bar': {'baz.txt': Archive_path('-', 'foo/bar/baz.txt', '')}}}
+        {'foo': {'bar': {'baz.txt': Archive_path('-', 'foo/bar/baz.txt', ''), 'quux': {}}}}
 
-    ... and path components of ('foo', 'bar', 'baz.txt'), return the Archive_path instance above.
+    ... and path components of ('foo', 'bar'), return a generator with the following:
 
-    Or in the case of path components of only ('foo', 'bar'), return a directory with the absolute
-    path:
+        * Archive_path('-', 'foo/bar/baz.txt', '')
+        * Archive_path('d', 'foo/bar/quux', '')
 
-        Archive_path('d', 'foo/bar', '')
+    The given absolute path components are use to construct directory paths like that last archive
+    path.
     '''
     if full_path_components is None:
         full_path_components = path_components
 
     if len(path_components) == 1:
-        return (
-            archive_path
-            if isinstance(archive_path, borgmatic.actions.browse.archive.Archive_path)
-            else borgmatic.actions.browse.archive.Archive_path(
-                'd', os.path.join(*full_path_components, component), ''
+        try:
+            return (
+                archive_path
+                if isinstance(archive_path, borgmatic.actions.browse.archive.Archive_path)
+                else borgmatic.actions.browse.archive.Archive_path(
+                    'd', os.path.join(*full_path_components, component), ''
+                )
+                for component, archive_path in hierarchy[path_components[0]].items()
             )
-            for component, archive_path in hierarchy[path_components[0]].items()
-        )
+        except KeyError:
+            raise ValueError(f'Unknown file or directory: {path_components[0]}')
 
-    return get_paths(hierarchy[path_components[0]], path_components[1:], full_path_components)
+    try:
+        return get_paths(hierarchy[path_components[0]], path_components[1:], full_path_components)
+    except KeyError:
+        raise ValueError(f'Unknown directory: {path_components[0]}')
 
 
 class Archive_path_loaded(textual.signal.Signal):
@@ -122,13 +123,19 @@ class Archive_path_loaded(textual.signal.Signal):
 
         super().__init__(owner, name)
 
-    def publish(self, data):
-        super().publish(data)
+    def publish(self, archive_path):
+        '''
+        Publish the given archive path to subscribers and record its path locally. But if the
+        archive path is actually LOADING_DONE, then record loading as complete.
+        '''
+        super().publish(archive_path)
 
-        if data is LOADING_DONE:
+        if archive_path is LOADING_DONE:
             self.complete = True
         else:
-            record_path(data, self.path_hierarchy, data.file_path.split(os.path.sep))
+            record_path(
+                archive_path, self.path_hierarchy, archive_path.file_path.split(os.path.sep)
+            )
 
 
 @textual.work(thread=True)
@@ -139,7 +146,8 @@ def load_archive_paths(browse_app, path_loaded, config, repository, archive_name
     the Archive_path_loaded signal, so interested widgets can subscribe. Also send a "loading done"
     signal when loading completes.
 
-    This function runs in a separate thread from the main UI.
+    This function runs in a separate thread from the main UI. When loading is complete, publish a
+    loading done signal.
     '''
     for archive_path in borgmatic.actions.browse.archive.get_archive_paths(
         config, repository, archive_name
@@ -159,17 +167,23 @@ class File_preview_loaded(textual.signal.Signal):
     Archive_loaded instance per previewed file.
     '''
 
-    pass
-
 
 @textual.work(thread=True)
 def load_file_preview(
-    browse_app, file_preview_loaded, config, repository, archive_name, file_path, loading_timer
+    browse_app,
+    file_preview_loaded,
+    config,
+    repository,
+    archive_name,
+    file_path,
 ):
     '''
     Given a running Browse_app instance, a File_preview_loaded instance, a configuration dict, a
-    repository dict, an archive name, the path of a file in that archive, and a loading indicator
-    timer, load the contents of the file and write it into the given file preview widget.
+    repository dict, an archive name, and the path of a file in that archive, load the contents of
+    the file and write it into the given file preview widget.
+
+    This function runs in a separate thread from the main UI. When loading is complete, publish a
+    loading done signal.
     '''
     file_contents = borgmatic.actions.browse.archive.get_archive_file_content(
         config, repository, archive_name, file_path
