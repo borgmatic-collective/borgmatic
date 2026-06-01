@@ -144,7 +144,7 @@ class="minilink minilink-addedin">Experimental feature</span> borgmatic has an
 experimental console UI for browsing your repositories, archives, and files.
 Here's what it looks like:
 
-<img src="/borgmatic/static/browse.png" alt="borgmatic browse screenshot" style="width: 100%">
+<img src="https://torsion.org/borgmatic/static/browse.png" alt="borgmatic browse screenshot" style="width: 100%">
 
 This feature is not intended to be a general-purpose Borg UI with every
 borgmatic feature, but rather it's for use cases like quickly looking at the
