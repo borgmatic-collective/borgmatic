@@ -31,7 +31,7 @@ def run_arbitrary_borg(
     borgmatic.logger.add_custom_log_levels()
     lock_wait = config.get('lock_wait', None)
 
-    try:  # noqa: PLW0717
+    try:
         options = options[1:] if options[0] == '--' else options
 
         # Borg commands like "key" have a sub-command ("export", etc.) that must follow it.

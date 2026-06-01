@@ -44,7 +44,7 @@ def test_borgmatic_command():
     os.chdir(extract_path)
     environment = dict(os.environ, PASSPHRASE='test')
 
-    try:  # noqa: PLW0717
+    try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         generate_configuration(config_path, repository_path)
 

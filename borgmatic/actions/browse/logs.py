@@ -25,7 +25,7 @@ class Rich_color_formatter(logging.Formatter):
 
     def format(self, record):
         '''
-        Given a log record, format it with Rich-compatibe color markup correponding to its log
+        Given a log record, format it with Rich-compatibe color markup corresponding to its log
         level.
         '''
         borgmatic.logger.add_custom_log_levels()

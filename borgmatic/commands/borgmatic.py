@@ -212,7 +212,7 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
             f"Skipping {'/'.join(skip_actions)} action{'s' if len(skip_actions) > 1 else ''} due to configured skip_actions",
         )
 
-    try:  # noqa: PLR1702, PLW0717
+    try:  # noqa: PLR1702
         with (
             Monitoring_hooks(config_filename, config, arguments, global_arguments),
             borgmatic.hooks.command.Before_after_hooks(
@@ -823,7 +823,7 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
     '''
     add_custom_log_levels()
 
-    try:  # noqa: PLW0717
+    try:
         if 'bootstrap' in arguments:
             try:
                 local_borg_version = borg_version.local_borg_version(

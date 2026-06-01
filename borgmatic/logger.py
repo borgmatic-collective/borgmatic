@@ -109,7 +109,7 @@ class JournaldHandler(logging.Handler):
     def emit(self, record):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 
-        try:  # noqa: PLW0717
+        try:
             message_parts = []
             entry = dict(
                 MESSAGE=record.getMessage(),

@@ -134,5 +134,8 @@ known-first-party = ["borgmatic"]
     "T201",  # print statement
 ]
 
+[tool.ruff.lint.pylint]
+max-statements-in-try = 35
+
 [tool.codespell]
 skip = ".git,.tox,build"

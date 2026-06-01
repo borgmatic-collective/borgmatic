@@ -37,7 +37,7 @@ def test_zfs_create_and_list():
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
 
-    try:  # noqa: PLW0717
+    try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         generate_configuration(config_path, repository_path)
 

@@ -65,7 +65,7 @@ def add_archive_paths(
     sequence of ArchivePath instances, add the paths to the directory list as options, sorting and
     deduplicating the resulting directory list's options.
 
-    After all of this reshuffling, make sure the orignal highlighted option remains highlighted.
+    After all of this reshuffling, make sure the original highlighted option remains highlighted.
     '''
     highlighted_option = directory_list.highlighted_option
     original_options_count = len(directory_list.options)
@@ -154,10 +154,10 @@ class Directory_list(textual.widgets.OptionList):
 
     def on_mount(self):
         '''
-        When this widget gets mounted in the DOM, subcribe to path loaded events so that we can find
-        out about relevant archive paths as they load. And if this is a root directory list, start
-        loading paths from the archive. If this is a non-root directory list, add any already loaded
-        archive paths to this widget as options.
+        When this widget gets mounted in the DOM, subscribe to path loaded events so that we can
+        find out about relevant archive paths as they load. And if this is a root directory list,
+        start loading paths from the archive. If this is a non-root directory list, add any already
+        loaded archive paths to this widget as options.
 
         Loading is started *after* subscribing to path loaded signals so that there's not a gap
         where we might miss out on any paths.

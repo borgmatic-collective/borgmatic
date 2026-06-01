@@ -443,7 +443,7 @@ def test_database_dump_and_restore():
 
     original_working_directory = os.getcwd()
 
-    try:  # noqa: PLW0717
+    try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         config = write_configuration(
             temporary_directory,
@@ -501,7 +501,7 @@ def test_database_dump_and_restore_with_restore_cli_flags():
 
     original_working_directory = os.getcwd()
 
-    try:  # noqa: PLW0717
+    try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         config = write_simple_custom_restore_configuration(
             temporary_directory,
@@ -582,7 +582,7 @@ def test_database_dump_and_restore_with_restore_configuration_options():
 
     original_working_directory = os.getcwd()
 
-    try:  # noqa: PLW0717
+    try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         config = write_custom_restore_configuration(
             temporary_directory,
@@ -641,7 +641,7 @@ def test_database_dump_and_restore_with_directory_format():
 
     original_working_directory = os.getcwd()
 
-    try:  # noqa: PLW0717
+    try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         config = write_configuration(
             temporary_directory,
@@ -737,7 +737,7 @@ def test_database_dump_and_restore_containers():
 
     os.environ['PATH'] = f'/app/tests/end-to-end/commands:{original_path}'
 
-    try:  # noqa: PLW0717
+    try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         config = write_container_configuration(
             temporary_directory,

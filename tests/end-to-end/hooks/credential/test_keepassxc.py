@@ -39,7 +39,7 @@ def test_keepassxc_password():
     original_working_directory = os.getcwd()
     os.chdir(temporary_directory)
 
-    try:  # noqa: PLW0717
+    try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         generate_configuration(config_path, repository_path)
 
