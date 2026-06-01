@@ -10,16 +10,16 @@
  * #1303: For the MariaDB hook, include only a subset of system data when dumping the "mysql" system
    database (or "all" databases), so the dump is actually restorable. See the documentation for more
    information: https://torsion.org/borgmatic/reference/configuration/data-sources/mariadb/
- * #1314: Add a minimal stand-alone borgmatic binary in addition to the standard one. The minimal
-   binary omits support for the Apprise monitoring hook.
- * Add an experimental "browse" action providing a console UI for browsing your backups. See the
-   documentation for more information:
-   https://torsion.org/borgmatic/how-to/inspect-your-backups/#browsing-backups
  * #1308: Update the Apprise monitoring hook's "url" option to support loading credentials with the
    "{credential ...}" syntax. See the documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/credentials/
  * #1309: Add a "--quick-stats" flag and corresponding "quick_statistics" option for showing only
    abbreviated statistics for the "create" action. Borg 1.4.5+ only.
+ * #1314: Add a minimal stand-alone borgmatic binary in addition to the standard one. The minimal
+   binary omits support for the Apprise monitoring hook.
+ * Add an experimental "browse" action providing a console UI for browsing your backups. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/how-to/inspect-your-backups/#browsing-backups
  * Update the KeePassXC credential hook to support KeePassXC's secret service integration. See the
    documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/credentials/keepassxc/
