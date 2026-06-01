@@ -43,6 +43,18 @@ class Browse_app(textual.app.App):
 
         super().__init__()
 
+    def get_system_commands(self, screen):  # pragma: no cover
+        '''
+        Remove the screenshot system command because it produces broken screenshots. (Emoji
+        weirdness, etc.) Also remove minimize and maximize because they don't accomplish much with
+        out particular layout.
+        '''
+        yield from (
+            command
+            for command in super().get_system_commands(screen)
+            if command.title not in {'Screenshot', 'Minimize', 'Maximize'}
+        )
+
     def compose(self):
         '''
         Compose a UI consisting of:
