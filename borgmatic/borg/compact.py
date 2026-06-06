@@ -35,7 +35,7 @@ def compact_segments(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--progress',) if config.get('progress') else ())
         + (('--cleanup-commits',) if cleanup_commits else ())
-        + (('--threshold', str(threshold)) if threshold else ())
+        + (('--threshold', str(threshold)) if threshold is not None else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (

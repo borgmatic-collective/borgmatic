@@ -229,6 +229,22 @@ def test_compact_segments_with_threshold_calls_borg_with_threshold_flag():
     )
 
 
+def test_compact_segments_with_zero_threshold_calls_borg_with_threshold_flag():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_execute_command_mock(
+        (*COMPACT_COMMAND, '--log-json', '--threshold', '0', 'repo'), logging.INFO
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.compact_segments(
+        dry_run=False,
+        repository_path='repo',
+        config={'compact_threshold': 0},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+    )
+
+
 def test_compact_segments_with_umask_calls_borg_with_umask_flags():
     config = {'umask': '077'}
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))

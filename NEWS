@@ -1,3 +1,6 @@
+2.1.7.dev0
+ * Fix a bug in which the "compact" action does not pass a compact threshold of zero to Borg.
+
 2.1.6
  * #1256: Fix a race condition in which borgmatic sometimes swallows Borg error output without
    logging it.
