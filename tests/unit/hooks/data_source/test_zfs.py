@@ -528,6 +528,9 @@ def test_remove_data_source_dumps_unmounts_and_destroys_snapshots():
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
+    flexmock(module.hashlib).should_receive('shake_256').and_return(
+        flexmock(hexdigest=lambda length: 'b33f')
+    )
     flexmock(module.glob).should_receive('glob').replace_with(
         lambda path: [path.replace('*', 'b33f')],
     )
@@ -561,6 +564,9 @@ def test_remove_data_source_dumps_use_custom_commands():
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
+    flexmock(module.hashlib).should_receive('shake_256').and_return(
+        flexmock(hexdigest=lambda length: 'b33f')
+    )
     flexmock(module.glob).should_receive('glob').replace_with(
         lambda path: [path.replace('*', 'b33f')],
     )
@@ -644,6 +650,9 @@ def test_remove_data_source_dumps_bails_for_missing_umount_command():
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
+    flexmock(module.hashlib).should_receive('shake_256').and_return(
+        flexmock(hexdigest=lambda length: 'b33f')
+    )
     flexmock(module.glob).should_receive('glob').replace_with(
         lambda path: [path.replace('*', 'b33f')],
     )
@@ -675,6 +684,9 @@ def test_remove_data_source_dumps_swallows_umount_command_error():
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
+    flexmock(module.hashlib).should_receive('shake_256').and_return(
+        flexmock(hexdigest=lambda length: 'b33f')
+    )
     flexmock(module.glob).should_receive('glob').replace_with(
         lambda path: [path.replace('*', 'b33f')],
     )
@@ -709,6 +721,9 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_directories_that_are_no
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
+    flexmock(module.hashlib).should_receive('shake_256').and_return(
+        flexmock(hexdigest=lambda length: 'b33f')
+    )
     flexmock(module.glob).should_receive('glob').replace_with(
         lambda path: [path.replace('*', 'b33f')],
     )
@@ -739,6 +754,9 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_that_are_no
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
+    flexmock(module.hashlib).should_receive('shake_256').and_return(
+        flexmock(hexdigest=lambda length: 'b33f')
+    )
     flexmock(module.glob).should_receive('glob').replace_with(
         lambda path: [path.replace('*', 'b33f')],
     )
@@ -774,21 +792,37 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_for_unknown
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
-    flexmock(module.glob).should_receive('glob').replace_with(
-        lambda path: [path.replace('*', 'b33f')],
+    flexmock(module.hashlib).should_receive('shake_256').with_args(b'/mnt/dataset').and_return(
+        flexmock(hexdigest=lambda length: 'd34d')
     )
+    flexmock(module.hashlib).should_receive('shake_256').with_args(
+        b'/mnt/dataset/shadow'
+    ).and_return(flexmock(hexdigest=lambda length: 'b33f'))
+    flexmock(module.glob).should_receive('glob').replace_with(
+        lambda path: [
+            path.replace('*', 'd34d'),
+            path.replace('*', 'b33f'),
+            path.replace('*', 'unknown'),
+        ],
+    )
+    flexmock(module.os.path).should_receive('isdir').with_args(
+        '/run/borgmatic/zfs_snapshots/d34d',
+    ).and_return(True)
     flexmock(module.os.path).should_receive('isdir').with_args(
         '/run/borgmatic/zfs_snapshots/b33f',
     ).and_return(True)
     flexmock(module.os.path).should_receive('isdir').with_args(
-        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset',
+        '/run/borgmatic/zfs_snapshots/d34d/mnt/dataset',
     ).and_return(True)
     flexmock(module.os.path).should_receive('isdir').with_args(
         '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset/shadow',
     ).and_return(True)
+    flexmock(module.os.path).should_receive('isdir').with_args(
+        '/run/borgmatic/zfs_snapshots/unknown',
+    ).and_return(True)
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
-        'umount', '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
+        'umount', '/run/borgmatic/zfs_snapshots/d34d/mnt/dataset'
     ).once()
     flexmock(module).should_receive('unmount_snapshot').with_args(
         'umount', '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset/shadow'
@@ -817,6 +851,9 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_after_rmtre
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
+    flexmock(module.hashlib).should_receive('shake_256').and_return(
+        flexmock(hexdigest=lambda length: 'b33f')
+    )
     flexmock(module.glob).should_receive('glob').replace_with(
         lambda path: [path.replace('*', 'b33f')],
     )
@@ -852,6 +889,9 @@ def test_remove_data_source_dumps_with_dry_run_skips_unmount_and_destroy():
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob',
     ).and_return('/run/borgmatic')
+    flexmock(module.hashlib).should_receive('shake_256').and_return(
+        flexmock(hexdigest=lambda length: 'b33f')
+    )
     flexmock(module.glob).should_receive('glob').replace_with(
         lambda path: [path.replace('*', 'b33f')],
     )

@@ -1,4 +1,6 @@
 2.1.7.dev0
+ * #1319: Fix the ZFS hook's overzealous unmounting of snapshot paths when a source dataset is at
+   "/".
  * Fix a bug in which the "compact" action does not pass a compact threshold of zero to Borg.
 
 2.1.6

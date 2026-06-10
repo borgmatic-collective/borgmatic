@@ -403,41 +403,57 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, p
     snapshot_dataset_names = {
         full_snapshot_name.split('@')[0] for full_snapshot_name in full_snapshot_names
     }
+    hash_to_dataset_mount_point = {}
+
+    # Make a map from mount point hash to the corresponding (dataset name, mount point) tuple.
+    for dataset_name, mount_point in dataset_name_to_mount_point.items():
+        mount_point_hash = hashlib.shake_256(mount_point.encode('utf-8')).hexdigest(
+            MOUNT_POINT_HASH_LENGTH
+        )
+        hash_to_dataset_mount_point[mount_point_hash] = (dataset_name, mount_point)
 
     for snapshots_directory in glob.glob(snapshots_glob):
         if not os.path.isdir(snapshots_directory):
             continue
 
-        for dataset_name, mount_point in dataset_name_to_mount_point.items():
-            snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
+        # Get the dataset and mount point corresponding to the hash found in this snapshot directory
+        # path. If none is found, bail.
+        try:
+            (dataset_name, mount_point) = hash_to_dataset_mount_point[
+                os.path.basename(snapshots_directory)
+            ]
+        except KeyError:
+            continue
 
-            # If this dataset name does not correspond to a known snapshot, then this is probably
-            # just a "shadow" of a nested dataset and therefore there's nothing to unmount.
-            if not os.path.isdir(snapshot_mount_path) or dataset_name not in snapshot_dataset_names:
+        snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
+
+        # If this dataset name doesn't correspond to a known snapshot, then this is probably
+        # just a "shadow" of a nested dataset and therefore there's nothing to unmount.
+        if not os.path.isdir(snapshot_mount_path) or dataset_name not in snapshot_dataset_names:
+            continue
+
+        # This might fail if the path is already mounted, but we swallow errors here since we'll
+        # do another recursive delete below. The point of doing it here is that we don't want to
+        # try to unmount a non-mounted directory (which *will* fail), and probing for whether a
+        # directory is mounted is tough to do in a cross-platform way.
+        if not dry_run:
+            shutil.rmtree(snapshot_mount_path, ignore_errors=True)
+
+            # If the delete was successful, that means there's nothing to unmount.
+            if not os.path.isdir(snapshot_mount_path):
                 continue
 
-            # This might fail if the path is already mounted, but we swallow errors here since we'll
-            # do another recursive delete below. The point of doing it here is that we don't want to
-            # try to unmount a non-mounted directory (which *will* fail), and probing for whether a
-            # directory is mounted is tough to do in a cross-platform way.
-            if not dry_run:
-                shutil.rmtree(snapshot_mount_path, ignore_errors=True)
+        logger.debug(f'Unmounting ZFS snapshot at {snapshot_mount_path}{dry_run_label}')
 
-                # If the delete was successful, that means there's nothing to unmount.
-                if not os.path.isdir(snapshot_mount_path):
-                    continue
-
-            logger.debug(f'Unmounting ZFS snapshot at {snapshot_mount_path}{dry_run_label}')
-
-            if not dry_run:
-                try:
-                    unmount_snapshot(umount_command, snapshot_mount_path)
-                except FileNotFoundError:
-                    logger.debug(f'Could not find "{umount_command}" command')
-                    return
-                except subprocess.CalledProcessError as error:
-                    logger.debug(error)
-                    continue
+        if not dry_run:
+            try:
+                unmount_snapshot(umount_command, snapshot_mount_path)
+            except FileNotFoundError:
+                logger.debug(f'Could not find "{umount_command}" command')
+                return
+            except subprocess.CalledProcessError as error:
+                logger.debug(error)
+                continue
 
         if not dry_run:
             shutil.rmtree(snapshot_mount_path, ignore_errors=True)
