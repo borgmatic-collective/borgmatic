@@ -806,6 +806,13 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         help='Display statistics of the pruned archive [Borg 1 only]',
     )
     prune_group.add_argument(
+        '--quick-stats',
+        dest='quick_statistics',
+        default=None,
+        action='store_true',
+        help='Display statistics of the pruned archive, skipping repository-wide "All archives" and chunk index statistics [Borg >= 1.4.5 and < 2 only]',
+    )
+    prune_group.add_argument(
         '--list',
         dest='list_details',
         default=None,

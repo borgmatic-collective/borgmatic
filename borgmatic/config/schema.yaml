@@ -1097,8 +1097,9 @@ properties:
             Display statistics for an archive when running supported actions,
             skipping the repository-wide "All archives" and chunk index
             statistics to save some time. Corresponds to the "--quick-stats"
-            flag on those actions. Defaults to false. (This option is supported 
-            for Borg 1.4.5+ only.)
+            flag on those actions. Defaults to false. (This option is supported
+            for Borg 1.4.5+ only for the "create" action and for Borg >= 1.4.5
+            and < Borg 2 for the "prune" action.)
         example: true
     list_details:
         type: boolean

@@ -1,4 +1,6 @@
 2.1.7.dev0
+ * #1309: Add support for the "--quick-stats" flag and the "quick_statistics" option to the "prune"
+   action. Borg >= 1.4.5 and < 2 only.
  * #1319: Fix the ZFS hook's overzealous unmounting of snapshot paths when a source dataset is at
    "/".
  * Fix a bug in which the "compact" action does not pass a compact threshold of zero to Borg.

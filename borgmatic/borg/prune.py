@@ -83,10 +83,23 @@ def prune_archives(
             and not feature.available(feature.Feature.NO_PRUNE_STATS, local_borg_version)
             else ()
         )
+        + (
+            ('--quick-stats',)
+            if config.get('quick_statistics')
+            and not dry_run
+            and not feature.available(feature.Feature.NO_PRUNE_STATS, local_borg_version)
+            else ()
+        )
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + flags.make_flags_from_arguments(
             prune_arguments,
-            excludes=('repository', 'match_archives', 'statistics', 'list_details'),
+            excludes=(
+                'repository',
+                'match_archives',
+                'statistics',
+                'quick_statistics',
+                'list_details',
+            ),
         )
         + (('--list',) if config.get('list_details') else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
@@ -95,7 +108,7 @@ def prune_archives(
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    if config.get('statistics') or config.get('list_details'):
+    if config.get('statistics') or config.get('quick_statistics') or config.get('list_details'):
         output_log_level = logging.ANSWER
     else:
         output_log_level = logging.INFO
