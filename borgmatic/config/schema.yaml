@@ -511,6 +511,13 @@ properties:
             info, or check, borgmatic automatically tries to match only
             archives created with this name format.
         example: "{hostname}-documents-{now}"
+    archive_hostname:
+        type: string
+        description: |
+            Hostname to use when creating an archive, e.g. via the "{hostname}"
+            placeholder in "archive_name_format". Defaults to the system
+            hostname. (This option is supported for Borg 1.4.5+ only.)
+        example: example.org
     match_archives:
         type: string
         description: |
