@@ -216,7 +216,7 @@ def make_data_source_dump_patterns(
     port=None,
     container=None,
     label=None,
-):  # pragma: no cover
+):
     '''
     Given a sequence of configurations dicts, a configuration dict, the borgmatic runtime directory,
     and a database name to match, return the corresponding glob patterns to match the database dump
@@ -225,24 +225,54 @@ def make_data_source_dump_patterns(
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
     return (
-        dump.make_data_source_dump_filename(
-            make_dump_path('borgmatic'), name, hostname, port, container, label
+        *(
+            dump.make_data_source_dump_filename(
+                make_dump_path('borgmatic'), name, hostname, port, container, label
+            ),
+            dump.make_data_source_dump_filename(
+                make_dump_path(borgmatic_runtime_directory),
+                name,
+                hostname,
+                port,
+                container,
+                label,
+            ),
+            dump.make_data_source_dump_filename(
+                make_dump_path(borgmatic_source_directory),
+                name,
+                hostname,
+                port,
+                container,
+                label,
+            ),
         ),
-        dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_runtime_directory),
-            name,
-            hostname,
-            port,
-            container,
-            label,
+        *(
+            (
+                dump.make_data_source_dump_filename(
+                    make_dump_path('borgmatic'),
+                    name,
+                    hostname,
+                    port=None,
+                    container=container,
+                    label=label,
+                ),
+            )
+            if port == get_default_port(databases, config)
+            else ()
         ),
-        dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_source_directory),
-            name,
-            hostname,
-            port,
-            container,
-            label,
+        *(
+            (
+                dump.make_data_source_dump_filename(
+                    make_dump_path('borgmatic'),
+                    name,
+                    hostname,
+                    port=get_default_port(databases, config),
+                    container=container,
+                    label=label,
+                ),
+            )
+            if port is None
+            else ()
         ),
     )
 

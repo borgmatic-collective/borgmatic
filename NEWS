@@ -3,6 +3,8 @@
    action. Borg >= 1.4.5 and < 2 only.
  * #1319: Fix the ZFS hook's overzealous unmounting of snapshot paths when a source dataset is at
    "/".
+ * #1322: Fix for the "restore" action sometimes failing to find a database dump that was dumped
+   with a default port.
  * Fix a bug in which the "compact" action does not pass a compact threshold of zero to Borg.
 
 2.1.6
