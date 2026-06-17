@@ -24,12 +24,14 @@ def change_passphrase(
     based on an interactive prompt.
     '''
     borgmatic.logger.add_custom_log_levels()
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    archive_hostname = config.get('archive_hostname')
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get('key_change_passphrase', '')
 
     full_command = (
         (local_path, 'key', 'change-passphrase')
+        + (('--hostname', archive_hostname) if archive_hostname else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())

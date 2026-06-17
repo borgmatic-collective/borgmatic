@@ -64,6 +64,7 @@ def create_repository(
         if error.returncode not in REPO_INFO_REPOSITORY_NOT_FOUND_EXIT_CODES:
             raise
 
+    archive_hostname = config.get('archive_hostname')
     lock_wait = config.get('lock_wait')
     umask = config.get('umask')
     extra_borg_options_from_init = config.get('extra_borg_options', {}).get('init', '')
@@ -90,6 +91,7 @@ def create_repository(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug',) if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
+        + (('--hostname', archive_hostname) if archive_hostname else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())

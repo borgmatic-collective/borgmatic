@@ -81,6 +81,24 @@ def test_change_passphrase_calls_borg_using_exit_codes():
     )
 
 
+def test_change_passphrase_calls_borg_with_hostname_flags():
+    config = {'archive_hostname': 'example.org'}
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_execute_command_mock(
+        ('borg', 'key', 'change-passphrase', '--hostname', 'example.org', 'repo'),
+        config=config,
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.change_passphrase(
+        repository_path='repo',
+        config=config,
+        local_borg_version='1.2.3',
+        change_passphrase_arguments=flexmock(),
+        global_arguments=flexmock(dry_run=False),
+    )
+
+
 def test_change_passphrase_calls_borg_with_remote_path_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(

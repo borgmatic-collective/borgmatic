@@ -265,6 +265,40 @@ def test_get_latest_archive_with_exit_codes_calls_borg_using_them():
     )
 
 
+def test_get_latest_archive_with_archive_hostname_calls_borg_with_hostname_flags():
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'hostname', 'example.org'
+    ).and_return(('--hostname', 'example.org'))
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        ('borg', 'list', '--hostname', 'example.org', '--log-json', *BORG_LIST_LATEST_ARGUMENTS),
+        environment=None,
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
+
+    assert (
+        module.get_latest_archive(
+            'repo',
+            config={'archive_hostname': 'example.org'},
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+        )
+        == expected_archive
+    )
+
+
 def test_get_latest_archive_with_remote_path_calls_borg_with_remote_path_flags():
     expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
@@ -882,6 +916,38 @@ def test_make_repo_list_command_includes_local_path():
     assert command == ('borg2', 'list', '--log-json', 'repo')
 
 
+def test_make_repo_list_command_includes_hostname():
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').replace_with(
+        lambda name, value: (f'--{name}', value) if value else (),
+    )
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None,
+        None,
+        '1.2.3',
+    ).and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
+
+    command = module.make_repo_list_command(
+        repository_path='repo',
+        config={'archive_hostname': 'example.org'},
+        local_borg_version='1.2.3',
+        repo_list_arguments=flexmock(
+            archive=None,
+            paths=None,
+            format=None,
+            json=False,
+            prefix=None,
+            match_archives=None,
+        ),
+        global_arguments=flexmock(),
+    )
+
+    assert command == ('borg', 'list', '--hostname', 'example.org', '--log-json', 'repo')
+
+
 def test_make_repo_list_command_includes_remote_path():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').replace_with(
@@ -948,10 +1014,13 @@ def test_make_repo_list_command_includes_umask():
 
 
 def test_make_repo_list_command_transforms_prefix_into_match_archives():
-    flexmock(module.feature).should_receive('available').and_return(False)
-    flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'match-archives', 'sh:foo*'
+    ).and_return(
         ('--match-archives', 'sh:foo*'),
-    ).and_return(())
+    )
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None,
         None,
@@ -971,14 +1040,17 @@ def test_make_repo_list_command_transforms_prefix_into_match_archives():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--log-json', '--match-archives', 'sh:foo*', 'repo')
+    assert command == ('borg', 'repo-list', '--log-json', '--match-archives', 'sh:foo*', 'repo')
 
 
 def test_make_repo_list_command_prefers_prefix_over_archive_name_format():
-    flexmock(module.feature).should_receive('available').and_return(False)
-    flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'match-archives', 'sh:foo*'
+    ).and_return(
         ('--match-archives', 'sh:foo*'),
-    ).and_return(())
+    )
     flexmock(module.flags).should_receive('make_match_archives_flags').never()
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -994,7 +1066,7 @@ def test_make_repo_list_command_prefers_prefix_over_archive_name_format():
         global_arguments=flexmock(),
     )
 
-    assert command == ('borg', 'list', '--log-json', '--match-archives', 'sh:foo*', 'repo')
+    assert command == ('borg', 'repo-list', '--log-json', '--match-archives', 'sh:foo*', 'repo')
 
 
 def test_make_repo_list_command_transforms_archive_name_format_into_match_archives():
@@ -1029,7 +1101,8 @@ def test_make_repo_list_command_transforms_archive_name_format_into_match_archiv
 
 def test_make_repo_list_command_includes_format_from_command_line():
     flexmock(module.feature).should_receive('available').and_return(False)
-    flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('format', 'stuff').and_return(
         ('--format', 'stuff')
     )
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(

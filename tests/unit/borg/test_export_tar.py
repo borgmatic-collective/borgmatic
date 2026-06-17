@@ -103,6 +103,37 @@ def test_export_tar_archive_calls_borg_using_exit_codes():
     )
 
 
+def test_export_tar_archive_calls_borg_with_hostname_flags():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',),
+    )
+    insert_execute_command_mock(
+        (
+            'borg',
+            'export-tar',
+            '--hostname',
+            'example.org',
+            '--log-json',
+            'repo::archive',
+            'test.tar',
+        ),
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.export_tar_archive(
+        dry_run=False,
+        repository_path='repo',
+        archive='archive',
+        paths=None,
+        destination_path='test.tar',
+        config={'archive_hostname': 'example.org'},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+    )
+
+
 def test_export_tar_archive_calls_borg_with_remote_path_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER

@@ -24,7 +24,7 @@ def display_repository_info(
     information for the Borg repository or return JSON summary information.
     '''
     borgmatic.logger.add_custom_log_levels()
-    lock_wait = config.get('lock_wait', None)
+    lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get(
         'repo_info' if feature.available(feature.Feature.REPO_INFO, local_borg_version) else 'info',
         '',
@@ -48,6 +48,7 @@ def display_repository_info(
             if logger.isEnabledFor(logging.DEBUG) and not repo_info_arguments.json
             else ()
         )
+        + flags.make_flags('hostname', config.get('archive_hostname'))
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
         + flags.make_flags('lock-wait', lock_wait)

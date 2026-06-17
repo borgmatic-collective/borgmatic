@@ -208,6 +208,34 @@ def test_make_info_command_with_local_path_passes_through_to_command():
     assert command == ('borg1', 'info', '--log-json', '--repo', 'repo')
 
 
+def test_make_info_command_with_archive_hostname_passes_through_to_command():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'hostname',
+        'example.org',
+    ).and_return(('--hostname', 'example.org'))
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None,
+        None,
+        '2.3.4',
+    ).and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
+
+    command = module.make_info_command(
+        repository_path='repo',
+        config={'archive_hostname': 'example.org'},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(),
+        info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives=None),
+        local_path='borg',
+        remote_path=None,
+    )
+
+    assert command == ('borg', 'info', '--hostname', 'example.org', '--log-json', '--repo', 'repo')
+
+
 def test_make_info_command_with_remote_path_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(

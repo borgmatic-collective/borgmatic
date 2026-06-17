@@ -126,6 +126,33 @@ def test_make_repo_delete_command_includes_dry_run():
     assert command == ('borg', 'repo-delete', '--dry-run', '--log-json', 'repo')
 
 
+def test_make_repo_delete_command_includes_hostname():
+    insert_logging_mock(logging.WARNING)
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
+    flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(
+        'hostname',
+        'example.org',
+    ).and_return(('--hostname', 'example.org'))
+    flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
+        ('repo',),
+    )
+
+    command = module.make_repo_delete_command(
+        repository={'path': 'repo'},
+        config={'archive_hostname': 'example.org'},
+        local_borg_version='1.2.3',
+        repo_delete_arguments=flexmock(list_details=False, force=0),
+        global_arguments=flexmock(dry_run=False),
+        local_path='borg',
+        remote_path=None,
+        output_file=None,
+    )
+
+    assert command == ('borg', 'repo-delete', '--hostname', 'example.org', '--log-json', 'repo')
+
+
 def test_make_repo_delete_command_includes_remote_path():
     insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)

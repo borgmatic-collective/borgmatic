@@ -62,6 +62,21 @@ def test_break_lock_calls_borg_using_exit_codes():
     )
 
 
+def test_break_lock_calls_borg_with_hostname_flags():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_execute_command_mock(
+        ('borg', 'break-lock', '--hostname', 'example.org', '--log-json', 'repo')
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.break_lock(
+        repository_path='repo',
+        config={'archive_hostname': 'example.org'},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+    )
+
+
 def test_break_lock_calls_borg_with_remote_path_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(

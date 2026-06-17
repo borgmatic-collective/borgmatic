@@ -29,7 +29,6 @@ def run_arbitrary_borg(
     command.
     '''
     borgmatic.logger.add_custom_log_levels()
-    lock_wait = config.get('lock_wait', None)
 
     try:
         options = options[1:] if options[0] == '--' else options
@@ -52,8 +51,9 @@ def run_arbitrary_borg(
         + borg_command
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + flags.make_flags('hostname', config.get('archive_hostname'))
         + flags.make_flags('remote-path', remote_path)
-        + flags.make_flags('lock-wait', lock_wait)
+        + flags.make_flags('lock-wait', config.get('lock_wait'))
         + command_options
     )
 

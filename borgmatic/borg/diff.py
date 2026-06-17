@@ -31,7 +31,8 @@ def diff(
     '''
     borgmatic.logger.add_custom_log_levels()
 
-    lock_wait = config.get('lock_wait', None)
+    archive_hostname = config.get('archive_hostname')
+    lock_wait = config.get('lock_wait')
     exclude_flags = flags.make_exclude_flags(config)
     extra_borg_options = config.get('extra_borg_options', {}).get('diff', '')
 
@@ -53,6 +54,7 @@ def diff(
 
     diff_command = (
         (local_path, 'diff')
+        + (('--hostname', archive_hostname) if archive_hostname else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + ('--log-json',)
         + (('--lock-wait', str(lock_wait)) if lock_wait is not None else ())

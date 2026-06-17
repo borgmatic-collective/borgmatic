@@ -92,6 +92,43 @@ def test_recreate_with_dry_run_calls_borg_with_dry_run_flag():
     )
 
 
+def test_recreate_with_archive_hostname():
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
+    flexmock(module.borgmatic.borg.flags).should_receive(
+        'make_repository_archive_flags',
+    ).and_return(
+        (
+            '--repo',
+            'repo',
+        ),
+    )
+    insert_execute_command_mock(
+        ('borg', 'recreate', '--hostname', 'example.org', '--log-json', '--repo', 'repo')
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={'archive_hostname': 'example.org'},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment=None,
+            timestamp=None,
+            match_archives=None,
+        ),
+        global_arguments=flexmock(dry_run=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
 def test_recreate_with_remote_path():
     flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)

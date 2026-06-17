@@ -96,9 +96,10 @@ def test_make_list_command_includes_json():
 
 def test_make_list_command_includes_lock_wait():
     insert_logging_mock(logging.WARNING)
-    flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('lock-wait', 5).and_return(
         ('--lock-wait', '5'),
-    ).and_return(())
+    )
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
@@ -203,6 +204,30 @@ def test_make_list_command_includes_local_path():
     )
 
     assert command == ('borg2', 'list', '--log-json', 'repo')
+
+
+def test_make_list_command_includes_hostname():
+    insert_logging_mock(logging.WARNING)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'hostname',
+        'example.org',
+    ).and_return(('--hostname', 'example.org'))
+    flexmock(module.flags).should_receive('make_flags').with_args('log-json', True).and_return(
+        ('--log-json'),
+    )
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+
+    command = module.make_list_command(
+        repository_path='repo',
+        config={'archive_hostname': 'example.org'},
+        local_borg_version='1.2.3',
+        list_arguments=flexmock(archive=None, paths=None, format=None, json=False),
+        global_arguments=flexmock(),
+    )
+
+    assert command == ('borg', 'list', '--hostname', 'example.org', '--log-json', 'repo')
 
 
 def test_make_list_command_includes_remote_path():

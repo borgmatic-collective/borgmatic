@@ -79,6 +79,24 @@ def test_import_key_calls_borg_using_exit_codes():
     )
 
 
+def test_import_key_calls_borg_with_hostname_flags():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.os.path).should_receive('exists').never()
+    insert_execute_command_mock(
+        ('borg', 'key', 'import', '--hostname', 'example.org', '--log-json', 'repo', '-')
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.import_key(
+        repository_path='repo',
+        config={'archive_hostname': 'example.org'},
+        local_borg_version='1.2.3',
+        import_arguments=flexmock(paper=False, path=None),
+        global_arguments=flexmock(dry_run=False),
+    )
+
+
 def test_import_key_calls_borg_with_remote_path_flags():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))

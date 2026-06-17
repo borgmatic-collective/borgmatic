@@ -20,7 +20,7 @@ def make_archive_filter_flags(local_borg_version, config, checks, check_argument
     flag. And if "prefix" is set in configuration and "archives" is in checks, then include a
     "--match-archives" flag.
     '''
-    check_last = config.get('check_last', None)
+    check_last = config.get('check_last')
     prefix = config.get('prefix')
 
     if 'archives' in checks or 'data' in checks:
@@ -152,6 +152,7 @@ def check_archives(
     # If not configured, elevate Borg's exit code 1 (an ostensible warning) to error, because Borg
     # returns exit code 1 for repository check errors!
     borg_exit_codes = [*config.get('borg_exit_codes', []), *[{'code': 1, 'treat_as': 'error'}]]
+    archive_hostname = config.get('archive_hostname')
     umask = config.get('umask')
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
@@ -176,6 +177,7 @@ def check_archives(
                 else ()
             )
             + make_check_name_flags(checks_subset, archive_filter_flags)
+            + (('--hostname', archive_hostname) if archive_hostname else ())
             + (('--remote-path', remote_path) if remote_path else ())
             + (('--umask', str(umask)) if umask else ())
             + (

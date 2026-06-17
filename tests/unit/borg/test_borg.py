@@ -188,12 +188,45 @@ def test_run_arbitrary_borg_with_exit_codes_calls_borg_using_them():
     )
 
 
+def test_run_arbitrary_borg_with_archive_hostname_calls_borg_with_hostname_flags():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'hostname', 'example.org'
+    ).and_return(
+        ('--hostname', 'example.org'),
+    )
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'break-lock', '--hostname', 'example.org', '::'),
+        output_file=module.borgmatic.execute.DO_NOT_CAPTURE,
+        shell=True,
+        environment={'BORG_REPO': 'repo', 'ARCHIVE': ''},
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.run_arbitrary_borg(
+        repository_path='repo',
+        config={'archive_hostname': 'example.org'},
+        local_borg_version='1.2.3',
+        options=['break-lock', '::'],
+    )
+
+
 def test_run_arbitrary_borg_with_remote_path_calls_borg_with_remote_path_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-    flexmock(module.flags).should_receive('make_flags').and_return(
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'remote-path', 'borg1'
+    ).and_return(
         ('--remote-path', 'borg1'),
-    ).and_return(())
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
@@ -219,9 +252,12 @@ def test_run_arbitrary_borg_with_remote_path_calls_borg_with_remote_path_flags()
 def test_run_arbitrary_borg_with_remote_path_injection_attack_gets_escaped():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-    flexmock(module.flags).should_receive('make_flags').and_return(
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'remote-path', 'borg1; naughty-command'
+    ).and_return(
         ('--remote-path', 'borg1; naughty-command'),
-    ).and_return(())
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
@@ -240,7 +276,7 @@ def test_run_arbitrary_borg_with_remote_path_injection_attack_gets_escaped():
         config={},
         local_borg_version='1.2.3',
         options=['break-lock', '::'],
-        remote_path='borg1',
+        remote_path='borg1; naughty-command',
     )
 
 
