@@ -8,6 +8,8 @@
    "/".
  * #1322: Fix for the "restore" action sometimes failing to find a database dump that was dumped
    with a default port.
+ * #1324: For the MariaDB and MySQL hooks, add "events", "routines", and "tablespaces" options for
+   disabling dumping of scheduled events, stored routines, and tablespaces, respectively.
  * Fix a bug in which the "compact" action does not pass a compact threshold of zero to Borg.
 
 2.1.6

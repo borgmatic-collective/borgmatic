@@ -1849,6 +1849,27 @@ properties:
                         client and restore server. The default varies based on
                         the MariaDB version.
                     example: false
+                events:
+                    type: boolean
+                    description: |
+                        Whether to include scheduled events within the dump.
+                        Disable if your database user doesn't have the
+                        permissions to dump events. Defaults to true.
+                    example: false
+                routines:
+                    type: boolean
+                    description: |
+                        Whether to include stored routines within the dump.
+                        Disable if your user database doesn't have the
+                        permissions to dump routines. Defaults to true.
+                    example: false
+                tablespaces:
+                    type: boolean
+                    description: |
+                        Whether to include tablespaces within the dump. Disable
+                        if your database user doesn't have the permissions to
+                        dump tablespaces. Defaults to true.
+                    example: false
                 mariadb_dump_command:
                     type: string
                     description: |
@@ -2056,6 +2077,27 @@ properties:
                         Whether to TLS-encrypt data transmitted between the
                         client and restore server. The default varies based on
                         the MySQL installation.
+                    example: false
+                events:
+                    type: boolean
+                    description: |
+                        Whether to include scheduled events within the dump.
+                        Disable if your database user doesn't have the
+                        permissions to dump events. Defaults to true.
+                    example: false
+                routines:
+                    type: boolean
+                    description: |
+                        Whether to include stored routines within the dump.
+                        Disable if your database user doesn't have the
+                        permissions to dump routines. Defaults to true.
+                    example: false
+                tablespaces:
+                    type: boolean
+                    description: |
+                        Whether to include tablespaces within the dump. Disable
+                        if your database user doesn't have the permissions to
+                        dump tablespaces. Defaults to true.
                     example: false
                 mysql_dump_command:
                     type: string

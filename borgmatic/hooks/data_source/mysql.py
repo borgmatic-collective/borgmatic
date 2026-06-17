@@ -165,7 +165,10 @@ def execute_dump_command(
         + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if database.get('tls') is True else ())
         + (('--skip-ssl',) if database.get('tls') is False else ())
-        + ('--databases', '--events', '--routines', '--all-tablespaces')
+        + (('--events',) if database.get('events', True) else ())
+        + (('--routines',) if database.get('routines', True) else ())
+        + (('--all-tablespaces',) if database.get('tablespaces', True) else ())
+        + ('--databases',)
         + database_names
         + ('--result-file', dump_filename)
     )
