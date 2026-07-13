@@ -12,6 +12,8 @@
    disabling dumping of scheduled events, stored routines, and tablespaces, respectively.
  * #1333: Fix the "--progress" flag on the "compact" action to actually update the progress of
    segment compaction.
+ * #1334: Add the "CAP_FOWNER" capability to "CapabilityBoundingSet" in the sample systemd service,
+   so that Borg can open source files without changing file access times.
  * Fix a bug in which the "compact" action does not pass a compact threshold of zero to Borg.
 
 2.1.6
