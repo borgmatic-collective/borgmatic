@@ -3,7 +3,7 @@
    action. Borg >= 1.4.5 and < 2 only.
  * #1317: Add an "--archive-hostname" flag and corresponding "archive_hostname" option for
    overriding the hostname used for the "{hostname}" placeholder in the "archive_name_format"
-   option.
+   option. Borg 1.4.5+ only.
  * #1319: Fix the ZFS hook's overzealous unmounting of snapshot paths when a source dataset is at
    "/".
  * #1322: Fix for the "restore" action sometimes failing to find a database dump that was dumped
