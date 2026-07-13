@@ -3,7 +3,7 @@ import shlex
 
 import borgmatic.config.paths
 from borgmatic.borg import environment, feature, flags
-from borgmatic.execute import execute_command
+from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +56,7 @@ def compact_segments(
     execute_command(
         full_command,
         output_log_level=logging.INFO,
+        output_file=DO_NOT_CAPTURE if config.get('progress') else None,
         environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,

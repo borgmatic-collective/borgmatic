@@ -10,6 +10,8 @@
    with a default port.
  * #1324: For the MariaDB and MySQL hooks, add "events", "routines", and "tablespaces" options for
    disabling dumping of scheduled events, stored routines, and tablespaces, respectively.
+ * #1333: Fix the "--progress" flag on the "compact" action to actually update the progress of
+   segment compaction.
  * Fix a bug in which the "compact" action does not pass a compact threshold of zero to Borg.
 
 2.1.6
