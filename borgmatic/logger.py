@@ -154,6 +154,8 @@ def log_record_to_json(record):
     '''
     Given a logging.LogRecord, return it as a JSON-encoded string containing relevant attributes.
     '''
+    message_id = getattr(record, 'msgid', None)
+
     return json.dumps(
         dict(
             type='log_message',
@@ -162,6 +164,7 @@ def log_record_to_json(record):
             levelname=record.levelname,
             name=record.name,
         )
+        | ({'msgid': message_id} if message_id is not None else {})
     )
 
 
@@ -334,6 +337,91 @@ class Log_prefix:
         Restore any original prefix.
         '''
         set_log_prefix(self.original_prefix)
+
+
+class Log_exclude_filter(logging.Filter):
+    '''
+    A Python log filter that omits log records matching given attributes.
+    '''
+
+    def __init__(self, name, filter_attributes):
+        '''
+        Given a unique name for this filter and a dict of attributes to filter on, set the filter
+        name and save the attributes for use below.
+        '''
+        self.filter_attributes = filter_attributes
+
+        super().__init__(name)
+
+    def filter(self, log_record):
+        '''
+        Given a log record, return False (indicating the record should be omitted) if the record's
+        attributes match any of the saved filter attributes. Return True (indicating do not omit)
+        otherwise.
+        '''
+        for attribute_name, value in self.filter_attributes.items():
+            if getattr(log_record, attribute_name, None) == value:
+                return False
+
+        return True
+
+
+def add_log_exclude_filter(name, filter_attributes):
+    '''
+    Given a unique filter name and a dict of attributes to filter on, create a log exclude filter
+    with them and add the filter to each log handler.
+    '''
+    for handler in logging.getLogger().handlers:
+        handler.addFilter(Log_exclude_filter(name, filter_attributes))
+
+
+def remove_log_exclude_filter(name):
+    '''
+    Given a unique filter name, remove matching filters from each log handler.
+    '''
+    for handler in logging.getLogger().handlers:
+        for filter in handler.filters:
+            if getattr(filter, 'name', None) == name:
+                handler.removeFilter(filter)
+
+
+class Logs_suppressed:
+    '''
+    A Python context manager for temporarily adding a log filter that suppresses requested log
+    records for the duration of the context manager.
+
+    Example use:
+
+
+       with borgmatic.logger.Logs_suppressed(msgid='Repository.DoesNotExist'):
+            do_something_that_logs()
+
+    For the scope of that "with" statement, any records logged with the given message ID are
+    filtered out of the log output. "msgid" is just an example; any logging.LogRecord attributes
+    (standard or custom) can be passed in to filter on.
+
+    Multiple instances of this context manager with different filter attributes can be in use at
+    once.
+    '''
+
+    def __init__(self, **filter_attributes):
+        '''
+        Given the desired log record filter attributes as keyword arguments, save them for use below.
+        '''
+        self.filter_attributes = filter_attributes
+
+    def __enter__(self):
+        '''
+        Create a log filter with the saved filter attributes and add the filter to every logging
+        handler, so that they filter out the desired log records.
+        '''
+        add_log_exclude_filter(name=str(id(self)), filter_attributes=self.filter_attributes)
+
+    def __exit__(self, exception_type, exception, traceback):
+        '''
+        Remove the previously added filter from every logging handler.
+        '''
+        remove_log_exclude_filter(name=str(id(self)))
 
 
 class Delayed_logging_handler(logging.handlers.BufferingHandler):

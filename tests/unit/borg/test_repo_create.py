@@ -13,12 +13,14 @@ REPO_CREATE_COMMAND = ('borg', 'repo-create', '--encryption', 'repokey')
 
 
 def insert_repo_info_command_found_mock():
+    flexmock(module.borgmatic.logger).should_receive('Logs_suppressed').and_return(flexmock())
     flexmock(module.repo_info).should_receive('display_repository_info').and_return(
         '{"encryption": {"mode": "repokey"}}',
     )
 
 
 def insert_repo_info_command_not_found_mock():
+    flexmock(module.borgmatic.logger).should_receive('Logs_suppressed').and_return(flexmock())
     flexmock(module.repo_info).should_receive('display_repository_info').and_raise(
         subprocess.CalledProcessError(
             sorted(module.REPO_INFO_REPOSITORY_NOT_FOUND_EXIT_CODES)[0],
@@ -158,6 +160,7 @@ def test_create_repository_errors_when_repository_with_differing_encryption_mode
 
 
 def test_create_repository_raises_for_unknown_repo_info_command_error():
+    flexmock(module.borgmatic.logger).should_receive('Logs_suppressed').and_return(flexmock())
     flexmock(module.repo_info).should_receive('display_repository_info').and_raise(
         subprocess.CalledProcessError(REPO_INFO_SOME_UNKNOWN_EXIT_CODE, []),
     )

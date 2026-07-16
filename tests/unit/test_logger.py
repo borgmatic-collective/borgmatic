@@ -243,6 +243,23 @@ def test_log_record_to_json_formats_record_as_json():
     )
 
 
+def test_log_record_to_json_with_message_id_formats_record_as_json():
+    assert (
+        module.log_record_to_json(
+            flexmock(
+                created=12345,
+                levelno=module.logging.INFO,
+                levelname='INFO',
+                name='borg.something',
+                extra='ignored',
+                getMessage=lambda: 'All done',
+                msgid='all.done',
+            )
+        )
+        == '{"type": "log_message", "time": 12345, "message": "All done", "levelname": "INFO", "name": "borg.something", "msgid": "all.done"}'
+    )
+
+
 def test_console_color_formatter_format_includes_log_message():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
@@ -414,6 +431,117 @@ def test_log_prefix_sets_prefix_and_then_restores_original_prefix_after():
     flexmock(module).should_receive('set_log_prefix').with_args('original').once()
 
     with module.Log_prefix('myprefix'):
+        pass
+
+
+def test_log_exclude_filter_filter_omits_log_matching_any_attributes():
+    filter = module.Log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
+
+    assert filter.filter(flexmock(foo='nope', baz='quux')) is False
+
+
+def test_log_exclude_filter_filter_includes_log_matching_no_attributes():
+    filter = module.Log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
+
+    assert filter.filter(flexmock(foo='nope', baz='uh uh')) is True
+
+
+def test_log_exclude_filter_filter_includes_log_matching_no_attributes_and_in_fact_missing_them_entirely():
+    filter = module.Log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
+
+    assert filter.filter(flexmock(other='nope', thing='uh uh')) is True
+
+
+def test_add_log_exclude_filter_adds_filter_to_each_handler():
+    flexmock(module).should_receive('Log_exclude_filter').and_return(flexmock())
+    handlers = [flexmock(), flexmock()]
+    handlers[0].should_receive('addFilter').once()
+    handlers[1].should_receive('addFilter').once()
+
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(handlers=handlers, removeHandler=lambda handler: None)
+    )
+
+    module.add_log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
+
+
+def test_remove_log_exclude_filter_removes_filter_from_each_handler():
+    handlers = [
+        flexmock(
+            filters=[
+                flexmock(name='my filter'),
+                flexmock(name='my filter'),
+            ],
+        ),
+        flexmock(
+            filters=[
+                flexmock(name='my filter'),
+            ],
+        ),
+    ]
+    handlers[0].should_receive('removeFilter').twice()
+    handlers[1].should_receive('removeFilter').once()
+
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(handlers=handlers, removeHandler=lambda handler: None),
+    )
+
+    module.remove_log_exclude_filter(name='my filter')
+
+
+def test_remove_log_exclude_filter_skips_remove_for_filter_without_matching_name():
+    handlers = [
+        flexmock(
+            filters=[
+                flexmock(name='other filter'),
+                flexmock(name='my filter'),
+            ],
+        ),
+        flexmock(
+            filters=[
+                flexmock(name='my filter'),
+            ],
+        ),
+    ]
+    handlers[0].should_receive('removeFilter').once()
+    handlers[1].should_receive('removeFilter').once()
+
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(handlers=handlers, removeHandler=lambda handler: None),
+    )
+
+    module.remove_log_exclude_filter(name='my filter')
+
+
+def test_remove_log_exclude_filter_skips_remove_for_filter_without_name_attribute():
+    handlers = [
+        flexmock(
+            filters=[
+                flexmock(),
+                flexmock(name='my filter'),
+            ],
+        ),
+        flexmock(
+            filters=[
+                flexmock(name='my filter'),
+            ],
+        ),
+    ]
+    handlers[0].should_receive('removeFilter').once()
+    handlers[1].should_receive('removeFilter').once()
+
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(handlers=handlers, removeHandler=lambda handler: None),
+    )
+
+    module.remove_log_exclude_filter(name='my filter')
+
+
+def test_logs_suppressed_adds_and_removes_log_exclude_filter():
+    flexmock(module).should_receive('add_log_exclude_filter').once()
+    flexmock(module).should_receive('remove_log_exclude_filter').once()
+
+    with module.Logs_suppressed(foo='bar', baz='quux'):
         pass
 
 

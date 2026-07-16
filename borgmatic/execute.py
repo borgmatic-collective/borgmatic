@@ -157,6 +157,7 @@ def borg_json_log_line_to_record(line, log_level):
                         levelno=log_level,
                         created=log_data.get('time'),
                         msg=log_data.get('message'),
+                        msgid=log_data.get('msgid'),
                         levelname=logging.getLevelName(log_level),
                         name=log_data.get('name'),
                     )
@@ -167,6 +168,7 @@ def borg_json_log_line_to_record(line, log_level):
                     levelno=borg_log_level,
                     created=log_data.get('time'),
                     msg=log_data.get('message'),
+                    msgid=log_data.get('msgid'),
                     levelname=log_data.get('levelname'),
                     name=log_data.get('name'),
                 )
@@ -178,6 +180,7 @@ def borg_json_log_line_to_record(line, log_level):
                     levelno=log_level,
                     created=time.time(),
                     msg=f'{log_data.get("status")} {log_data.get("path")}',
+                    msgid=log_data.get('msgid'),
                     levelname=logging.getLevelName(log_level),
                     name='borg.file_status',
                 )

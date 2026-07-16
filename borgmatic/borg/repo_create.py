@@ -5,6 +5,7 @@ import shlex
 import subprocess
 
 import borgmatic.config.paths
+import borgmatic.logger
 from borgmatic.borg import environment, feature, flags, repo_info
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
@@ -40,17 +41,21 @@ def create_repository(
     Raise subprocess.CalledProcessError if "borg info" returns an error exit code.
     '''
     try:
-        info_data = json.loads(
-            repo_info.display_repository_info(
-                repository_path,
-                config,
-                local_borg_version,
-                argparse.Namespace(json=True),
-                global_arguments,
-                local_path,
-                remote_path,
-            ),
-        )
+        # Suppress Borg's "repository does not exist" error log, so the user isn't confused by
+        # seeing an error during successful repository creation.
+        with borgmatic.logger.Logs_suppressed(msgid='Repository.DoesNotExist'):
+            info_data = json.loads(
+                repo_info.display_repository_info(
+                    repository_path,
+                    config,
+                    local_borg_version,
+                    argparse.Namespace(json=True),
+                    global_arguments,
+                    local_path,
+                    remote_path,
+                ),
+            )
+
         repository_encryption_mode = info_data.get('encryption', {}).get('mode')
 
         if repository_encryption_mode != encryption_mode:
