@@ -380,9 +380,9 @@ def remove_log_exclude_filter(name):
     Given a unique filter name, remove matching filters from each log handler.
     '''
     for handler in logging.getLogger().handlers:
-        for filter in handler.filters:
-            if getattr(filter, 'name', None) == name:
-                handler.removeFilter(filter)
+        for exclude_filter in handler.filters:
+            if getattr(exclude_filter, 'name', None) == name:
+                handler.removeFilter(exclude_filter)
 
 
 class Logs_suppressed:

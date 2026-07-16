@@ -435,21 +435,21 @@ def test_log_prefix_sets_prefix_and_then_restores_original_prefix_after():
 
 
 def test_log_exclude_filter_filter_omits_log_matching_any_attributes():
-    filter = module.Log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
+    exclude_filter = module.Log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
 
-    assert filter.filter(flexmock(foo='nope', baz='quux')) is False
+    assert exclude_filter.filter(flexmock(foo='nope', baz='quux')) is False
 
 
 def test_log_exclude_filter_filter_includes_log_matching_no_attributes():
-    filter = module.Log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
+    exclude_filter = module.Log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
 
-    assert filter.filter(flexmock(foo='nope', baz='uh uh')) is True
+    assert exclude_filter.filter(flexmock(foo='nope', baz='uh uh')) is True
 
 
 def test_log_exclude_filter_filter_includes_log_matching_no_attributes_and_in_fact_missing_them_entirely():
-    filter = module.Log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
+    exclude_filter = module.Log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
 
-    assert filter.filter(flexmock(other='nope', thing='uh uh')) is True
+    assert exclude_filter.filter(flexmock(other='nope', thing='uh uh')) is True
 
 
 def test_add_log_exclude_filter_adds_filter_to_each_handler():
