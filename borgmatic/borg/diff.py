@@ -33,7 +33,6 @@ def diff(
 
     archive_hostname = config.get('archive_hostname')
     lock_wait = config.get('lock_wait')
-    exclude_flags = flags.make_exclude_flags(config)
     extra_borg_options = config.get('extra_borg_options', {}).get('diff', '')
 
     if diff_arguments.only_patterns:
@@ -65,7 +64,6 @@ def diff(
             if patterns_file and diff_arguments.only_patterns
             else ()
         )
-        + exclude_flags
         + numeric_ids_flags
         + (('--same-chunker-params',) if diff_arguments.same_chunker_params else ())
         + (('--sort-by', ','.join(diff_arguments.sort_keys)) if diff_arguments.sort_keys else ())

@@ -10,6 +10,7 @@
    with a default port.
  * #1324: For the MariaDB and MySQL hooks, add "events", "routines", and "tablespaces" options for
    disabling dumping of scheduled events, stored routines, and tablespaces, respectively.
+ * #1327: Fix an error from the "diff" action when exclude options are configured.
  * #1331: Fix the "repo-create" action to more surgically suppress Borg "Repository does not exist"
    logs and avoid inadvertently suppressing other error logs.
  * #1333: Fix the "--progress" flag on the "compact" action to actually update the progress of
