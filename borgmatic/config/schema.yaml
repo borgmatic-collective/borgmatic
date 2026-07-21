@@ -535,7 +535,7 @@ properties:
             "archive_name_format", "match_archives", etc. Defaults to the
             username of the user running borgmatic. (This option is supported
             for Borg 1.4.5+ only.)
-        example: example.org
+        example: backup_user
     file_list_format:
         type: string
         description: |
