@@ -27,7 +27,6 @@ def import_key(
 
     Raise ValueError if the path is given and it does not exist.
     '''
-    archive_hostname = config.get('archive_hostname')
     umask = config.get('umask')
     lock_wait = config.get('lock_wait')
     working_directory = borgmatic.config.paths.get_working_directory(config)
@@ -42,7 +41,6 @@ def import_key(
 
     full_command = (
         (local_path, 'key', 'import')
-        + (('--hostname', archive_hostname) if archive_hostname else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + ('--log-json',)

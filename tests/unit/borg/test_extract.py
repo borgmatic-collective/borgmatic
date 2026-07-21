@@ -161,33 +161,6 @@ def test_extract_last_archive_dry_run_calls_borg_using_exit_codes():
     )
 
 
-def test_extract_last_archive_dry_run_calls_borg_with_hostname_flags():
-    flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
-    insert_execute_command_mock(
-        (
-            'borg',
-            'extract',
-            '--dry-run',
-            '--hostname',
-            'example.org',
-            '--log-json',
-            'repo::archive',
-        ),
-    )
-    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',),
-    )
-    insert_logging_mock(logging.WARNING)
-
-    module.extract_last_archive_dry_run(
-        config={'archive_hostname': 'example.org'},
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        repository_path='repo',
-        lock_wait=None,
-    )
-
-
 def test_extract_last_archive_dry_run_calls_borg_with_remote_path_flags():
     flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
     insert_execute_command_mock(
@@ -327,32 +300,6 @@ def test_extract_archive_calls_borg_with_exit_codes():
         archive='archive',
         paths=None,
         config={'borg_exit_codes': borg_exit_codes},
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-    )
-
-
-def test_extract_archive_calls_borg_with_hostname_flags():
-    flexmock(module.os.path).should_receive('abspath').and_return('repo')
-    insert_execute_command_mock(
-        ('borg', 'extract', '--hostname', 'example.org', '--log-json', 'repo::archive')
-    )
-    flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',),
-    )
-    flexmock(module.borgmatic.config.validate).should_receive(
-        'normalize_repository_path',
-    ).and_return('repo')
-    insert_logging_mock(logging.WARNING)
-
-    module.extract_archive(
-        dry_run=False,
-        repository='repo',
-        archive='archive',
-        paths=None,
-        config={'archive_hostname': 'example.org'},
         local_borg_version='1.2.3',
         global_arguments=flexmock(),
     )

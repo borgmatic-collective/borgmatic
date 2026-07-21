@@ -150,27 +150,6 @@ def test_mount_archive_calls_borg_using_exit_codes():
     )
 
 
-def test_mount_archive_calls_borg_with_hostname_flags():
-    flexmock(module.feature).should_receive('available').and_return(False)
-    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive',),
-    )
-    insert_execute_command_mock(
-        ('borg', 'mount', '--hostname', 'example.org', '--log-json', 'repo::archive', '/mnt'),
-    )
-    insert_logging_mock(logging.WARNING)
-
-    mount_arguments = flexmock(mount_point='/mnt', options=None, paths=None, foreground=False)
-    module.mount_archive(
-        repository_path='repo',
-        archive='archive',
-        mount_arguments=mount_arguments,
-        config={'archive_hostname': 'example.org'},
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-    )
-
-
 def test_mount_archive_calls_borg_with_remote_path_flags():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(

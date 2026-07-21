@@ -28,7 +28,6 @@ def recreate_archive(
     arguments, optional local and remote Borg paths, executes the recreate command with the given
     arguments.
     '''
-    archive_hostname = config.get('archive_hostname')
     lock_wait = config.get('lock_wait')
     exclude_flags = flags.make_exclude_flags(config)
     compression = config.get('compression')
@@ -46,7 +45,6 @@ def recreate_archive(
 
     recreate_command = (
         (local_path, 'recreate')
-        + (('--hostname', archive_hostname) if archive_hostname else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + ('--log-json',)
         + (('--lock-wait', str(lock_wait)) if lock_wait is not None else ())

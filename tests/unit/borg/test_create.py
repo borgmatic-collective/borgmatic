@@ -518,7 +518,6 @@ def test_make_base_create_command_with_store_config_false_omits_config_files():
         ('flags', False, False, ('--nobsdflags',)),
         ('files_changed', 'mtime', True, ('--files-changed', 'mtime')),
         ('files_cache', 'ctime,size', True, ('--files-cache', 'ctime,size')),
-        ('archive_hostname', 'example.org', True, ('--hostname', 'example.org')),
         ('umask', 740, True, ('--umask', '740')),
         ('lock_wait', 5, True, ('--lock-wait', '5')),
     ),

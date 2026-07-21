@@ -4,6 +4,8 @@ import borgmatic.borg.passcommand
 import borgmatic.hooks.credential.parse
 
 OPTION_TO_ENVIRONMENT_VARIABLE = {
+    'archive_hostname': 'BORG_HOSTNAME',
+    'archive_username': 'BORG_USERNAME',
     'borg_base_directory': 'BORG_BASE_DIR',
     'borg_config_directory': 'BORG_CONFIG_DIR',
     'borg_cache_directory': 'BORG_CACHE_DIR',

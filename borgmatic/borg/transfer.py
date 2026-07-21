@@ -31,7 +31,6 @@ def transfer_archives(
         (local_path, 'transfer')
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
-        + flags.make_flags('hostname', config.get('archive_hostname'))
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
         + (('--log-json',) if (config.get('log_json') or not config.get('progress')) else ())

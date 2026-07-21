@@ -38,7 +38,6 @@ def make_info_command(
             if logger.isEnabledFor(logging.DEBUG) and not info_arguments.json
             else ()
         )
-        + flags.make_flags('hostname', config.get('archive_hostname'))
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
         + ('--log-json',)

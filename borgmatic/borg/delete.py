@@ -36,7 +36,6 @@ def make_delete_command(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + borgmatic.borg.flags.make_flags('dry-run', global_arguments.dry_run)
-        + borgmatic.borg.flags.make_flags('hostname', config.get('archive_hostname'))
         + borgmatic.borg.flags.make_flags('remote-path', remote_path)
         + borgmatic.borg.flags.make_flags('umask', config.get('umask'))
         + ('--log-json',)

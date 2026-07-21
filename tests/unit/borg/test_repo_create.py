@@ -433,30 +433,6 @@ def test_create_repository_with_exit_codes_calls_borg_using_them():
     )
 
 
-def test_create_repository_with_archive_hostname_calls_borg_with_hostname_flag():
-    insert_repo_info_command_not_found_mock()
-    insert_repo_create_command_mock(
-        (*REPO_CREATE_COMMAND, '--hostname', 'example.org', '--repo', 'repo'),
-    )
-    insert_logging_mock(logging.WARNING)
-    flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(
-        (
-            '--repo',
-            'repo',
-        ),
-    )
-
-    module.create_repository(
-        dry_run=False,
-        repository_path='repo',
-        config={'archive_hostname': 'example.org'},
-        local_borg_version='2.3.4',
-        global_arguments=flexmock(),
-        encryption_mode='repokey',
-    )
-
-
 def test_create_repository_with_remote_path_calls_borg_with_remote_path_flag():
     insert_repo_info_command_not_found_mock()
     insert_repo_create_command_mock(

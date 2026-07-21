@@ -29,7 +29,6 @@ def export_key(
     Raise FileExistsError if a path is given but it already exists on disk.
     '''
     borgmatic.logger.add_custom_log_levels()
-    archive_hostname = config.get('archive_hostname')
     umask = config.get('umask')
     lock_wait = config.get('lock_wait')
     working_directory = borgmatic.config.paths.get_working_directory(config)
@@ -47,7 +46,6 @@ def export_key(
 
     full_command = (
         (local_path, 'key', 'export')
-        + (('--hostname', archive_hostname) if archive_hostname else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--log-json',) if output_file is None else ())

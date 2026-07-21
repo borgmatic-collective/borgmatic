@@ -528,6 +528,14 @@ properties:
             "archive_name_format", "match_archives", etc. Defaults to the system
             hostname. (This option is supported for Borg 1.4.5+ only.)
         example: example.org
+    archive_username:
+        type: string
+        description: |
+            Username to use for the "{user}" placeholder in
+            "archive_name_format", "match_archives", etc. Defaults to the
+            username of the user running borgmatic. (This option is supported
+            for Borg 1.4.5+ only.)
+        example: example.org
     file_list_format:
         type: string
         description: |

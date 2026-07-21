@@ -24,7 +24,6 @@ def extract_last_archive_dry_run(
     Perform an extraction dry-run of the most recent archive. If there are no archives, skip the
     dry-run.
     '''
-    archive_hostname = config.get('archive_hostname')
     extra_borg_options = config.get('extra_borg_options', {}).get('extract', '')
     verbosity_flags = ()
     if logger.isEnabledFor(logging.DEBUG):
@@ -49,7 +48,6 @@ def extract_last_archive_dry_run(
     list_flag = ('--list',) if logger.isEnabledFor(logging.DEBUG) else ()
     full_extract_command = (
         (local_path, 'extract', '--dry-run')
-        + (('--hostname', archive_hostname) if archive_hostname else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--log-json',) if not config.get('progress') else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
@@ -106,7 +104,6 @@ def extract_archive(
     If extract to stdout is True, then start the extraction streaming to stdout, and return that
     extract process as an instance of subprocess.Popen.
     '''
-    archive_hostname = config.get('archive_hostname')
     umask = config.get('umask')
     lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get('extract', '')
@@ -135,7 +132,6 @@ def extract_archive(
 
     full_command = (
         (local_path, 'extract')
-        + (('--hostname', archive_hostname) if archive_hostname else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + numeric_ids_flags
         + (('--umask', str(umask)) if umask else ())

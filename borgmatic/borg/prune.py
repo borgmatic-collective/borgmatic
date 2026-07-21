@@ -65,7 +65,6 @@ def prune_archives(
     archives according to the retention policy specified in that configuration.
     '''
     borgmatic.logger.add_custom_log_levels()
-    archive_hostname = config.get('archive_hostname')
     umask = config.get('umask')
     lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get('prune', '')
@@ -74,7 +73,6 @@ def prune_archives(
         (local_path, 'prune')
         + make_prune_flags(config, prune_arguments, local_borg_version)
         + ('--log-json',)
-        + (('--hostname', archive_hostname) if archive_hostname else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())

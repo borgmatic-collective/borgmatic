@@ -151,39 +151,6 @@ def test_compact_segments_with_exit_codes_calls_borg_using_them():
     )
 
 
-def test_compact_segments_with_archive_hostname_calls_borg_with_hostname_flags():
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock(
-        (*COMPACT_COMMAND, '--hostname', 'example.org', '--log-json', 'repo'), logging.INFO
-    )
-    insert_logging_mock(logging.WARNING)
-
-    module.compact_segments(
-        dry_run=False,
-        repository_path='repo',
-        config={'archive_hostname': 'example.org'},
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-    )
-
-
-def test_compact_segments_with_remote_path_calls_borg_with_remote_path_flags():
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock(
-        (*COMPACT_COMMAND, '--remote-path', 'borg1', '--log-json', 'repo'), logging.INFO
-    )
-    insert_logging_mock(logging.WARNING)
-
-    module.compact_segments(
-        dry_run=False,
-        repository_path='repo',
-        config={},
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        remote_path='borg1',
-    )
-
-
 def test_compact_segments_with_progress_calls_borg_with_progress_flag():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(

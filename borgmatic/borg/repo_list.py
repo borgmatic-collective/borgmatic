@@ -75,7 +75,6 @@ def get_latest_archive(
             if feature.available(feature.Feature.REPO_LIST, local_borg_version)
             else 'list'
         ),
-        *flags.make_flags('hostname', config.get('archive_hostname')),
         *flags.make_flags('remote-path', remote_path),
         *flags.make_flags('umask', config.get('umask')),
         *('--log-json',),
@@ -161,7 +160,6 @@ def make_repo_list_command(
             if logger.isEnabledFor(logging.DEBUG) and not repo_list_arguments.json
             else ()
         )
-        + flags.make_flags('hostname', config.get('archive_hostname'))
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
         + ('--log-json',)

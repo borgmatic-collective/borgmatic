@@ -364,57 +364,6 @@ def test_display_repository_info_with_exit_codes_calls_borg_using_them():
     )
 
 
-def test_display_repository_info_with_archve_hostname_calls_borg_with_hostname_flags():
-    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-    flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module.flags).should_receive('make_flags').replace_with(
-        lambda name, value: (f'--{name}', value) if value else (),
-    )
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(
-        (
-            '--repo',
-            'repo',
-        ),
-    )
-    flexmock(module.environment).should_receive('make_environment')
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        (
-            'borg',
-            'repo-info',
-            '--hostname',
-            'example.org',
-            '--log-json',
-            '--json',
-            '--repo',
-            'repo',
-        ),
-        environment=None,
-        working_directory=None,
-        borg_local_path='borg',
-        borg_exit_codes=None,
-    ).and_yield('[]')
-    flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
-    flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'repo-info', '--hostname', 'example.org', '--log-json', '--repo', 'repo'),
-        output_log_level=module.borgmatic.logger.ANSWER,
-        environment=None,
-        working_directory=None,
-        borg_local_path='borg',
-        borg_exit_codes=None,
-    )
-    insert_logging_mock(logging.WARNING)
-
-    module.display_repository_info(
-        repository_path='repo',
-        config={'archive_hostname': 'example.org'},
-        local_borg_version='2.3.4',
-        repo_info_arguments=flexmock(json=False),
-        global_arguments=flexmock(),
-    )
-
-
 def test_display_repository_info_with_remote_path_calls_borg_with_remote_path_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER

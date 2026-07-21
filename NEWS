@@ -1,9 +1,10 @@
 2.1.7.dev0
  * #1309: Add support for the "--quick-stats" flag and the "quick_statistics" option to the "prune"
    action. Borg >= 1.4.5 and < 2 only.
- * #1317: Add an "--archive-hostname" flag and corresponding "archive_hostname" option for
+ * #1317: Add an "archive_hostname" option and a corresponding "--archive-hostname" flag for
    overriding the hostname used for the "{hostname}" placeholder in the "archive_name_format"
-   option. Borg 1.4.5+ only.
+   option. Also add an "archive_username" option and corresponding "--archive-username" flag to
+   override the "{user}" plaecholder. Both options/flags are Borg 1.4.5+ only.
  * #1319: Fix the ZFS hook's overzealous unmounting of snapshot paths when a source dataset is at
    "/".
  * #1322: Fix for the "restore" action sometimes failing to find a database dump that was dumped

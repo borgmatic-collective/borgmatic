@@ -24,14 +24,12 @@ def mount_archive(
     dict, the local Borg version, global arguments as an argparse.Namespace instance, and optional
     local and remote Borg paths, mount the archive onto the mount point.
     '''
-    archive_hostname = config.get('archive_hostname')
     umask = config.get('umask')
     lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get('mount', '')
 
     full_command = (
         (local_path, 'mount')
-        + (('--hostname', archive_hostname) if archive_hostname else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--log-json',) if not mount_arguments.foreground else ())
