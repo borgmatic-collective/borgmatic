@@ -32,6 +32,7 @@ def test_import_key_calls_borg_with_required_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', '--log-json', 'repo', '-'))
+    insert_logging_mock(logging.WARNING)
 
     module.import_key(
         repository_path='repo',
@@ -47,6 +48,7 @@ def test_import_key_calls_borg_with_local_path():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg1', 'key', 'import', '--log-json', 'repo', '-'))
+    insert_logging_mock(logging.WARNING)
 
     module.import_key(
         repository_path='repo',
@@ -66,6 +68,7 @@ def test_import_key_calls_borg_using_exit_codes():
     insert_execute_command_mock(
         ('borg', 'key', 'import', '--log-json', 'repo', '-'), borg_exit_codes=borg_exit_codes
     )
+    insert_logging_mock(logging.WARNING)
 
     module.import_key(
         repository_path='repo',
@@ -83,6 +86,7 @@ def test_import_key_calls_borg_with_remote_path_flags():
     insert_execute_command_mock(
         ('borg', 'key', 'import', '--remote-path', 'borg1', '--log-json', 'repo', '-')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.import_key(
         repository_path='repo',
@@ -101,6 +105,7 @@ def test_import_key_calls_borg_with_umask_flags():
     insert_execute_command_mock(
         ('borg', 'key', 'import', '--umask', '0770', '--log-json', 'repo', '-')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.import_key(
         repository_path='repo',
@@ -118,6 +123,7 @@ def test_import_key_calls_borg_with_lock_wait_flags():
     insert_execute_command_mock(
         ('borg', 'key', 'import', '--log-json', '--lock-wait', '5', 'repo', '-')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.import_key(
         repository_path='repo',
@@ -135,6 +141,7 @@ def test_import_key_calls_borg_with_extra_borg_options():
     insert_execute_command_mock(
         ('borg', 'key', 'import', '--log-json', '--extra', 'value with space', 'repo', '-')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.import_key(
         repository_path='repo',
@@ -184,6 +191,7 @@ def test_import_key_calls_borg_with_paper_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', '--log-json', '--paper', 'repo', '-'))
+    insert_logging_mock(logging.WARNING)
 
     module.import_key(
         repository_path='repo',
@@ -201,6 +209,7 @@ def test_import_key_calls_borg_with_path_argument():
     insert_execute_command_mock(
         ('borg', 'key', 'import', '--log-json', 'repo', 'source'),
     )
+    insert_logging_mock(logging.WARNING)
 
     module.import_key(
         repository_path='repo',
@@ -232,6 +241,7 @@ def test_import_key_with_stdin_path_calls_borg_without_path_argument():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', '--log-json', 'repo', '-'))
+    insert_logging_mock(logging.WARNING)
 
     module.import_key(
         repository_path='repo',
@@ -264,6 +274,7 @@ def test_import_key_calls_borg_with_working_directory():
     insert_execute_command_mock(
         ('borg', 'key', 'import', '--log-json', 'repo', '-'), working_directory='/working/dir'
     )
+    insert_logging_mock(logging.WARNING)
 
     module.import_key(
         repository_path='repo',
@@ -284,6 +295,7 @@ def test_import_key_calls_borg_with_path_argument_and_working_directory():
         ('borg', 'key', 'import', '--log-json', 'repo', 'source'),
         working_directory='/working/dir',
     )
+    insert_logging_mock(logging.WARNING)
 
     module.import_key(
         repository_path='repo',

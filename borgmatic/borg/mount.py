@@ -24,8 +24,8 @@ def mount_archive(
     dict, the local Borg version, global arguments as an argparse.Namespace instance, and optional
     local and remote Borg paths, mount the archive onto the mount point.
     '''
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get('mount', '')
 
     full_command = (

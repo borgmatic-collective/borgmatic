@@ -60,7 +60,7 @@ ProtectSystem=full
 # includes, for instance, programs to snapshot filesystems (e.g. ZFS, LVM, and
 # Btrfs). But rather than commenting this out entirely, one workaround may be to
 # add "CAP_SYS_ADMIN".
-CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_NET_RAW
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_FOWNER CAP_NET_RAW
 
 # Lower CPU and I/O priority.
 Nice=19

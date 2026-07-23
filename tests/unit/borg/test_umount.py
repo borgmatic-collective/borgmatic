@@ -26,6 +26,7 @@ def insert_execute_command_mock(
 
 def test_unmount_archive_calls_borg_with_required_parameters():
     insert_execute_command_mock(('borg', 'umount', '--log-json', '/mnt'))
+    insert_logging_mock(logging.WARNING)
 
     module.unmount_archive(config={}, mount_point='/mnt')
 
@@ -49,6 +50,7 @@ def test_unmount_archive_calls_borg_with_extra_borg_options():
         ('borg', 'umount', '--log-json', '--extra', 'value with space', '/mnt'),
         borg_local_path='borg',
     )
+    insert_logging_mock(logging.WARNING)
 
     module.unmount_archive(
         config={'extra_borg_options': {'umount': '--extra "value with space"'}}, mount_point='/mnt'
@@ -57,6 +59,7 @@ def test_unmount_archive_calls_borg_with_extra_borg_options():
 
 def test_unmount_archive_calls_borg_with_local_path():
     insert_execute_command_mock(('borg1', 'umount', '--log-json', '/mnt'), borg_local_path='borg1')
+    insert_logging_mock(logging.WARNING)
 
     module.unmount_archive(config={}, mount_point='/mnt', local_path='borg1')
 
@@ -66,6 +69,7 @@ def test_unmount_archive_calls_borg_with_exit_codes():
     insert_execute_command_mock(
         ('borg', 'umount', '--log-json', '/mnt'), borg_exit_codes=borg_exit_codes
     )
+    insert_logging_mock(logging.WARNING)
 
     module.unmount_archive(config={'borg_exit_codes': borg_exit_codes}, mount_point='/mnt')
 
@@ -74,5 +78,6 @@ def test_unmount_archive_calls_borg_with_working_directory():
     insert_execute_command_mock(
         ('borg', 'umount', '--log-json', '/mnt'), working_directory='/working/dir'
     )
+    insert_logging_mock(logging.WARNING)
 
     module.unmount_archive(config={'working_directory': '/working/dir'}, mount_point='/mnt')

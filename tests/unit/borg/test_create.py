@@ -1265,6 +1265,7 @@ def test_create_archive_calls_borg_with_flags():
         working_directory=None,
         environment=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.create_archive(
         dry_run=False,
@@ -1299,6 +1300,7 @@ def test_create_archive_calls_borg_with_environment():
         working_directory=None,
         environment=environment,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.create_archive(
         dry_run=False,
@@ -1542,6 +1544,7 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
         working_directory='/working/dir',
         environment=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.create_archive(
         dry_run=False,
@@ -1577,6 +1580,7 @@ def test_create_archive_with_exit_codes_calls_borg_using_them():
         working_directory=None,
         environment=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.create_archive(
         dry_run=False,
@@ -1611,6 +1615,7 @@ def test_create_archive_with_stats_calls_borg_with_stats_flag_and_answer_output_
         working_directory=None,
         environment=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.create_archive(
         dry_run=False,
@@ -1649,6 +1654,7 @@ def test_create_archive_with_files_calls_borg_with_answer_output_log_level():
         working_directory=None,
         environment=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.create_archive(
         dry_run=False,
@@ -1718,6 +1724,7 @@ def test_create_archive_with_progress_calls_borg_with_progress_flag():
         working_directory=None,
         environment=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.create_archive(
         dry_run=False,
@@ -1769,6 +1776,7 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
         working_directory=None,
         environment=None,
     ).and_yield()
+    insert_logging_mock(logging.WARNING)
 
     module.create_archive(
         dry_run=False,
@@ -1802,6 +1810,7 @@ def test_create_archive_with_json_calls_borg_with_json_flag():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_yield('[]')
+    insert_logging_mock(logging.WARNING)
 
     json_output = module.create_archive(
         dry_run=False,
@@ -1836,6 +1845,7 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_flag():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_yield('[]')
+    insert_logging_mock(logging.WARNING)
 
     json_output = module.create_archive(
         dry_run=False,
@@ -1908,6 +1918,7 @@ def test_create_archive_with_comment_calls_borg_with_comment_flag():
         working_directory=None,
         environment=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.create_archive(
         dry_run=False,
@@ -1945,6 +1956,7 @@ def test_create_archive_calls_borg_with_working_directory():
         working_directory='/working/dir',
         environment=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.create_archive(
         dry_run=False,

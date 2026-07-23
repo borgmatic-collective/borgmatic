@@ -104,8 +104,8 @@ def extract_archive(
     If extract to stdout is True, then start the extraction streaming to stdout, and return that
     extract process as an instance of subprocess.Popen.
     '''
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get('extract', '')
 
     if feature.available(feature.Feature.NUMERIC_IDS, local_borg_version):

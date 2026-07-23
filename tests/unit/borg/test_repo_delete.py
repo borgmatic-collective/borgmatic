@@ -8,6 +8,7 @@ from ..test_verbosity import insert_logging_mock
 
 
 def test_make_repo_delete_command_with_feature_available_runs_borg_repo_delete():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
@@ -30,6 +31,7 @@ def test_make_repo_delete_command_with_feature_available_runs_borg_repo_delete()
 
 
 def test_make_repo_delete_command_without_feature_available_runs_borg_delete():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
@@ -98,6 +100,7 @@ def test_make_repo_delete_command_includes_log_debug():
 
 
 def test_make_repo_delete_command_includes_dry_run():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(
@@ -124,6 +127,7 @@ def test_make_repo_delete_command_includes_dry_run():
 
 
 def test_make_repo_delete_command_includes_remote_path():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(
@@ -150,6 +154,7 @@ def test_make_repo_delete_command_includes_remote_path():
 
 
 def test_make_repo_delete_command_includes_umask():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').replace_with(
         lambda name, value: (f'--{name}', value) if value else (),
@@ -174,6 +179,7 @@ def test_make_repo_delete_command_includes_umask():
 
 
 def test_make_repo_delete_command_includes_lock_wait():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(
@@ -200,6 +206,7 @@ def test_make_repo_delete_command_includes_lock_wait():
 
 
 def test_make_repo_delete_command_without_feature_available_includes_delete_extra_borg_options():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
@@ -222,6 +229,7 @@ def test_make_repo_delete_command_without_feature_available_includes_delete_extr
 
 
 def test_make_repo_delete_command_with_feature_available_includes_delete_extra_borg_options():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
@@ -244,6 +252,7 @@ def test_make_repo_delete_command_with_feature_available_includes_delete_extra_b
 
 
 def test_make_repo_delete_command_includes_list():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(
@@ -270,6 +279,7 @@ def test_make_repo_delete_command_includes_list():
 
 
 def test_make_repo_delete_command_includes_force():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
@@ -292,6 +302,7 @@ def test_make_repo_delete_command_includes_force():
 
 
 def test_make_repo_delete_command_includes_force_twice():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
@@ -314,6 +325,7 @@ def test_make_repo_delete_command_includes_force_twice():
 
 
 def test_make_repo_delete_command_with_output_file_omits_log_json():
+    insert_logging_mock(logging.WARNING)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())

@@ -27,8 +27,8 @@ def import_key(
 
     Raise ValueError if the path is given and it does not exist.
     '''
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
     working_directory = borgmatic.config.paths.get_working_directory(config)
     extra_borg_options = config.get('extra_borg_options', {}).get('key_import', '')
 

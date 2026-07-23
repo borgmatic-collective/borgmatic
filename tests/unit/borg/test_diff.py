@@ -4,13 +4,14 @@ from flexmock import flexmock
 
 from borgmatic.borg import diff as module
 
+from ..test_verbosity import insert_logging_mock
+
 LOGGING_ANSWER = flexmock()
 
 
 def test_diff_calls_borg_with_archives():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -40,6 +41,7 @@ def test_diff_calls_borg_with_archives():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -64,7 +66,6 @@ def test_diff_calls_borg_with_archives():
 def test_diff_with_local_path_calls_borg_with_it():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -94,6 +95,7 @@ def test_diff_with_local_path_calls_borg_with_it():
         borg_local_path='borg6',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -118,7 +120,6 @@ def test_diff_with_local_path_calls_borg_with_it():
 def test_diff_with_remote_path_calls_borg_with_it():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -150,6 +151,7 @@ def test_diff_with_remote_path_calls_borg_with_it():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -174,7 +176,6 @@ def test_diff_with_remote_path_calls_borg_with_it():
 def test_diff_with_lock_wait_calls_borg_with_it():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -206,6 +207,7 @@ def test_diff_with_lock_wait_calls_borg_with_it():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -230,7 +232,6 @@ def test_diff_with_lock_wait_calls_borg_with_it():
 def test_diff_with_log_level_info_calls_borg_with_info_flag():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -262,6 +263,7 @@ def test_diff_with_log_level_info_calls_borg_with_info_flag():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -286,7 +288,6 @@ def test_diff_with_log_level_info_calls_borg_with_info_flag():
 def test_diff_with_log_level_debug_calls_borg_with_debug_flags():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -319,6 +320,7 @@ def test_diff_with_log_level_debug_calls_borg_with_debug_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -343,7 +345,6 @@ def test_diff_with_log_level_debug_calls_borg_with_debug_flags():
 def test_diff_with_only_patterns_calls_borg_with_configured_pattern_paths():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
@@ -376,6 +377,7 @@ def test_diff_with_only_patterns_calls_borg_with_configured_pattern_paths():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -397,68 +399,9 @@ def test_diff_with_only_patterns_calls_borg_with_configured_pattern_paths():
     )
 
 
-def test_diff_with_exclude_config_calls_borg_with_exclude_flags():
-    flexmock(module.logging).ANSWER = LOGGING_ANSWER
-    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(
-        ('--exclude', 'stuff')
-    )
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
-        flexmock(name='test')
-    )
-    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
-    flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
-        ('--repo', 'repo')
-    )
-    flexmock(module.borgmatic.borg.flags).should_receive('make_repository_archive_flags').never()
-    environment = flexmock()
-    flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
-        environment
-    )
-    flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
-        full_command=(
-            'borg',
-            'diff',
-            '--log-json',
-            '--exclude',
-            'stuff',
-            '--repo',
-            'repo',
-            'archive',
-            'archive2',
-        ),
-        output_log_level=LOGGING_ANSWER,
-        environment=environment,
-        working_directory=None,
-        borg_local_path='borg',
-        borg_exit_codes=None,
-    ).once()
-
-    module.borgmatic.borg.diff.diff(
-        repository='repo',
-        archive='archive',
-        second_archive='archive2',
-        config={},
-        local_borg_version=None,
-        diff_arguments=flexmock(
-            same_chunker_params=False,
-            sort_keys=[],
-            content_only=False,
-            second_archive='archive2',
-            only_patterns=False,
-        ),
-        global_arguments=flexmock(),
-        local_path='borg',
-        remote_path=None,
-        patterns=[],
-    )
-
-
 def test_diff_with_numeric_ids_calls_borg_with_numeric_ids_flag():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -489,6 +432,7 @@ def test_diff_with_numeric_ids_calls_borg_with_numeric_ids_flag():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -513,7 +457,6 @@ def test_diff_with_numeric_ids_calls_borg_with_numeric_ids_flag():
 def test_diff_with_numeric_ids_and_feature_not_available_calls_borg_with_numeric_owner_flag():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -549,6 +492,7 @@ def test_diff_with_numeric_ids_and_feature_not_available_calls_borg_with_numeric
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -573,7 +517,6 @@ def test_diff_with_numeric_ids_and_feature_not_available_calls_borg_with_numeric
 def test_diff_with_same_chunker_params_calls_borg_with_it():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -604,6 +547,7 @@ def test_diff_with_same_chunker_params_calls_borg_with_it():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -628,7 +572,6 @@ def test_diff_with_same_chunker_params_calls_borg_with_it():
 def test_diff_with_sort_keys_calls_borg_with_formatted_sort_by_flags():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -660,6 +603,7 @@ def test_diff_with_sort_keys_calls_borg_with_formatted_sort_by_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -684,7 +628,6 @@ def test_diff_with_sort_keys_calls_borg_with_formatted_sort_by_flags():
 def test_diff_with_content_only_calls_borg_with_it():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -715,6 +658,7 @@ def test_diff_with_content_only_calls_borg_with_it():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -739,7 +683,6 @@ def test_diff_with_content_only_calls_borg_with_it():
 def test_diff_with_extra_borg_options_calls_borg_with_them():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -771,6 +714,7 @@ def test_diff_with_extra_borg_options_calls_borg_with_them():
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',
@@ -795,7 +739,6 @@ def test_diff_with_extra_borg_options_calls_borg_with_them():
 def test_diff_without_separate_repository_archive_feature_available_calls_borg_joined_repository_archive():
     flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
         flexmock(name='test')
@@ -828,6 +771,7 @@ def test_diff_without_separate_repository_archive_feature_available_calls_borg_j
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.borgmatic.borg.diff.diff(
         repository='repo',

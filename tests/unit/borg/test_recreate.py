@@ -35,6 +35,7 @@ def test_recreate_calls_borg_with_required_flags():
         ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--log-json', '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -70,6 +71,7 @@ def test_recreate_with_dry_run_calls_borg_with_dry_run_flag():
         ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--log-json', '--dry-run', '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -107,6 +109,7 @@ def test_recreate_with_remote_path():
     insert_execute_command_mock(
         ('borg', 'recreate', '--remote-path', 'borg1', '--log-json', '--repo', 'repo')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -144,6 +147,7 @@ def test_recreate_with_lock_wait():
     insert_execute_command_mock(
         ('borg', 'recreate', '--log-json', '--lock-wait', '5', '--repo', 'repo')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -180,6 +184,7 @@ def test_recreate_with_extra_borg_options():
     insert_execute_command_mock(
         ('borg', 'recreate', '--log-json', '--extra', 'value with space', '--repo', 'repo')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -214,7 +219,6 @@ def test_recreate_with_log_info():
         ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--log-json', '--info', '--repo', 'repo'))
-
     insert_logging_mock(logging.INFO)
 
     module.recreate_archive(
@@ -291,6 +295,7 @@ def test_recreate_with_list_config_calls_borg_with_list_flag():
     insert_execute_command_mock(
         ('borg', 'recreate', '--log-json', '--list', '--filter', 'AME+-', '--repo', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -328,6 +333,7 @@ def test_recreate_with_patterns_from_flag():
     insert_execute_command_mock(
         ('borg', 'recreate', '--log-json', '--patterns-from', 'patterns_file', '--repo', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -366,6 +372,7 @@ def test_recreate_with_exclude_flags():
     insert_execute_command_mock(
         ('borg', 'recreate', '--log-json', '--exclude', 'pattern', '--repo', 'repo')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -402,6 +409,7 @@ def test_recreate_with_target_flag():
     insert_execute_command_mock(
         ('borg', 'recreate', '--log-json', '--target', 'new-archive', '--repo', 'repo')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -446,6 +454,7 @@ def test_recreate_with_comment_flag():
             'repo',
         ),
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -482,6 +491,7 @@ def test_recreate_with_timestamp_flag():
     insert_execute_command_mock(
         ('borg', 'recreate', '--log-json', '--timestamp', '2023-10-01T12:00:00', '--repo', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -518,6 +528,7 @@ def test_recreate_with_compression_flag():
     insert_execute_command_mock(
         ('borg', 'recreate', '--log-json', '--compression', 'lz4', '--repo', 'repo')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -554,6 +565,7 @@ def test_recreate_with_chunker_params_flag():
     insert_execute_command_mock(
         ('borg', 'recreate', '--log-json', '--chunker-params', '19,23,21,4095', '--repo', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -590,6 +602,7 @@ def test_recreate_with_recompress_flag():
     insert_execute_command_mock(
         ('borg', 'recreate', '--log-json', '--recompress', 'always', '--repo', 'repo')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -624,6 +637,7 @@ def test_recreate_with_match_archives_star():
         ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--log-json', '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -658,6 +672,7 @@ def test_recreate_with_match_archives_regex():
         ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--log-json', '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -692,6 +707,7 @@ def test_recreate_with_match_archives_shell():
         ),
     )
     insert_execute_command_mock(('borg', 'recreate', '--log-json', '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -728,6 +744,7 @@ def test_recreate_with_match_archives_and_feature_available_calls_borg_with_matc
     insert_execute_command_mock(
         ('borg', 'recreate', '--log-json', '--repo', 'repo', '--match-archives', 'foo-*')
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -764,6 +781,7 @@ def test_recreate_with_archives_flag_and_feature_available_calls_borg_with_match
     insert_execute_command_mock(
         ('borg', 'recreate', '--log-json', '--repo', 'repo', '--match-archives', 'archive'),
     )
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -794,6 +812,7 @@ def test_recreate_with_match_archives_and_feature_not_available_calls_borg_witho
     )
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_archive_flags').never()
     insert_execute_command_mock(('borg', 'recreate', '--log-json', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',
@@ -824,6 +843,7 @@ def test_recreate_with_archives_flags_and_feature_not_available_calls_borg_with_
     ).and_return(('repo::archive',))
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').never()
     insert_execute_command_mock(('borg', 'recreate', '--log-json', 'repo::archive'))
+    insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(
         repository='repo',

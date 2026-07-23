@@ -10,6 +10,7 @@ from ..test_verbosity import insert_logging_mock
 def insert_execute_command_mock(
     compact_command,
     output_log_level,
+    output_file=None,
     working_directory=None,
     borg_exit_codes=None,
 ):
@@ -20,6 +21,7 @@ def insert_execute_command_mock(
     flexmock(module).should_receive('execute_command').with_args(
         compact_command,
         output_log_level=output_log_level,
+        output_file=output_file,
         environment=None,
         working_directory=working_directory,
         borg_local_path=compact_command[0],
@@ -33,6 +35,7 @@ COMPACT_COMMAND = ('borg', 'compact')
 def test_compact_segments_calls_borg_with_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock((*COMPACT_COMMAND, '--log-json', 'repo'), logging.INFO)
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         dry_run=False,
@@ -83,6 +86,7 @@ def test_compact_segments_with_dry_run_skips_borg_call_when_feature_unavailable(
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').never()
     flexmock(module).should_receive('execute_command').never()
     flexmock(module.logger).should_receive('info').with_args('Skipping compact (dry run)').once()
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         repository_path='repo',
@@ -102,6 +106,7 @@ def test_compact_segments_with_dry_run_executes_borg_call_when_feature_available
     flexmock(module.environment).should_receive('make_environment').once()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').once()
     flexmock(module).should_receive('execute_command').once()
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         repository_path='repo',
@@ -115,6 +120,7 @@ def test_compact_segments_with_dry_run_executes_borg_call_when_feature_available
 def test_compact_segments_with_local_path_calls_borg_via_local_path():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg1', *COMPACT_COMMAND[1:], '--log-json', 'repo'), logging.INFO)
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         dry_run=False,
@@ -134,6 +140,7 @@ def test_compact_segments_with_exit_codes_calls_borg_using_them():
         logging.INFO,
         borg_exit_codes=borg_exit_codes,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         dry_run=False,
@@ -144,25 +151,12 @@ def test_compact_segments_with_exit_codes_calls_borg_using_them():
     )
 
 
-def test_compact_segments_with_remote_path_calls_borg_with_remote_path_flags():
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock(
-        (*COMPACT_COMMAND, '--remote-path', 'borg1', '--log-json', 'repo'), logging.INFO
-    )
-
-    module.compact_segments(
-        dry_run=False,
-        repository_path='repo',
-        config={},
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        remote_path='borg1',
-    )
-
-
 def test_compact_segments_with_progress_calls_borg_with_progress_flag():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock((*COMPACT_COMMAND, '--progress', 'repo'), logging.INFO)
+    insert_execute_command_mock(
+        (*COMPACT_COMMAND, '--progress', 'repo'), logging.INFO, module.DO_NOT_CAPTURE
+    )
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         dry_run=False,
@@ -176,8 +170,11 @@ def test_compact_segments_with_progress_calls_borg_with_progress_flag():
 def test_compact_segments_with_log_json_and_progress_calls_borg_with_both_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(
-        (*COMPACT_COMMAND, '--log-json', '--progress', 'repo'), logging.INFO
+        (*COMPACT_COMMAND, '--log-json', '--progress', 'repo'),
+        logging.INFO,
+        module.DO_NOT_CAPTURE,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         dry_run=False,
@@ -193,6 +190,7 @@ def test_compact_segments_with_cleanup_commits_calls_borg_with_cleanup_commits_f
     insert_execute_command_mock(
         (*COMPACT_COMMAND, '--log-json', '--cleanup-commits', 'repo'), logging.INFO
     )
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         dry_run=False,
@@ -209,11 +207,28 @@ def test_compact_segments_with_threshold_calls_borg_with_threshold_flag():
     insert_execute_command_mock(
         (*COMPACT_COMMAND, '--log-json', '--threshold', '20', 'repo'), logging.INFO
     )
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         dry_run=False,
         repository_path='repo',
         config={'compact_threshold': 20},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+    )
+
+
+def test_compact_segments_with_zero_threshold_calls_borg_with_threshold_flag():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_execute_command_mock(
+        (*COMPACT_COMMAND, '--log-json', '--threshold', '0', 'repo'), logging.INFO
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.compact_segments(
+        dry_run=False,
+        repository_path='repo',
+        config={'compact_threshold': 0},
         local_borg_version='1.2.3',
         global_arguments=flexmock(),
     )
@@ -225,6 +240,7 @@ def test_compact_segments_with_umask_calls_borg_with_umask_flags():
     insert_execute_command_mock(
         (*COMPACT_COMMAND, '--umask', '077', '--log-json', 'repo'), logging.INFO
     )
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         dry_run=False,
@@ -241,6 +257,7 @@ def test_compact_segments_with_lock_wait_calls_borg_with_lock_wait_flags():
     insert_execute_command_mock(
         (*COMPACT_COMMAND, '--log-json', '--lock-wait', '5', 'repo'), logging.INFO
     )
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         dry_run=False,
@@ -257,6 +274,7 @@ def test_compact_segments_with_extra_borg_options_calls_borg_with_extra_options(
         (*COMPACT_COMMAND, '--log-json', '--extra', '--options', 'value with space', 'repo'),
         logging.INFO,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         dry_run=False,
@@ -274,6 +292,7 @@ def test_compact_segments_calls_borg_with_working_directory():
         logging.INFO,
         working_directory='/working/dir',
     )
+    insert_logging_mock(logging.WARNING)
 
     module.compact_segments(
         dry_run=False,

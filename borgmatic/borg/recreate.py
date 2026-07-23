@@ -28,14 +28,14 @@ def recreate_archive(
     arguments, optional local and remote Borg paths, executes the recreate command with the given
     arguments.
     '''
-    lock_wait = config.get('lock_wait', None)
+    lock_wait = config.get('lock_wait')
     exclude_flags = flags.make_exclude_flags(config)
-    compression = config.get('compression', None)
-    chunker_params = config.get('chunker_params', None)
+    compression = config.get('compression')
+    chunker_params = config.get('chunker_params')
     extra_borg_options = config.get('extra_borg_options', {}).get('recreate', '')
 
     # Available recompress MODES: "if-different", "always", "never" (default)
-    recompress = config.get('recompress', None)
+    recompress = config.get('recompress')
 
     # Write patterns to a temporary file and use that file with --patterns-from.
     patterns_file = write_patterns_file(

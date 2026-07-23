@@ -337,6 +337,7 @@ def test_check_archives_with_progress_passes_through_to_borg():
         borg_local_path='borg',
         borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -373,6 +374,7 @@ def test_check_archives_with_log_json_and_progress_passes_through_both_to_borg()
         borg_local_path='borg',
         borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -409,6 +411,7 @@ def test_check_archives_with_repair_passes_through_to_borg():
         borg_local_path='borg',
         borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -445,6 +448,7 @@ def test_check_archives_with_log_json_and_repair_passes_through_both_to_borg():
         borg_local_path='borg',
         borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -481,6 +485,7 @@ def test_check_archives_with_max_duration_flag_passes_through_to_borg():
         borg_local_path='borg',
         borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -517,6 +522,7 @@ def test_check_archives_with_max_duration_option_passes_through_to_borg():
         borg_local_path='borg',
         borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -550,6 +556,7 @@ def test_check_archives_with_max_duration_option_and_archives_check_runs_reposit
     insert_execute_command_mock(
         ('borg', 'check', '--max-duration', '33', '--repository-only', '--log-json', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -583,6 +590,7 @@ def test_check_archives_with_max_duration_flag_and_archives_check_runs_repositor
     insert_execute_command_mock(
         ('borg', 'check', '--max-duration', '33', '--repository-only', '--log-json', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -619,6 +627,7 @@ def test_check_archives_with_max_duration_option_and_data_check_runs_repository_
     insert_execute_command_mock(
         ('borg', 'check', '--max-duration', '33', '--repository-only', '--log-json', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -655,6 +664,7 @@ def test_check_archives_with_max_duration_flag_and_data_check_runs_repository_ch
     insert_execute_command_mock(
         ('borg', 'check', '--max-duration', '33', '--repository-only', '--log-json', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -691,6 +701,7 @@ def test_check_archives_with_max_duration_flag_overrides_max_duration_option():
         borg_local_path='borg',
         borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -724,6 +735,7 @@ def test_check_archives_calls_borg_with_parameters(checks):
     flexmock(module).should_receive('make_check_name_flags').with_args(checks, ()).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', '--log-json', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -751,6 +763,7 @@ def test_check_archives_with_data_check_implies_archives_check_calls_borg_with_p
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', '--log-json', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -777,8 +790,8 @@ def test_check_archives_with_log_info_passes_through_to_borg():
         (),
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_logging_mock(logging.INFO)
     insert_execute_command_mock(('borg', 'check', '--log-json', '--info', 'repo'))
+    insert_logging_mock(logging.INFO)
 
     module.check_archives(
         repository_path='repo',
@@ -805,8 +818,8 @@ def test_check_archives_with_log_debug_passes_through_to_borg():
         (),
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_logging_mock(logging.DEBUG)
     insert_execute_command_mock(('borg', 'check', '--log-json', '--debug', '--show-rc', 'repo'))
+    insert_logging_mock(logging.DEBUG)
 
     module.check_archives(
         repository_path='repo',
@@ -832,6 +845,7 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
     flexmock(module).should_receive('make_check_name_flags').with_args(checks, ()).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg1', 'check', '--log-json', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -861,6 +875,7 @@ def test_check_archives_with_exit_codes_calls_borg_using_them():
     insert_execute_command_mock(
         ('borg', 'check', '--log-json', 'repo'), borg_exit_codes=borg_exit_codes
     )
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -886,6 +901,7 @@ def test_check_archives_with_remote_path_passes_through_to_borg():
     flexmock(module).should_receive('make_check_name_flags').with_args(checks, ()).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', '--remote-path', 'borg1', '--log-json', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -912,6 +928,7 @@ def test_check_archives_with_umask_passes_through_to_borg():
     flexmock(module).should_receive('make_check_name_flags').with_args(checks, ()).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', '--umask', '077', '--log-json', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -937,6 +954,7 @@ def test_check_archives_with_lock_wait_passes_through_to_borg():
     flexmock(module).should_receive('make_check_name_flags').with_args(checks, ()).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', '--log-json', '--lock-wait', '5', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -963,6 +981,7 @@ def test_check_archives_with_retention_prefix():
     flexmock(module).should_receive('make_check_name_flags').with_args(checks, ()).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', '--log-json', 'repo'))
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -992,6 +1011,7 @@ def test_check_archives_with_extra_borg_options_passes_through_to_borg():
     insert_execute_command_mock(
         ('borg', 'check', '--log-json', '--extra', '--options', 'value with space', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -1028,6 +1048,7 @@ def test_check_archives_with_match_archives_passes_through_to_borg():
         borg_local_path='borg',
         borg_exit_codes=[{'code': 1, 'treat_as': 'error'}],
     ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',
@@ -1059,6 +1080,7 @@ def test_check_archives_calls_borg_with_working_directory():
     insert_execute_command_mock(
         ('borg', 'check', '--log-json', 'repo'), working_directory='/working/dir'
     )
+    insert_logging_mock(logging.WARNING)
 
     module.check_archives(
         repository_path='repo',

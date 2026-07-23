@@ -1,4 +1,26 @@
-2.1.6.dev0
+2.1.7.dev0
+ * #1309: Add support for the "--quick-stats" flag and the "quick_statistics" option to the "prune"
+   action. Borg >= 1.4.5 and < 2 only.
+ * #1317: Add an "archive_hostname" option and a corresponding "--archive-hostname" flag for
+   overriding the hostname used for the "{hostname}" placeholder in the "archive_name_format"
+   option. Also add an "archive_username" option and corresponding "--archive-username" flag to
+   override the "{user}" plaecholder. Both options/flags are Borg 1.4.5+ only.
+ * #1319: Fix the ZFS hook's overzealous unmounting of snapshot paths when a source dataset is at
+   "/".
+ * #1322: Fix for the "restore" action sometimes failing to find a database dump that was dumped
+   with a default port.
+ * #1324: For the MariaDB and MySQL hooks, add "events", "routines", and "tablespaces" options for
+   disabling dumping of scheduled events, stored routines, and tablespaces, respectively.
+ * #1327: Fix an error from the "diff" action when exclude options are configured.
+ * #1331: Fix the "repo-create" action to more surgically suppress Borg "Repository does not exist"
+   logs and avoid inadvertently suppressing other error logs.
+ * #1333: Fix the "--progress" flag on the "compact" action to actually update the progress of
+   segment compaction.
+ * #1334: Add the "CAP_FOWNER" capability to "CapabilityBoundingSet" in the sample systemd service,
+   so that Borg can open source files without changing file access times.
+ * Fix a bug in which the "compact" action does not pass a compact threshold of zero to Borg.
+
+2.1.6
  * #1256: Fix a race condition in which borgmatic sometimes swallows Borg error output without
    logging it.
  * #1300: Fix the "source_directories_must_exist" option to support source directories relative to a
@@ -15,6 +37,11 @@
    https://torsion.org/borgmatic/reference/configuration/credentials/
  * #1309: Add a "--quick-stats" flag and corresponding "quick_statistics" option for showing only
    abbreviated statistics for the "create" action. Borg 1.4.5+ only.
+ * #1314: Add a minimal stand-alone borgmatic binary in addition to the standard one. The minimal
+   binary omits support for the Apprise monitoring hook.
+ * Add an experimental "browse" action providing a console UI for browsing your backups. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/how-to/inspect-your-backups/#browsing-backups
  * Update the KeePassXC credential hook to support KeePassXC's secret service integration. See the
    documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/credentials/keepassxc/

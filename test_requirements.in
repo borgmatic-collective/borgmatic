@@ -1,5 +1,6 @@
 apprise
 attrs
+binaryornot
 certifi
 charset-normalizer
 click>=8.1.8
@@ -16,13 +17,16 @@ packaging
 pluggy
 pygments
 pytest
+pytest-asyncio
 pytest-cov
 pytest-timeout
 pyyaml>5.0.0
 referencing
 requests
 requests-oauthlib
+rich
 rpds-py
 ruamel-yaml>0.15.0
+textual
 typing-extensions
 urllib3

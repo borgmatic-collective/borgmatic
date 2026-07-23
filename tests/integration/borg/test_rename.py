@@ -57,6 +57,8 @@ def test_make_rename_command_includes_log_debug():
 
 
 def test_make_rename_command_includes_dry_run():
+    insert_logging_mock(logging.WARNING)
+
     command = module.make_rename_command(
         dry_run=True,
         repository_name='repo',
@@ -79,6 +81,8 @@ def test_make_rename_command_includes_dry_run():
 
 
 def test_make_rename_command_includes_remote_path():
+    insert_logging_mock(logging.WARNING)
+
     command = module.make_rename_command(
         dry_run=False,
         repository_name='repo',
@@ -102,6 +106,8 @@ def test_make_rename_command_includes_remote_path():
 
 
 def test_make_rename_command_includes_umask():
+    insert_logging_mock(logging.WARNING)
+
     command = module.make_rename_command(
         dry_run=False,
         repository_name='repo',
@@ -125,6 +131,8 @@ def test_make_rename_command_includes_umask():
 
 
 def test_make_rename_command_includes_log_json():
+    insert_logging_mock(logging.WARNING)
+
     command = module.make_rename_command(
         dry_run=False,
         repository_name='repo',
@@ -140,6 +148,8 @@ def test_make_rename_command_includes_log_json():
 
 
 def test_make_rename_command_includes_lock_wait():
+    insert_logging_mock(logging.WARNING)
+
     command = module.make_rename_command(
         dry_run=False,
         repository_name='repo',
@@ -163,6 +173,8 @@ def test_make_rename_command_includes_lock_wait():
 
 
 def test_make_rename_command_includes_extra_borg_options():
+    insert_logging_mock(logging.WARNING)
+
     command = module.make_rename_command(
         dry_run=False,
         repository_name='repo',

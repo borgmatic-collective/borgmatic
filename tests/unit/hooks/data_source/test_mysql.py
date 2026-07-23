@@ -718,10 +718,10 @@ def test_execute_dump_command_runs_mysqldump():
             '--defaults-extra-file=/dev/fd/99',
             '--add-drop-database',
             '--single-transaction',
-            '--databases',
             '--events',
             '--routines',
             '--all-tablespaces',
+            '--databases',
             'foo',
             '--result-file',
             'dump',
@@ -771,10 +771,10 @@ def test_execute_dump_command_with_environment_password_transport_skips_defaults
             '--single-transaction',
             '--user',
             'root',
-            '--databases',
             '--events',
             '--routines',
             '--all-tablespaces',
+            '--databases',
             'foo',
             '--result-file',
             'dump',
@@ -822,10 +822,10 @@ def test_execute_dump_command_runs_mysqldump_without_add_drop_database():
             'mysqldump',
             '--defaults-extra-file=/dev/fd/99',
             '--single-transaction',
-            '--databases',
             '--events',
             '--routines',
             '--all-tablespaces',
+            '--databases',
             'foo',
             '--result-file',
             'dump',
@@ -882,10 +882,10 @@ def test_execute_dump_command_runs_mysqldump_with_hostname_and_port():
             '5433',
             '--protocol',
             'tcp',
-            '--databases',
             '--events',
             '--routines',
             '--all-tablespaces',
+            '--databases',
             'foo',
             '--result-file',
             'dump',
@@ -935,10 +935,10 @@ def test_execute_dump_command_runs_mysqldump_with_tls():
             '--add-drop-database',
             '--single-transaction',
             '--ssl',
-            '--databases',
             '--events',
             '--routines',
             '--all-tablespaces',
+            '--databases',
             'foo',
             '--result-file',
             'dump',
@@ -988,10 +988,10 @@ def test_execute_dump_command_runs_mysqldump_without_tls():
             '--add-drop-database',
             '--single-transaction',
             '--skip-ssl',
-            '--databases',
             '--events',
             '--routines',
             '--all-tablespaces',
+            '--databases',
             'foo',
             '--result-file',
             'dump',
@@ -1004,6 +1004,159 @@ def test_execute_dump_command_runs_mysqldump_without_tls():
     assert (
         module.execute_dump_command(
             database={'name': 'foo', 'tls': False},
+            config={},
+            username='root',
+            password='trustsome1',
+            dump_path=flexmock(),
+            database_names=('foo',),
+            environment=None,
+            dry_run=False,
+            dry_run_label='',
+        )
+        == process
+    )
+
+
+def test_execute_dump_command_runs_mysqldump_without_events():
+    process = flexmock()
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
+        'parse_extra_options',
+    ).and_return((), None)
+    flexmock(module.database_config).should_receive('resolve_database_option').and_return(None)
+    flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
+        'make_defaults_file_options',
+    ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'mysqldump',
+            '--defaults-extra-file=/dev/fd/99',
+            '--add-drop-database',
+            '--single-transaction',
+            '--routines',
+            '--all-tablespaces',
+            '--databases',
+            'foo',
+            '--result-file',
+            'dump',
+        ),
+        environment=None,
+        run_to_completion=False,
+        working_directory=None,
+    ).and_return(process).once()
+
+    assert (
+        module.execute_dump_command(
+            database={'name': 'foo', 'events': False},
+            config={},
+            username='root',
+            password='trustsome1',
+            dump_path=flexmock(),
+            database_names=('foo',),
+            environment=None,
+            dry_run=False,
+            dry_run_label='',
+        )
+        == process
+    )
+
+
+def test_execute_dump_command_runs_mysqldump_without_routines():
+    process = flexmock()
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
+        'parse_extra_options',
+    ).and_return((), None)
+    flexmock(module.database_config).should_receive('resolve_database_option').and_return(None)
+    flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
+        'make_defaults_file_options',
+    ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'mysqldump',
+            '--defaults-extra-file=/dev/fd/99',
+            '--add-drop-database',
+            '--single-transaction',
+            '--events',
+            '--all-tablespaces',
+            '--databases',
+            'foo',
+            '--result-file',
+            'dump',
+        ),
+        environment=None,
+        run_to_completion=False,
+        working_directory=None,
+    ).and_return(process).once()
+
+    assert (
+        module.execute_dump_command(
+            database={'name': 'foo', 'routines': False},
+            config={},
+            username='root',
+            password='trustsome1',
+            dump_path=flexmock(),
+            database_names=('foo',),
+            environment=None,
+            dry_run=False,
+            dry_run_label='',
+        )
+        == process
+    )
+
+
+def test_execute_dump_command_runs_mysqldump_without_tablespaces():
+    process = flexmock()
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
+        'parse_extra_options',
+    ).and_return((), None)
+    flexmock(module.database_config).should_receive('resolve_database_option').and_return(None)
+    flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
+        'make_defaults_file_options',
+    ).with_args('root', 'trustsome1', None).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'mysqldump',
+            '--defaults-extra-file=/dev/fd/99',
+            '--add-drop-database',
+            '--single-transaction',
+            '--events',
+            '--routines',
+            '--databases',
+            'foo',
+            '--result-file',
+            'dump',
+        ),
+        environment=None,
+        run_to_completion=False,
+        working_directory=None,
+    ).and_return(process).once()
+
+    assert (
+        module.execute_dump_command(
+            database={'name': 'foo', 'tablespaces': False},
             config={},
             username='root',
             password='trustsome1',
@@ -1040,10 +1193,10 @@ def test_execute_dump_command_runs_mysqldump_with_username_and_password():
             '--defaults-extra-file=/dev/fd/99',
             '--add-drop-database',
             '--single-transaction',
-            '--databases',
             '--events',
             '--routines',
             '--all-tablespaces',
+            '--databases',
             'foo',
             '--result-file',
             'dump',
@@ -1093,10 +1246,10 @@ def test_execute_dump_command_runs_mysqldump_with_options():
             '--stuff=such',
             '--add-drop-database',
             '--single-transaction',
-            '--databases',
             '--events',
             '--routines',
             '--all-tablespaces',
+            '--databases',
             'foo',
             '--result-file',
             'dump',
@@ -1145,10 +1298,10 @@ def test_execute_dump_command_runs_non_default_mysqldump():
             '--defaults-extra-file=/dev/fd/99',
             '--add-drop-database',
             '--single-transaction',
-            '--databases',
             '--events',
             '--routines',
             '--all-tablespaces',
+            '--databases',
             'foo',
             '--result-file',
             'dump',
@@ -1236,6 +1389,86 @@ def test_execute_dump_command_with_dry_run_skips_mysqldump():
             dry_run_label='SO DRY',
         )
         is None
+    )
+
+
+def test_make_data_source_dump_patterns_with_no_port_adds_pattern_with_default_port():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('.borgmatic')
+    flexmock(module).should_receive('make_dump_path').replace_with(lambda path: path)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').replace_with(
+        lambda dump_path, name, hostname, port, container, label: '/'.join(
+            (dump_path, f'{hostname}:{port}' if port else hostname, name)
+        )
+    )
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+
+    assert module.make_data_source_dump_patterns(
+        databases=flexmock(),
+        config=flexmock(),
+        borgmatic_runtime_directory='run',
+        name='db',
+        hostname='host',
+        port=None,
+    ) == (
+        'borgmatic/host/db',
+        'run/host/db',
+        '.borgmatic/host/db',
+        'borgmatic/host:9999/db',
+    )
+
+
+def test_make_data_source_dump_patterns_with_default_port_adds_pattern_with_no_port():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('.borgmatic')
+    flexmock(module).should_receive('make_dump_path').replace_with(lambda path: path)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').replace_with(
+        lambda dump_path, name, hostname, port, container, label: '/'.join(
+            (dump_path, f'{hostname}:{port}' if port else hostname, name)
+        )
+    )
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+
+    assert module.make_data_source_dump_patterns(
+        databases=flexmock(),
+        config=flexmock(),
+        borgmatic_runtime_directory='run',
+        name='db',
+        hostname='host',
+        port=9999,
+    ) == (
+        'borgmatic/host:9999/db',
+        'run/host:9999/db',
+        '.borgmatic/host:9999/db',
+        'borgmatic/host/db',
+    )
+
+
+def test_make_data_source_dump_patterns_with_non_default_port_adds_no_extra_patterns():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('.borgmatic')
+    flexmock(module).should_receive('make_dump_path').replace_with(lambda path: path)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').replace_with(
+        lambda dump_path, name, hostname, port, container, label: '/'.join(
+            (dump_path, f'{hostname}:{port}' if port else hostname, name)
+        )
+    )
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+
+    assert module.make_data_source_dump_patterns(
+        databases=flexmock(),
+        config=flexmock(),
+        borgmatic_runtime_directory='run',
+        name='db',
+        hostname='host',
+        port=1234,
+    ) == (
+        'borgmatic/host:1234/db',
+        'run/host:1234/db',
+        '.borgmatic/host:1234/db',
     )
 
 

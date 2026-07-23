@@ -20,7 +20,7 @@ def make_archive_filter_flags(local_borg_version, config, checks, check_argument
     flag. And if "prefix" is set in configuration and "archives" is in checks, then include a
     "--match-archives" flag.
     '''
-    check_last = config.get('check_last', None)
+    check_last = config.get('check_last')
     prefix = config.get('prefix')
 
     if 'archives' in checks or 'data' in checks:

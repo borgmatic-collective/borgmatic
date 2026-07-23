@@ -33,8 +33,8 @@ def export_tar_archive(
     If the destination path is "-", then stream the output to stdout instead of to a file.
     '''
     borgmatic.logger.add_custom_log_levels()
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get('export_tar', '')
 
     full_command = (

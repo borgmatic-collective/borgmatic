@@ -13,16 +13,15 @@ already.
 ## Hosting providers
 
 Need somewhere to store your encrypted off-site backups? The following hosting
-providers include specific support for Borg/borgmatic—and fund borgmatic
-development and hosting when you use these referral links to sign up:
+provider includes specific support for Borg/borgmatic—and funds borgmatic
+development and hosting when you use this referral links to sign up:
 
 <ul>
  <li class="referral"><a href="https://www.borgbase.com/?utm_source=borgmatic">BorgBase</a>: Borg hosting service with support for monitoring, 2FA, and append-only repos</li>
- <li class="referral"><a href="https://hetzner.cloud/?ref=v9dOJ98Ic9I8">Hetzner</a>: A "storage box" that includes support for Borg</li>
 </ul>
 
-Additionally, rsync.net has a compatible storage offering, but does not fund
-borgmatic development or hosting.
+Additionally, Hetzner and rsync\.net have compatible storage offerings, but do
+not fund borgmatic development or hosting.
 
 
 ## Configuration

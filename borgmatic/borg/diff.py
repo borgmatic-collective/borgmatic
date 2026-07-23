@@ -31,8 +31,7 @@ def diff(
     '''
     borgmatic.logger.add_custom_log_levels()
 
-    lock_wait = config.get('lock_wait', None)
-    exclude_flags = flags.make_exclude_flags(config)
+    lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get('diff', '')
 
     if diff_arguments.only_patterns:
@@ -63,7 +62,6 @@ def diff(
             if patterns_file and diff_arguments.only_patterns
             else ()
         )
-        + exclude_flags
         + numeric_ids_flags
         + (('--same-chunker-params',) if diff_arguments.same_chunker_params else ())
         + (('--sort-by', ','.join(diff_arguments.sort_keys)) if diff_arguments.sort_keys else ())

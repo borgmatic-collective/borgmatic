@@ -13,12 +13,14 @@ REPO_CREATE_COMMAND = ('borg', 'repo-create', '--encryption', 'repokey')
 
 
 def insert_repo_info_command_found_mock():
+    flexmock(module.borgmatic.logger).should_receive('Logs_suppressed').and_return(flexmock())
     flexmock(module.repo_info).should_receive('display_repository_info').and_return(
         '{"encryption": {"mode": "repokey"}}',
     )
 
 
 def insert_repo_info_command_not_found_mock():
+    flexmock(module.borgmatic.logger).should_receive('Logs_suppressed').and_return(flexmock())
     flexmock(module.repo_info).should_receive('display_repository_info').and_raise(
         subprocess.CalledProcessError(
             sorted(module.REPO_INFO_REPOSITORY_NOT_FOUND_EXIT_CODES)[0],
@@ -50,6 +52,7 @@ def insert_repo_create_command_mock(
 def test_create_repository_calls_borg_with_flags():
     insert_repo_info_command_not_found_mock()
     insert_repo_create_command_mock((*REPO_CREATE_COMMAND, '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -157,6 +160,7 @@ def test_create_repository_errors_when_repository_with_differing_encryption_mode
 
 
 def test_create_repository_raises_for_unknown_repo_info_command_error():
+    flexmock(module.borgmatic.logger).should_receive('Logs_suppressed').and_return(flexmock())
     flexmock(module.repo_info).should_receive('display_repository_info').and_raise(
         subprocess.CalledProcessError(REPO_INFO_SOME_UNKNOWN_EXIT_CODE, []),
     )
@@ -177,6 +181,7 @@ def test_create_repository_with_source_repository_calls_borg_with_other_repo_fla
     insert_repo_create_command_mock(
         (*REPO_CREATE_COMMAND, '--other-repo', 'other.borg', '--repo', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -199,6 +204,7 @@ def test_create_repository_with_source_repository_calls_borg_with_other_repo_fla
 def test_create_repository_with_copy_crypt_key_calls_borg_with_copy_crypt_key_flag():
     insert_repo_info_command_not_found_mock()
     insert_repo_create_command_mock((*REPO_CREATE_COMMAND, '--copy-crypt-key', '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -221,6 +227,7 @@ def test_create_repository_with_copy_crypt_key_calls_borg_with_copy_crypt_key_fl
 def test_create_repository_with_append_only_calls_borg_with_append_only_flag():
     insert_repo_info_command_not_found_mock()
     insert_repo_create_command_mock((*REPO_CREATE_COMMAND, '--append-only', '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -243,6 +250,7 @@ def test_create_repository_with_append_only_calls_borg_with_append_only_flag():
 def test_create_repository_with_append_only_config_calls_borg_with_append_only_flag():
     insert_repo_info_command_not_found_mock()
     insert_repo_create_command_mock((*REPO_CREATE_COMMAND, '--append-only', '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -267,6 +275,7 @@ def test_create_repository_with_storage_quota_calls_borg_with_storage_quota_flag
     insert_repo_create_command_mock(
         (*REPO_CREATE_COMMAND, '--storage-quota', '5G', '--repo', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -289,6 +298,7 @@ def test_create_repository_with_storage_quota_calls_borg_with_storage_quota_flag
 def test_create_repository_with_make_parent_dirs_calls_borg_with_make_parent_dirs_flag():
     insert_repo_info_command_not_found_mock()
     insert_repo_create_command_mock((*REPO_CREATE_COMMAND, '--make-parent-dirs', '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -355,6 +365,7 @@ def test_create_repository_with_log_debug_calls_borg_with_debug_flag():
 def test_create_repository_with_lock_wait_calls_borg_with_lock_wait_flag():
     insert_repo_info_command_not_found_mock()
     insert_repo_create_command_mock((*REPO_CREATE_COMMAND, '--lock-wait', '5', '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -376,6 +387,7 @@ def test_create_repository_with_lock_wait_calls_borg_with_lock_wait_flag():
 def test_create_repository_with_local_path_calls_borg_via_local_path():
     insert_repo_info_command_not_found_mock()
     insert_repo_create_command_mock(('borg1', *REPO_CREATE_COMMAND[1:], '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -402,6 +414,7 @@ def test_create_repository_with_exit_codes_calls_borg_using_them():
         ('borg', *REPO_CREATE_COMMAND[1:], '--repo', 'repo'),
         borg_exit_codes=borg_exit_codes,
     )
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -425,6 +438,7 @@ def test_create_repository_with_remote_path_calls_borg_with_remote_path_flag():
     insert_repo_create_command_mock(
         (*REPO_CREATE_COMMAND, '--remote-path', 'borg1', '--repo', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -447,6 +461,7 @@ def test_create_repository_with_remote_path_calls_borg_with_remote_path_flag():
 def test_create_repository_with_umask_calls_borg_with_umask_flag():
     insert_repo_info_command_not_found_mock()
     insert_repo_create_command_mock((*REPO_CREATE_COMMAND, '--umask', '077', '--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -470,6 +485,7 @@ def test_create_repository_calls_borg_with_extra_borg_options():
     insert_repo_create_command_mock(
         (*REPO_CREATE_COMMAND, '--extra', '--options', 'value with space', '--repo', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -494,6 +510,7 @@ def test_create_repository_calls_borg_with_extra_borg_options_from_deprecated_in
     insert_repo_create_command_mock(
         (*REPO_CREATE_COMMAND, '--extra', '--options', 'value with space', '--repo', 'repo'),
     )
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
@@ -518,6 +535,7 @@ def test_create_repository_calls_borg_with_working_directory():
         (*REPO_CREATE_COMMAND, '--repo', 'repo'),
         working_directory='/working/dir',
     )
+    insert_logging_mock(logging.WARNING)
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (

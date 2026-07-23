@@ -3,7 +3,7 @@ import shlex
 
 import borgmatic.config.paths
 from borgmatic.borg import environment, feature, flags
-from borgmatic.execute import execute_command
+from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +22,8 @@ def compact_segments(
     Given dry-run flag, a local or remote repository path, a configuration dict, and the local Borg
     version, compact the segments in a repository.
     '''
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get('compact', '')
     threshold = config.get('compact_threshold')
 
@@ -35,7 +35,7 @@ def compact_segments(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--progress',) if config.get('progress') else ())
         + (('--cleanup-commits',) if cleanup_commits else ())
-        + (('--threshold', str(threshold)) if threshold else ())
+        + (('--threshold', str(threshold)) if threshold is not None else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (
@@ -54,6 +54,7 @@ def compact_segments(
     execute_command(
         full_command,
         output_log_level=logging.INFO,
+        output_file=DO_NOT_CAPTURE if config.get('progress') else None,
         environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,

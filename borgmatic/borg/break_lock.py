@@ -21,8 +21,8 @@ def break_lock(
     argparse.Namespace of global arguments, and optional local and remote Borg paths, break any
     repository and cache locks leftover from Borg aborting.
     '''
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get('break_lock', '')
 
     full_command = (
