@@ -1801,6 +1801,50 @@ def test_load_configurations_logs_critical_for_parse_error():
     assert max(log.levelno for log in logs) == logging.CRITICAL
 
 
+def test_load_configurations_with_bootstrap_action_and_no_configuration_file_creates_configuration_from_whole_cloth():
+    configuration = flexmock()
+    test_expected_logs = [flexmock(), flexmock()]
+    flexmock(module.validate).should_receive('parse_configuration').and_return(
+        configuration,
+        [None],
+        test_expected_logs,
+    )
+
+    configs, config_paths, logs = tuple(
+        module.load_configurations(
+            (),
+            arguments={'bootstrap': flexmock()},
+            resolve_env=False,
+        ),
+    )
+
+    assert configs == {None: configuration}
+    assert config_paths == [None]
+    assert logs
+
+
+def test_load_configurations_with_bootstrap_action_and_existing_configuration_file_uses_it():
+    configuration = flexmock()
+    test_expected_logs = [flexmock(), flexmock()]
+    flexmock(module.validate).should_receive('parse_configuration').and_return(
+        configuration,
+        ['/tmp/test.yaml'],
+        test_expected_logs,
+    )
+
+    configs, config_paths, logs = tuple(
+        module.load_configurations(
+            ('test.yaml',),
+            arguments={'bootstrap': flexmock()},
+            resolve_env=False,
+        ),
+    )
+
+    assert configs == {'test.yaml': configuration}
+    assert config_paths == ['/tmp/test.yaml']
+    assert logs
+
+
 def test_log_record_does_not_raise():
     module.log_record(levelno=1, foo='bar', baz='quux')
 
