@@ -665,6 +665,13 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
     config_paths = set()
     logs = []
 
+    # As a special case for the "bootstrap" action, parse configuration for a non-existent
+    # configuration file with None for a filename. This sets any command-line arguments into an
+    # empty configuration dict, so for instance a "--verbosity" flag gets used even if there is no
+    # configuration file yet.
+    if 'bootstrap' in arguments and not config_filenames:
+        config_filenames = (None,)
+
     # Parse and load each configuration file.
     for config_filename in config_filenames:
         logs.extend(

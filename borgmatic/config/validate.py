@@ -108,7 +108,8 @@ def parse_configuration(
     rendition of JSON Schema format, arguments as dict from action name to argparse.Namespace, a
     sequence of configuration file override strings in the form of "option.suboption=value", and
     whether to resolve environment variables, return the parsed configuration as a data structure of
-    nested dicts and lists corresponding to the schema. Example return value.
+    nested dicts and lists corresponding to the schema. Apply the given arguments to the config,
+    modifying it based on the values of those arguments.
 
     Example return value:
 
@@ -122,13 +123,21 @@ def parse_configuration(
     Also return a set of loaded configuration paths and a sequence of logging.LogRecord instances
     containing any warnings about the configuration.
 
+    If the given config filename is None, then create a configuration dict from whole cloth,
+    applying the given arguments to it. This is useful for the "bootstrap" action, for which
+    configuration may not yet exist.
+
     Raise FileNotFoundError if the file does not exist, PermissionError if the user does not
     have permissions to read the file, or Validation_error if the config does not match the schema.
     '''
     config_paths = set()
 
     try:
-        config = load.load_configuration(config_filename, config_paths)
+        config = (
+            load.load_configuration(config_filename, config_paths)
+            if config_filename
+            else {'repositories': []}
+        )
         schema = load.load_configuration(schema_filename)
     except (ruamel.yaml.error.YAMLError, RecursionError) as error:
         raise Validation_error(config_filename, (str(error),))

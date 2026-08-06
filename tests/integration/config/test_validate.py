@@ -15,14 +15,17 @@ def test_schema_filename_returns_plausible_path():
     assert schema_path.endswith('/schema.yaml')
 
 
-def mock_config_and_schema(config_yaml, schema_yaml=None):
+def mock_config_and_schema(config_yaml=None, schema_yaml=None):
     '''
-    Set up mocks for the given config config YAML string and the schema YAML string, or the default
-    schema if no schema is provided. The idea is that that the code under test consumes these mocks
-    when parsing the configuration.
+    Set up mocks for the given config config YAML string (if provided) and the schema YAML string or
+    the default schema if no schema is provided. The idea is that that the code under test consumes
+    these mocks when parsing the configuration.
     '''
-    config_stream = io.StringIO(config_yaml)
-    config_stream.name = 'config.yaml'
+    if config_yaml is None:
+        config_stream = None
+    else:
+        config_stream = io.StringIO(config_yaml)
+        config_stream.name = 'config.yaml'
 
     if schema_yaml is None:
         schema_stream = open(module.schema_filename())
@@ -78,6 +81,24 @@ def test_parse_configuration_transforms_file_into_mapping():
         'bootstrap': {},
     }
     assert config_paths == {'/tmp/config.yaml'}
+    assert logs == []
+
+
+def test_parse_configuration_with_none_config_filename_creates_configuration_from_whole_cloth():
+    mock_config_and_schema()
+
+    config, config_paths, logs = module.parse_configuration(
+        None,
+        '/tmp/schema.yaml',
+        arguments={'global': flexmock(verbosity=2)},
+    )
+
+    assert config == {
+        'bootstrap': {},
+        'repositories': [],
+        'verbosity': 2,
+    }
+    assert config_paths == set()
     assert logs == []
 
 
