@@ -15,6 +15,7 @@ def test_make_bootstrap_config_uses_bootstrap_arguments():
         )
     )
 
+    assert config['match_archives'] == '*'
     assert config['borgmatic_source_directory'] == '/source'
     assert config['local_path'] == 'borg1'
     assert config['remote_path'] == 'borg2'
@@ -206,6 +207,393 @@ def test_run_bootstrap_does_not_raise():
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
         extract_process,
     ).once()
+
+    module.run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version)
+
+
+def test_run_bootstrap_with_latest_archive_and_invalid_info_json_raises():
+    flexmock(module).should_receive('make_bootstrap_config').and_return({})
+    flexmock(module.borgmatic.borg.info).should_receive('display_archives_info').and_return(
+        '{invalid'
+    )
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').never()
+
+    bootstrap_arguments = flexmock(
+        repository='repo',
+        archive='latest',
+        destination='dest',
+        strip_components=1,
+        user_runtime_directory='/borgmatic',
+        ssh_command=None,
+        local_path='borg7',
+        remote_path='borg8',
+        progress=None,
+    )
+    global_arguments = flexmock(
+        dry_run=False,
+    )
+    local_borg_version = flexmock()
+
+    with pytest.raises(ValueError):
+        module.run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version)
+
+
+def test_run_bootstrap_with_latest_archive_and_info_json_without_command_line_raises():
+    flexmock(module).should_receive('make_bootstrap_config').and_return({})
+    flexmock(module.borgmatic.borg.info).should_receive('display_archives_info').and_return(
+        '''
+        {
+            "archives": [
+                {
+                    "name": "host-archive1",
+                    "start": "2026-08-06T12:02:53.000000"
+                },
+                {
+                    "name": "host-archive2",
+                    "start": "2026-08-06T12:04:53.000000"
+                }
+            ],
+            "repository": {}
+        }
+        '''
+    )
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').never()
+
+    bootstrap_arguments = flexmock(
+        repository='repo',
+        archive='latest',
+        destination='dest',
+        strip_components=1,
+        user_runtime_directory='/borgmatic',
+        ssh_command=None,
+        local_path='borg7',
+        remote_path='borg8',
+        progress=None,
+    )
+    global_arguments = flexmock(
+        dry_run=False,
+    )
+    local_borg_version = flexmock()
+
+    with pytest.raises(ValueError):
+        module.run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version)
+
+
+def test_run_bootstrap_with_latest_archive_and_info_json_with_empty_command_line_raises():
+    flexmock(module).should_receive('make_bootstrap_config').and_return({})
+    flexmock(module.borgmatic.borg.info).should_receive('display_archives_info').and_return(
+        '''
+        {
+            "archives": [
+                {
+                    "command_line": [],
+                    "name": "host-archive1",
+                    "start": "2026-08-06T12:02:53.000000"
+                },
+                {
+                    "command_line": [],
+                    "name": "host-archive2",
+                    "start": "2026-08-06T12:04:53.000000"
+                }
+            ],
+            "repository": {}
+        }
+        '''
+    )
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').never()
+
+    bootstrap_arguments = flexmock(
+        repository='repo',
+        archive='latest',
+        destination='dest',
+        strip_components=1,
+        user_runtime_directory='/borgmatic',
+        ssh_command=None,
+        local_path='borg7',
+        remote_path='borg8',
+        progress=None,
+    )
+    global_arguments = flexmock(
+        dry_run=False,
+    )
+    local_borg_version = flexmock()
+
+    with pytest.raises(ValueError):
+        module.run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version)
+
+
+def test_run_bootstrap_with_latest_archive_and_info_json_without_start_raises():
+    flexmock(module).should_receive('make_bootstrap_config').and_return({})
+    flexmock(module.borgmatic.borg.info).should_receive('display_archives_info').and_return(
+        '''
+        {
+            "archives": [
+                {
+                    "command_line": [
+                        "borg",
+                        "create",
+                        "--patterns-from",
+                        "/tmp/patterns",
+                        "--log-json",
+                        "--stats",
+                        "--debug",
+                        "--show-rc",
+                        "test.borg::{hostname}-archive"
+                    ],
+                    "name": "host-archive1"
+                },
+                {
+                    "command_line": [
+                        "borg",
+                        "create",
+                        "--patterns-from",
+                        "/tmp/patterns",
+                        "--log-json",
+                        "--stats",
+                        "--debug",
+                        "--show-rc",
+                        "test.borg::{hostname}-archive"
+                    ],
+                    "name": "host-archive2"
+                }
+            ],
+            "repository": {}
+        }
+        '''
+    )
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').never()
+
+    bootstrap_arguments = flexmock(
+        repository='repo',
+        archive='latest',
+        destination='dest',
+        strip_components=1,
+        user_runtime_directory='/borgmatic',
+        ssh_command=None,
+        local_path='borg7',
+        remote_path='borg8',
+        progress=None,
+    )
+    global_arguments = flexmock(
+        dry_run=False,
+    )
+    local_borg_version = flexmock()
+
+    with pytest.raises(ValueError):
+        module.run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version)
+
+
+def test_run_bootstrap_with_latest_archive_and_info_json_without_name_raises():
+    flexmock(module).should_receive('make_bootstrap_config').and_return({})
+    flexmock(module.borgmatic.borg.info).should_receive('display_archives_info').and_return(
+        '''
+        {
+            "archives": [
+                {
+                    "command_line": [
+                        "borg",
+                        "create",
+                        "--patterns-from",
+                        "/tmp/patterns",
+                        "--log-json",
+                        "--stats",
+                        "--debug",
+                        "--show-rc",
+                        "test.borg::{hostname}-archive1"
+                    ],
+                    "start": "2026-08-06T12:02:53.000000",
+                    "name": "host-archive1"
+                },
+                {
+                    "command_line": [
+                        "borg",
+                        "create",
+                        "--patterns-from",
+                        "/tmp/patterns",
+                        "--log-json",
+                        "--stats",
+                        "--debug",
+                        "--show-rc",
+                        "test.borg::{hostname}-archive2"
+                    ],
+                    "start": "2026-08-06T12:04:53.000000",
+                    "name": "host-archive2"
+                }
+            ],
+            "repository": {}
+        }
+
+        '''
+    )
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').never()
+
+    bootstrap_arguments = flexmock(
+        repository='repo',
+        archive='latest',
+        destination='dest',
+        strip_components=1,
+        user_runtime_directory='/borgmatic',
+        ssh_command=None,
+        local_path='borg7',
+        remote_path='borg8',
+        progress=None,
+    )
+    global_arguments = flexmock(
+        dry_run=False,
+    )
+    local_borg_version = flexmock()
+
+    with pytest.raises(ValueError):
+        module.run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version)
+
+
+def test_run_bootstrap_with_latest_archive_and_multiple_latests_raises():
+    flexmock(module).should_receive('make_bootstrap_config').and_return({})
+    flexmock(module.borgmatic.borg.info).should_receive('display_archives_info').and_return(
+        '''
+        {
+            "archives": [
+                {
+                    "command_line": [
+                        "borg",
+                        "create",
+                        "--patterns-from",
+                        "/tmp/patterns",
+                        "--log-json",
+                        "--stats",
+                        "--debug",
+                        "--show-rc",
+                        "test.borg::{hostname}-archive1"
+                    ],
+                    "start": "2026-08-06T12:02:53.000000",
+                    "name": "host-archive1"
+                },
+                {
+                    "command_line": [
+                        "borg",
+                        "create",
+                        "--patterns-from",
+                        "/tmp/patterns",
+                        "--log-json",
+                        "--stats",
+                        "--debug",
+                        "--show-rc",
+                        "test.borg::{hostname}-archive2"
+                    ],
+                    "start": "2026-08-06T12:04:53.000000",
+                    "name": "host-archive2"
+                }
+            ],
+            "repository": {}
+        }
+
+        '''
+    )
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').never()
+
+    bootstrap_arguments = flexmock(
+        repository='repo',
+        archive='latest',
+        destination='dest',
+        strip_components=1,
+        user_runtime_directory='/borgmatic',
+        ssh_command=None,
+        local_path='borg7',
+        remote_path='borg8',
+        progress=None,
+    )
+    global_arguments = flexmock(
+        dry_run=False,
+    )
+    local_borg_version = flexmock()
+
+    with pytest.raises(ValueError) as error:
+        module.run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version)
+
+    assert 'multiple' in str(error)
+
+
+def test_run_bootstrap_with_latest_archive_with_one_latest_does_not_raise():
+    flexmock(module).should_receive('make_bootstrap_config').and_return({})
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
+        'archive',
+    )
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
+        flexmock(),
+    )
+    flexmock(module).should_receive('load_config_paths_from_archive').and_return(
+        ['/borgmatic/config.yaml']
+    )
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
+        flexmock(),
+    )
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'make_runtime_directory_glob',
+    ).replace_with(lambda path: path)
+    extract_process = flexmock(
+        stdout=flexmock(
+            read=lambda: '{"config_paths": ["borgmatic/config.yaml"]}',
+        ),
+    )
+    flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
+        extract_process,
+    ).once()
+    flexmock(module.borgmatic.borg.info).should_receive('display_archives_info').and_return(
+        '''
+        {
+            "archives": [
+                {
+                    "command_line": [
+                        "borg",
+                        "create",
+                        "--patterns-from",
+                        "/tmp/patterns",
+                        "--log-json",
+                        "--stats",
+                        "--debug",
+                        "--show-rc",
+                        "test.borg::{hostname}-archive"
+                    ],
+                    "start": "2026-08-06T12:02:53.000000",
+                    "name": "host-archive1"
+                },
+                {
+                    "command_line": [
+                        "borg",
+                        "create",
+                        "--patterns-from",
+                        "/tmp/patterns",
+                        "--log-json",
+                        "--stats",
+                        "--debug",
+                        "--show-rc",
+                        "test.borg::{hostname}-archive"
+                    ],
+                    "start": "2026-08-06T12:04:53.000000",
+                    "name": "host-archive2"
+                }
+            ],
+            "repository": {}
+        }
+
+        '''
+    )
+
+    bootstrap_arguments = flexmock(
+        repository='repo',
+        archive='latest',
+        destination='dest',
+        strip_components=1,
+        user_runtime_directory='/borgmatic',
+        ssh_command=None,
+        local_path='borg7',
+        remote_path='borg8',
+        progress=None,
+    )
+    global_arguments = flexmock(
+        dry_run=False,
+    )
+    local_borg_version = flexmock()
 
     module.run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version)
 

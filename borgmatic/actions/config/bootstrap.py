@@ -18,6 +18,9 @@ def make_bootstrap_config(bootstrap_arguments):
     Given the bootstrap arguments as an argparse.Namespace, return a corresponding config dict.
     '''
     return {
+        # Without this glob, borgmatic will use a default archive name format based on hostname,
+        # which might artificially limit the archives that borgmatic can bootstrap from.
+        'match_archives': '*',
         'borgmatic_source_directory': bootstrap_arguments.borgmatic_source_directory,
         'local_path': bootstrap_arguments.local_path,
         'remote_path': bootstrap_arguments.remote_path,
@@ -106,31 +109,37 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
     config = make_bootstrap_config(bootstrap_arguments)
 
     if bootstrap_arguments.archive == 'latest':
-        archives_data = json.loads(
-            borgmatic.borg.info.display_archives_info(
-                bootstrap_arguments.repository,
-                config,
-                local_borg_version,
-                info_arguments=argparse.Namespace(archive=None, prefix=None, json=True),
-                global_arguments=global_arguments,
-                local_path=bootstrap_arguments.local_path,
-                remote_path=bootstrap_arguments.remote_path,
-            )
-        )['archives']
+        try:
+            archives_data = json.loads(
+                borgmatic.borg.info.display_archives_info(
+                    bootstrap_arguments.repository,
+                    config,
+                    local_borg_version,
+                    info_arguments=argparse.Namespace(archive=None, prefix=None, json=True),
+                    global_arguments=global_arguments,
+                    local_path=bootstrap_arguments.local_path,
+                    remote_path=bootstrap_arguments.remote_path,
+                )
+            )['archives']
 
-        get_repo_archive_format = lambda archive_data: archive_data['command_line'][-1]
-        get_archive_start = lambda archive_data: datetime.datetime.fromisoformat(
-            archive_data['start']
-        )
+            def get_repo_archive_format(archive_data):
+                return archive_data['command_line'][-1]
 
-        latest_archives = {
-            repo_archive_format: max(archives_data, key=get_archive_start)['name']
-            for repo_archive_format, archives_data in itertools.groupby(
-                sorted(archives_data, key=get_repo_archive_format),
-                key=get_repo_archive_format,
+            def get_archive_start(archive_data):
+                return datetime.datetime.fromisoformat(archive_data['start'])
+
+            latest_archives = {
+                repo_archive_format: max(archives_data, key=get_archive_start)['name']
+                for repo_archive_format, archives_data in itertools.groupby(
+                    sorted(archives_data, key=get_repo_archive_format),
+                    key=get_repo_archive_format,
+                )
+                if not repo_archive_format.endswith('checkpoint')
+            }
+        except (json.JSONDecodeError, KeyError, IndexError):
+            raise ValueError(
+                f'Cannot determine the latest archive for {bootstrap_arguments.repository}'
             )
-            if not repo_archive_format.endswith('checkpoint')
-        }
 
         if len(latest_archives) > 1:
             raise ValueError(

@@ -54,6 +54,9 @@ def make_info_command(
                     info_arguments.archive or config.get('match_archives'),
                     config.get('archive_name_format'),
                     local_borg_version,
+                    # Borg helpfully omits archives from its JSON output unless "--match-archives"
+                    # is given. So force that flag to get set when JSON is enabled.
+                    force_flags_even_for_globs=info_arguments.json,
                 )
             )
         )
