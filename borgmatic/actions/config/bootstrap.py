@@ -1,8 +1,12 @@
+import argparse
+import datetime
+import itertools
 import json
 import logging
 import os
 
 import borgmatic.borg.extract
+import borgmatic.borg.info
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
 
@@ -14,6 +18,9 @@ def make_bootstrap_config(bootstrap_arguments):
     Given the bootstrap arguments as an argparse.Namespace, return a corresponding config dict.
     '''
     return {
+        # Without this glob, borgmatic will use a default archive name format based on hostname,
+        # which might artificially limit the archives that borgmatic can bootstrap from.
+        'match_archives': '*',
         'borgmatic_source_directory': bootstrap_arguments.borgmatic_source_directory,
         'local_path': bootstrap_arguments.local_path,
         'remote_path': bootstrap_arguments.remote_path,
@@ -100,6 +107,45 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
     Raise CalledProcessError or OSError if Borg could not be run.
     '''
     config = make_bootstrap_config(bootstrap_arguments)
+
+    if bootstrap_arguments.archive == 'latest':
+        try:
+            archives_data = json.loads(
+                borgmatic.borg.info.display_archives_info(
+                    bootstrap_arguments.repository,
+                    config,
+                    local_borg_version,
+                    info_arguments=argparse.Namespace(archive=None, prefix=None, json=True),
+                    global_arguments=global_arguments,
+                    local_path=bootstrap_arguments.local_path,
+                    remote_path=bootstrap_arguments.remote_path,
+                )
+            )['archives']
+
+            def get_repo_archive_format(archive_data):
+                return archive_data['command_line'][-1]
+
+            def get_archive_start(archive_data):
+                return datetime.datetime.fromisoformat(archive_data['start'])
+
+            latest_archives = {
+                repo_archive_format: max(archives_data, key=get_archive_start)['name']
+                for repo_archive_format, archives_data in itertools.groupby(
+                    sorted(archives_data, key=get_repo_archive_format),
+                    key=get_repo_archive_format,
+                )
+                if not repo_archive_format.endswith('checkpoint')
+            }
+        except (json.JSONDecodeError, KeyError, IndexError):
+            raise ValueError(
+                f'Cannot determine the latest archive for {bootstrap_arguments.repository}'
+            )
+
+        if len(latest_archives) > 1:
+            raise ValueError(
+                f'The repository appears to have multiple "latest" archives, each with a different archive name format: {", ".join(sorted(latest_archives.values()))}. Please select one with --archive.'
+            )
+
     archive_name = borgmatic.borg.repo_list.resolve_archive_name(
         bootstrap_arguments.repository,
         bootstrap_arguments.archive,

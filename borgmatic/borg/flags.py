@@ -94,15 +94,19 @@ def make_match_archives_flags(  # noqa: PLR0911
     archive_name_format,
     local_borg_version,
     default_archive_name_format=None,
+    force_flags_even_for_globs=False,
 ):
     '''
     Return match archives flags based on the given match archives value, if any. If it isn't set,
     return match archives flags to match archives created with the given (or default) archive name
     format. This is done by replacing certain archive name format placeholders for ephemeral data
     (like "{now}") with globs.
+
+    If the given match archives value is just a glob (e.g. "*"), omit any flags—unless the force
+    flags even for globs value is True.
     '''
     if match_archives:
-        if match_archives in {'*', 're:.*', 'sh:*'}:
+        if not force_flags_even_for_globs and match_archives in {'*', 're:.*', 'sh:*'}:
             return ()
 
         if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
@@ -125,7 +129,7 @@ def make_match_archives_flags(  # noqa: PLR0911
         or get_default_archive_name_format(local_borg_version),
     )
 
-    if derived_match_archives == '*':
+    if not force_flags_even_for_globs and derived_match_archives == '*':
         return ()
 
     if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
