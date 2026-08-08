@@ -82,6 +82,7 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 <a href="https://github.com/caronc/apprise/wiki"><img src="https://torsion.org/borgmatic/static/apprise.png" alt="Apprise" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://www.zabbix.com/"><img src="https://torsion.org/borgmatic/static/zabbix.png" alt="Zabbix" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://sentry.io/"><img src="https://torsion.org/borgmatic/static/sentry.png" alt="Sentry" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://watchgoose.com/"><img src="https://torsion.org/borgmatic/static/watchgoose.png" alt="Watchgoose" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 
 
 ### Credentials
