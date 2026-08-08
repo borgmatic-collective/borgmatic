@@ -24,6 +24,7 @@
    present.
  * #1335: Add a Watchgoose monitoring hook. See the documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/monitoring/watchgoose/
+ * BREAKING: Remove the Cronhub monitoring hook, as Cronhub has shut down.
  * Fix a bug in which the "compact" action does not pass a compact threshold of zero to Borg.
 
 2.1.6

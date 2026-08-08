@@ -74,7 +74,6 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 <a href="https://healthchecks.io/"><img src="https://torsion.org/borgmatic/static/healthchecks.png" alt="Healthchecks" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://uptime.kuma.pet/"><img src="https://torsion.org/borgmatic/static/uptimekuma.png" alt="Uptime Kuma" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://cronitor.io/"><img src="https://torsion.org/borgmatic/static/cronitor.png" alt="Cronitor" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://cronhub.io/"><img src="https://torsion.org/borgmatic/static/cronhub.png" alt="Cronhub" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://www.pagerduty.com/"><img src="https://torsion.org/borgmatic/static/pagerduty.png" alt="PagerDuty" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://www.pushover.net/"><img src="https://torsion.org/borgmatic/static/pushover.png" alt="Pushover" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://ntfy.sh/"><img src="https://torsion.org/borgmatic/static/ntfy.png" alt="ntfy" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>

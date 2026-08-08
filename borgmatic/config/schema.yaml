@@ -3146,21 +3146,6 @@ properties:
             Configuration for a monitoring integration with PagerDuty. Create an
             account at https://www.pagerduty.com if you'd like to use this
             service. See borgmatic monitoring documentation for details.
-    cronhub:
-        type: object
-        required: ['ping_url']
-        additionalProperties: false
-        properties:
-            ping_url:
-                type: string
-                description: |
-                    Cronhub ping URL to notify when a backup begins,
-                    ends, or errors.
-                example: https://cronhub.io/ping/1f5e3410-254c-5587
-        description: |
-            Configuration for a monitoring integration with Cronhub. Create an
-            account at https://cronhub.io if you'd like to use this service. See
-            borgmatic monitoring documentation for details.
     loki:
         type: object
         required: ['url', 'labels']

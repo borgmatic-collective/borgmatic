@@ -269,11 +269,6 @@ def test_normalize_commands_moves_individual_command_hooks_to_unified_commands(
             True,
         ),
         (
-            {'cronhub': 'https://example.com'},
-            {'cronhub': {'ping_url': 'https://example.com'}},
-            True,
-        ),
-        (
             {'checks': ['archives']},
             {'checks': [{'name': 'archives'}]},
             True,
