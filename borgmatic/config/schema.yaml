@@ -60,7 +60,20 @@ properties:
                         only used for the repo-create action. To see the
                         available encryption modes, run "borg init --help" with
                         Borg 1 or "borg repo-create --help" with Borg 2.
-                    example: repokey-blake2
+                    example: repokey
+                id_hash:
+                    type: string
+                    description: |
+                        Borg ID hash function name. Defaults to "sha256". Only
+                        supported with Borg 2+.
+                    example: blake3
+                key_location:
+                    type: string
+                    description: |
+                        Where to store the key, "repokey" for in the repository
+                        (default) or "keyfile" for on the client. Only supported
+                        with Borg 2+.
+                    example: blake3
                 append_only:
                     type: boolean
                     description: |

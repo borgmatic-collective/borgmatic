@@ -137,15 +137,17 @@ instructions included with each Borg release changelog linked from the
 Borg releases require additional steps that borgmatic can help with.
 
 
-### Borg 1.2 to 2.0
+<a id="borg-1.2-to-2.0"></a>
 
-<span class="minilink minilink-addedin">New in borgmatic version 1.9.0</span>
-Upgrading Borg from 1.2 to 2.0 requires manually upgrading your existing Borg
-1 repositories before use with Borg or borgmatic. Here's how you can
-accomplish that.
+### Borg 1 to 2
 
-Start by upgrading borgmatic as described above to at least version 1.7.0 and
-Borg to 2.0. Then, rename your repository in borgmatic's configuration file to
+<span class="minilink minilink-addedin">New in borgmatic version 2.1.7</span>
+Upgrading Borg from 1 to 2 requires manually upgrading your existing Borg 1
+repositories before use with Borg or borgmatic. Here's how you can accomplish
+that.
+
+Start by upgrading borgmatic as described above to at least version 2.1.7 and
+Borg to 2.0+. Then, rename your repository in borgmatic's configuration file to
 a new repository path. The repository upgrade process does not occur
 in-place; you'll create a new repository with a copy of your old repository's
 data.
@@ -165,50 +167,34 @@ repositories:
     - path: upgraded.borg
 ```
 
-<span class="minilink minilink-addedin">Prior to version 1.8.0</span> This
-option was found in the `location:` section of your configuration.
-
-<span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
-the `path:` portion of the `repositories` list.
-
 Then, run the `repo-create` action (formerly `init`) to create that new Borg 2
 repository:
 
 ```bash
-borgmatic repo-create --verbosity 1 --encryption repokey-blake2-aes-ocb \
-    --source-repository original.borg --repository upgraded.borg
+borgmatic repo-create --verbosity 1 --encryption aes256-ocb --id-hash blake3 \
+    --source-repository original.borg --from-borg1 --repository upgraded.borg
 ```
+
+(Be aware that `chacha20-poly1305` encryption may be faster than `aes256-ocb` on
+certain platforms like ARM64.)
 
 This creates an empty repository and doesn't actually transfer any data yet.
-The `--source-repository` flag is necessary to reuse key material from your
-Borg 1 repository so that the subsequent data transfer can work.
+The `--source-repository` flag is necessary to reuse key material from your Borg
+1 repository so that the subsequent data transfer can work.
 
-The `--encryption` value above selects the same chunk ID algorithm (`blake2`)
-commonly used in Borg 1, thereby making deduplication work across transferred
-archives and new archives.
-
-If you get an error about "You must keep the same ID hash" from Borg, that
-means the encryption value you specified doesn't correspond to your source
-repository's chunk ID algorithm. In that case, try not using `blake2`:
-
-```bash
-borgmatic repo-create --verbosity 1 --encryption repokey-aes-ocb \
-    --source-repository original.borg --repository upgraded.borg
-```
-
-Read about [Borg encryption
-modes](https://borgbackup.readthedocs.io/en/latest/usage/repo-create.html)
+Read about [Borg encryption modes and ID hash
+functions](https://borgbackup.readthedocs.io/en/latest/usage/repo-create.html)
 for more details.
 
 To transfer data from your original Borg 1 repository to your newly created
 Borg 2 repository:
 
 ```bash
-borgmatic transfer --verbosity 1 --upgrader From12To20 --source-repository \
+borgmatic transfer --verbosity 1 --from-borg1 --source-repository \
     original.borg --repository upgraded.borg --dry-run
-borgmatic transfer --verbosity 1 --upgrader From12To20 --source-repository \
+borgmatic transfer --verbosity 1 --from-borg1 --source-repository \
     original.borg --repository upgraded.borg
-borgmatic transfer --verbosity 1 --upgrader From12To20 --source-repository \
+borgmatic transfer --verbosity 1 --from-borg1 --source-repository \
     original.borg --repository upgraded.borg --dry-run
 ```
 
@@ -217,10 +203,10 @@ the transfer, the second command actually performs the transfer/upgrade (this
 might take a while), and the final command with `--dry-run` again provides
 confirmation of success—or tells you if something hasn't been transferred yet.
 
-Note that by omitting the `--upgrader` flag, you can also do archive transfers
+Note that by omitting the `--from-borg1` flag, you can also do archive transfers
 between related Borg 2 repositories without upgrading, even down to individual
 archives. For more on that functionality, see the [Borg transfer
-documentation](https://borgbackup.readthedocs.io/en/2.0.0b16/usage/transfer.html).
+documentation](https://borgbackup.readthedocs.io/en/latest/usage/transfer.html).
 
 That's it! Now you can use your new Borg 2 repository as normal with
 borgmatic. If you've got multiple repositories, repeat the above process for

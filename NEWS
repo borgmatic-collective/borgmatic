@@ -26,6 +26,12 @@
    https://torsion.org/borgmatic/reference/configuration/monitoring/watchgoose/
  * BREAKING: Remove the Cronhub monitoring hook, as Cronhub has shut down.
  * Fix a bug in which the "compact" action does not pass a compact threshold of zero to Borg.
+ * Add support for the Borg 2 "--id-hash", "--key-location", and "--from-borg1" flags on the
+   "repo-create" action. Also add corresponding configuration "id_hash" and "key_location" options
+   under the "repositories" option.
+ * Add support for the Borg 2 "--from-borg1" flag on the "transfer" action.
+ * Update the documentation on upgrading repositories from Borg version 1 to 2, using current Borg
+   2 flags: https://torsion.org/borgmatic/how-to/upgrade/#borg-1-to-2
 
 2.1.6
  * #1256: Fix a race condition in which borgmatic sometimes swallows Borg error output without

@@ -27,25 +27,36 @@ def run_repo_create(
         )
 
     borgmatic.borg.repo_create.create_repository(
-        global_arguments.dry_run,
-        repository['path'],
-        config,
-        local_borg_version,
-        global_arguments,
-        encryption_mode,
-        repo_create_arguments.source_repository,
-        repo_create_arguments.copy_crypt_key,
-        (
+        dry_run=global_arguments.dry_run,
+        repository_path=repository['path'],
+        config=config,
+        local_borg_version=local_borg_version,
+        global_arguments=global_arguments,
+        encryption_mode=encryption_mode,
+        id_hash=(
+            repository.get('id_hash')
+            if repo_create_arguments.id_hash is None
+            else repo_create_arguments.id_hash
+        ),
+        key_location=(
+            repository.get('key_location')
+            if repo_create_arguments.key_location is None
+            else repo_create_arguments.key_location
+        ),
+        source_repository=repo_create_arguments.source_repository,
+        from_borg1=repo_create_arguments.from_borg1,
+        copy_crypt_key=repo_create_arguments.copy_crypt_key,
+        append_only=(
             repository.get('append_only')
             if repo_create_arguments.append_only is None
             else repo_create_arguments.append_only
         ),
-        (
+        storage_quota=(
             repository.get('storage_quota')
             if repo_create_arguments.storage_quota is None
             else repo_create_arguments.storage_quota
         ),
-        (
+        make_parent_directories=(
             repository.get('make_parent_directories')
             if repo_create_arguments.make_parent_directories is None
             else repo_create_arguments.make_parent_directories

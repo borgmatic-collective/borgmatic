@@ -568,11 +568,11 @@ def test_transfer_archives_with_log_json_and_progress_calls_borg_with_both_flags
     )
 
 
-@pytest.mark.parametrize('argument_name', ('upgrader', 'sort_by', 'first', 'last'))
+@pytest.mark.parametrize('argument_name', ('from_borg1', 'upgrader', 'sort_by', 'first', 'last'))
 def test_transfer_archives_passes_through_arguments_to_borg(argument_name):
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-    flag_name = f"--{argument_name.replace('_', ' ')}"
+    flag_name = f"--{argument_name.replace('_', '-')}"
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
@@ -589,7 +589,7 @@ def test_transfer_archives_passes_through_arguments_to_borg(argument_name):
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    )
+    ).once()
     insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(

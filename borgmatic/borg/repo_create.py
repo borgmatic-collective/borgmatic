@@ -22,7 +22,10 @@ def create_repository(
     local_borg_version,
     global_arguments,
     encryption_mode,
+    id_hash=None,
+    key_location=None,
     source_repository=None,
+    from_borg1=False,
     copy_crypt_key=False,
     append_only=None,
     storage_quota=None,
@@ -32,9 +35,12 @@ def create_repository(
 ):
     '''
     Given a dry-run flag, a local or remote repository path, a configuration dict, the local Borg
-    version, a Borg encryption mode, the path to another repo whose key material should be reused,
-    whether the repository should be append-only, and the storage quota to use, create the
-    repository. If the repository already exists, then log and skip creation.
+    version, a Borg encryption mode, a Borg ID hash function name, a key location ("repokey" or
+    "keyfile"), the path to another repo whose key material should be reused, whether that source
+    repository is a Borg 1 repository, whether to copy the crypt key from the source repository,
+    whether the repository should be append-only, the storage quota to use, whether to create any
+    missing parent directories for the repository directory, the local Borg path, and the remote
+    Borg path, create the repository. If the repository already exists, then log and skip creation.
 
     Raise ValueError if the requested encryption mode does not match that of the repository.
     Raise json.decoder.JSONDecodeError if the "borg info" JSON outputcannot be decoded.
@@ -56,11 +62,18 @@ def create_repository(
                 ),
             )
 
-        repository_encryption_mode = info_data.get('encryption', {}).get('mode')
+        encryption_data = info_data.get('encryption', {})
+        repository_encryption_mode = encryption_data.get('mode', encryption_data.get('encryption'))
+        repository_id_hash = encryption_data.get('id_hash')
 
-        if repository_encryption_mode != encryption_mode:
+        if encryption_mode != repository_encryption_mode:
             raise ValueError(
                 f'Requested encryption mode "{encryption_mode}" does not match existing repository encryption mode "{repository_encryption_mode}"',
+            )
+
+        if id_hash and id_hash != repository_id_hash:
+            raise ValueError(
+                f'Requested ID hash function "{id_hash}" does not match existing repository ID hash function "{repository_id_hash}"',
             )
 
         logger.info('Repository already exists. Skipping creation.')
@@ -87,7 +100,10 @@ def create_repository(
             else ('init',)
         )
         + (('--encryption', encryption_mode) if encryption_mode else ())
+        + (('--id-hash', id_hash) if id_hash else ())
+        + (('--key-location', key_location) if key_location else ())
         + (('--other-repo', source_repository) if source_repository else ())
+        + (('--from-borg1',) if from_borg1 else ())
         + (('--copy-crypt-key',) if copy_crypt_key else ())
         + (('--append-only',) if append_only else ())
         + (('--storage-quota', storage_quota) if storage_quota else ())

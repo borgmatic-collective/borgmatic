@@ -661,10 +661,26 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         help='Borg repository encryption mode',
     )
     repo_create_group.add_argument(
+        '-i',
+        '--id-hash',
+        metavar='HASH_FUNCTION',
+        help='Borg ID hash function name, defaults to "sha256" [Borg 2.x+ only]',
+    )
+    repo_create_group.add_argument(
+        '--key-location',
+        metavar='LOCATION',
+        help='Where to store the key, "repokey" for in the repository (default) or "keyfile" for on the client [Borg 2.x+ only]',
+    )
+    repo_create_group.add_argument(
         '--source-repository',
         '--other-repo',
         metavar='KEY_REPOSITORY',
         help='Path to an existing Borg repository whose key material should be reused [Borg 2.x+ only]',
+    )
+    repo_create_group.add_argument(
+        '--from-borg1',
+        action='store_true',
+        help='Whether the source repository is a Borg 1.x repository [Borg 2.x+ only]',
     )
     repo_create_group.add_argument(
         '--repository',
@@ -719,6 +735,11 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     transfer_group.add_argument(
         '--archive',
         help='Name or hash of a single archive to transfer (or "latest"), defaults to transferring all archives',
+    )
+    transfer_group.add_argument(
+        '--from-borg1',
+        action='store_true',
+        help='Whether the source repository is a Borg 1.x repository, equivalent to "--upgrader From12To20" [Borg 2.x+ only]',
     )
     transfer_group.add_argument(
         '--upgrader',

@@ -19,6 +19,13 @@ def insert_repo_info_command_found_mock():
     )
 
 
+def insert_borg_2_repo_info_command_found_mock():
+    flexmock(module.borgmatic.logger).should_receive('Logs_suppressed').and_return(flexmock())
+    flexmock(module.repo_info).should_receive('display_repository_info').and_return(
+        '{"encryption": {"encryption": "aes256-ocb", "id_hash": "default"}}'
+    )
+
+
 def insert_repo_info_command_not_found_mock():
     flexmock(module.borgmatic.logger).should_receive('Logs_suppressed').and_return(flexmock())
     flexmock(module.repo_info).should_receive('display_repository_info').and_raise(
@@ -127,6 +134,8 @@ def test_create_repository_skips_creation_when_repository_already_exists():
             'repo',
         ),
     )
+    flexmock(module.environment).should_receive('make_environment').never()
+    flexmock(module).should_receive('execute_command').never()
 
     module.create_repository(
         dry_run=False,
@@ -138,7 +147,7 @@ def test_create_repository_skips_creation_when_repository_already_exists():
     )
 
 
-def test_create_repository_errors_when_repository_with_differing_encryption_mode_already_exists():
+def test_create_repository_errors_when_borg_1_repository_with_differing_encryption_mode_already_exists():
     insert_repo_info_command_found_mock()
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
@@ -159,6 +168,93 @@ def test_create_repository_errors_when_repository_with_differing_encryption_mode
         )
 
 
+def test_create_repository_errors_when_borg_2_repository_with_differing_encryption_mode_already_exists():
+    insert_borg_2_repo_info_command_found_mock()
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        ),
+    )
+
+    with pytest.raises(ValueError):
+        module.create_repository(
+            dry_run=False,
+            repository_path='repo',
+            config={},
+            local_borg_version='2.3.4',
+            global_arguments=flexmock(),
+            encryption_mode='aes1000-ocb',
+        )
+
+
+def test_create_repository_with_borg_2_errors_when_repository_with_differing_encryption_mode_already_exists():
+    insert_borg_2_repo_info_command_found_mock()
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        ),
+    )
+
+    with pytest.raises(ValueError):
+        module.create_repository(
+            dry_run=False,
+            repository_path='repo',
+            config={},
+            local_borg_version='2.3.4',
+            global_arguments=flexmock(),
+            encryption_mode='aes1000-ocb',
+        )
+
+
+def test_create_repository_errors_when_borg_2_repository_with_differing_id_hash_already_exists():
+    insert_borg_2_repo_info_command_found_mock()
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        ),
+    )
+
+    with pytest.raises(ValueError):
+        module.create_repository(
+            dry_run=False,
+            repository_path='repo',
+            config={},
+            local_borg_version='2.3.4',
+            global_arguments=flexmock(),
+            encryption_mode='aes256-ocb',
+            id_hash='rot26',
+        )
+
+
+def test_create_repository_skips_creation_when_borg_2_repository_already_exists_and_id_hash_matches():
+    insert_borg_2_repo_info_command_found_mock()
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        ),
+    )
+    flexmock(module.environment).should_receive('make_environment').never()
+    flexmock(module).should_receive('execute_command').never()
+
+    module.create_repository(
+        dry_run=False,
+        repository_path='repo',
+        config={},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(),
+        encryption_mode='aes256-ocb',
+        id_hash='default',
+    )
+
+
 def test_create_repository_raises_for_unknown_repo_info_command_error():
     flexmock(module.borgmatic.logger).should_receive('Logs_suppressed').and_return(flexmock())
     flexmock(module.repo_info).should_receive('display_repository_info').and_raise(
@@ -174,6 +270,56 @@ def test_create_repository_raises_for_unknown_repo_info_command_error():
             global_arguments=flexmock(),
             encryption_mode='repokey',
         )
+
+
+def test_create_repository_with_id_hash_calls_borg_with_id_hash_flag():
+    insert_repo_info_command_not_found_mock()
+    insert_repo_create_command_mock(
+        (*REPO_CREATE_COMMAND, '--id-hash', 'blake17', '--repo', 'repo'),
+    )
+    insert_logging_mock(logging.WARNING)
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        ),
+    )
+
+    module.create_repository(
+        dry_run=False,
+        repository_path='repo',
+        config={},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(),
+        encryption_mode='repokey',
+        id_hash='blake17',
+    )
+
+
+def test_create_repository_with_key_location_calls_borg_with_key_location_flag():
+    insert_repo_info_command_not_found_mock()
+    insert_repo_create_command_mock(
+        (*REPO_CREATE_COMMAND, '--key-location', 'moon', '--repo', 'repo'),
+    )
+    insert_logging_mock(logging.WARNING)
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        ),
+    )
+
+    module.create_repository(
+        dry_run=False,
+        repository_path='repo',
+        config={},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(),
+        encryption_mode='repokey',
+        key_location='moon',
+    )
 
 
 def test_create_repository_with_source_repository_calls_borg_with_other_repo_flag():
@@ -198,6 +344,31 @@ def test_create_repository_with_source_repository_calls_borg_with_other_repo_fla
         global_arguments=flexmock(),
         encryption_mode='repokey',
         source_repository='other.borg',
+    )
+
+
+def test_create_repository_with_from_borg1_calls_borg_with_from_borg1_flag():
+    insert_repo_info_command_not_found_mock()
+    insert_repo_create_command_mock(
+        (*REPO_CREATE_COMMAND, '--from-borg1', '--repo', 'repo'),
+    )
+    insert_logging_mock(logging.WARNING)
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        ),
+    )
+
+    module.create_repository(
+        dry_run=False,
+        repository_path='repo',
+        config={},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(),
+        encryption_mode='repokey',
+        from_borg1=True,
     )
 
 

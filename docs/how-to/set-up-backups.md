@@ -136,14 +136,14 @@ sudo borgmatic repo-create --encryption repokey
 The `repo-create` action was called `init`.
 
 <span class="minilink minilink-addedin">With Borg version 2.x</span> Borg 2.x
-uses more specific encryption modes like `repokey-aes-ocb`. For example:
+uses more specific encryption modes like `aes256-ocb`. For example:
 
 ```bash
-sudo borgmatic repo-create --encryption repokey-aes-ocb
+sudo borgmatic repo-create --encryption aes256-ocb
 ```
 
-(Note that `repokey-chacha20-poly1305` may be faster than `repokey-aes-ocb` on
-certain platforms like ARM64.)
+(Note that `chacha20-poly1305` may be faster than `aes256-ocb` on certain
+platforms like ARM64.)
 
 This uses the borgmatic configuration file you created above to determine
 which local or remote repository to create and encrypts it with the
