@@ -320,3 +320,21 @@ borgmatic check --only data --only extract
 This is useful for running slow consistency checks on an infrequent basis,
 separate from your regular checks. It is still subject to any configured
 check frequencies unless the `--force` flag is used.
+
+
+## Repair mode
+
+If borgmatic's `check` action reports any repository corruption, you can run it
+again with the `--repair` flag to attempt to fix it. Be aware though that repair
+mode is a potentially dangerous feature and could lead to data loss. It is
+recommended to read [Borg's repair mode
+documentation](https://borgbackup.readthedocs.io/en/stable/usage/check.html#about-repair-mode)
+before using it.
+
+Repair mode is intended to be run interactively; you will be prompted to confirm
+before it proceeds.
+
+<span class="minilink minilink-addedin">New in version 2.1.8</span> When you use
+repair mode with borgmatic, any check frequency or days configuration is
+ignored, much like with the `--force` flag. Additionally, borgmatic does not
+record check timestamps on disk in repair mode.

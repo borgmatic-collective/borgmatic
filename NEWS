@@ -1,3 +1,7 @@
+2.1.8.dev0
+ * #1340: For the `--repair` flag on the `check` action, don't attempt to run `borg info` first,
+   as it can fail on a corrupted repository—like the kind you might by trying to repair. Also ignore
+   any check frequency/days configuration and skip recording check timestamps.
 2.1.7
  * #1309: Add support for the "--quick-stats" flag and the "quick_statistics" option to the "prune"
    action. Borg >= 1.4.5 and < 2 only.
@@ -6,7 +10,7 @@
  * #1317: Add an "archive_hostname" option and a corresponding "--archive-hostname" flag for
    overriding the hostname used for the "{hostname}" placeholder in the "archive_name_format"
    option. Also add an "archive_username" option and corresponding "--archive-username" flag to
-   override the "{user}" plaecholder. Both options/flags are Borg 1.4.5+ only.
+   override the "{user}" placeholder. Both options/flags are Borg 1.4.5+ only.
  * #1319: Fix the ZFS hook's overzealous unmounting of snapshot paths when a source dataset is at
    "/".
  * #1322: Fix for the "restore" action sometimes failing to find a database dump that was dumped

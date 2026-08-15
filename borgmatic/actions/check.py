@@ -788,15 +788,22 @@ def run_check(
     '''
     logger.info('Running consistency checks')
 
-    repository_id = borgmatic.borg.check.get_repository_id(
-        repository['path'],
-        config,
-        local_borg_version,
-        global_arguments,
-        local_path=local_path,
-        remote_path=remote_path,
+    repository_id = (
+        None
+        if check_arguments.repair
+        else borgmatic.borg.check.get_repository_id(
+            repository['path'],
+            config,
+            local_borg_version,
+            global_arguments,
+            local_path=local_path,
+            remote_path=remote_path,
+        )
     )
-    upgrade_check_times(config, repository_id)
+
+    if repository_id:
+        upgrade_check_times(config, repository_id)
+
     configured_checks = parse_checks(config, check_arguments.only_checks)
     archive_filter_flags = borgmatic.borg.check.make_archive_filter_flags(
         local_borg_version,
@@ -809,7 +816,7 @@ def run_check(
         config,
         repository_id,
         configured_checks,
-        check_arguments.force,
+        check_arguments.force or check_arguments.repair,
         archives_check_id,
     )
     borg_specific_checks = set(checks).intersection({'repository', 'archives', 'data'})
@@ -826,8 +833,12 @@ def run_check(
             local_path=local_path,
             remote_path=remote_path,
         )
-        for check in borg_specific_checks:
-            write_check_time(make_check_time_path(config, repository_id, check, archives_check_id))
+
+        if repository_id:
+            for check in borg_specific_checks:
+                write_check_time(
+                    make_check_time_path(config, repository_id, check, archives_check_id)
+                )
 
     if 'extract' in checks:
         logger.info('Running extract check')
@@ -840,7 +851,9 @@ def run_check(
             local_path,
             remote_path,
         )
-        write_check_time(make_check_time_path(config, repository_id, 'extract'))
+
+        if repository_id:
+            write_check_time(make_check_time_path(config, repository_id, 'extract'))
 
     if 'spot' in checks:
         logger.info('Running spot check')
@@ -855,4 +868,5 @@ def run_check(
                 borgmatic_runtime_directory,
             )
 
-        write_check_time(make_check_time_path(config, repository_id, 'spot'))
+        if repository_id:
+            write_check_time(make_check_time_path(config, repository_id, 'spot'))

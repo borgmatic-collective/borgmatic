@@ -1853,7 +1853,42 @@ def test_run_check_checks_archives_for_configured_repository():
     check_arguments = flexmock(
         repository=None,
         progress=flexmock(),
-        repair=flexmock(),
+        repair=False,
+        only_checks=flexmock(),
+        force=flexmock(),
+    )
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
+
+    module.run_check(
+        config_filename='test.yaml',
+        repository={'path': 'repo'},
+        config={'repositories': ['repo']},
+        local_borg_version=None,
+        check_arguments=check_arguments,
+        global_arguments=global_arguments,
+        local_path=None,
+        remote_path=None,
+    )
+
+
+def test_run_check_with_repair_skips_check_times():
+    flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.borg.check).should_receive('get_repository_id').and_return(flexmock())
+    flexmock(module).should_receive('upgrade_check_times').never()
+    flexmock(module).should_receive('parse_checks')
+    flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
+    flexmock(module).should_receive('make_archives_check_id').and_return(None)
+    flexmock(module).should_receive('filter_checks_on_frequency').and_return(
+        {'repository', 'archives'},
+    )
+    flexmock(module.borgmatic.borg.check).should_receive('check_archives').once()
+    flexmock(module).should_receive('make_check_time_path')
+    flexmock(module).should_receive('write_check_time').never()
+    flexmock(module.borgmatic.borg.extract).should_receive('extract_last_archive_dry_run').never()
+    check_arguments = flexmock(
+        repository=None,
+        progress=flexmock(),
+        repair=True,
         only_checks=flexmock(),
         force=flexmock(),
     )
@@ -1886,7 +1921,7 @@ def test_run_check_runs_configured_extract_check():
     check_arguments = flexmock(
         repository=None,
         progress=flexmock(),
-        repair=flexmock(),
+        repair=False,
         only_checks=flexmock(),
         force=flexmock(),
     )
@@ -1922,7 +1957,7 @@ def test_run_check_runs_configured_spot_check():
     check_arguments = flexmock(
         repository=None,
         progress=flexmock(),
-        repair=flexmock(),
+        repair=False,
         only_checks=flexmock(),
         force=flexmock(),
     )
@@ -1955,7 +1990,7 @@ def test_run_check_without_checks_runs_nothing_except_hooks():
     check_arguments = flexmock(
         repository=None,
         progress=flexmock(),
-        repair=flexmock(),
+        repair=False,
         only_checks=flexmock(),
         force=flexmock(),
     )
