@@ -1539,7 +1539,7 @@ properties:
                 container:
                     type: string
                     description: |
-                        Container name/id to connect to. When specified the
+                        Container name/id to connect to. When specified, the
                         hostname is ignored. Requires docker/podman CLI.
                     example: debian_stable
                 restore_container:
@@ -1766,7 +1766,7 @@ properties:
                 container:
                     type: string
                     description: |
-                        Container name/id to connect to. When specified the
+                        Container name/id to connect to. When specified, the
                         hostname is ignored. Requires docker/podman CLI.
                     example: debian_stable
                 restore_container:
@@ -1995,7 +1995,7 @@ properties:
                 container:
                     type: string
                     description: |
-                        Container name/id to connect to. When specified the
+                        Container name/id to connect to. When specified, the
                         hostname is ignored. Requires docker/podman CLI.
                     example: debian_stable
                 restore_container:
@@ -2277,7 +2277,7 @@ properties:
                 container:
                     type: string
                     description: |
-                        Container name/id to connect to. When specified the
+                        Container name/id to connect to. When specified, the
                         hostname is ignored. Requires docker/podman CLI.
                     example: debian_stable
                 restore_container:
