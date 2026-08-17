@@ -1,4 +1,5 @@
 import fnmatch
+import glob
 import json
 import logging
 import os
@@ -6,6 +7,7 @@ import re
 import shutil
 
 import borgmatic.actions.restore
+import borgmatic.config.paths
 
 logger = logging.getLogger(__name__)
 
@@ -102,17 +104,20 @@ def create_named_pipe_for_dump(dump_path):
 def remove_data_source_dumps(dump_path, data_source_type_name, dry_run):
     '''
     Remove all data source dumps in the given dump directory path (including the directory itself).
-    If this is a dry run, then don't actually remove anything.
+    Also remove any dumps that look like they're leftover from a previous borgmatic run. If this is
+    a dry run, then don't actually remove anything.
     '''
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
     logger.debug(f'Removing {data_source_type_name} data source dumps{dry_run_label}')
 
-    if dry_run:
-        return
+    dump_paths_glob = borgmatic.config.paths.replace_temporary_subdirectory_with_glob(
+        os.path.normpath(dump_path),
+    )
 
-    if os.path.exists(dump_path):
-        shutil.rmtree(dump_path)
+    for path in glob.glob(dump_paths_glob):
+        if not dry_run:
+            shutil.rmtree(path, ignore_errors=True)
 
 
 END_OF_STRING_PATTTERN = re.compile(r'\\z', flags=re.IGNORECASE)

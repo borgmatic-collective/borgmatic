@@ -135,21 +135,33 @@ def test_create_named_pipe_for_dump_does_not_raise():
 
 
 def test_remove_data_source_dumps_removes_dump_path():
-    flexmock(module.os.path).should_receive('exists').and_return(True)
-    flexmock(module.shutil).should_receive('rmtree').with_args('databases').once()
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'replace_temporary_subdirectory_with_glob'
+    ).and_return(flexmock())
+    flexmock(module.glob).should_receive('glob').and_return(['databases', 'other'])
+    flexmock(module.shutil).should_receive('rmtree').with_args(
+        'databases', ignore_errors=True
+    ).once()
+    flexmock(module.shutil).should_receive('rmtree').with_args('other', ignore_errors=True).once()
 
     module.remove_data_source_dumps('databases', 'SuperDB', dry_run=False)
 
 
 def test_remove_data_source_dumps_with_dry_run_skips_removal():
-    flexmock(module.os.path).should_receive('exists').never()
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'replace_temporary_subdirectory_with_glob'
+    ).and_return(flexmock())
+    flexmock(module.glob).should_receive('glob').and_return(['databases', 'other'])
     flexmock(module.shutil).should_receive('rmtree').never()
 
     module.remove_data_source_dumps('databases', 'SuperDB', dry_run=True)
 
 
-def test_remove_data_source_dumps_without_dump_path_present_skips_removal():
-    flexmock(module.os.path).should_receive('exists').and_return(False)
+def test_remove_data_source_dumps_with_non_existent_dump_path_skips_removal():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'replace_temporary_subdirectory_with_glob'
+    ).and_return(flexmock())
+    flexmock(module.glob).should_receive('glob').and_return([])
     flexmock(module.shutil).should_receive('rmtree').never()
 
     module.remove_data_source_dumps('databases', 'SuperDB', dry_run=False)
