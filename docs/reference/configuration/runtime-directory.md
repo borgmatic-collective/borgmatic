@@ -29,11 +29,14 @@ probes the following values:
 You can see the runtime directory path that borgmatic selects by running with
 `--verbosity 2` and looking for `Using runtime directory` in the output.
 
-Regardless of the runtime directory selected, borgmatic stores its files
-within a `borgmatic` subdirectory of the runtime directory. Additionally, in
-the case of `TMPDIR`, `TEMP`, and the hard-coded `/tmp`, borgmatic creates a
-randomly named subdirectory in an effort to reduce path collisions in shared
-system temporary directories.
+Regardless of the runtime directory selected, borgmatic stores its files within
+a randomly named subdirectory (starting with `borgmatic-`) in the runtime
+directory in an effort to prevent unintentional runtime file reuse across
+borgmatic runs.
+
+<span class="minilink minilink-addedin">Prior to version 2.1.8</span> The
+randomly named subdirectory was only created in the case of `TMPDIR`, `TEMP`,
+and the hard-coded `/tmp`.
 
 <span class="minilink minilink-addedin">Prior to version 1.9.0</span>
 borgmatic created temporary streaming database dumps within the `~/.borgmatic`
