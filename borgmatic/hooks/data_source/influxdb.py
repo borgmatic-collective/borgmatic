@@ -6,6 +6,7 @@ import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.hooks.data_source.config
 from borgmatic.execute import execute_command, execute_command_with_processes
+from borgmatic.hooks.data_source import config as database_config
 from borgmatic.hooks.data_source import dump
 
 logger = logging.getLogger(__name__)
@@ -301,16 +302,24 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     Return the restore command.
     '''
 
-    host = database.get('hostname', 'localhost')
-    port = database.get('port') or get_default_port(None, None)  # Use default port if not specified
+    hostname = (
+        database_config.resolve_database_option(
+            'hostname', database, connection_params, restore=True
+        )
+        or 'localhost'
+    )
+    port = (
+        database_config.resolve_database_option('port', database, connection_params, restore=True)
+        or get_default_port(None, None)  # Use default port if not specified
+    )
+    token = database_config.resolve_database_option(
+        'password', database, connection_params, restore=True
+    )
 
-    if host:
-        # Add protocol prefix based on tls setting
-        protocol = 'https://' if database.get('tls', True) else 'http://'
-        # Format as protocol://hostname:port
-        host = f'{protocol}{host}:{port}'
+    # Add protocol prefix based on the tls setting, formatted as protocol://hostname:port.
+    protocol = 'https://' if database.get('tls', True) else 'http://'
+    host = f'{protocol}{hostname}:{port}'
 
-    token = database.get('password')
     organization_id = database.get('organization_id')
     organization_name = database.get('organization_name')
     bucket_id = database.get('bucket_id')
@@ -329,7 +338,7 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     return (
         influx_command
         + ('restore',)
-        + (('--host', host) if host else ())
+        + ('--host', host)
         + (('--token', token) if token else ())
         + (('--org-id', str(organization_id)) if organization_id else ())
         + (('--org', organization_name) if organization_name and not organization_id else ())

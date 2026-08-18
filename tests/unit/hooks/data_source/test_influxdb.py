@@ -483,6 +483,7 @@ def test_build_restore_command_with_connection_params():
     connection_params = {
         'hostname': 'restorehost',
         'port': '9999',  # Changed to string to avoid TypeError
+        'password': 'restoretoken',
     }
     dump_filename = '/tmp/dumpfile'
     extract_process = flexmock()
@@ -491,14 +492,14 @@ def test_build_restore_command_with_connection_params():
         extract_process, database, dump_filename, connection_params
     )
 
-    # The current implementation ignores connection_params and uses database values
+    # The connection parameters take precedence over the database values.
     assert command == (
         'influx',
         'restore',
         '--host',
-        'https://localhost:8086',
+        'https://restorehost:9999',
         '--token',
-        'mytoken',
+        'restoretoken',
         '--bucket',
         'influx-backup',
         '/tmp/dumpfile',
