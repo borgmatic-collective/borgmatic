@@ -339,12 +339,17 @@ def test_restore_data_source_dump_executes_restore_command():
         ('influx', 'restore', '--host', 'https://localhost:8086', '--token', 'mytoken')
     )
 
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        '/working'
+    )
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('influx', 'restore', '--host', 'https://localhost:8086', '--token', 'mytoken'),
         [extract_process],
         output_log_level=module.logging.DEBUG,
         input_file=extract_process.stdout,
-    ).once()
+        working_directory='/working',
+        borg_local_path='borg',
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config={},
