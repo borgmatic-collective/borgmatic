@@ -1,10 +1,332 @@
-2.0.8.dev0
+2.1.8.dev0
+ * #1340: For the `--repair` flag on the `check` action, don't attempt to run `borg info` first,
+   as it can fail on a corrupted repository—like the kind you might by trying to repair. Also ignore
+   any check frequency/days configuration and skip recording check timestamps.
+ * For the "user_runtime_directory" option and the "XDG_RUNTIME_DIR" environment variable, create a
+   temporary directory for borgmatic within the given runtime directory. This makes cleanup easier
+   and prevents unintentional runtime file reuse across borgmatic runs.
+
+2.1.7
+ * #1309: Add support for the "--quick-stats" flag and the "quick_statistics" option to the "prune"
+   action. Borg >= 1.4.5 and < 2 only.
+ * #1310: For the "bootstrap" action, provide a more helpful error message when borgmatic can't
+   determine the latest archive.
+ * #1317: Add an "archive_hostname" option and a corresponding "--archive-hostname" flag for
+   overriding the hostname used for the "{hostname}" placeholder in the "archive_name_format"
+   option. Also add an "archive_username" option and corresponding "--archive-username" flag to
+   override the "{user}" placeholder. Both options/flags are Borg 1.4.5+ only.
+ * #1319: Fix the ZFS hook's overzealous unmounting of snapshot paths when a source dataset is at
+   "/".
+ * #1322: Fix for the "restore" action sometimes failing to find a database dump that was dumped
+   with a default port.
+ * #1324: For the MariaDB and MySQL hooks, add "events", "routines", and "tablespaces" options for
+   disabling dumping of scheduled events, stored routines, and tablespaces, respectively.
+ * #1327: Fix an error from the "diff" action when exclude options are configured.
+ * #1331: Fix the "repo-create" action to more surgically suppress Borg "Repository does not exist"
+   logs and avoid inadvertently suppressing other error logs.
+ * #1333: Fix the "--progress" flag on the "compact" action to actually update the progress of
+   segment compaction.
+ * #1334: Add the "CAP_FOWNER" capability to "CapabilityBoundingSet" in the sample systemd service,
+   so that Borg can open source files without changing file access times.
+ * #1336: Fix for the "bootstrap" action ignoring the "--verbosity" flag when no configuration is
+   present.
+ * #1335: Add a Watchgoose monitoring hook. See the documentation for more information:
+   https://torsion.org/borgmatic/reference/configuration/monitoring/watchgoose/
+ * BREAKING: Remove the Cronhub monitoring hook, as Cronhub has shut down.
+ * Fix a bug in which the "compact" action does not pass a compact threshold of zero to Borg.
+ * Add support for the Borg 2 "--id-hash", "--key-location", and "--from-borg1" flags on the
+   "repo-create" action. Also add corresponding configuration "id_hash" and "key_location" options
+   under the "repositories" option.
+ * Add support for the Borg 2 "--from-borg1" flag on the "transfer" action.
+ * Update the documentation on upgrading repositories from Borg version 1 to 2, using current Borg
+   2 flags: https://torsion.org/borgmatic/how-to/upgrade/#borg-1-to-2
+
+2.1.6
+ * #1256: Fix a race condition in which borgmatic sometimes swallows Borg error output without
+   logging it.
+ * #1300: Fix the "source_directories_must_exist" option to support source directories relative to a
+   "working_directory".
+ * #1301: Expand the "patterns_from" and "exclude_from" options to support paths containing tildes
+   and globs.
+ * #1303: For the MariaDB and MySQL database hooks, include events, routines, and tablespaces when
+   dumping a database.
+ * #1303: For the MariaDB hook, include only a subset of system data when dumping the "mysql" system
+   database (or "all" databases), so the dump is actually restorable. See the documentation for more
+   information: https://torsion.org/borgmatic/reference/configuration/data-sources/mariadb/
+ * #1308: Update the Apprise monitoring hook's "url" option to support loading credentials with the
+   "{credential ...}" syntax. See the documentation for more information:
+   https://torsion.org/borgmatic/reference/configuration/credentials/
+ * #1309: Add a "--quick-stats" flag and corresponding "quick_statistics" option for showing only
+   abbreviated statistics for the "create" action. Borg 1.4.5+ only.
+ * #1314: Add a minimal stand-alone borgmatic binary in addition to the standard one. The minimal
+   binary omits support for the Apprise monitoring hook.
+ * Add an experimental "browse" action providing a console UI for browsing your backups. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/how-to/inspect-your-backups/#browsing-backups
+ * Update the KeePassXC credential hook to support KeePassXC's secret service integration. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/reference/configuration/credentials/keepassxc/
+ * Add the NEWS changelog file to release tarball (#1298).
+ * Enable reply by email on projects.torsion.org, so replies to notification emails get posted as
+   comments on tickets.
+ * For the MariaDB and MySQL database hooks, escape quotes in passwords when the
+   "password_transport" option is "pipe".
+ * Add a development script for upgrading pinned dependencies.
+ * Fix the PostgreSQL database hook to properly parse "*options" values containing quoted spaces.
+ * Update the documentation to use Pagefind's component-based search UI.
+
+2.1.5
+ * #1229: Document the permissions needed for the PostgreSQL database hook:
+   https://torsion.org/borgmatic/reference/configuration/data-sources/postgresql/
+ * #1289: Add mutual TLS support for the Loki monitoring hook. See the documentation for more
+   information: https://torsion.org/borgmatic/reference/configuration/monitoring/loki/
+ * #1292: Fix a "source directories do not exist" regression when configuration paths are relative
+   symlinks and the bootstrap data source hook is enabled.
+ * #1294: Fix a regression in which SSH warnings from remote repositories broke the "spot" check
+   and other actions as well.
+ * #1295: Fix the ZFS hook to properly unmount snapshots for empty datasets.
+
+2.1.4
+ * #1266: Add a stand-alone borgmatic Linux binary to the release downloads to serve as another way
+   to install borgmatic. Consider this binary a beta feature.
+ * #1286: Fix a regression in which running borgmatic with no arguments and no configuration files
+   doesn't error as expected.
+ * #1257: Fix for the Loki monitoring hook not respecting the monitoring verbosity.
+ * #1264: Improve performance of the "info" and "repo-list" actions by eliminating a second "borg
+   info" call that supports a "no matching archives" warning. The warning still occurs; it's just
+   done now without the extra "borg info" call.
+ * #1268: Fix the "spot" check, "extract" check, and all uses of the archive name "latest" to
+   respect the "match_archives" and "archives_name_format" options. This means that borgmatic now
+   uses the "latest" archive that also matches those options instead of the latest archive overall.
+ * When Borg exits with a warning exit code, show a description of it, so you don't have to look up
+   the code.
+ * Split out borgmatic installation documentation to its own page, so it's easier to find.
+ * Switch the default borgmatic installation method from pipx to uv, as uv is faster and used for
+   borgmatic development. If you'd like to switch, see the documentation for more information:
+   https://torsion.org/borgmatic/how-to/upgrade/
+ * Move the project tracker from Gitea to Forgejo.
+ * Fix a regression in which borgmatic didn't show an error message when run with no configuration.
+ * Fix a traceback in the "spot" check with Borg 2.
+
+2.1.3
+ * #1175: Add a "files_changed" option for customizing Borg's file modification detection.
+ * #1175: Add a "msgpack_version_check" option to prevent Borg from validating msgpack's version.
+ * #1218: Add a "config show" action to display computed borgmatic configuration as YAML or JSON,
+   handy for fetching borgmatic configuration from external scripts. See the documentation for more
+   information:
+   https://torsion.org/borgmatic/reference/command-line/actions/config-show/
+ * #1228: Adjust the "spot" check so error output includes more information about what failed.
+ * #1236: Fix the "spot" check to skip hard links, as Borg doesn't produces hashes for them.
+ * #1243: Add a "diff" action for viewing the difference between the contents of two archives.
+ * #1248: Go back to treating Borg "file not found" warnings (exit code 107) as
+   warnings instead of errors. Otherwise, borgmatic can error on files that a user intentionally
+   deletes while a backup is running. You can still override this behavior with the
+   "borg_exit_codes" option. See the documentation for more information:
+   https://torsion.org/borgmatic/how-to/customize-warnings-and-errors/
+ * #1248: Un-deprecate the "source_directories_must_exist" option and default it to true, to
+   compensate for Borg "file not found" warnings no longer being treated as errors.
+ * #1269: Fix the ZFS hook to support datasets with a "canmount" property of "noauto".
+ * #1270: Follow symlinks when backing up borgmatic configuration files to support the "bootstrap"
+   action.
+ * #1274: Add an optional override for the documentation development listen port and use Podman
+   Compose if present.
+ * #1281: Fix a unicode error when backing up a non-UTF-8 source filename with a
+   corresponding system locale.
+ * Add a policy about the use of generative AI in the borgmatic codebase:
+   https://torsion.org/borgmatic/how-to/develop-on-borgmatic/#use-of-generative-ai
+
+2.1.2
+ * #1231: If a source file is deleted during a "spot" check, consider the file as non-matching
+   and move on instead of immediately failing the entire check.
+ * #1250: Fix a regression in which the "--stats" flag hides statistics at default verbosity.
+ * #1251: Fix a regression in the ntfy monitoring hook in which borgmatic sends tags incorrectly,
+   resulting in "400 Bad Request" from ntfy.
+ * #1258: Fix a "codec can't decode byte" error when running commands that output multi-byte unicode
+   characters.
+ * #1260: Fix for SSH warnings from Borg showing up as JSON logs even without the "--log-json" flag.
+ * #1252: Work around Borg returning a warning exit code when a repository/archive check fails. Now,
+   borgmatic interprets such failures as errors.
+ * Deduplicate overlapping source directories and patterns so they don't throw off "spot" check file
+   counts and cause spurious check failures.
+
+2.1.1
+ * #1241: For the "recreate" action, actually pass the "--dry-run" flag through to Borg instead of
+   just skipping the Borg call.
+ * #1242: Fix a regression in which the "spot" check hung while collecting archive contents.
+ * #1244: When the "unsafe_skip_path_validation_before_create" option is enabled, don't log a
+   warning about it.
+ * #1245: Fix a regression in which the KeePassXC credential hook password prompt was invisible.
+ * #1246: Fix a regression in which the ntfy monitoring hook failed to send a ping when the
+   "priority" option was set.
+
+2.1.0
+ * TL;DR: Many logging, memory, and performance improvements. Mind those breaking changes!
+ * #485: When running commands (database clients, command hooks, etc.), elevate stderr output to
+   show up as borgmatic error logs.
+ * #858: With the "--log-json" flag, log borgmatic's own logs as JSON, not just Borg's.
+ * #1092: BREAKING: Treat most Borg warnings as errors by default, so for instance backups now fail
+   when source directories are missing. You can still override this behavior with the
+   "borg_exit_codes" option. See the documentation for more information:
+   https://torsion.org/borgmatic/how-to/customize-warnings-and-errors/
+ * #1092: Deprecate the "source_directories_must_exist" option, as borgmatic now treats "backup file
+   not found" warnings from Borg as errors, which accomplishes the same thing.
+ * #1132: BREAKING/SECURITY: For the Healthchecks, Apprise, Pagerduty, and Loki monitoring hooks,
+   disable log sending when not explicitly enabled. This avoids revealing private log information to
+   third-party services. To send logs anyway, set the monitoring hook's "send_logs" option to
+   "true".
+ * #1204: When verbosity levels differ between console/monitoring/syslog/file, log Borg's output to
+   each one at a different level. Previously, it was logged at the maximum level of all the
+   verbosities.
+ * #1208: Fix for the "restore" action incorrectly extracting more database dumps than the
+   "--database" flag specifies.
+ * #1210: Fix an error when running the "spot" check or "extract" action with the "progress" option
+   or "--progress" flag.
+ * #1211: Fix an error about the runtime directory getting excluded by tweaking its logic and
+   lowering the error to a warning.
+ * #1212: Fix an error when restoring multiple directory-format database dumps at once.
+ * #1213: BREAKING: Support disabling both constant and variable interpolation by escaping with
+   backslashes. For instance, interpret "\{name\}" as literally "{name}" instead of trying to
+   resolve it as a constant/variable.
+ * #1220: Cleanup snapshots immediately after ZFS, LVM, or Btrfs hooks error—rather than waiting
+   until the next time borgmatic runs.
+ * #1221: Add an "unsafe_skip_path_validation_before_create" option to skip pre-backup safety
+   validation so as to reduce backup times on large filesystems.
+ * #1224: When running an "extract" check with the "--progress" flag, show file extraction progress.
+ * #1225: Improve performance and greatly reduce memory usage during pre-backup safety validation on
+   large filesystems.
+ * #1230: Fix another warning from LVM about leaked file descriptors, this time when calling
+   "lvcreate" from a command hook.
+ * #1234: Fix for the ntfy monitoring hook erroring on emojis in the "title" option.
+ * When syslog verbosity is enabled, log to systemd's journal (if present) with
+   structured data. See the documentation for more information:
+   https://torsion.org/borgmatic/reference/command-line/logging/#systemd-journal
+ * SECURITY: Prevent shell injection attacks via constant interpolation in command hooks. (This was
+   already implemented for deprecated "before_*"/"after_*" command hooks.)
+ * Fix for an error in the "key import" action when importing a key from stdin.
+ * Fix the "recreate" action to include borgmatic-specific paths (database dumps, etc.) in recreated
+   archives.
+ * Update the "list" action to support the "--json" flag when the "--archive" flag is also used.
+ * Promote the ZFS, LVM, and Btrfs hooks from beta features to stable.
+
+2.0.13
+ * #1054: Allow the Btrfs hook to create and delete snapshots even when running
+   as a non-root user. See the documentation for more information:
+   https://torsion.org/borgmatic/reference/configuration/data-sources/btrfs/#non-root-user
+ * #1179: Add a "file_list_format" option for setting the "list" action's output format and an
+   "archive_list_format" option for setting the "repo-list" action's format.
+ * #1192: Fix for over-aggressive deduplication of source directories that contain the borgmatic
+   runtime directory, potentially resulting in data loss (data not getting backed up) when
+   snapshotting these source directories.
+ * #1192, #1163: Document potential interactions between security settings in borgmatic's sample
+   systemd service file and the ZFS, LVM, and Btrfs hooks.
+ * #1193: In the documentation for the MariaDB/MySQL database hooks, clarify how to set custom
+   command-line flags for database commands.
+ * #1193: For the MariaDB and MySQL database hooks, add a "socket_path" option for Unix socket
+   database connections.
+ * #1193: For the MariaDB and MySQL database hooks, creates a consistent snapshot by dumping all
+   tables in a single transaction.
+ * #1194: Fix for an incorrect diff command shown when running the "generate config" action with a
+   source configuration file. 
+ * #1195: Fix a regression in the ZFS, LVM, and Btrfs hooks in which snapshotted paths ignored
+   global excludes.
+ * #1201: Document a problematic interaction between borgmatic and systemd-tmpfiles:
+   https://torsion.org/borgmatic/reference/configuration/runtime-directory/#systemd-tmpfiles
+ * #1203: Fix that errors and exits when the borgmatic runtime directory is partially excluded by
+   configured excludes. Previously, borgmatic only errored when the runtime directory was completely
+   excluded.
+ * #1206: Adjust Btrfs snapshot paths so that Borg 1.x gets file cache hits when backing them up,
+   improving performance.
+ * Update the sample systemd timer with a shorter random delay when catching up on a missed run.
+
+2.0.12
+ * #1127: Fix for the database hooks not respecting the "working_directory" option.
+ * #1181: Add an "ask_for_password" option to the KeePassXC credential hook for disabling
+   KeePassXC's password prompt, e.g. if you're only using a key file to decrypt your database.
+ * #1184: Fix the fish shell completion's detection of version mismatches.
+ * #1186: Fix a regression in the Btrfs hook in which subvolume snapshots didn't get cleaned up
+   until the start of the next borgmatic run.
+ * In the SQLite database hook, run SQLite such that it exits upon encountering an error instead of,
+   you know, not doing that.
+ * Add documentation on repositories, including SSH, Rclone, S3, and B2:
+   https://torsion.org/borgmatic/reference/configuration/repositories/
+ * Improve documentation search results for individual configuration options.
+ * Add borgmatic release artifacts (wheel and tarball) to each release on the releases page:
+   https://projects.torsion.org/borgmatic-collective/borgmatic/releases
+ * Move the tarball of borgmatic's HTML documentation from the packages page to the releases page.
+
+2.0.11
+ * #957: Document borgmatic's limitations around parallelism—both its own and Borg's. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/how-to/make-per-application-backups/#limitations
+ * #1165: Fix for when the systemd service directories (RuntimeDirectory and StateDirectory) each
+   contain multiple paths.
+ * #1168: Fix for the "list", "info", and "delete" options in "extra_borg_options" being ignored
+   when "--archive" is omitted with Borg 1.x.
+ * #1169: Fix for a regression in the ZFS, LVM, and Btrfs hooks in which partial excludes of
+   snapshot paths were ignored.
+ * #1170: Fix for an inconsistent log level for Borg's last output line before exiting.
+ * #1172: Add an "environment" option to the Sentry monitoring hook.
+ * #1176: Fix the "--repository" flag not applying to command hooks.
+ * Add a "rename" option to "extra_borg_options" to support passing arbitrary flags to "borg
+   rename".
+ * Add documentation on patterns and excludes:
+   https://torsion.org/borgmatic/reference/configuration/patterns-and-excludes/
+ * Drop support for Python 3.9, which has been end-of-lifed.
+
+2.0.10
+ * #427: Expand the "extra_borg_options" option to support passing arbitrary Borg flags to every
+   Borg sub-command that borgmatic uses. As part of this, deprecate the "init" option under
+   "borg_extra_options" in favor of "repo_create".
+ * #942: Factor reference material out of the documentation how-to guides. This means there's now a
+   whole reference section in the docs! Check it out: https://torsion.org/borgmatic/
+ * #973: For the MariaDB and MySQL database hooks, add a "skip_names" option to ignore particular
+   databases when dumping "all".
+ * #1150: Fix for a runtime directory error when the "create" action is used with the "--log-json"
+   flag.
+ * #1150: Fix for a runtime directory error when the configured patterns contain a global exclude.
+ * #1161: Fix a traceback (TypeError) in the "check" action with Python 3.14.
+ * #1166: Add a "borg_key_file" option for setting the Borg repository key file path.
+ * Add documentation search.
+ * Change the URL of the local documentation development server to be more like the production URL.
+
+2.0.9
+ * #1105: More accurately collect Btrfs subvolumes to snapshot. As part of this, the Btrfs hook no
+   longer uses "findmnt" and the "findmnt_command" option is deprecated.
+ * #1123: Add loading of systemd credentials even when running borgmatic outside of a systemd
+   service.
+ * #1149: Add support for Python 3.14.
+ * #1149: Include automated tests in the source dist tarball uploaded to PyPI.
+ * #1151: Fix snapshotting in the ZFS, Btrfs, and LVM hooks to play nicely with the Borg 1.4+
+   "slashdot" hack within source directory paths.
+ * #1152: Fix a regression in the Loki monitoring hook in which log messages weren't sending.
+ * #1156: Fix snapshotting in the ZFS, Btrfs, and LVM hooks to snapshot both parent and child
+   volumes/filesystems instead of just the parent. As part of this fix, borgmatic no longer
+   deduplicates patterns except for those containing the borgmatic runtime directory.
+ * Fix a traceback (TypeError) regression in the "spot" check when the "local_path" option isn't
+   set.
+
+2.0.8
  * #1114: Document systemd configuration changes for the ZFS filesystem hook.
+ * #1116: Add dumping of database containers via their container names, handy for backing up
+   database containers from the host. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#database-client-on-the-host
+ * #1116: Add optional database labels to make it easier to find your dumps within a Borg archive.
  * #1118: Fix a bug in which Borg hangs during database backup when different filesystems are in
    use.
+ * #1122: To prevent the user from inadvertently excluding the "bootstrap" action's manifest, always
+   error and exit when the borgmatic runtime directory overlaps with the configured excludes.
+ * #1125: Clarify documentation about ZFS, Btrfs, and LVM snapshotting when a separate
+   filesystem is mounted in the source directory. (Spoiler: The separate filesystem doesn't get
+   included in the snapshot.)
  * #1126: Create LVM snapshots as read-write to avoid an error when snapshotting ext4 filesystems
    with orphaned files that need recovery.
- * #1139: When making HTTP requests in monitoring hooks, set "borgmatic" as the user agent.
+ * #1133: Fix the "spot" check to include borgmatic configuration files that were backed up to
+   support the "bootstrap" action.
+ * #1136: For all database hooks, record metadata about the dumps contained within an archive.
+ * #1139: Set "borgmatic" as the user agent when connecting to monitoring services.
+ * #1146: Fix a broken "create" action and "--archive latest" flag when multiple archives share the
+   same name with Borg 2.
+ * Treat configuration file permissions issues as errors instead of warnings.
  * When running tests, use Ruff for faster and more comprehensive code linting and formatting,
    replacing Flake8, Black, isort, etc.
  * Switch from pipx to uv for installing development tools, and added tox-uv for speeding up test

@@ -1,9 +1,40 @@
 import logging
 import platform
 
+import requests
 from flexmock import flexmock
 
 from borgmatic.hooks.monitoring import loki as module
+
+
+def test_loki_log_handler_raw_with_send_logs_posts_to_server_after_buffer_full():
+    handler = module.Loki_log_handler(flexmock(), send_logs=True, log_level=10, dry_run=False)
+    flexmock(module.requests).should_receive('post').and_return(
+        flexmock(raise_for_status=lambda: ''),
+    ).once()
+
+    for num in range(int(module.MAX_BUFFER_LINES * 1.5)):
+        handler.raw(num)
+
+
+def test_loki_log_handler_raw_without_send_logs_posts_to_server_without_buffering():
+    handler = module.Loki_log_handler(flexmock(), send_logs=False, log_level=10, dry_run=False)
+    flexmock(module.requests).should_receive('post').and_return(
+        flexmock(raise_for_status=lambda: ''),
+    ).times(3)
+
+    for num in range(3):
+        handler.raw(num)
+
+
+def test_loki_log_handler_raw_post_failure_does_not_raise():
+    handler = module.Loki_log_handler(flexmock(), send_logs=True, log_level=10, dry_run=False)
+    flexmock(module.requests).should_receive('post').and_return(
+        flexmock(raise_for_status=lambda: (_ for _ in ()).throw(requests.RequestException())),
+    ).once()
+
+    for num in range(int(module.MAX_BUFFER_LINES * 1.5)):
+        handler.raw(num)
 
 
 def test_initialize_monitor_replaces_labels():
@@ -15,8 +46,10 @@ def test_initialize_monitor_replaces_labels():
         'labels': {'hostname': '__hostname', 'config': '__config', 'config_full': '__config_path'},
     }
     config_filename = '/mock/path/test.yaml'
-    dry_run = True
-    module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run)
+    flexmock(module.logging.getLogger()).should_receive('setLevel')
+    module.initialize_monitor(
+        hook_config, flexmock(), config_filename, monitoring_log_level=10, dry_run=False
+    )
 
     for handler in tuple(logging.getLogger().handlers):
         if isinstance(handler, module.Loki_log_handler):
@@ -33,11 +66,12 @@ def test_initialize_monitor_adds_log_handler():
     Assert that calling initialize_monitor adds our logger to the root logger.
     '''
     hook_config = {'url': 'http://localhost:3100/loki/api/v1/push', 'labels': {'app': 'borgmatic'}}
+    flexmock(module.logging.getLogger()).should_receive('setLevel')
     module.initialize_monitor(
         hook_config,
         flexmock(),
         config_filename='test.yaml',
-        monitoring_log_level=flexmock(),
+        monitoring_log_level=10,
         dry_run=True,
     )
 
@@ -48,32 +82,42 @@ def test_initialize_monitor_adds_log_handler():
     raise AssertionError()
 
 
-def test_ping_monitor_adds_log_message():
+def test_ping_monitor_sends_log_message():
     '''
-    Assert that calling ping_monitor adds a message to our logger.
+    Assert that calling ping_monitor sends a message to Loki via our logger.
     '''
     hook_config = {'url': 'http://localhost:3100/loki/api/v1/push', 'labels': {'app': 'borgmatic'}}
     config_filename = 'test.yaml'
-    dry_run = True
-    module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run)
+    post_called = False
+
+    def post(url, data, timeout, headers, **kwargs):
+        nonlocal post_called
+        post_called = True
+
+        assert any(
+            value[1] == f'{module.MONITOR_STATE_TO_LOKI[module.monitor.State.FINISH]} backup'
+            for value in module.json.loads(data)['streams'][0]['values']
+        )
+
+        return flexmock(raise_for_status=lambda: None)
+
+    flexmock(module.requests).should_receive('post').replace_with(post)
+
+    flexmock(module.logging.getLogger()).should_receive('setLevel')
+    module.initialize_monitor(
+        hook_config, flexmock(), config_filename, monitoring_log_level=10, dry_run=False
+    )
     module.ping_monitor(
         hook_config,
         flexmock(),
         config_filename,
         module.monitor.State.FINISH,
         flexmock(),
-        dry_run,
+        dry_run=False,
     )
+    module.destroy_monitor(hook_config, flexmock(), monitoring_log_level=10, dry_run=False)
 
-    for handler in tuple(logging.getLogger().handlers):
-        if isinstance(handler, module.Loki_log_handler):
-            assert any(
-                value[1] == f'{module.MONITOR_STATE_TO_LOKI[module.monitor.State.FINISH]} backup'
-                for value in handler.buffer.root['streams'][0]['values']
-            )
-            return
-
-    raise AssertionError()
+    assert post_called
 
 
 def test_destroy_monitor_removes_log_handler():
@@ -82,10 +126,13 @@ def test_destroy_monitor_removes_log_handler():
     '''
     hook_config = {'url': 'http://localhost:3100/loki/api/v1/push', 'labels': {'app': 'borgmatic'}}
     config_filename = 'test.yaml'
-    dry_run = True
-    module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run)
-    module.destroy_monitor(hook_config, flexmock(), flexmock(), dry_run)
+    flexmock(module.requests).should_receive('post').never()
+
+    flexmock(module.logging.getLogger()).should_receive('setLevel')
+    module.initialize_monitor(
+        hook_config, flexmock(), config_filename, monitoring_log_level=10, dry_run=False
+    )
+    module.destroy_monitor(hook_config, flexmock(), monitoring_log_level=10, dry_run=False)
 
     for handler in tuple(logging.getLogger().handlers):
-        if isinstance(handler, module.Loki_log_handler):
-            raise AssertionError()
+        assert not isinstance(handler, module.Loki_log_handler)

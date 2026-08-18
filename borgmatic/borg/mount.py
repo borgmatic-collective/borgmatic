@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.config.paths
 from borgmatic.borg import environment, feature, flags
@@ -23,14 +24,15 @@ def mount_archive(
     dict, the local Borg version, global arguments as an argparse.Namespace instance, and optional
     local and remote Borg paths, mount the archive onto the mount point.
     '''
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
+    extra_borg_options = config.get('extra_borg_options', {}).get('mount', '')
 
     full_command = (
         (local_path, 'mount')
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if config.get('log_json') else ())
+        + (('--log-json',) if not mount_arguments.foreground else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
@@ -39,6 +41,7 @@ def mount_archive(
             excludes=('repository', 'archive', 'mount_point', 'paths', 'options'),
         )
         + (('-o', mount_arguments.options) if mount_arguments.options else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + (
             (
                 flags.make_repository_flags(repository_path, local_borg_version)

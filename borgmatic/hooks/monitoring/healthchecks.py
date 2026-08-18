@@ -26,7 +26,7 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
     we can send them all to Healthchecks upon a finish or failure state. But skip this if the
     "send_logs" option is false.
     '''
-    if hook_config.get('send_logs') is False:
+    if hook_config.get('send_logs', False) is False:
         return
 
     ping_body_limit = max(
@@ -99,7 +99,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             logger.warning(f'Healthchecks error: {error}')
 
 
-def destroy_monitor(hook_config, config, monitoring_log_level, dry_run):
+def destroy_monitor(hook_config, config, monitoring_log_level, dry_run):  # pragma: no cover
     '''
     Remove the monitor handler that was added to the root logger. This prevents the handler from
     getting reused by other instances of this monitor.

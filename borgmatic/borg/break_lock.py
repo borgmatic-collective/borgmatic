@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.config.paths
 from borgmatic.borg import environment, flags
@@ -20,17 +21,19 @@ def break_lock(
     argparse.Namespace of global arguments, and optional local and remote Borg paths, break any
     repository and cache locks leftover from Borg aborting.
     '''
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
+    extra_borg_options = config.get('extra_borg_options', {}).get('break_lock', '')
 
     full_command = (
         (local_path, 'break-lock')
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if config.get('log_json') else ())
+        + ('--log-json',)
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 

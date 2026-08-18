@@ -14,7 +14,7 @@ import requests
 
 def list_merged_pulls(url):
     '''
-    Given a Gitea or GitHub API endpoint URL for pull requests, fetch and return the corresponding
+    Given a Forgejo or GitHub API endpoint URL for pull requests, fetch and return the corresponding
     JSON for all such merged pull requests.
     '''
     response = requests.get(f'{url}?state=closed', headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
@@ -36,7 +36,6 @@ def list_contributing_issues(url):
 
 PULLS_API_ENDPOINT_URLS = (
     'https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/pulls',
-    'https://api.github.com/repos/borgmatic-collective/borgmatic/pulls',
 )
 ISSUES_API_ENDPOINT_URL = 'https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/issues?state=all'
 RECENT_CONTRIBUTORS_CUTOFF_DAYS = 365

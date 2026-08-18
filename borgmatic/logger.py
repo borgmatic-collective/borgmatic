@@ -1,7 +1,9 @@
 import enum
+import json
 import logging
 import logging.handlers
 import os
+import socket
 import sys
 
 
@@ -85,6 +87,57 @@ class Multi_stream_handler(logging.Handler):
             handler.setLevel(level)
 
 
+DEFAULT_JOURNALD_PRIORITY = 6
+
+
+class JournaldHandler(logging.Handler):
+    def __init__(self, journald_socket_path):
+        super().__init__()
+
+        add_custom_log_levels()
+
+        self.journald_socket_path = journald_socket_path
+        self.log_level_to_journald_priority = {
+            logging.CRITICAL: 2,
+            logging.ERROR: 3,
+            logging.WARNING: 4,
+            logging.ANSWER: 5,
+            logging.INFO: 6,
+            logging.DEBUG: 7,
+        }
+
+    def emit(self, record):
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+
+        try:
+            message_parts = []
+            entry = dict(
+                MESSAGE=record.getMessage(),
+                PRIORITY=self.log_level_to_journald_priority.get(
+                    record.levelno, DEFAULT_JOURNALD_PRIORITY
+                ),
+                SYSLOG_IDENTIFIER='borgmatic',
+                SYSLOG_PID=os.getpid(),
+            )
+
+            for key, value in entry.items():
+                encoded_key = key.upper().encode('utf-8')
+                encoded_value = str(value).encode('utf-8')
+
+                # Multi-line and single-line values use different formats on the wire.
+                if b'\n' in encoded_value:
+                    message_parts.extend((encoded_key, b'\n'))
+                    message_parts.extend(
+                        (len(encoded_value).to_bytes(8, 'little'), encoded_value, b'\n')
+                    )
+                else:
+                    message_parts.extend((encoded_key, b'=', encoded_value, b'\n'))
+
+            sock.sendto(b''.join(message_parts), self.journald_socket_path)
+        finally:
+            sock.close()
+
+
 class Log_prefix_formatter(logging.Formatter):
     def __init__(self, fmt='{prefix}{message}', *args, style='{', **kwargs):
         self.prefix = None
@@ -95,6 +148,32 @@ class Log_prefix_formatter(logging.Formatter):
         record.prefix = f'{self.prefix}: ' if self.prefix else ''
 
         return super().format(record)
+
+
+def log_record_to_json(record):
+    '''
+    Given a logging.LogRecord, return it as a JSON-encoded string containing relevant attributes.
+    '''
+    message_id = getattr(record, 'msgid', None)
+
+    return json.dumps(
+        dict(
+            type='log_message',
+            time=record.created,
+            message=record.getMessage(),
+            levelname=record.levelname,
+            name=record.name,
+        )
+        | ({'msgid': message_id} if message_id is not None else {})
+    )
+
+
+class Json_formatter(logging.Formatter):
+    def __init__(self, fmt='{message}', *args, style='{', **kwargs):
+        super().__init__(*args, fmt=fmt, style=style, **kwargs)
+
+    def format(self, record):
+        return log_record_to_json(record)
 
 
 class Color(enum.Enum):
@@ -260,6 +339,91 @@ class Log_prefix:
         set_log_prefix(self.original_prefix)
 
 
+class Log_exclude_filter(logging.Filter):
+    '''
+    A Python log filter that omits log records matching given attributes.
+    '''
+
+    def __init__(self, name, filter_attributes):
+        '''
+        Given a unique name for this filter and a dict of attributes to filter on, set the filter
+        name and save the attributes for use below.
+        '''
+        self.filter_attributes = filter_attributes
+
+        super().__init__(name)
+
+    def filter(self, log_record):
+        '''
+        Given a log record, return False (indicating the record should be omitted) if the record's
+        attributes match any of the saved filter attributes. Return True (indicating do not omit)
+        otherwise.
+        '''
+        for attribute_name, value in self.filter_attributes.items():
+            if getattr(log_record, attribute_name, None) == value:
+                return False
+
+        return True
+
+
+def add_log_exclude_filter(name, filter_attributes):
+    '''
+    Given a unique filter name and a dict of attributes to filter on, create a log exclude filter
+    with them and add the filter to each log handler.
+    '''
+    for handler in logging.getLogger().handlers:
+        handler.addFilter(Log_exclude_filter(name, filter_attributes))
+
+
+def remove_log_exclude_filter(name):
+    '''
+    Given a unique filter name, remove matching filters from each log handler.
+    '''
+    for handler in logging.getLogger().handlers:
+        for exclude_filter in handler.filters:
+            if getattr(exclude_filter, 'name', None) == name:
+                handler.removeFilter(exclude_filter)
+
+
+class Logs_suppressed:
+    '''
+    A Python context manager for temporarily adding a log filter that suppresses requested log
+    records for the duration of the context manager.
+
+    Example use:
+
+
+       with borgmatic.logger.Logs_suppressed(msgid='Repository.DoesNotExist'):
+            do_something_that_logs()
+
+    For the scope of that "with" statement, any records logged with the given message ID are
+    filtered out of the log output. "msgid" is just an example; any logging.LogRecord attributes
+    (standard or custom) can be passed in to filter on.
+
+    Multiple instances of this context manager with different filter attributes can be in use at
+    once.
+    '''
+
+    def __init__(self, **filter_attributes):
+        '''
+        Given the desired log record filter attributes as keyword arguments, save them for use below.
+        '''
+        self.filter_attributes = filter_attributes
+
+    def __enter__(self):
+        '''
+        Create a log filter with the saved filter attributes and add the filter to every logging
+        handler, so that they filter out the desired log records.
+        '''
+        add_log_exclude_filter(name=str(id(self)), filter_attributes=self.filter_attributes)
+
+    def __exit__(self, exception_type, exception, traceback):
+        '''
+        Remove the previously added filter from every logging handler.
+        '''
+        remove_log_exclude_filter(name=str(id(self)))
+
+
 class Delayed_logging_handler(logging.handlers.BufferingHandler):
     '''
     A logging handler that buffers logs and doesn't flush them until explicitly flushed (after
@@ -321,6 +485,10 @@ def flush_delayed_logging(target_handlers):
         root_logger.removeHandler(delayed_handler)
 
 
+JOURNALD_SOCKET_PATH = '/run/systemd/journal/socket'
+SYSLOG_PATHS = ('/dev/log', '/var/run/syslog', '/var/run/log')
+
+
 def configure_logging(
     console_log_level,
     syslog_log_level=None,
@@ -328,6 +496,7 @@ def configure_logging(
     monitoring_log_level=None,
     log_file=None,
     log_file_format=None,
+    log_json=False,
     color_enabled=True,
 ):
     '''
@@ -364,7 +533,9 @@ def configure_logging(
         },
     )
 
-    if color_enabled:
+    if log_json:
+        console_handler.setFormatter(Json_formatter())
+    elif color_enabled:
         console_handler.setFormatter(Console_color_formatter())
     else:
         console_handler.setFormatter(Log_prefix_formatter())
@@ -373,29 +544,32 @@ def configure_logging(
     handlers = [console_handler]
 
     if syslog_log_level != logging.DISABLED:
-        syslog_path = None
-
-        if os.path.exists('/dev/log'):
-            syslog_path = '/dev/log'
-        elif os.path.exists('/var/run/syslog'):
-            syslog_path = '/var/run/syslog'
-        elif os.path.exists('/var/run/log'):
-            syslog_path = '/var/run/log'
-
-        if syslog_path:
-            syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
-            syslog_handler.setFormatter(
-                Log_prefix_formatter(
-                    'borgmatic: {levelname} {prefix}{message}',
-                ),
+        if os.path.exists(JOURNALD_SOCKET_PATH):
+            journald_handler = JournaldHandler(JOURNALD_SOCKET_PATH)
+            journald_handler.setLevel(syslog_log_level)
+            handlers.append(journald_handler)
+        else:
+            syslog_path = next(
+                (path for path in SYSLOG_PATHS if os.path.exists(path)),
+                None,
             )
-            syslog_handler.setLevel(syslog_log_level)
-            handlers.append(syslog_handler)
+
+            if syslog_path:
+                syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
+                syslog_handler.setFormatter(
+                    Log_prefix_formatter(
+                        'borgmatic: {levelname} {prefix}{message}',
+                    ),
+                )
+                syslog_handler.setLevel(syslog_log_level)
+                handlers.append(syslog_handler)
 
     if log_file and log_file_log_level != logging.DISABLED:
         file_handler = logging.handlers.WatchedFileHandler(log_file)
         file_handler.setFormatter(
-            Log_prefix_formatter(
+            Json_formatter()
+            if log_json
+            else Log_prefix_formatter(
                 log_file_format or '[{asctime}] {levelname}: {prefix}{message}',
             ),
         )

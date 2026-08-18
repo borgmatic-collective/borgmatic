@@ -102,8 +102,9 @@ def test_database_names_to_dump_with_all_and_format_lists_databases():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('execute_command_and_capture_output').and_return(
-        'foo,test,\nbar,test,"stuff and such"',
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield(
+        'foo,test,',
+        'bar,test,"stuff and such"',
     )
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
@@ -117,6 +118,9 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_hostnam
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        '/path/to/working/dir'
+    )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'psql',
@@ -131,7 +135,8 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_hostnam
             '1234',
         ),
         environment=object,
-    ).and_return('foo,test,\nbar,test,"stuff and such"')
+        working_directory='/path/to/working/dir',
+    ).and_yield('foo,test,', 'bar,test,"stuff and such"')
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
         'foo',
@@ -144,6 +149,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_usernam
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'psql',
@@ -156,7 +162,8 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_usernam
             'postgres',
         ),
         environment=object,
-    ).and_return('foo,test,\nbar,test,"stuff and such"')
+        working_directory=None,
+    ).and_yield('foo,test,', 'bar,test,"stuff and such"')
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
         'foo',
@@ -165,14 +172,25 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_usernam
 
 
 def test_database_names_to_dump_with_all_and_format_lists_databases_with_options():
-    database = {'name': 'all', 'format': 'custom', 'list_options': '--harder'}
+    database = {'name': 'all', 'format': 'custom', 'list_options': '--harder "foo bar"'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('psql', '--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only', '--harder'),
+        (
+            'psql',
+            '--list',
+            '--no-password',
+            '--no-psqlrc',
+            '--csv',
+            '--tuples-only',
+            '--harder',
+            "'foo bar'",
+        ),
         environment=object,
-    ).and_return('foo,test,\nbar,test,"stuff and such"')
+        working_directory=None,
+    ).and_yield('foo,test,', 'bar,test,"stuff and such"')
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
         'foo',
@@ -185,8 +203,9 @@ def test_database_names_to_dump_with_all_and_format_excludes_particular_database
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('execute_command_and_capture_output').and_return(
-        'foo,test,\ntemplate0,test,blah',
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield(
+        'foo,test,',
+        'template0,test,blah',
     )
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == ('foo',)
@@ -201,6 +220,7 @@ def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'docker',
@@ -216,7 +236,8 @@ def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
             '--tuples-only',
         ),
         environment=object,
-    ).and_return('foo,text').once()
+        working_directory=None,
+    ).and_yield('foo,text').once()
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == ('foo',)
 
@@ -255,6 +276,7 @@ def test_dump_data_sources_runs_pg_dump_for_each_database():
         'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     for name, process in zip(('foo', 'bar'), processes):
         flexmock(module).should_receive('execute_command').with_args(
@@ -272,7 +294,23 @@ def test_dump_data_sources_runs_pg_dump_for_each_database():
             shell=True,
             environment={'PGSSLMODE': 'disable'},
             run_to_completion=False,
+            working_directory=None,
         ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'bar'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/postgresql_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -292,6 +330,7 @@ def test_dump_data_sources_raises_when_no_database_names_to_dump():
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(())
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
 
     with pytest.raises(ValueError):
         module.dump_data_sources(
@@ -309,6 +348,7 @@ def test_dump_data_sources_does_not_raise_when_no_database_names_to_dump():
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(())
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
 
     assert (
         module.dump_data_sources(
@@ -336,6 +376,21 @@ def test_dump_data_sources_with_duplicate_dump_skips_pg_dump():
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'bar'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/postgresql_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -366,6 +421,8 @@ def test_dump_data_sources_with_dry_run_skips_pg_dump():
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').never()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
 
     assert (
         module.dump_data_sources(
@@ -394,6 +451,7 @@ def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
         'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -414,7 +472,24 @@ def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
         shell=True,
         environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump(
+                'postgresql_databases', 'foo', 'database.example.org', 5433
+            ),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/postgresql_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -442,6 +517,7 @@ def test_dump_data_sources_runs_pg_dump_with_username_and_password():
         'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -460,7 +536,22 @@ def test_dump_data_sources_runs_pg_dump_with_username_and_password():
         shell=True,
         environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/postgresql_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -488,6 +579,7 @@ def test_dump_data_sources_with_username_injection_attack_gets_escaped():
         'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -506,7 +598,22 @@ def test_dump_data_sources_with_username_injection_attack_gets_escaped():
         shell=True,
         environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/postgresql_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -532,6 +639,7 @@ def test_dump_data_sources_runs_pg_dump_with_directory_format():
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_parent_directory_for_dump')
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -547,7 +655,22 @@ def test_dump_data_sources_runs_pg_dump_with_directory_format():
         ),
         shell=True,
         environment={'PGSSLMODE': 'disable'},
+        working_directory=None,
     ).and_return(flexmock()).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/postgresql_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -576,6 +699,7 @@ def test_dump_data_sources_runs_pg_dump_with_string_compression():
         'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -594,7 +718,22 @@ def test_dump_data_sources_runs_pg_dump_with_string_compression():
         shell=True,
         environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
+        working_directory=None,
     ).and_return(processes[0]).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/postgresql_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -623,6 +762,7 @@ def test_dump_data_sources_runs_pg_dump_with_integer_compression():
         'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -641,7 +781,22 @@ def test_dump_data_sources_runs_pg_dump_with_integer_compression():
         shell=True,
         environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
+        working_directory=None,
     ).and_return(processes[0]).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/postgresql_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -657,7 +812,7 @@ def test_dump_data_sources_runs_pg_dump_with_integer_compression():
 
 
 def test_dump_data_sources_runs_pg_dump_with_options():
-    databases = [{'name': 'foo', 'options': '--stuff=such'}]
+    databases = [{'name': 'foo', 'options': '--stuff "foo bar"'}]
     process = flexmock()
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -670,6 +825,7 @@ def test_dump_data_sources_runs_pg_dump_with_options():
         'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -679,7 +835,8 @@ def test_dump_data_sources_runs_pg_dump_with_options():
             '--if-exists',
             '--format',
             'custom',
-            '--stuff=such',
+            '--stuff',
+            "'foo bar'",
             'foo',
             '>',
             'databases/localhost/foo',
@@ -687,7 +844,22 @@ def test_dump_data_sources_runs_pg_dump_with_options():
         shell=True,
         environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/postgresql_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -713,13 +885,29 @@ def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
         'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         ('pg_dumpall', '--no-password', '--clean', '--if-exists', '>', 'databases/localhost/all'),
         shell=True,
         environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'all'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/postgresql_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -745,6 +933,7 @@ def test_dump_data_sources_runs_non_default_pg_dump():
         'resolve_credential',
     ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -763,7 +952,22 @@ def test_dump_data_sources_runs_non_default_pg_dump():
         shell=True,
         environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'postgresql_databases',
+        [
+            module.borgmatic.actions.restore.Dump('postgresql_databases', 'foo'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/postgresql_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -773,6 +977,86 @@ def test_dump_data_sources_runs_non_default_pg_dump():
         patterns=[],
         dry_run=False,
     ) == [process]
+
+
+def test_make_data_source_dump_patterns_with_no_port_adds_pattern_with_default_port():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('.borgmatic')
+    flexmock(module).should_receive('make_dump_path').replace_with(lambda path: path)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').replace_with(
+        lambda dump_path, name, hostname, port, container, label: '/'.join(
+            (dump_path, f'{hostname}:{port}' if port else hostname, name)
+        )
+    )
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+
+    assert module.make_data_source_dump_patterns(
+        databases=flexmock(),
+        config=flexmock(),
+        borgmatic_runtime_directory='run',
+        name='db',
+        hostname='host',
+        port=None,
+    ) == (
+        'borgmatic/host/db',
+        'run/host/db',
+        '.borgmatic/host/db',
+        'borgmatic/host:9999/db',
+    )
+
+
+def test_make_data_source_dump_patterns_with_default_port_adds_pattern_with_no_port():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('.borgmatic')
+    flexmock(module).should_receive('make_dump_path').replace_with(lambda path: path)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').replace_with(
+        lambda dump_path, name, hostname, port, container, label: '/'.join(
+            (dump_path, f'{hostname}:{port}' if port else hostname, name)
+        )
+    )
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+
+    assert module.make_data_source_dump_patterns(
+        databases=flexmock(),
+        config=flexmock(),
+        borgmatic_runtime_directory='run',
+        name='db',
+        hostname='host',
+        port=9999,
+    ) == (
+        'borgmatic/host:9999/db',
+        'run/host:9999/db',
+        '.borgmatic/host:9999/db',
+        'borgmatic/host/db',
+    )
+
+
+def test_make_data_source_dump_patterns_with_non_default_port_adds_no_extra_patterns():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('.borgmatic')
+    flexmock(module).should_receive('make_dump_path').replace_with(lambda path: path)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').replace_with(
+        lambda dump_path, name, hostname, port, container, label: '/'.join(
+            (dump_path, f'{hostname}:{port}' if port else hostname, name)
+        )
+    )
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+
+    assert module.make_data_source_dump_patterns(
+        databases=flexmock(),
+        config=flexmock(),
+        borgmatic_runtime_directory='run',
+        name='db',
+        hostname='host',
+        port=1234,
+    ) == (
+        'borgmatic/host:1234/db',
+        'run/host:1234/db',
+        '.borgmatic/host:1234/db',
+    )
 
 
 def test_restore_data_source_dump_runs_pg_restore():
@@ -785,6 +1069,7 @@ def test_restore_data_source_dump_runs_pg_restore():
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
@@ -799,7 +1084,9 @@ def test_restore_data_source_dump_runs_pg_restore():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'PGSSLMODE': 'disable'},
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -812,6 +1099,7 @@ def test_restore_data_source_dump_runs_pg_restore():
             'ANALYZE',
         ),
         environment={'PGSSLMODE': 'disable'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -842,6 +1130,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_hostname_and_port():
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
@@ -860,7 +1149,9 @@ def test_restore_data_source_dump_runs_pg_restore_with_hostname_and_port():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'PGSSLMODE': 'disable'},
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -877,6 +1168,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_hostname_and_port():
             'ANALYZE',
         ),
         environment={'PGSSLMODE': 'disable'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -909,6 +1201,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_username_and_password():
     )
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
@@ -925,7 +1218,9 @@ def test_restore_data_source_dump_runs_pg_restore_with_username_and_password():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -940,6 +1235,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_username_and_password():
             'ANALYZE',
         ),
         environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -983,6 +1279,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     )
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
@@ -1003,7 +1300,9 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'PGPASSWORD': 'clipassword', 'PGSSLMODE': 'disable'},
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1022,6 +1321,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
             'ANALYZE',
         ),
         environment={'PGPASSWORD': 'clipassword', 'PGSSLMODE': 'disable'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1065,6 +1365,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     )
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
@@ -1085,7 +1386,9 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'PGPASSWORD': 'restorepassword', 'PGSSLMODE': 'disable'},
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1104,6 +1407,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
             'ANALYZE',
         ),
         environment={'PGPASSWORD': 'restorepassword', 'PGSSLMODE': 'disable'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1126,8 +1430,8 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
     hook_config = [
         {
             'name': 'foo',
-            'restore_options': '--harder',
-            'analyze_options': '--smarter',
+            'restore_options': '--harder "foo bar"',
+            'analyze_options': '--smarter "baz quux"',
             'schemas': None,
         },
     ]
@@ -1139,6 +1443,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
@@ -1149,12 +1454,15 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
             '--dbname',
             'foo',
             '--harder',
+            "'foo bar'",
         ),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'PGSSLMODE': 'disable'},
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1164,10 +1472,12 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
             '--dbname',
             'foo',
             '--smarter',
+            "'baz quux'",
             '--command',
             'ANALYZE',
         ),
         environment={'PGSSLMODE': 'disable'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1196,6 +1506,7 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'psql',
@@ -1206,10 +1517,13 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'PGSSLMODE': 'disable'},
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         ('psql', '--no-password', '--no-psqlrc', '--quiet', '--command', 'ANALYZE'),
         environment={'PGSSLMODE': 'disable'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1238,13 +1552,16 @@ def test_restore_data_source_dump_runs_psql_for_plain_database_dump():
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('psql', '--no-password', '--no-psqlrc', '--dbname', 'foo'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'PGSSLMODE': 'disable'},
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1257,6 +1574,7 @@ def test_restore_data_source_dump_runs_psql_for_plain_database_dump():
             'ANALYZE',
         ),
         environment={'PGSSLMODE': 'disable'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1292,6 +1610,7 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'docker',
@@ -1311,7 +1630,9 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'PGSSLMODE': 'disable'},
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'docker',
@@ -1329,6 +1650,7 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
             'ANALYZE',
         ),
         environment={'PGSSLMODE': 'disable'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1383,6 +1705,7 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('/dump/path')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
@@ -1398,7 +1721,9 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
         output_log_level=logging.DEBUG,
         input_file=None,
         environment={'PGSSLMODE': 'disable'},
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1411,6 +1736,7 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
             'ANALYZE',
         ),
         environment={'PGSSLMODE': 'disable'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(
@@ -1438,6 +1764,7 @@ def test_restore_data_source_dump_with_schemas_restores_schemas():
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('/dump/path')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
@@ -1457,7 +1784,9 @@ def test_restore_data_source_dump_with_schemas_restores_schemas():
         output_log_level=logging.DEBUG,
         input_file=None,
         environment={'PGSSLMODE': 'disable'},
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
     flexmock(module).should_receive('execute_command').with_args(
         (
             'psql',
@@ -1470,6 +1799,7 @@ def test_restore_data_source_dump_with_schemas_restores_schemas():
             'ANALYZE',
         ),
         environment={'PGSSLMODE': 'disable'},
+        working_directory=None,
     ).once()
 
     module.restore_data_source_dump(

@@ -1,10 +1,11 @@
 import argparse
 import logging
+import shlex
 
 import borgmatic.config.paths
 import borgmatic.logger
 from borgmatic.borg import environment, feature, flags
-from borgmatic.execute import execute_command, execute_command_and_capture_output
+from borgmatic.execute import execute_command_and_capture_output
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,8 @@ def make_info_command(
     arguments to the info action as an argparse.Namespace, and global arguments, return a command
     as a tuple to display summary information for archives in the repository.
     '''
+    extra_borg_options = config.get('extra_borg_options', {}).get('info', '')
+
     return (
         (local_path, 'info')
         + (
@@ -37,7 +40,7 @@ def make_info_command(
         )
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
-        + flags.make_flags('log-json', config.get('log_json'))
+        + ('--log-json',)
         + flags.make_flags('lock-wait', config.get('lock_wait'))
         + (
             (
@@ -51,6 +54,9 @@ def make_info_command(
                     info_arguments.archive or config.get('match_archives'),
                     config.get('archive_name_format'),
                     local_borg_version,
+                    # Borg helpfully omits archives from its JSON output unless "--match-archives"
+                    # is given. So force that flag to get set when JSON is enabled.
+                    force_flags_even_for_globs=info_arguments.json,
                 )
             )
         )
@@ -58,6 +64,7 @@ def make_info_command(
             info_arguments,
             excludes=('repository', 'archive', 'prefix', 'match_archives'),
         )
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
@@ -99,26 +106,28 @@ def display_archives_info(
     borg_exit_codes = config.get('borg_exit_codes')
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    json_info = execute_command_and_capture_output(
-        json_command,
-        environment=environment.make_environment(config),
-        working_directory=working_directory,
-        borg_local_path=local_path,
-        borg_exit_codes=borg_exit_codes,
-    )
-
     if info_arguments.json:
-        return json_info
+        return '\n'.join(
+            execute_command_and_capture_output(
+                json_command,
+                environment=environment.make_environment(config),
+                working_directory=working_directory,
+                borg_local_path=local_path,
+                borg_exit_codes=borg_exit_codes,
+            )
+        )
 
-    flags.warn_for_aggressive_archive_flags(json_command, json_info)
-
-    execute_command(
-        main_command,
-        output_log_level=logging.ANSWER,
-        environment=environment.make_environment(config),
-        working_directory=working_directory,
-        borg_local_path=local_path,
-        borg_exit_codes=borg_exit_codes,
+    output_lines = tuple(
+        execute_command_and_capture_output(
+            main_command,
+            output_log_level=logging.ANSWER,
+            environment=environment.make_environment(config),
+            working_directory=working_directory,
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
+        )
     )
+
+    flags.warn_for_aggressive_archive_flags(main_command, output_lines)
 
     return None

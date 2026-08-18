@@ -10,6 +10,7 @@ import subprocess
 import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.execute
+import borgmatic.hooks.data_source.config
 import borgmatic.hooks.data_source.snapshot
 
 logger = logging.getLogger(__name__)
@@ -43,17 +44,19 @@ def get_logical_volumes(lsblk_command, patterns=None):
     '''
     try:
         devices_info = json.loads(
-            borgmatic.execute.execute_command_and_capture_output(
-                # Use lsblk instead of lvs here because lvs can't show active mounts.
-                (
-                    *lsblk_command.split(' '),
-                    '--output',
-                    'name,path,mountpoint,type',
-                    '--json',
-                    '--list',
+            '\n'.join(
+                borgmatic.execute.execute_command_and_capture_output(
+                    # Use lsblk instead of lvs here because lvs can't show active mounts.
+                    (
+                        *lsblk_command.split(' '),
+                        '--output',
+                        'name,path,mountpoint,type',
+                        '--json',
+                        '--list',
+                    ),
+                    close_fds=True,
                 ),
-                close_fds=True,
-            ),
+            )
         )
     except json.JSONDecodeError as error:
         raise ValueError(f'Invalid {lsblk_command} JSON output: {error}')
@@ -166,7 +169,10 @@ def make_borg_snapshot_pattern(pattern, logical_volume, normalized_runtime_direc
         hashlib.shake_256(logical_volume.mount_point.encode('utf-8')).hexdigest(
             MOUNT_POINT_HASH_LENGTH,
         ),
-        '.',  # Borg 1.4+ "slashdot" hack.
+        # Use the Borg 1.4+ "slashdot" hack to prevent the snapshot path prefix from getting
+        # included in the archive—but only if there's not already a slashdot hack present in the
+        # pattern.
+        ('' if f'{os.path.sep}.{os.path.sep}' in pattern.path else '.'),
         # Included so that the source directory ends up in the Borg archive at its "original" path.
         pattern.path.lstrip('^').lstrip(os.path.sep),
     )
@@ -272,11 +278,7 @@ def dump_data_sources(
                 normalized_runtime_directory,
             )
 
-            # Attempt to update the pattern in place, since pattern order matters to Borg.
-            try:
-                patterns[patterns.index(pattern)] = snapshot_pattern
-            except ValueError:
-                patterns.append(snapshot_pattern)
+            borgmatic.hooks.data_source.config.replace_pattern(patterns, pattern, snapshot_pattern)
 
     return []
 
@@ -321,19 +323,21 @@ def get_snapshots(lvs_command, snapshot_name=None):
     '''
     try:
         snapshot_info = json.loads(
-            borgmatic.execute.execute_command_and_capture_output(
-                # Use lvs instead of lsblk here because lsblk can't filter to just snapshots.
-                (
-                    *lvs_command.split(' '),
-                    '--report-format',
-                    'json',
-                    '--options',
-                    'lv_name,lv_path',
-                    '--select',
-                    'lv_attr =~ ^s',  # Filter to just snapshots.
+            '\n'.join(
+                borgmatic.execute.execute_command_and_capture_output(
+                    # Use lvs instead of lsblk here because lsblk can't filter to just snapshots.
+                    (
+                        *lvs_command.split(' '),
+                        '--report-format',
+                        'json',
+                        '--options',
+                        'lv_name,lv_path',
+                        '--select',
+                        'lv_attr =~ ^s',  # Filter to just snapshots.
+                    ),
+                    close_fds=True,
                 ),
-                close_fds=True,
-            ),
+            )
         )
     except json.JSONDecodeError as error:
         raise ValueError(f'Invalid {lvs_command} JSON output: {error}')
@@ -350,12 +354,12 @@ def get_snapshots(lvs_command, snapshot_name=None):
         raise ValueError(f'Invalid {lvs_command} output: Missing key "{error}"')
 
 
-def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):  # noqa: PLR0912
+def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, patterns, dry_run):  # noqa: PLR0912
     '''
-    Given an LVM configuration dict, a configuration dict, the borgmatic runtime directory, and
-    whether this is a dry run, unmount and delete any LVM snapshots created by borgmatic. If this is
-    a dry run or LVM isn't configured in borgmatic's configuration, then don't actually remove
-    anything.
+    Given an LVM configuration dict, a configuration dict, the borgmatic runtime directory, the
+    configured patterns, and whether this is a dry run, unmount and delete any LVM snapshots created
+    by borgmatic. If this is a dry run or LVM isn't configured in borgmatic's configuration, then
+    don't actually remove anything.
     '''
     if hook_config is None:
         return
@@ -452,6 +456,10 @@ def make_data_source_dump_patterns(
     config,
     borgmatic_runtime_directory,
     name=None,
+    hostname=None,
+    port=None,
+    container=None,
+    label=None,
 ):  # pragma: no cover
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".

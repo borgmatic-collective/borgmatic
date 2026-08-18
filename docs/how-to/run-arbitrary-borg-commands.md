@@ -1,12 +1,10 @@
 ---
-title: How to run arbitrary Borg commands
+title: 🔧 How to run arbitrary Borg commands
 eleventyNavigation:
   key: 🔧 Run arbitrary Borg commands
   parent: How-to guides
   order: 12
 ---
-## Running Borg with borgmatic
-
 Borg has several commands and options that borgmatic does not currently
 support. Sometimes though, as a borgmatic user, you may find yourself wanting
 to take advantage of these off-the-beaten-path Borg features. You could of
@@ -28,7 +26,7 @@ arguments:
  * verbosity
 
 
-### borg action
+## borg action
 
 <span class="minilink minilink-addedin">New in version 1.5.15</span> The way
 you run Borg with borgmatic is via the `borg` action. Here's a simple example:
@@ -45,13 +43,10 @@ be preferred though for most uses.)
 You can also specify Borg options for relevant commands. For instance:
 
 ```bash
-borgmatic borg repo-list --short
+borgmatic borg list --short
 ```
 
-(No borgmatic `repo-list` action? Try `rlist` or `list` instead or upgrade
-borgmatic!)
-
-This runs Borg's `repo-list` command once on each configured borgmatic
+This runs Borg's `list` command once on each configured borgmatic
 repository.
 
 What if you only want to run Borg on a single configured borgmatic repository
@@ -78,7 +73,7 @@ the right place (which didn't always work). So your command-line in these
 older versions didn't support the `::`
 
 
-### Specifying an archive
+## Specifying an archive
 
 For borg commands that expect an archive name, you have a few approaches.
 Here's one:
@@ -119,7 +114,7 @@ borgmatic borg --archive latest list '$ARCHIVE'
 borgmatic borg list your-actual-archive-name
 ```
 
-### Limitations
+## Limitations
 
 borgmatic's `borg` action is not without limitations:
 
@@ -139,6 +134,7 @@ borgmatic's `borg` action is not without limitations:
    not disable certain borgmatic logs to avoid interfering with JSON output.
  * The `borg` action bypasses most of borgmatic's machinery, so for instance
    monitoring hooks will not get triggered when running `borgmatic borg create`.
+ * The `borg` action does not use `extra_borg_options`.
  * <span class="minilink minilink-addedin">Prior to version 1.8.0</span>
    borgmatic implicitly injected the repository/archive arguments on the Borg
    command-line for you (based on your borgmatic configuration or the

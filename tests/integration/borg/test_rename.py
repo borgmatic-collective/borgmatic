@@ -1,7 +1,17 @@
 import logging
 
+from flexmock import flexmock
+
 from borgmatic.borg import rename as module
-from tests.unit.test_verbosity import insert_logging_mock
+
+
+def insert_logging_mock(log_level):
+    '''
+    Mock the isEnabledFor from Python logging.
+    '''
+    logging = flexmock(module.logging.Logger)
+    logging.should_receive('isEnabledFor').replace_with(lambda level: level >= log_level)
+    logging.should_receive('getEffectiveLevel').replace_with(lambda: log_level)
 
 
 def test_make_rename_command_includes_log_info():
@@ -18,7 +28,7 @@ def test_make_rename_command_includes_log_info():
         remote_path=None,
     )
 
-    assert command == ('borg', 'rename', '--info', 'repo::old_archive', 'new_archive')
+    assert command == ('borg', 'rename', '--info', '--log-json', 'repo::old_archive', 'new_archive')
 
 
 def test_make_rename_command_includes_log_debug():
@@ -35,10 +45,20 @@ def test_make_rename_command_includes_log_debug():
         remote_path=None,
     )
 
-    assert command == ('borg', 'rename', '--debug', '--show-rc', 'repo::old_archive', 'new_archive')
+    assert command == (
+        'borg',
+        'rename',
+        '--debug',
+        '--show-rc',
+        '--log-json',
+        'repo::old_archive',
+        'new_archive',
+    )
 
 
 def test_make_rename_command_includes_dry_run():
+    insert_logging_mock(logging.WARNING)
+
     command = module.make_rename_command(
         dry_run=True,
         repository_name='repo',
@@ -50,10 +70,19 @@ def test_make_rename_command_includes_dry_run():
         remote_path=None,
     )
 
-    assert command == ('borg', 'rename', '--dry-run', 'repo::old_archive', 'new_archive')
+    assert command == (
+        'borg',
+        'rename',
+        '--dry-run',
+        '--log-json',
+        'repo::old_archive',
+        'new_archive',
+    )
 
 
 def test_make_rename_command_includes_remote_path():
+    insert_logging_mock(logging.WARNING)
+
     command = module.make_rename_command(
         dry_run=False,
         repository_name='repo',
@@ -70,12 +99,15 @@ def test_make_rename_command_includes_remote_path():
         'rename',
         '--remote-path',
         'borg1',
+        '--log-json',
         'repo::old_archive',
         'new_archive',
     )
 
 
 def test_make_rename_command_includes_umask():
+    insert_logging_mock(logging.WARNING)
+
     command = module.make_rename_command(
         dry_run=False,
         repository_name='repo',
@@ -87,10 +119,20 @@ def test_make_rename_command_includes_umask():
         remote_path=None,
     )
 
-    assert command == ('borg', 'rename', '--umask', '077', 'repo::old_archive', 'new_archive')
+    assert command == (
+        'borg',
+        'rename',
+        '--umask',
+        '077',
+        '--log-json',
+        'repo::old_archive',
+        'new_archive',
+    )
 
 
 def test_make_rename_command_includes_log_json():
+    insert_logging_mock(logging.WARNING)
+
     command = module.make_rename_command(
         dry_run=False,
         repository_name='repo',
@@ -106,6 +148,8 @@ def test_make_rename_command_includes_log_json():
 
 
 def test_make_rename_command_includes_lock_wait():
+    insert_logging_mock(logging.WARNING)
+
     command = module.make_rename_command(
         dry_run=False,
         repository_name='repo',
@@ -117,4 +161,37 @@ def test_make_rename_command_includes_lock_wait():
         remote_path=None,
     )
 
-    assert command == ('borg', 'rename', '--lock-wait', '5', 'repo::old_archive', 'new_archive')
+    assert command == (
+        'borg',
+        'rename',
+        '--log-json',
+        '--lock-wait',
+        '5',
+        'repo::old_archive',
+        'new_archive',
+    )
+
+
+def test_make_rename_command_includes_extra_borg_options():
+    insert_logging_mock(logging.WARNING)
+
+    command = module.make_rename_command(
+        dry_run=False,
+        repository_name='repo',
+        old_archive_name='old_archive',
+        new_archive_name='new_archive',
+        config={'extra_borg_options': {'rename': '--extra "value with space"'}},
+        local_borg_version='1.2.3',
+        local_path='borg',
+        remote_path=None,
+    )
+
+    assert command == (
+        'borg',
+        'rename',
+        '--log-json',
+        '--extra',
+        'value with space',
+        'repo::old_archive',
+        'new_archive',
+    )

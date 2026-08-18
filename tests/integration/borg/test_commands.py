@@ -35,7 +35,7 @@ def assert_command_does_not_duplicate_flags(command, *args, **kwargs):
     if '--json' in command:
         return '{}'
 
-    return None
+    return ''
 
 
 def fuzz_argument(arguments, argument_name):
@@ -159,10 +159,7 @@ def test_make_repo_list_command_does_not_duplicate_flags_or_raise():
 def test_display_archives_info_command_does_not_duplicate_flags_or_raise():
     arguments = borgmatic.commands.arguments.parse_arguments({}, 'info')['info']
     flexmock(borgmatic.borg.info).should_receive('execute_command_and_capture_output').replace_with(
-        assert_command_does_not_duplicate_flags,
-    )
-    flexmock(borgmatic.borg.info).should_receive('execute_command').replace_with(
-        assert_command_does_not_duplicate_flags,
+        lambda command, *args, **kwargs: iter((assert_command_does_not_duplicate_flags(command),)),
     )
 
     for argument_name in dir(arguments):

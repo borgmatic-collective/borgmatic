@@ -182,6 +182,84 @@ def test_multi_stream_handler_logs_to_handler_for_log_level():
     multi_handler.emit(flexmock(levelno=module.logging.ERROR))
 
 
+LOGGING_ANSWER = flexmock()
+
+
+def test_journald_handler_serializes_log_record_to_socket():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
+    flexmock(module.os).should_receive('getpid').and_return(12345)
+    socket = flexmock()
+    socket.should_receive('sendto').with_args(
+        b'MESSAGE=All done\nPRIORITY=6\nSYSLOG_IDENTIFIER=borgmatic\nSYSLOG_PID=12345\n',
+        '/socket/path',
+    ).once()
+    socket.should_receive('close')
+    flexmock(module.socket).should_receive('socket').and_return(socket)
+
+    module.JournaldHandler('/socket/path').emit(
+        flexmock(
+            levelno=module.logging.INFO,
+            getMessage=lambda: 'All done',
+        )
+    )
+
+
+def test_journald_handler_serializes_multi_line_log_record_to_socket():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
+    flexmock(module.os).should_receive('getpid').and_return(12345)
+    socket = flexmock()
+    socket.should_receive('sendto').with_args(
+        b'MESSAGE\n'
+        b'\x08\x00\x00\x00\x00\x00\x00\x00'  # Message length, serialized.
+        b'All\ndone\nPRIORITY=6\nSYSLOG_IDENTIFIER=borgmatic\nSYSLOG_PID=12345\n',
+        '/socket/path',
+    ).once()
+    socket.should_receive('close')
+    flexmock(module.socket).should_receive('socket').and_return(socket)
+
+    module.JournaldHandler('/socket/path').emit(
+        flexmock(
+            levelno=module.logging.INFO,
+            getMessage=lambda: 'All\ndone',
+        )
+    )
+
+
+def test_log_record_to_json_formats_record_as_json():
+    assert (
+        module.log_record_to_json(
+            flexmock(
+                created=12345,
+                levelno=module.logging.INFO,
+                levelname='INFO',
+                name='borg.something',
+                extra='ignored',
+                getMessage=lambda: 'All done',
+            )
+        )
+        == '{"type": "log_message", "time": 12345, "message": "All done", "levelname": "INFO", "name": "borg.something"}'
+    )
+
+
+def test_log_record_to_json_with_message_id_formats_record_as_json():
+    assert (
+        module.log_record_to_json(
+            flexmock(
+                created=12345,
+                levelno=module.logging.INFO,
+                levelname='INFO',
+                name='borg.something',
+                extra='ignored',
+                getMessage=lambda: 'All done',
+                msgid='all.done',
+            )
+        )
+        == '{"type": "log_message", "time": 12345, "message": "All done", "levelname": "INFO", "name": "borg.something", "msgid": "all.done"}'
+    )
+
+
 def test_console_color_formatter_format_includes_log_message():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
@@ -356,6 +434,117 @@ def test_log_prefix_sets_prefix_and_then_restores_original_prefix_after():
         pass
 
 
+def test_log_exclude_filter_filter_omits_log_matching_any_attributes():
+    exclude_filter = module.Log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
+
+    assert exclude_filter.filter(flexmock(foo='nope', baz='quux')) is False
+
+
+def test_log_exclude_filter_filter_includes_log_matching_no_attributes():
+    exclude_filter = module.Log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
+
+    assert exclude_filter.filter(flexmock(foo='nope', baz='uh uh')) is True
+
+
+def test_log_exclude_filter_filter_includes_log_matching_no_attributes_and_in_fact_missing_them_entirely():
+    exclude_filter = module.Log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
+
+    assert exclude_filter.filter(flexmock(other='nope', thing='uh uh')) is True
+
+
+def test_add_log_exclude_filter_adds_filter_to_each_handler():
+    flexmock(module).should_receive('Log_exclude_filter').and_return(flexmock())
+    handlers = [flexmock(), flexmock()]
+    handlers[0].should_receive('addFilter').once()
+    handlers[1].should_receive('addFilter').once()
+
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(handlers=handlers, removeHandler=lambda handler: None)
+    )
+
+    module.add_log_exclude_filter('my filter', {'foo': 'bar', 'baz': 'quux'})
+
+
+def test_remove_log_exclude_filter_removes_filter_from_each_handler():
+    handlers = [
+        flexmock(
+            filters=[
+                flexmock(name='my filter'),
+                flexmock(name='my filter'),
+            ],
+        ),
+        flexmock(
+            filters=[
+                flexmock(name='my filter'),
+            ],
+        ),
+    ]
+    handlers[0].should_receive('removeFilter').twice()
+    handlers[1].should_receive('removeFilter').once()
+
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(handlers=handlers, removeHandler=lambda handler: None),
+    )
+
+    module.remove_log_exclude_filter(name='my filter')
+
+
+def test_remove_log_exclude_filter_skips_remove_for_filter_without_matching_name():
+    handlers = [
+        flexmock(
+            filters=[
+                flexmock(name='other filter'),
+                flexmock(name='my filter'),
+            ],
+        ),
+        flexmock(
+            filters=[
+                flexmock(name='my filter'),
+            ],
+        ),
+    ]
+    handlers[0].should_receive('removeFilter').once()
+    handlers[1].should_receive('removeFilter').once()
+
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(handlers=handlers, removeHandler=lambda handler: None),
+    )
+
+    module.remove_log_exclude_filter(name='my filter')
+
+
+def test_remove_log_exclude_filter_skips_remove_for_filter_without_name_attribute():
+    handlers = [
+        flexmock(
+            filters=[
+                flexmock(),
+                flexmock(name='my filter'),
+            ],
+        ),
+        flexmock(
+            filters=[
+                flexmock(name='my filter'),
+            ],
+        ),
+    ]
+    handlers[0].should_receive('removeFilter').once()
+    handlers[1].should_receive('removeFilter').once()
+
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(handlers=handlers, removeHandler=lambda handler: None),
+    )
+
+    module.remove_log_exclude_filter(name='my filter')
+
+
+def test_logs_suppressed_adds_and_removes_log_exclude_filter():
+    flexmock(module).should_receive('add_log_exclude_filter').once()
+    flexmock(module).should_receive('remove_log_exclude_filter').once()
+
+    with module.Logs_suppressed(foo='bar', baz='quux'):
+        pass
+
+
 def test_delayed_logging_handler_should_flush_without_targets_returns_false():
     handler = module.Delayed_logging_handler()
 
@@ -447,7 +636,9 @@ def test_flush_delayed_logging_flushes_delayed_logging_handler():
 def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    flexmock(module.logging).DISABLED = module.DISABLED
     fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
@@ -458,8 +649,15 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux(
         level=logging.DEBUG,
         handlers=list,
     )
+    flexmock(module.os.path).should_receive('exists').with_args(
+        module.JOURNALD_SOCKET_PATH
+    ).and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
-    syslog_handler = logging.handlers.SysLogHandler()
+    syslog_handler = flexmock(
+        level=module.logging.DEBUG,
+        setLevel=lambda log_level: None,
+        setFormatter=lambda formatter: None,
+    )
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
         address='/dev/log',
     ).and_return(syslog_handler).once()
@@ -470,7 +668,9 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux(
 def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_macos():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    flexmock(module.logging).DISABLED = module.DISABLED
     fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
@@ -481,9 +681,16 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_macos(
         level=logging.DEBUG,
         handlers=list,
     )
+    flexmock(module.os.path).should_receive('exists').with_args(
+        module.JOURNALD_SOCKET_PATH
+    ).and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/var/run/syslog').and_return(True)
-    syslog_handler = logging.handlers.SysLogHandler()
+    syslog_handler = flexmock(
+        level=module.logging.DEBUG,
+        setLevel=lambda log_level: None,
+        setFormatter=lambda formatter: None,
+    )
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
         address='/var/run/syslog',
     ).and_return(syslog_handler).once()
@@ -494,7 +701,9 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_macos(
 def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_freebsd():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    flexmock(module.logging).DISABLED = module.DISABLED
     fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
@@ -505,13 +714,49 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_freebs
         level=logging.DEBUG,
         handlers=list,
     )
+    flexmock(module.os.path).should_receive('exists').with_args(
+        module.JOURNALD_SOCKET_PATH
+    ).and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/var/run/syslog').and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/var/run/log').and_return(True)
-    syslog_handler = logging.handlers.SysLogHandler()
+    syslog_handler = flexmock(
+        level=module.logging.DEBUG,
+        setLevel=lambda log_level: None,
+        setFormatter=lambda formatter: None,
+    )
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
         address='/var/run/log',
     ).and_return(syslog_handler).once()
+
+    module.configure_logging(logging.INFO, syslog_log_level=logging.DEBUG)
+
+
+def test_configure_logging_with_journald_probes_for_log_socket():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
+    flexmock(module.logging).DISABLED = module.DISABLED
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
+    multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
+    flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
+    flexmock(module).should_receive('interactive_console').and_return(False)
+    flexmock(module).should_receive('flush_delayed_logging')
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.DEBUG,
+        handlers=list,
+    )
+    flexmock(module.os.path).should_receive('exists').with_args(
+        module.JOURNALD_SOCKET_PATH
+    ).and_return(True)
+    journald_handler = flexmock(level=module.logging.DEBUG, setLevel=lambda log_level: None)
+    flexmock(module).should_receive('JournaldHandler').with_args(
+        module.JOURNALD_SOCKET_PATH
+    ).and_return(journald_handler).once()
+    flexmock(module.os.path).should_receive('exists').with_args('/dev/log').never()
+    flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
 
     module.configure_logging(logging.INFO, syslog_log_level=logging.DEBUG)
 
@@ -520,6 +765,7 @@ def test_configure_logging_without_syslog_log_level_skips_syslog():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
@@ -539,6 +785,7 @@ def test_configure_logging_skips_syslog_if_not_found():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
@@ -558,6 +805,7 @@ def test_configure_logging_skips_log_file_if_log_file_logging_is_disabled():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).DISABLED = module.DISABLED
     fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
@@ -579,10 +827,11 @@ def test_configure_logging_skips_log_file_if_log_file_logging_is_disabled():
     )
 
 
-def test_configure_logging_to_log_file_instead_of_syslog():
+def test_configure_logging_to_log_file_instead_of_syslog(tmp_path):
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
@@ -595,23 +844,25 @@ def test_configure_logging_to_log_file_instead_of_syslog():
     )
     flexmock(module.os.path).should_receive('exists').never()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
-    file_handler = logging.handlers.WatchedFileHandler('/tmp/logfile')
+    log_file = str(tmp_path / 'logfile')
+    file_handler = logging.handlers.WatchedFileHandler(log_file)
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').with_args(
-        '/tmp/logfile',
+        log_file,
     ).and_return(file_handler).once()
 
     module.configure_logging(
         console_log_level=logging.INFO,
         syslog_log_level=logging.DISABLED,
         log_file_log_level=logging.DEBUG,
-        log_file='/tmp/logfile',
+        log_file=log_file,
     )
 
 
-def test_configure_logging_to_both_log_file_and_syslog():
+def test_configure_logging_to_both_log_file_and_syslog(tmp_path):
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
@@ -622,31 +873,36 @@ def test_configure_logging_to_both_log_file_and_syslog():
         level=logging.DEBUG,
         handlers=list,
     )
+    flexmock(module.os.path).should_receive('exists').with_args(
+        module.JOURNALD_SOCKET_PATH
+    ).and_return(False)
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
     syslog_handler = logging.handlers.SysLogHandler()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
         address='/dev/log',
     ).and_return(syslog_handler).once()
-    file_handler = logging.handlers.WatchedFileHandler('/tmp/logfile')
+    log_file = str(tmp_path / 'logfile')
+    file_handler = logging.handlers.WatchedFileHandler(log_file)
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').with_args(
-        '/tmp/logfile',
+        log_file,
     ).and_return(file_handler).once()
 
     module.configure_logging(
         console_log_level=logging.INFO,
         syslog_log_level=logging.DEBUG,
         log_file_log_level=logging.DEBUG,
-        log_file='/tmp/logfile',
+        log_file=log_file,
     )
 
 
-def test_configure_logging_to_log_file_formats_with_custom_log_format():
+def test_configure_logging_to_log_file_formats_with_custom_log_format(tmp_path):
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Log_prefix_formatter').with_args(
         '{message}',
     ).once()
     fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
@@ -660,15 +916,16 @@ def test_configure_logging_to_log_file_formats_with_custom_log_format():
     )
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
-    file_handler = logging.handlers.WatchedFileHandler('/tmp/logfile')
+    log_file = str(tmp_path / 'logfile')
+    file_handler = logging.handlers.WatchedFileHandler(log_file)
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').with_args(
-        '/tmp/logfile',
+        log_file,
     ).and_return(file_handler).once()
 
     module.configure_logging(
         console_log_level=logging.INFO,
         log_file_log_level=logging.DEBUG,
-        log_file='/tmp/logfile',
+        log_file=log_file,
         log_file_format='{message}',
     )
 
@@ -677,6 +934,7 @@ def test_configure_logging_skips_log_file_if_argument_is_none():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
@@ -693,10 +951,11 @@ def test_configure_logging_skips_log_file_if_argument_is_none():
     module.configure_logging(console_log_level=logging.INFO, log_file=None)
 
 
-def test_configure_logging_uses_console_no_color_formatter_if_color_disabled():
+def test_configure_logging_with_color_disabled_uses_console_no_color_formatter():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
     flexmock(module).should_receive('Console_color_formatter').never()
     flexmock(module).should_receive('Log_prefix_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
@@ -712,3 +971,27 @@ def test_configure_logging_uses_console_no_color_formatter_if_color_disabled():
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').never()
 
     module.configure_logging(console_log_level=logging.INFO, log_file=None, color_enabled=False)
+
+
+def test_configure_logging_with_log_json_uses_json_formatter():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').and_return(fake_formatter).once()
+    flexmock(module).should_receive('Console_color_formatter').never()
+    flexmock(module).should_receive('Log_prefix_formatter').never()
+    multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
+    flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
+
+    flexmock(module).should_receive('flush_delayed_logging')
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.INFO,
+        handlers=list,
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.logging.handlers).should_receive('WatchedFileHandler').never()
+
+    module.configure_logging(
+        console_log_level=logging.INFO, log_file=None, log_json=True, color_enabled=False
+    )

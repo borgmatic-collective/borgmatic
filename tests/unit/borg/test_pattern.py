@@ -34,19 +34,36 @@ def test_write_patterns_file_appends_to_existing():
 
 
 def test_check_all_root_patterns_exist_with_existent_pattern_path_does_not_raise():
-    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args('foo').and_return(True)
 
-    module.check_all_root_patterns_exist([Pattern('foo')])
+    module.check_all_root_patterns_exist([Pattern('foo')], working_directory=None)
+
+
+def test_check_all_root_patterns_exist_with_existent_relative_pattern_path_and_working_directory_does_not_raise():
+    flexmock(module.os.path).should_receive('exists').with_args('foo').never()
+    flexmock(module.os.path).should_receive('exists').with_args('/working/foo').and_return(True)
+
+    module.check_all_root_patterns_exist([Pattern('foo')], working_directory='/working')
 
 
 def test_check_all_root_patterns_exist_with_non_root_pattern_skips_existence_check():
     flexmock(module.os.path).should_receive('exists').never()
 
-    module.check_all_root_patterns_exist([Pattern('foo', Pattern_type.INCLUDE)])
+    module.check_all_root_patterns_exist(
+        [Pattern('foo', Pattern_type.INCLUDE)], working_directory=None
+    )
 
 
 def test_check_all_root_patterns_exist_with_non_existent_pattern_path_raises():
     flexmock(module.os.path).should_receive('exists').and_return(False)
 
     with pytest.raises(ValueError):
-        module.check_all_root_patterns_exist([Pattern('foo')])
+        module.check_all_root_patterns_exist([Pattern('foo')], working_directory=None)
+
+
+def test_check_all_root_patterns_exist_with_non_existent_relative_pattern_path_and_working_directory_raises():
+    flexmock(module.os.path).should_receive('exists').with_args('foo').never()
+    flexmock(module.os.path).should_receive('exists').with_args('/working/foo').and_return(False)
+
+    with pytest.raises(ValueError):
+        module.check_all_root_patterns_exist([Pattern('foo')], working_directory='/working')

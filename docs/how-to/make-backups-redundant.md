@@ -1,12 +1,10 @@
 ---
-title: How to make backups redundant
+title: ☁️  How to make backups redundant
 eleventyNavigation:
   key: ☁️  Make backups redundant
   parent: How-to guides
   order: 3
 ---
-## Multiple repositories
-
 If you really care about your data, you probably want more than one backup of
 it. borgmatic supports this in its configuration by specifying multiple backup
 repositories. Here's an example:
@@ -42,16 +40,17 @@ Here's a way of visualizing what borgmatic does with the above configuration:
 This gives you redundancy of your data across repositories and even
 potentially across providers.
 
-See [Borg repository URLs
-documentation](https://borgbackup.readthedocs.io/en/stable/usage/general.html#repository-urls)
+See [repositories
+documentation](https://torsion.org/borgmatic/reference/configuration/repositories/)
 for more information on how to specify local and remote repository paths.
+
 
 ### Different options per repository
 
 What if you want borgmatic to backup to multiple repositories—while also
 setting different options for each one? In that case, you'll need to use
 [a separate borgmatic configuration file for each
-repository](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/)
+repository](https://torsion.org/borgmatic/how-to/make-per-application-backups/)
 instead of the multiple repositories in one configuration file as described
 above. That's because all of the repositories in a particular configuration
 file get the same options applied.

@@ -6,11 +6,13 @@ from borgmatic.actions import repo_create as module
 
 def test_run_repo_create_with_encryption_mode_argument_does_not_raise():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_create).should_receive('create_repository')
     arguments = flexmock(
         encryption_mode=flexmock(),
+        id_hash=flexmock(),
+        key_location=flexmock(),
         source_repository=flexmock(),
+        from_borg1=flexmock(),
         repository=flexmock(),
         copy_crypt_key=flexmock(),
         append_only=flexmock(),
@@ -31,11 +33,13 @@ def test_run_repo_create_with_encryption_mode_argument_does_not_raise():
 
 def test_run_repo_create_with_encryption_mode_option_does_not_raise():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_create).should_receive('create_repository')
     arguments = flexmock(
         encryption_mode=None,
+        id_hash=flexmock(),
+        key_location=flexmock(),
         source_repository=flexmock(),
+        from_borg1=flexmock(),
         repository=flexmock(),
         copy_crypt_key=flexmock(),
         append_only=flexmock(),
@@ -56,11 +60,13 @@ def test_run_repo_create_with_encryption_mode_option_does_not_raise():
 
 def test_run_repo_create_without_encryption_mode_raises():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_create).should_receive('create_repository')
     arguments = flexmock(
         encryption_mode=None,
+        id_hash=flexmock(),
+        key_location=flexmock(),
         source_repository=flexmock(),
+        from_borg1=flexmock(),
         repository=flexmock(),
         copy_crypt_key=flexmock(),
         append_only=flexmock(),
@@ -80,45 +86,20 @@ def test_run_repo_create_without_encryption_mode_raises():
         )
 
 
-def test_run_repo_create_bails_if_repository_does_not_match():
-    flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(
-        False,
-    )
-    flexmock(module.borgmatic.borg.repo_create).should_receive('create_repository').never()
-    arguments = flexmock(
-        encryption_mode=flexmock(),
-        source_repository=flexmock(),
-        repository=flexmock(),
-        copy_crypt_key=flexmock(),
-        append_only=flexmock(),
-        storage_quota=flexmock(),
-        make_parent_directories=flexmock(),
-    )
-
-    module.run_repo_create(
-        repository={'path': 'repo'},
-        config={},
-        local_borg_version=None,
-        repo_create_arguments=arguments,
-        global_arguments=flexmock(dry_run=False),
-        local_path=None,
-        remote_path=None,
-    )
-
-
 def test_run_repo_create_favors_flags_over_config():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_create).should_receive('create_repository').with_args(
-        object,
-        object,
-        object,
-        object,
-        object,
-        object,
-        object,
-        object,
+        dry_run=object,
+        repository_path=object,
+        config=object,
+        local_borg_version=object,
+        global_arguments=object,
+        encryption_mode=object,
+        id_hash='blake17',
+        key_location='repokey',
+        source_repository=object,
+        from_borg1=object,
+        copy_crypt_key=object,
         append_only=False,
         storage_quota=0,
         make_parent_directories=False,
@@ -127,7 +108,10 @@ def test_run_repo_create_favors_flags_over_config():
     ).once()
     arguments = flexmock(
         encryption_mode=flexmock(),
+        id_hash='blake17',
+        key_location='repokey',
         source_repository=flexmock(),
+        from_borg1=flexmock(),
         repository=flexmock(),
         copy_crypt_key=flexmock(),
         append_only=False,
@@ -141,6 +125,8 @@ def test_run_repo_create_favors_flags_over_config():
             'append_only': True,
             'storage_quota': '10G',
             'make_parent_directories': True,
+            'id_hash': 'blake3',
+            'key_location': 'keyfile',
         },
         config={},
         local_borg_version=None,
@@ -153,16 +139,18 @@ def test_run_repo_create_favors_flags_over_config():
 
 def test_run_repo_create_defaults_to_config():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_create).should_receive('create_repository').with_args(
-        object,
-        object,
-        object,
-        object,
-        object,
-        object,
-        object,
-        object,
+        dry_run=object,
+        repository_path=object,
+        config=object,
+        local_borg_version=object,
+        global_arguments=object,
+        encryption_mode=object,
+        id_hash='blake3',
+        key_location='keyfile',
+        source_repository=object,
+        from_borg1=object,
+        copy_crypt_key=object,
         append_only=True,
         storage_quota='10G',
         make_parent_directories=True,
@@ -171,7 +159,10 @@ def test_run_repo_create_defaults_to_config():
     ).once()
     arguments = flexmock(
         encryption_mode=flexmock(),
+        id_hash=None,
+        key_location=None,
         source_repository=flexmock(),
+        from_borg1=flexmock(),
         repository=flexmock(),
         copy_crypt_key=flexmock(),
         append_only=None,
@@ -185,6 +176,8 @@ def test_run_repo_create_defaults_to_config():
             'append_only': True,
             'storage_quota': '10G',
             'make_parent_directories': True,
+            'id_hash': 'blake3',
+            'key_location': 'keyfile',
         },
         config={},
         local_borg_version=None,

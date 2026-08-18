@@ -1,5 +1,6 @@
 import logging
 import os
+import shlex
 import subprocess
 
 import borgmatic.config.paths
@@ -23,6 +24,7 @@ def extract_last_archive_dry_run(
     Perform an extraction dry-run of the most recent archive. If there are no archives, skip the
     dry-run.
     '''
+    extra_borg_options = config.get('extra_borg_options', {}).get('extract', '')
     verbosity_flags = ()
     if logger.isEnabledFor(logging.DEBUG):
         verbosity_flags = ('--debug', '--show-rc')
@@ -47,10 +49,12 @@ def extract_last_archive_dry_run(
     full_extract_command = (
         (local_path, 'extract', '--dry-run')
         + (('--remote-path', remote_path) if remote_path else ())
-        + (('--log-json',) if config.get('log_json') else ())
+        + (('--log-json',) if not config.get('progress') else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + verbosity_flags
+        + (('--progress',) if config.get('progress') else ())
         + list_flag
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_archive_flags(
             repository_path,
             last_archive_name,
@@ -58,13 +62,23 @@ def extract_last_archive_dry_run(
         )
     )
 
-    execute_command(
-        full_extract_command,
-        environment=environment.make_environment(config),
-        working_directory=borgmatic.config.paths.get_working_directory(config),
-        borg_local_path=local_path,
-        borg_exit_codes=config.get('borg_exit_codes'),
-    )
+    if config.get('progress'):
+        execute_command(
+            full_extract_command,
+            output_file=DO_NOT_CAPTURE,
+            environment=environment.make_environment(config),
+            working_directory=borgmatic.config.paths.get_working_directory(config),
+            borg_local_path=local_path,
+            borg_exit_codes=config.get('borg_exit_codes'),
+        )
+    else:
+        execute_command(
+            full_extract_command,
+            environment=environment.make_environment(config),
+            working_directory=borgmatic.config.paths.get_working_directory(config),
+            borg_local_path=local_path,
+            borg_exit_codes=config.get('borg_exit_codes'),
+        )
 
 
 def extract_archive(
@@ -90,11 +104,9 @@ def extract_archive(
     If extract to stdout is True, then start the extraction streaming to stdout, and return that
     extract process as an instance of subprocess.Popen.
     '''
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
-
-    if config.get('progress') and extract_to_stdout:
-        raise ValueError('progress and extract to stdout cannot both be set')
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
+    extra_borg_options = config.get('extra_borg_options', {}).get('extract', '')
 
     if feature.available(feature.Feature.NUMERIC_IDS, local_borg_version):
         numeric_ids_flags = ('--numeric-ids',) if config.get('numeric_ids') else ()
@@ -123,14 +135,15 @@ def extract_archive(
         + (('--remote-path', remote_path) if remote_path else ())
         + numeric_ids_flags
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if config.get('log_json') else ())
+        + (('--log-json',) if (config.get('log_json') or not config.get('progress')) else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--strip-components', str(strip_components)) if strip_components else ())
-        + (('--progress',) if config.get('progress') else ())
+        + (('--progress',) if config.get('progress') and not extract_to_stdout else ())
         + (('--stdout',) if extract_to_stdout else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_archive_flags(
             # Make the repository path absolute so the destination directory used below via changing
             # the working directory doesn't prevent Borg from finding the repo. But also apply the
@@ -147,6 +160,17 @@ def extract_archive(
         os.path.join(working_directory or '', destination_path) if destination_path else None
     )
 
+    if extract_to_stdout:
+        return execute_command(
+            full_command,
+            output_file=subprocess.PIPE,
+            run_to_completion=False,
+            environment=environment.make_environment(config),
+            working_directory=full_destination_path,
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
+        )
+
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
     if config.get('progress'):
@@ -159,17 +183,6 @@ def extract_archive(
             borg_exit_codes=borg_exit_codes,
         )
         return None
-
-    if extract_to_stdout:
-        return execute_command(
-            full_command,
-            output_file=subprocess.PIPE,
-            run_to_completion=False,
-            environment=environment.make_environment(config),
-            working_directory=full_destination_path,
-            borg_local_path=local_path,
-            borg_exit_codes=borg_exit_codes,
-        )
 
     # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
     # if the restore paths don't exist in the archive.

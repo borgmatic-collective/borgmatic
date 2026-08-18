@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.config.paths
 import borgmatic.logger
@@ -32,14 +33,15 @@ def export_tar_archive(
     If the destination path is "-", then stream the output to stdout instead of to a file.
     '''
     borgmatic.logger.add_custom_log_levels()
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
+    extra_borg_options = config.get('extra_borg_options', {}).get('export_tar', '')
 
     full_command = (
         (local_path, 'export-tar')
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if config.get('log_json') else ())
+        + (('--log-json',) if destination_path != '-' else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--list',) if config.get('list_details') else ())
@@ -47,6 +49,7 @@ def export_tar_archive(
         + (('--dry-run',) if dry_run else ())
         + (('--tar-filter', tar_filter) if tar_filter else ())
         + (('--strip-components', str(strip_components)) if strip_components else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_archive_flags(
             repository_path,
             archive,

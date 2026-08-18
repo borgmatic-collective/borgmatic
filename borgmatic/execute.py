@@ -1,9 +1,14 @@
 import collections
+import contextlib
 import enum
+import json
+import locale
 import logging
+import os
 import select
 import subprocess
 import textwrap
+import time
 
 import borgmatic.logger
 
@@ -14,6 +19,9 @@ ERROR_OUTPUT_MAX_LINE_COUNT = 25
 BORG_ERROR_EXIT_CODE_START = 2
 BORG_ERROR_EXIT_CODE_END = 99
 
+# See https://borgbackup.readthedocs.io/en/stable/internals/frontends.html#message-ids
+BORG_WARNING_EXIT_CODES_TREATED_AS_ERRORS = {101, 102, 104, 105, 106}
+
 
 class Exit_status(enum.Enum):
     STILL_RUNNING = 1
@@ -22,7 +30,32 @@ class Exit_status(enum.Enum):
     ERROR = 4
 
 
-def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_codes=None):
+def command_is_borg(command, borg_local_path):
+    '''
+    Given a command as a sequence and the Borg local path, return whether that command is a call to
+    Borg.
+    '''
+    parsed_command = command.split(' ', 1) if isinstance(command, str) else command
+
+    if not parsed_command:
+        return False
+
+    return bool(borg_local_path and parsed_command[0] == borg_local_path)
+
+
+BORG_EXIT_CODE_TO_DESCRIPTION = {
+    100: 'File changed while we backed it up',
+    101: 'Include pattern never matched',
+    102: 'General backup issue',
+    103: 'File type or inode changed while we backed it up',
+    104: 'Backup OS issue',
+    105: 'Backup permission issue',
+    106: 'Backup IO issue',
+    107: 'Backup file not found',
+}
+
+
+def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_codes=None):  # noqa: PLR0911
     '''
     Return an Exit_status value (e.g. SUCCESS, ERROR, or WARNING) based on interpreting the given
     exit code. If a Borg local path is given and matches the process' command, then interpret the
@@ -35,39 +68,47 @@ def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_code
     if exit_code == 0:
         return Exit_status.SUCCESS
 
-    if borg_local_path and command[0] == borg_local_path:
-        # First try looking for the exit code in the borg_exit_codes configuration.
-        for entry in borg_exit_codes or ():
-            if entry.get('code') == exit_code:
-                treat_as = entry.get('treat_as')
+    if not command_is_borg(command, borg_local_path):
+        return Exit_status.ERROR
 
-                if treat_as == 'error':
-                    logger.error(
-                        f'Treating exit code {exit_code} as an error, as per configuration',
-                    )
-                    return Exit_status.ERROR
+    description = BORG_EXIT_CODE_TO_DESCRIPTION.get(exit_code)
+    description_parenthetical = f' ({description})' if description else ''
 
-                if treat_as == 'warning':
-                    logger.warning(
-                        f'Treating exit code {exit_code} as a warning, as per configuration',
-                    )
-                    return Exit_status.WARNING
+    # First try looking for the exit code in the borg_exit_codes configuration.
+    for entry in borg_exit_codes or ():
+        if entry.get('code') == exit_code:
+            treat_as = entry.get('treat_as')
 
-        # If the exit code doesn't have explicit configuration, then fall back to the default Borg
-        # behavior.
-        return (
-            Exit_status.ERROR
-            if (
-                exit_code < 0
-                or (
-                    exit_code >= BORG_ERROR_EXIT_CODE_START
-                    and exit_code <= BORG_ERROR_EXIT_CODE_END
+            if treat_as == 'error':
+                logger.error(
+                    f'Treating exit code {exit_code}{description_parenthetical} as an error, as per configuration',
                 )
-            )
-            else Exit_status.WARNING
+                return Exit_status.ERROR
+
+            if treat_as == 'warning':
+                logger.warning(
+                    f'Treating exit code {exit_code}{description_parenthetical} as a warning, as per configuration',
+                )
+                return Exit_status.WARNING
+
+    # If the exit code doesn't have explicit configuration, then fall back to the default
+    # behavior of treating Borg errors as errors and some Borg warnings as errors.
+    if exit_code in BORG_WARNING_EXIT_CODES_TREATED_AS_ERRORS:
+        logger.error(
+            f'Treating exit code {exit_code}{description_parenthetical} as an error, as per borgmatic defaults',
         )
 
-    return Exit_status.ERROR
+        return Exit_status.ERROR
+
+    if exit_code < 0 or (
+        exit_code >= BORG_ERROR_EXIT_CODE_START and exit_code <= BORG_ERROR_EXIT_CODE_END
+    ):
+        return Exit_status.ERROR
+
+    logger.warning(
+        f'Treating exit code {exit_code}{description_parenthetical} as a warning, as per borgmatic defaults',
+    )
+    return Exit_status.WARNING
 
 
 def command_for_process(process):
@@ -78,156 +119,429 @@ def command_for_process(process):
     return process.args if isinstance(process.args, str) else ' '.join(process.args)
 
 
-def output_buffer_for_process(process, exclude_stdouts):
+def output_buffers_for_process(process, exclude_stdouts):
     '''
     Given a process as an instance of subprocess.Popen and a sequence of stdouts to exclude, return
-    either the process's stdout or stderr. The idea is that if stdout is excluded for a process, we
-    still have stderr to log.
+    the process stdout and stderr as a tuple—but exclude the stdout if it's in the given stdouts to
+    exclude.
     '''
-    return process.stderr if process.stdout in exclude_stdouts else process.stdout
+    return tuple(
+        buffer for buffer in (process.stdout, process.stderr) if buffer not in exclude_stdouts
+    )
 
 
-def append_last_lines(last_lines, captured_output, line, output_log_level):
+BORG_LOG_LEVEL_ELEVATION_THRESHOLD = 10
+
+
+def borg_json_log_line_to_record(line, log_level):
     '''
-    Given a rolling list of last lines, a list of captured output, a line to append, and an output
-    log level, append the line to the last lines and (if necessary) the captured output. Then log
-    the line at the requested output log level.
+    Given a single Borg "--log-json"-style log line and a log level, return the line converted to a
+    logging.LogRecord instance. Return None if the line can't be parsed as JSON.
+
+    If Borg provides a log level in its JSON, prefer logging at that level. But if Borg doesn't
+    provide a log level—or the log level given to this function is just a little bit higher than
+    Borg's—elevate to that level. This supports use cases like elevating Borg's INFO level logs to
+    borgmatic's custom ANSWER level so that requested data shows up even at the default verbosity.
     '''
-    last_lines.append(line)
+    with contextlib.suppress(json.JSONDecodeError, TypeError, KeyError, AttributeError):
+        log_data = json.loads(line)
+        log_type = log_data.get('type')
 
-    if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
-        last_lines.pop(0)
+        if log_type == 'log_message':
+            borg_log_level = logging._nameToLevel.get(log_data.get('levelname'))
+            log_level_delta = 0 if log_level is None else log_level - borg_log_level
 
-    if output_log_level is None:
-        captured_output.append(line)
-    else:
-        logger.log(output_log_level, line)
-
-
-def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, borg_exit_codes):  # noqa: PLR0912
-    '''
-    Given a sequence of subprocess.Popen() instances for multiple processes, log the output for each
-    process with the requested log level. Additionally, raise a CalledProcessError if a process
-    exits with an error (or a warning for exit code 1, if that process does not match the Borg local
-    path).
-
-    If output log level is None, then instead of logging, capture output for each process and return
-    it as a dict from the process to its output. Use the given Borg local path and exit code
-    configuration to decide what's an error and what's a warning.
-
-    For simplicity, it's assumed that the output buffer for each process is its stdout. But if any
-    stdouts are given to exclude, then for any matching processes, log from their stderr instead.
-
-    Note that stdout for a process can be None if output is intentionally not captured. In which
-    case it won't be logged.
-    '''
-    # Map from output buffer to sequence of last lines.
-    buffer_last_lines = collections.defaultdict(list)
-    process_for_output_buffer = {
-        output_buffer_for_process(process, exclude_stdouts): process
-        for process in processes
-        if process.stdout or process.stderr
-    }
-    output_buffers = list(process_for_output_buffer.keys())
-    captured_outputs = collections.defaultdict(list)
-    still_running = True
-
-    # Log output for each process until they all exit.
-    while True:  # noqa: PLR1702
-        if output_buffers:
-            (ready_buffers, _, _) = select.select(output_buffers, [], [])
-
-            for ready_buffer in ready_buffers:
-                ready_process = process_for_output_buffer.get(ready_buffer)
-
-                # The "ready" process has exited, but it might be a pipe destination with other
-                # processes (pipe sources) waiting to be read from. So as a measure to prevent
-                # hangs, vent all processes when one exits.
-                if ready_process and ready_process.poll() is not None:
-                    for other_process in processes:
-                        if (
-                            other_process.poll() is None
-                            and other_process.stdout
-                            and other_process.stdout not in output_buffers
-                        ):
-                            # Add the process's output to output_buffers to ensure it'll get read.
-                            output_buffers.append(other_process.stdout)
-
-                while True:
-                    line = ready_buffer.readline().rstrip().decode()
-                    if not line or not ready_process:
-                        break
-
-                    # Keep the last few lines of output in case the process errors, and we need the output for
-                    # the exception below.
-                    append_last_lines(
-                        buffer_last_lines[ready_buffer],
-                        captured_outputs[ready_process],
-                        line,
-                        output_log_level,
+            if log_level_delta > 0 and log_level_delta < BORG_LOG_LEVEL_ELEVATION_THRESHOLD:
+                return logging.makeLogRecord(
+                    dict(
+                        levelno=log_level,
+                        created=log_data.get('time'),
+                        msg=log_data.get('message'),
+                        msgid=log_data.get('msgid'),
+                        levelname=logging.getLevelName(log_level),
+                        name=log_data.get('name'),
                     )
+                )
 
-        if not still_running:
-            break
+            return logging.makeLogRecord(
+                dict(
+                    levelno=borg_log_level,
+                    created=log_data.get('time'),
+                    msg=log_data.get('message'),
+                    msgid=log_data.get('msgid'),
+                    levelname=log_data.get('levelname'),
+                    name=log_data.get('name'),
+                )
+            )
 
-        still_running = False
-
-        for process in processes:
-            exit_code = process.poll() if output_buffers else process.wait()
-
-            if exit_code is None:
-                still_running = True
-                command = process.args.split(' ') if isinstance(process.args, str) else process.args
-                continue
-
-            command = process.args.split(' ') if isinstance(process.args, str) else process.args
-            exit_status = interpret_exit_code(command, exit_code, borg_local_path, borg_exit_codes)
-
-            if exit_status in {Exit_status.ERROR, Exit_status.WARNING}:
-                # If an error occurs, include its output in the raised exception so that we don't
-                # inadvertently hide error output.
-                output_buffer = output_buffer_for_process(process, exclude_stdouts)
-                last_lines = buffer_last_lines[output_buffer] if output_buffer else []
-
-                # Collect any straggling output lines that came in since we last gathered output.
-                while output_buffer:  # pragma: no cover
-                    line = output_buffer.readline().rstrip().decode()
-                    if not line:
-                        break
-
-                    append_last_lines(
-                        last_lines,
-                        captured_outputs[process],
-                        line,
-                        output_log_level=logging.ERROR,
-                    )
-
-                if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
-                    last_lines.insert(0, '...')
-
-                # Something has gone wrong. So vent each process' output buffer to prevent it from
-                # hanging. And then kill the process.
-                for other_process in processes:
-                    if other_process.poll() is None:
-                        other_process.stdout.read(0)
-                        other_process.kill()
-
-                if exit_status == Exit_status.ERROR:
-                    raise subprocess.CalledProcessError(
-                        exit_code,
-                        command_for_process(process),
-                        '\n'.join(last_lines),
-                    )
-
-                still_running = False
-                break
-
-    if captured_outputs:
-        return {
-            process: '\n'.join(output_lines) for process, output_lines in captured_outputs.items()
-        }
+        if log_type == 'file_status':
+            return logging.makeLogRecord(
+                dict(
+                    levelno=log_level,
+                    created=time.time(),
+                    msg=f'{log_data.get("status")} {log_data.get("path")}',
+                    msgid=log_data.get('msgid'),
+                    levelname=logging.getLevelName(log_level),
+                    name='borg.file_status',
+                )
+            )
 
     return None
+
+
+def log_line_to_record(line, log_level):
+    '''
+    Given a log data dict for a single Borg log entry and a log level, return it converted to a
+    logging.LogRecord instance.
+    '''
+    return logging.makeLogRecord(
+        dict(
+            msg=line,
+            levelno=log_level,
+            levelname=logging.getLevelName(log_level),
+        )
+    )
+
+
+def parse_log_line(line, log_level, elevate_stderr, borg_local_path, command):
+    '''
+    Given a raw output line from an external program, whether this line came from stderr and should
+    be elevated to error/warning, the Borg local path, and the command as a sequence, return a
+    logging.LogRecord instance containing its parsed data.
+
+    If the command being run is Borg, and the log line is JSON-formatted log data, then grab the log
+    level from it and log the parsed JSON to be consumed later by a Python logging.Formatter.
+
+    But for non-Borg commands, elevate stderr-sourced logs to ERROR. The one exception is if the log
+    came from stderr and the string "warning:" appears at the start of the log line. In that case,
+    just elevate the log level to a WARN.
+    '''
+    if command_is_borg(command, borg_local_path):
+        log_record = borg_json_log_line_to_record(line, log_level)
+
+        if log_record:
+            return log_record
+
+    if elevate_stderr:
+        return log_line_to_record(
+            line, logging.WARNING if line.lower().startswith('warning:') else logging.ERROR
+        )
+
+    return log_line_to_record(line, log_level)
+
+
+def handle_log_record(log_record, last_lines=None):
+    '''
+    Given a log record to be logged and a rolling list of last lines, append the record's message to
+    the last lines (if given). Then (if the log level is not None), log the record.
+
+    Return the log record.
+    '''
+    log_message = log_record.getMessage()
+
+    if last_lines is not None:
+        last_lines.append(log_message)
+
+        if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
+            last_lines.pop(0)
+
+    if log_record.levelno is not None:
+        logger.handle(log_record)
+
+    return log_record
+
+
+READ_CHUNK_SIZE = 4096
+
+
+def read_lines(buffer, process, line_separator='\n'):
+    '''
+    Given a Python buffer (like stdout) ready for reading, its process, and a line separator,
+    repeatedly yield a tuple of (decoded) lines from the buffer until the process has exited.
+
+    It is assumed that this function's generator is used in conjunction with an external select()
+    call to know when to read more lines. Otherwise, the generator will busywait if it's called in a
+    tight loop.
+    '''
+    data = b''
+    encoded_separator = line_separator.encode()
+    separator_size = len(encoded_separator)
+    encoding = locale.getpreferredencoding()
+
+    while True:
+        chunk = os.read(buffer.fileno(), READ_CHUNK_SIZE)
+
+        if not chunk:  # EOF
+            # The process is still running, so we keep running too.
+            if process.poll() is None:  # pragma: no cover
+                continue
+
+            break
+
+        data += chunk
+        lines = []
+
+        # Split the data into lines, holding back anything leftover that might
+        # be a partial line.
+        while True:
+            separator_position = data.find(encoded_separator)
+
+            if separator_position == -1:
+                break
+
+            lines.append(data[:separator_position].decode(encoding))
+            data = data[separator_position + separator_size :]
+
+        yield tuple(lines)
+
+    # Yield any leftover data from the end of the buffer.
+    if data:
+        yield (data.decode(encoding).rstrip(),)
+
+
+Buffer_reader = collections.namedtuple(
+    'Buffer_reader',
+    ('lines', 'process'),
+)
+
+
+Process_metadata = collections.namedtuple(
+    'Process_metadata',
+    ('last_lines', 'capture'),
+)
+
+
+def log_buffer_lines(
+    buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr=False
+):
+    '''
+    Given a dict from buffer object to Buffer_reader, a dict from subprocess.Popen() instance to
+    Process_metadata instance, a requested output log level for stdout, Borg's local path, and
+    whether to capture stderr, read and log any ready output lines from the buffers. Additionally,
+    for any log records with a log level the same as the output log level, yield those log messages
+    for capture.
+
+    This function just does one "turn of the crank" of logging buffer output. It is intended to be
+    called repeatedly to continue to process buffers.
+    '''
+    if not buffer_readers:
+        return
+
+    (ready_buffers, _, _) = select.select(buffer_readers.keys(), [], [])
+
+    for ready_buffer in ready_buffers:
+        reader = buffer_readers[ready_buffer]
+
+        # The "ready" process has exited, but it might be a pipe destination with other
+        # processes (pipe sources) waiting to be read from. So as a measure to prevent
+        # hangs, vent all processes when one exits.
+        if reader.process and reader.process.poll() is not None:
+            for other_process in process_metadatas:
+                if (
+                    other_process.poll() is None
+                    and other_process.stdout
+                    and other_process.stdout not in buffer_readers
+                ):
+                    # Add the process's output to buffer_readers to ensure it'll get read.
+                    buffer_readers[other_process.stdout] = Buffer_reader(
+                        read_lines(other_process.stdout, other_process), other_process
+                    )
+
+        try:
+            lines = next(reader.lines)
+        except StopIteration:
+            continue
+
+        for line in lines:
+            if not line or not reader.process:
+                continue
+
+            # Keep the last few lines of output in case the process errors and we need the
+            # output for the exception below.
+            log_record = handle_log_record(
+                parse_log_line(
+                    line=line,
+                    log_level=output_log_level,
+                    elevate_stderr=(ready_buffer == reader.process.stderr and not capture_stderr),
+                    borg_local_path=borg_local_path,
+                    command=reader.process.args,
+                ),
+                last_lines=process_metadatas[reader.process].last_lines,
+            )
+
+            if (
+                log_record.levelno is None or log_record.levelno == output_log_level
+            ) and process_metadatas[reader.process].capture:
+                yield log_record.getMessage()
+
+
+def raise_for_process_errors(
+    buffer_readers,
+    process_metadatas,
+    output_log_level,
+    borg_local_path,
+    borg_exit_codes,
+    capture_stderr=False,
+):
+    '''
+    Given a dict from buffer object to Buffer_reader, a dict from subprocess.Popen() instance to
+    Process_metadata instance, a requested output log level for stdout, Borg's local path, a
+    sequence of exit code configuration dicts, and whether to capture stderr, check the given
+    processes for error or warning exit codes. If found, vent or kill any running processes and
+    drain any remaining buffer lines. In the case of an error exit code, raise.  In the case of
+    warning, return Exit_status.WARNING. Otherwise, return None.
+    '''
+    result_status = None
+
+    for process in process_metadatas:
+        exit_code = process.poll() if buffer_readers else process.wait()
+
+        if exit_code is None:
+            continue
+
+        exit_status = interpret_exit_code(process.args, exit_code, borg_local_path, borg_exit_codes)
+
+        if exit_status not in {Exit_status.ERROR, Exit_status.WARNING}:
+            continue
+
+        # Something has gone wrong. So vent each process' output buffer to prevent it from
+        # hanging. And then kill the process.
+        for other_process in process_metadatas:
+            if other_process.poll() is None:
+                other_process.stdout.read(0)
+                other_process.kill()
+
+        if exit_status == Exit_status.WARNING:
+            result_status = Exit_status.WARNING
+            continue
+
+        # Drain and log remaining buffer lines, so no output gets lost. But swallow captured output,
+        # since we're raising below instead of yielding captured lines.
+        tuple(
+            log_remaining_buffer_lines(
+                buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr
+            )
+        )
+        last_lines = process_metadatas[process].last_lines
+
+        # If an error occurs, include its output in the raised exception so that we don't
+        # inadvertently hide error output.
+        if len(last_lines) >= ERROR_OUTPUT_MAX_LINE_COUNT:
+            last_lines.insert(0, '...')
+
+        raise subprocess.CalledProcessError(
+            exit_code,
+            command_for_process(process),
+            '\n'.join(last_lines),
+        )
+
+    return result_status
+
+
+def log_remaining_buffer_lines(
+    buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr=False
+):
+    '''
+    Given a dict from buffer object to Buffer_reader, a dict from subprocess.Popen() instance to
+    Process_metadata instance, a requested output log level for stdout, Borg's local path, and
+    whether to capture stderr, drain and log any remaining output lines from the buffers until
+    they're empty. Additionally, for any log records with a log level the same as the output log
+    level, yield those log messages for capture.
+
+    The main difference between this function and log_buffer_lines() is that this one doesn't just
+    do one "turn of the crank" of logging buffer output; it completely drains any remaining output.
+    '''
+    for output_buffer, reader in buffer_readers.items():
+        if not reader.process:
+            continue
+
+        for lines in reader.lines:
+            for line in lines:
+                log_record = handle_log_record(
+                    parse_log_line(
+                        line=line.rstrip(),
+                        log_level=output_log_level,
+                        elevate_stderr=(
+                            output_buffer == reader.process.stderr and not capture_stderr
+                        ),
+                        borg_local_path=borg_local_path,
+                        command=reader.process.args,
+                    ),
+                    last_lines=process_metadatas[reader.process].last_lines,
+                )
+
+                if (
+                    log_record.levelno is None or log_record.levelno == output_log_level
+                ) and process_metadatas[reader.process].capture:
+                    yield log_record.getMessage()
+
+
+def log_outputs(
+    processes,
+    exclude_stdouts,
+    output_log_level,
+    borg_local_path,
+    borg_exit_codes,
+    capture_stderr=False,
+):
+    '''
+    Given a sequence of subprocess.Popen() instances for multiple processes, log the outputs (stderr
+    and stdout). Use the requested output log level for stdout, but always log stderr to the ERROR
+    log level. Additionally, raise a CalledProcessError if a process exits with an error (or a
+    warning for exit code 1, if that process does not match the Borg local path).
+
+    If the output log level is None, then instead of logging, capture the output for the last
+    process given and yield it one line at a time. This includes stderr if capture stderr is set.
+    But if the output log level is not None, don't yield anything.
+
+    This yielding means that this function is a generator, and must be consumed in order to execute.
+
+    Use the given Borg local path and exit code configuration to decide what's an error and what's a
+    warning. If any stdouts are given to exclude, then for any matching processes, ignore those
+    buffers. Also note that stdout for a process can be None if output is intentionally not
+    captured, in which case it won't be logged.
+    '''
+    # Map from output buffer to Process_metadata instance. By convention, the last process is the
+    # process to capture.
+    process_metadatas = {
+        process: Process_metadata(last_lines=[], capture=bool(process == processes[-1]))
+        for process in processes
+    }
+
+    # Map from buffer to Buffer_reader instance.
+    buffer_readers = {
+        buffer: Buffer_reader(read_lines(buffer, process), process)
+        for process in processes
+        if process.stdout or process.stderr
+        for buffer in output_buffers_for_process(process, exclude_stdouts)
+    }
+
+    # Log output lines for each process until they all exit or one errors.
+    while True:
+        yield from log_buffer_lines(
+            buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr
+        )
+
+        if (
+            raise_for_process_errors(
+                buffer_readers,
+                process_metadatas,
+                output_log_level,
+                borg_local_path,
+                borg_exit_codes,
+                capture_stderr,
+            )
+            == Exit_status.WARNING
+        ):
+            break
+
+        if all(process.poll() is not None for process in processes):
+            break
+
+    # Now that all processes have exited, drain and consume any last output.
+    yield from log_remaining_buffer_lines(
+        buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr
+    )
 
 
 SECRET_COMMAND_FLAG_NAMES = {'--password'}
@@ -300,16 +614,16 @@ def execute_command(
     close_fds=False,  # Necessary for passing credentials via anonymous pipe.
 ):
     '''
-    Execute the given command (a sequence of command/argument strings) and log its output at the
-    given log level. If an open output file object is given, then write stdout to the file and only
-    log stderr. If an open input file object is given, then read stdin from the file. If shell is
-    True, execute the command within a shell. If an environment variables dict is given, then pass
-    it into the command. If a working directory is given, use that as the present working directory
-    when running the command. If a Borg local path is given, and the command matches it (regardless
-    of arguments), treat exit code 1 as a warning instead of an error. But if Borg exit codes are
-    given as a sequence of exit code configuration dicts, then use that configuration to decide
-    what's an error and what's a warning. If run to completion is False, then return the process for
-    the command without executing it to completion.
+    Execute the given command (a sequence of command/argument strings) and log its stdout output at
+    the given log level. If an open output file object is given, then write stdout to the file and
+    only log stderr. If an open input file object is given, then read stdin from the file. If shell
+    is True, execute the command within a shell. If an environment variables dict is given, then
+    pass it into the command. If a working directory is given, use that as the present working
+    directory when running the command. If a Borg local path is given, and the command matches it
+    (regardless of arguments), treat exit code 1 as a warning instead of an error. But if Borg exit
+    codes are given as a sequence of exit code configuration dicts, then use that configuration to
+    decide what's an error and what's a warning. If run to completion is False, then return the
+    process for the command without executing it to completion.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
@@ -321,7 +635,7 @@ def execute_command(
         command,
         stdin=input_file,
         stdout=None if do_not_capture else (output_file or subprocess.PIPE),
-        stderr=None if do_not_capture else (subprocess.PIPE if output_file else subprocess.STDOUT),
+        stderr=None if do_not_capture else subprocess.PIPE,
         shell=shell,
         env=environment,
         cwd=working_directory,
@@ -331,12 +645,14 @@ def execute_command(
         return process
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
-        log_outputs(
-            (process,),
-            (input_file, output_file),
-            output_log_level,
-            borg_local_path,
-            borg_exit_codes,
+        tuple(
+            log_outputs(
+                (process,),
+                (input_file, output_file),
+                output_log_level,
+                borg_local_path,
+                borg_exit_codes,
+            )
         )
 
     return None
@@ -344,6 +660,7 @@ def execute_command(
 
 def execute_command_and_capture_output(
     full_command,
+    output_log_level=None,
     input_file=None,
     capture_stderr=False,
     shell=False,
@@ -355,14 +672,18 @@ def execute_command_and_capture_output(
 ):
     '''
     Execute the given command (a sequence of command/argument strings), capturing and returning its
-    output (stdout). If an input file descriptor is given, then pipe it to the command's stdin. If
-    capture stderr is True, then capture and return stderr in addition to stdout. If shell is True,
-    execute the command within a shell. If an environment variables dict is given, then pass it into
-    the command. If a working directory is given, use that as the present working directory when
-    running the command. If a Borg local path is given, and the command matches it (regardless of
-    arguments), treat exit code 1 as a warning instead of an error. But if Borg exit codes are given
-    as a sequence of exit code configuration dicts, then use that configuration to decide what's an
-    error and what's a warning.
+    output (stdout) as a generator that yields one line at a time. The generator must be consumed in
+    order for the called command to execute.
+
+    If an output log level is given, then instead of suppressing log output, also output the
+    captured lines at the given log level.  If an input file descriptor is given, then pipe it to
+    the command's stdin. If capture stderr is True, then capture stderr in addition to stdout. If
+    shell is True, execute the command within a shell. If an environment variables dict is given,
+    then pass it into the command. If a working directory is given, use that as the present working
+    directory when running the command. If a Borg local path is given, and the command matches it
+    (regardless of arguments), treat exit code 1 as a warning instead of an error. But if Borg exit
+    codes are given as a sequence of exit code configuration dicts, then use that configuration to
+    decide what's an error and what's a warning.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
@@ -370,10 +691,13 @@ def execute_command_and_capture_output(
     command = ' '.join(full_command) if shell else full_command
 
     try:
-        output = subprocess.check_output(  # noqa: S603
+        process = subprocess.Popen(  # noqa: S603
             command,
             stdin=input_file,
-            stderr=subprocess.STDOUT if capture_stderr else None,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+            if capture_stderr or command_is_borg(command, borg_local_path)
+            else None,
             shell=shell,
             env=environment,
             cwd=working_directory,
@@ -386,9 +710,20 @@ def execute_command_and_capture_output(
         ):
             raise
 
-        output = error.output
+        if error.output is not None:
+            yield from iter(error.output.decode(locale.getpreferredencoding()).splitlines())
 
-    return output.decode() if output is not None else None
+        return
+
+    with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
+        yield from log_outputs(
+            (process,),
+            (input_file,),
+            output_log_level,
+            borg_local_path,
+            borg_exit_codes,
+            capture_stderr=capture_stderr,
+        )
 
 
 def execute_command_with_processes(
@@ -405,20 +740,23 @@ def execute_command_with_processes(
     close_fds=False,  # Necessary for passing credentials via anonymous pipe.
 ):
     '''
-    Execute the given command (a sequence of command/argument strings) and log its output at the
-    given log level. Simultaneously, continue to poll one or more active processes so that they
+    Execute the given command (a sequence of command/argument strings) and log its stdout output at
+    the given log level. Simultaneously, continue to poll one or more active processes so that they
     run as well. This is useful, for instance, for processes that are streaming output to a named
     pipe that the given command is consuming from.
 
     If an open output file object is given, then write stdout to the file and only log stderr. But
     if output log level is None, instead suppress logging and return the captured output for (only)
-    the given command. If an open input file object is given, then read stdin from the file. If
-    shell is True, execute the command within a shell. If an environment variables dict is given,
-    then pass it into the command. If a working directory is given, use that as the present working
-    directory when running the command. If a Borg local path is given, then for any matching command
-    or process (regardless of arguments), treat exit code 1 as a warning instead of an error. But if
-    Borg exit codes are given as a sequence of exit code configuration dicts, then use that
-    configuration to decide what's an error and what's a warning.
+    the given command as a generator that yields one line at a time. The generator must be consumed
+    in order for the called command to execute—regardless of the output log level.
+
+    If an open input file object is given, then read stdin from the file. If shell is True, execute
+    the command within a shell. If an environment variables dict is given, then pass it into the
+    command. If a working directory is given, use that as the present working directory when running
+    the command. If a Borg local path is given, then for any matching command or process (regardless
+    of arguments), treat exit code 1 as a warning instead of an error. But if Borg exit codes are
+    given as a sequence of exit code configuration dicts, then use that configuration to decide
+    what's an error and what's a warning.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command or in the
     upstream process.
@@ -432,9 +770,7 @@ def execute_command_with_processes(
             command,
             stdin=input_file,
             stdout=None if do_not_capture else (output_file or subprocess.PIPE),
-            stderr=(
-                None if do_not_capture else (subprocess.PIPE if output_file else subprocess.STDOUT)
-            ),
+            stderr=None if do_not_capture else subprocess.PIPE,
             shell=shell,
             env=environment,
             cwd=working_directory,
@@ -451,15 +787,10 @@ def execute_command_with_processes(
         raise
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
-        captured_outputs = log_outputs(
+        yield from log_outputs(
             (*processes, command_process),
             (input_file, output_file),
             output_log_level,
             borg_local_path,
             borg_exit_codes,
         )
-
-    if output_log_level is None:
-        return captured_outputs.get(command_process)
-
-    return None

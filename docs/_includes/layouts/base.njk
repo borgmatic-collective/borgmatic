@@ -4,22 +4,26 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <meta name="generator" content="{{ eleventy.generator }}">
-		<link rel="icon" href="https://torsion.org/borgmatic/docs/static/borgmatic.png" type="image/x-icon">
-		<title>{{ subtitle + ' - ' if subtitle}}{{ title }}</title>
+		<link rel="icon" href="https://torsion.org/borgmatic/static/borgmatic.png" type="image/x-icon">
+		{% if page.url == '/' %}
+		<title>borgmatic</title>
+		{% else %}
+		<title>borgmatic{% if subtitle or title %} - {% endif %}{{ subtitle + ' - ' if subtitle}}{{ title }}</title>
+		{% endif %}
 {%- set css %}
-{% include 'index.css' %}
+{% include 'index.css.njk' %}
 {% include 'components/lists.css' %}
 {% include 'components/external-links.css' %}
 {% include 'components/minilink.css' %}
 {% include 'components/toc.css' %}
 {% include 'components/info-blocks.css' %}
 {% include 'prism-theme.css' %}
-{% include 'asciinema.css' %}
 {% endset %}
 		<style>{{ css | safe }}</style>
 {% if feedTitle and feedUrl %}
 		<link rel="alternate" href="{{ feedUrl }}" title="{{ feedTitle }}" type="application/atom+xml">
 {% endif %}
+    {{ head_additions | safe }}
 	</head>
 	<body>
 

@@ -7,18 +7,33 @@ import borgmatic.execute
 logger = logging.getLogger(__name__)
 
 
+SECRET_SERVICE_DATABASE_PATH = 'secret-service'
+
+
 def load_credential(hook_config, config, credential_parameters):
     '''
     Given the hook configuration dict, the configuration dict, and a credential parameters tuple
     containing a KeePassXC database path and an attribute name to load, run keepassxc-cli to fetch
-    the corresponding KeePassXC credential and return it.
+    the corresponding KeePassXC credential and return it. Or use secret-tool if the database path
+    is "secret-service", indicating that KeePassXC's secret service integration should be used
+    instead.
 
-    Raise ValueError if keepassxc-cli can't retrieve the credential.
+    Raise ValueError if keepassxc-cli or secret-tool can't retrieve the credential.
     '''
     try:
         (database_path, attribute_name) = credential_parameters
     except ValueError:
         raise ValueError(f'Invalid KeePassXC credential parameters: {credential_parameters}')
+
+    if database_path == SECRET_SERVICE_DATABASE_PATH:
+        command = (
+            *shlex.split((hook_config or {}).get('secret_tool_command', 'secret-tool')),
+            *('lookup', 'Path', attribute_name),
+        )
+
+        return '\n'.join(borgmatic.execute.execute_command_and_capture_output(command)).rstrip(
+            os.linesep
+        )
 
     expanded_database_path = os.path.expanduser(database_path)
 
@@ -29,6 +44,7 @@ def load_credential(hook_config, config, credential_parameters):
     command = (
         tuple(shlex.split((hook_config or {}).get('keepassxc_cli_command', 'keepassxc-cli')))
         + ('show', '--show-protected', '--attributes', 'Password')
+        + (('--no-password',) if not (hook_config or {}).get('ask_for_password', True) else ())
         + (
             ('--key-file', hook_config['key_file'])
             if hook_config and hook_config.get('key_file')
@@ -42,4 +58,6 @@ def load_credential(hook_config, config, credential_parameters):
         + (expanded_database_path, attribute_name)  # Ensure database and entry are last.
     )
 
-    return borgmatic.execute.execute_command_and_capture_output(command).rstrip(os.linesep)
+    return '\n'.join(borgmatic.execute.execute_command_and_capture_output(command)).rstrip(
+        os.linesep
+    )

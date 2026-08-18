@@ -1,12 +1,10 @@
 ---
-title: How to backup your databases
+title: 🗄️ How to backup your databases
 eleventyNavigation:
   key: 🗄️ Backup your databases
   parent: How-to guides
   order: 8
 ---
-## Database dump hooks
-
 If you want to backup a database, it's best practice with most database
 systems to backup an exported database dump, rather than backing up your
 database's internal file storage. That's because the internal storage can
@@ -29,33 +27,6 @@ mysql_databases:
 these and other database options in the `hooks:` section of your
 configuration.
 
-<span class="minilink minilink-addedin">New in version 1.5.22</span> You can
-also dump MongoDB databases. For example:
-
-```yaml
-mongodb_databases:
-    - name: messages
-```
-
-<span class="minilink minilink-addedin">New in version 1.7.9</span>
-Additionally, you can dump SQLite databases. For example:
-
-```yaml
-sqlite_databases:
-    - name: mydb
-      path: /var/lib/sqlite3/mydb.sqlite
-```
-
-<span class="minilink minilink-addedin">New in version 1.8.2</span> If you're
-using MariaDB, use the MariaDB database hook instead of `mysql_databases:` as
-the MariaDB hook calls native MariaDB commands instead of the deprecated MySQL
-ones. For instance:
-
-```yaml
-mariadb_databases:
-    - name: comments
-```
-
 As part of each backup, borgmatic streams a database dump for each configured
 database directly to Borg, so it's included in the backup without consuming
 additional disk space. (The exceptions are the PostgreSQL/MongoDB `directory`
@@ -72,8 +43,10 @@ Here's a more involved example that connects to remote databases:
 ```yaml
 postgresql_databases:
     - name: users
+      label: database_server1
       hostname: database1.example.org
     - name: orders
+      label: database_server2
       hostname: database2.example.org
       port: 5433
       username: postgres
@@ -109,54 +82,24 @@ influxdb_databases:
       port: 8087
       tls: true
       skip_verify: true
-      tojen: mysecrettoken
+      password: mysecretpassword
       organization_name: BorgCorp
 sqlite_databases:
     - name: mydb
       path: /var/lib/sqlite3/mydb.sqlite
 ```
 
-See your [borgmatic configuration
-file](https://torsion.org/borgmatic/docs/reference/configuration/) for
-additional customization of the options passed to database commands (when
-listing databases, restoring databases, etc.).
+See the [data sources
+documentation](https://torsion.org/borgmatic/reference/configuration/data-sources/)
+for details on additional options, including customizing the flags passed to
+database commands when listing databases, restoring databases, etc.
 
+<a id="runtime-directory"></a>
 
-### Runtime directory
-
-<span class="minilink minilink-addedin">New in version 1.9.0</span> To support
-streaming database dumps to Borg, borgmatic uses a runtime directory for
-temporary file storage, probing the following locations (in order) to find it:
-
- 1. The `user_runtime_directory` borgmatic configuration option.
- 2. The `XDG_RUNTIME_DIR` environment variable, usually `/run/user/$UID`
-    (where `$UID` is the current user's ID), automatically set by PAM on Linux
-    for a user with a session.
- 3. <span class="minilink minilink-addedin">New in version 1.9.2</span>The
-    `RUNTIME_DIRECTORY` environment variable, set by systemd if
-    `RuntimeDirectory=borgmatic` is added to borgmatic's systemd service file.
- 4. <span class="minilink minilink-addedin">New in version 1.9.1</span>The
-    `TMPDIR` environment variable, set on macOS for a user with a session,
-    among other operating systems.
- 5. <span class="minilink minilink-addedin">New in version 1.9.1</span>The
-    `TEMP` environment variable, set on various systems.
- 6. <span class="minilink minilink-addedin">New in version 1.9.2</span>
-    Hard-coded `/tmp`. <span class="minilink minilink-addedin">Prior to
-    version 1.9.2</span>This was instead hard-coded to `/run/user/$UID`.
-
-You can see the runtime directory path that borgmatic selects by running with
-`--verbosity 2` and looking for "Using runtime directory" in the output.
-
-Regardless of the runtime directory selected, borgmatic stores its files
-within a `borgmatic` subdirectory of the runtime directory. Additionally, in
-the case of `TMPDIR`, `TEMP`, and the hard-coded `/tmp`, borgmatic creates a
-randomly named subdirectory in an effort to reduce path collisions in shared
-system temporary directories.
-
-<span class="minilink minilink-addedin">Prior to version 1.9.0</span>
-borgmatic created temporary streaming database dumps within the `~/.borgmatic`
-directory by default. At that time, the path was configurable by the
-`borgmatic_source_directory` configuration option (now deprecated).
+To support streaming database dumps to Borg, borgmatic uses a runtime directory
+for temporary file storage. See the [runtime directory
+documentation](https://torsion.org/borgmatic/reference/configuration/runtime-directory/)
+for details.
 
 
 ### All databases
@@ -185,10 +128,10 @@ The SQLite hook in particular does not consider "all" a special database name.
 these options in the `hooks:` section of your configuration.
 
 <span class="minilink minilink-addedin">New in version 1.7.6</span> With
-PostgreSQL, MariaDB, MySQL and InfluxDB, you can optionally dump "all" 
-databases to separate files instead of one combined dump file, allowing more
-convenient restores of individual databases. Enable this by specifying your 
-desired database dump `format`:
+PostgreSQL, MariaDB, and MySQL, you can optionally dump "all" databases to
+separate files instead of one combined dump file, allowing more convenient
+restores of individual databases. Enable this by specifying your desired
+database dump `format`:
 
 ```yaml
 postgresql_databases:
@@ -226,34 +169,30 @@ these options in the `hooks:` section of your configuration.
 
 #### Database client on the host
 
-But what if borgmatic is running on the host? You can still connect to a
-database server container if its ports are properly exposed to the host. For
-instance, when running the database container, you can specify `--publish
-127.0.0.1:5433:5432` so that it exposes the container's port 5432 to port 5433
-on the host (only reachable on localhost, in this case). Or the same thing with
-Docker Compose:
+But what if borgmatic is running on the host?
 
-```yaml
-services:
-   your-database-server-container-name:
-       image: postgres
-       ports:
-           - 127.0.0.1:5433:5432
-```
-
-And then you can configure borgmatic running on the host to connect to the
-database:
+<span class="minilink minilink-addedin">New in version 2.0.8</span> You can
+connect to the database container by specifying its container name or ID:
 
 ```yaml
 postgresql_databases:
     - name: users
-      hostname: 127.0.0.1
+      container: your-database-server-container-name
       port: 5433
       username: postgres
       password: trustsome1
 ```
 
-Alter the ports in these examples to suit your particular database system.
+borgmatic uses the `docker` or `podman` command to figure out the container IP
+to connect to. But `container:` doesn't work when borgmatic itself is running in
+a container—unless the `docker` or `podman` command works inside that container.
+But you can always use `hostname:` as described above.
+
+<span class="minilink minilink-addedin">Prior to version 2.0.8</span> If you're
+running an older version of borgmatic on the host, you can publish your database
+container ports to the host (e.g. via `docker run --publish` or Compose's
+`ports`)—and then configure borgmatic to connect to `localhost` and the
+published port.
 
 
 #### Database client in a running container
@@ -285,9 +224,11 @@ the `pg_restore_command` and `psql_command` options.
 
 If you choose to use the `pg_dump` command within the container, and you're
 using the `directory` format in particular, you'll also need to mount the
-[runtime directory](#runtime-directory) from your host into the container at the
-same path. Otherwise, the `directory` format dump will remain locked away inside
-the database container where Borg can't read it.
+[runtime
+directory](https://torsion.org/borgmatic/reference/configuration/runtime-directory/)
+from your host into the container at the same path. Otherwise, the `directory`
+format dump will remain locked away inside the database container where Borg
+can't read it.
 
 For example, with Docker Compose and a runtime directory located at
 `/run/user/1000`:
@@ -322,6 +263,10 @@ container separate from borgmatic.
 A similar approach can work with MySQL, using `mysql_dump_command` instead of
 `mariadb_dump_command` to run `mysqldump` in a container.
 
+Note: With MariaDB and MySQL, use `options`, `list_options`, and/or
+`restore_options` to override command-line flags rather than putting flags into
+`mariadb_dump_command`, `mysql_dump_command`, etc.
+
 
 #### Database client in a temporary container
 
@@ -344,7 +289,7 @@ password to the temporary `pg_dump` container.
 
 Similar command override options are available for (some of) the other
 supported database types as well. See the [configuration
-reference](https://torsion.org/borgmatic/docs/reference/configuration/) for
+reference](https://torsion.org/borgmatic/reference/configuration/) for
 details.
 
 
@@ -371,8 +316,10 @@ hooks:
 ### External passwords
 
 If you don't want to keep your database passwords in your borgmatic
-configuration file, you can instead pass them in [from external credential
-sources](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
+configuration file, you can instead pass them in from [external credential
+sources](https://torsion.org/borgmatic/reference/configuration/credentials/) or
+[environment
+variables](https://torsion.org/borgmatic/reference/configuration/environment-variables/).
 
 
 ### Configuration backups
@@ -386,17 +333,23 @@ bring back any missing configuration files in order to restore a database.
 <span class="minilink minilink-addedin">New in version 1.7.15</span> borgmatic
 automatically includes configuration files in your backup. See [the
 documentation on the `config bootstrap`
-action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/#extract-the-configuration-files-used-to-create-an-archive)
+action](https://torsion.org/borgmatic/how-to/extract-a-backup/#extract-the-configuration-files-used-to-create-an-archive)
 for more information.
 
 
 ## Supported databases
 
-As of now, borgmatic supports PostgreSQL, MariaDB, MySQL, MongoDB, SQLite and
-InfluxDB databases directly. But see below about general-purpose preparation 
-and cleanup hooks as a work-around with other database systems. Also, please 
-[file a ticket](https://torsion.org/borgmatic/#issues) for additional database
-systems that you'd like supported.
+borgmatic directly supports [several database
+systems](https://torsion.org/borgmatic/reference/configuration/data-sources/).
+But if you're looking to backup an unsupported databases system, you can use
+general-purpose [preparation and cleanup
+hooks](https://torsion.org/borgmatic/how-to/add-preparation-and-cleanup-steps-to-backups/)
+as a work-around. These hooks allows you to trigger arbitrary commands or
+scripts before and after backups to create and cleanup database dumps for any
+database system.
+
+Also, please [file a ticket](https://torsion.org/borgmatic/#issues) for
+additional database systems that you'd like borgmatic to officially support.
 
 
 ## Database restoration
@@ -430,8 +383,6 @@ most up-to-date files and therefore the latest timestamp, run a command like:
 borgmatic restore --archive host-2023-01-02T04:06:07.080910
 ```
 
-(No borgmatic `restore` action? Upgrade borgmatic!)
-
 Or you can simplify this to:
 
 ```bash
@@ -445,6 +396,20 @@ that archive.
 This is a destructive action! `borgmatic restore` replaces live databases by
 restoring dumps from the selected archive. So be very careful when and where
 you run it.
+
+
+### Configuration file selection
+
+If you have a multi-configuration-file setup and you want to restore a database
+from a single configuration file, use the `--config` flag with the path of the
+configuration file to use for the restore. For example:
+
+```bash
+borgmatic restore --config /path/to/config.yaml --archive latest
+```
+
+Without `--config`, borgmatic tries to run the `restore` action once for each
+configuration file it finds.
 
 
 ### Repository selection
@@ -597,16 +562,17 @@ Or from the configuration file:
 postgresql_databases:
     - name: users
         hostname: database1.example.org
-        restore_hostname: database1.example.org
+        restore_hostname: database2.example.org
         restore_port: 5433
         restore_username: postgres
         restore_password: trustsome1
 ```
 
+
 ### Manual restoration
 
 If you prefer to restore a database without the help of borgmatic, first
-[extract](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) an
+[extract](https://torsion.org/borgmatic/how-to/extract-a-backup/) an
 archive containing a database dump.
 
 borgmatic extracts the dump file into the `borgmatic/` directory within the
@@ -623,7 +589,7 @@ After extraction, you can manually restore the dump file using native database
 commands like `pg_restore`, `mysql`, `mongorestore`, `sqlite`, or similar.
 
 Also see the documentation on [listing database
-dumps](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/#listing-database-dumps).
+dumps](https://torsion.org/borgmatic/how-to/inspect-your-backups/#listing-database-dumps).
 
 
 ## Limitations
@@ -669,16 +635,6 @@ starting from version 1.7.15, borgmatic includes your configuration files
 automatically.
 
 
-## Preparation and cleanup hooks
-
-If this database integration is too limited for needs, borgmatic also supports
-general-purpose [preparation and cleanup
-hooks](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/).
-These hooks allows you to trigger arbitrary commands or scripts before and
-after backups. So if necessary, you can use these hooks to create database
-dumps with any database system.
-
-
 ## Troubleshooting
 
 ### Authentication errors
@@ -717,8 +673,13 @@ configuration. Here's an example with MariaDB:
 ```yaml
 mariadb_databases:
     - name: posts
-      options: "--single-transaction --quick"
+      options: "--single-transaction"
 ```
+
+<span class="minilink minilink-addedin">New in version 2.0.13</span> borgmatic
+passes `--single-transaction` to MariaDB/MySQL by default, and you no longer
+need to set that in `options:`.
+
 
 ### borgmatic hangs during backup
 

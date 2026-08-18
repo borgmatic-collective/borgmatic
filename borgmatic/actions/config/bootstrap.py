@@ -1,12 +1,14 @@
+import argparse
+import datetime
+import itertools
 import json
 import logging
 import os
 
 import borgmatic.borg.extract
+import borgmatic.borg.info
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
-import borgmatic.config.validate
-import borgmatic.hooks.command
 
 logger = logging.getLogger(__name__)
 
@@ -16,67 +18,71 @@ def make_bootstrap_config(bootstrap_arguments):
     Given the bootstrap arguments as an argparse.Namespace, return a corresponding config dict.
     '''
     return {
-        'ssh_command': bootstrap_arguments.ssh_command,
+        # Without this glob, borgmatic will use a default archive name format based on hostname,
+        # which might artificially limit the archives that borgmatic can bootstrap from.
+        'match_archives': '*',
+        'borgmatic_source_directory': bootstrap_arguments.borgmatic_source_directory,
+        'local_path': bootstrap_arguments.local_path,
+        'remote_path': bootstrap_arguments.remote_path,
         # In case the repo has been moved or is accessed from a different path at the point of
         # bootstrapping.
         'relocated_repo_access_is_ok': True,
+        'ssh_command': bootstrap_arguments.ssh_command,
+        'user_runtime_directory': bootstrap_arguments.user_runtime_directory,
     }
 
 
-def get_config_paths(archive_name, bootstrap_arguments, global_arguments, local_borg_version):
+def load_config_paths_from_archive(
+    repository_path,
+    archive_name,
+    config,
+    local_borg_version,
+    global_arguments,
+    borgmatic_runtime_directory,
+):
     '''
-    Given an archive name, the bootstrap arguments as an argparse.Namespace (containing the
-    repository and archive name, Borg local path, Borg remote path, borgmatic runtime directory,
-    borgmatic source directory, destination directory, and whether to strip components), the global
-    arguments as an argparse.Namespace (containing the dry run flag and the local borg version),
-    return the config paths from the manifest.json file in the borgmatic source directory or runtime
-    directory after extracting it from the repository archive.
+    Given a repository path, an archive name, a configuration dict, the local Borg version, the
+    global arguments as an argparse.Namespace, and the borgmatic runtime directory, return the
+    config paths from the manifest.json file in the borgmatic source directory or runtime directory
+    within the repository archive.
 
     Raise ValueError if the manifest JSON is missing, can't be decoded, or doesn't contain the
     expected configuration path data.
     '''
-    borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(
-        {'borgmatic_source_directory': bootstrap_arguments.borgmatic_source_directory},
-    )
-    config = make_bootstrap_config(bootstrap_arguments)
-
     # Probe for the manifest file in multiple locations, as the default location has moved to the
     # borgmatic runtime directory (which gets stored as just "/borgmatic" with Borg 1.4+). But we
     # still want to support reading the manifest from previously created archives as well.
-    with borgmatic.config.paths.Runtime_directory(
-        {'user_runtime_directory': bootstrap_arguments.user_runtime_directory},
-    ) as borgmatic_runtime_directory:
-        for base_directory in (
-            'borgmatic',
-            borgmatic.config.paths.make_runtime_directory_glob(borgmatic_runtime_directory),
-            borgmatic_source_directory,
-        ):
-            borgmatic_manifest_path = 'sh:' + os.path.join(
-                base_directory,
-                'bootstrap',
-                'manifest.json',
-            )
+    for base_directory in (
+        'borgmatic',
+        borgmatic.config.paths.make_runtime_directory_glob(borgmatic_runtime_directory),
+        borgmatic.config.paths.get_borgmatic_source_directory(config),
+    ):
+        borgmatic_manifest_path = 'sh:' + os.path.join(
+            base_directory,
+            'bootstrap',
+            'manifest.json',
+        )
 
-            extract_process = borgmatic.borg.extract.extract_archive(
-                global_arguments.dry_run,
-                bootstrap_arguments.repository,
-                archive_name,
-                [borgmatic_manifest_path],
-                config,
-                local_borg_version,
-                global_arguments,
-                local_path=bootstrap_arguments.local_path,
-                remote_path=bootstrap_arguments.remote_path,
-                extract_to_stdout=True,
-            )
-            manifest_json = extract_process.stdout.read()
+        extract_process = borgmatic.borg.extract.extract_archive(
+            global_arguments.dry_run,
+            repository_path,
+            archive_name,
+            [borgmatic_manifest_path],
+            config,
+            local_borg_version,
+            global_arguments,
+            local_path=config.get('local_path', 'borg'),
+            remote_path=config.get('remote_path'),
+            extract_to_stdout=True,
+        )
+        manifest_json = extract_process.stdout.read()
 
-            if manifest_json:
-                break
-        else:
-            raise ValueError(
-                'Cannot read configuration paths from archive due to missing bootstrap manifest',
-            )
+        if manifest_json:
+            break
+    else:
+        raise ValueError(
+            'Cannot read configuration paths from archive due to missing archive or bootstrap manifest',
+        )
 
     try:
         manifest_data = json.loads(manifest_json)
@@ -101,6 +107,45 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
     Raise CalledProcessError or OSError if Borg could not be run.
     '''
     config = make_bootstrap_config(bootstrap_arguments)
+
+    if bootstrap_arguments.archive == 'latest':
+        try:
+            archives_data = json.loads(
+                borgmatic.borg.info.display_archives_info(
+                    bootstrap_arguments.repository,
+                    config,
+                    local_borg_version,
+                    info_arguments=argparse.Namespace(archive=None, prefix=None, json=True),
+                    global_arguments=global_arguments,
+                    local_path=bootstrap_arguments.local_path,
+                    remote_path=bootstrap_arguments.remote_path,
+                )
+            )['archives']
+
+            def get_repo_archive_format(archive_data):
+                return archive_data['command_line'][-1]
+
+            def get_archive_start(archive_data):
+                return datetime.datetime.fromisoformat(archive_data['start'])
+
+            latest_archives = {
+                repo_archive_format: max(archives_data, key=get_archive_start)['name']
+                for repo_archive_format, archives_data in itertools.groupby(
+                    sorted(archives_data, key=get_repo_archive_format),
+                    key=get_repo_archive_format,
+                )
+                if not repo_archive_format.endswith('checkpoint')
+            }
+        except (json.JSONDecodeError, KeyError, IndexError):
+            raise ValueError(
+                f'Cannot determine the latest archive for {bootstrap_arguments.repository}'
+            )
+
+        if len(latest_archives) > 1:
+            raise ValueError(
+                f'The repository appears to have multiple "latest" archives, each with a different archive name format: {", ".join(sorted(latest_archives.values()))}. Please select one with --archive.'
+            )
+
     archive_name = borgmatic.borg.repo_list.resolve_archive_name(
         bootstrap_arguments.repository,
         bootstrap_arguments.archive,
@@ -110,22 +155,24 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
         local_path=bootstrap_arguments.local_path,
         remote_path=bootstrap_arguments.remote_path,
     )
-    manifest_config_paths = get_config_paths(
-        archive_name,
-        bootstrap_arguments,
-        global_arguments,
-        local_borg_version,
-    )
 
-    logger.info(f"Bootstrapping config paths: {', '.join(manifest_config_paths)}")
+    with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
+        manifest_config_paths = load_config_paths_from_archive(
+            bootstrap_arguments.repository,
+            archive_name,
+            config,
+            local_borg_version,
+            global_arguments,
+            borgmatic_runtime_directory,
+        )
+
+    logger.info(f"Bootstrapping configuration paths: {', '.join(manifest_config_paths)}")
 
     borgmatic.borg.extract.extract_archive(
         global_arguments.dry_run,
         bootstrap_arguments.repository,
         archive_name,
         [config_path.lstrip(os.path.sep) for config_path in manifest_config_paths],
-        # Only add progress here and not the extract_archive() call above, because progress
-        # conflicts with extract_to_stdout.
         dict(config, progress=bootstrap_arguments.progress or False),
         local_borg_version,
         global_arguments,

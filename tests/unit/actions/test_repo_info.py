@@ -5,7 +5,6 @@ from borgmatic.actions import repo_info as module
 
 def test_run_repo_info_does_not_raise():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_info).should_receive('display_repository_info')
     repo_info_arguments = flexmock(repository=flexmock(), json=False)
 
@@ -24,7 +23,6 @@ def test_run_repo_info_does_not_raise():
 
 def test_run_repo_info_parses_json():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_info).should_receive('display_repository_info').and_return(
         flexmock(),
     )

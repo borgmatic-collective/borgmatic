@@ -30,7 +30,7 @@ def test_initialize_monitor_with_send_logs_false_does_not_add_handler():
     )
 
 
-def test_initialize_monitor_with_send_logs_true_adds_handler_with_default_log_size_limit():
+def test_initialize_monitor_with_send_logs_adds_handler_with_default_logs_size_limit():
     truncation_indicator_length = 4
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'Forgetful_buffering_handler',
@@ -50,16 +50,11 @@ def test_initialize_monitor_with_send_logs_true_adds_handler_with_default_log_si
     )
 
 
-def test_initialize_monitor_without_send_logs_adds_handler_with_default_log_size_limit():
-    truncation_indicator_length = 4
+def test_initialize_monitor_without_send_logs_does_not_add_handler():
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'Forgetful_buffering_handler',
-    ).with_args(
-        module.HANDLER_IDENTIFIER,
-        module.DEFAULT_LOGS_SIZE_LIMIT_BYTES - truncation_indicator_length,
-        1,
-    ).once()
-    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler').once()
+    ).never()
+    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler').never()
 
     module.initialize_monitor(
         hook_config={},
@@ -71,7 +66,9 @@ def test_initialize_monitor_without_send_logs_adds_handler_with_default_log_size
 
 
 def test_ping_monitor_respects_dry_run():
-    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('get_handler')
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda url, config: url)
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'format_buffered_logs_for_payload',
     ).and_return('loggy log')
@@ -88,7 +85,9 @@ def test_ping_monitor_respects_dry_run():
 
 
 def test_ping_monitor_with_no_states_does_not_notify():
-    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('get_handler').never()
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda url, config: url)
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'format_buffered_logs_for_payload',
     ).never()
@@ -105,7 +104,9 @@ def test_ping_monitor_with_no_states_does_not_notify():
 
 
 def test_ping_monitor_notifies_fail_by_default():
-    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('get_handler')
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda url, config: url)
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'format_buffered_logs_for_payload',
     ).and_return('')
@@ -128,7 +129,9 @@ def test_ping_monitor_notifies_fail_by_default():
 
 
 def test_ping_monitor_with_logs_appends_logs_to_body():
-    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('get_handler')
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda url, config: url)
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'format_buffered_logs_for_payload',
     ).and_return('loggy log')
@@ -151,7 +154,9 @@ def test_ping_monitor_with_logs_appends_logs_to_body():
 
 
 def test_ping_monitor_with_finish_default_config_notifies():
-    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('get_handler')
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda url, config: url)
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'format_buffered_logs_for_payload',
     ).and_return('')

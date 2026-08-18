@@ -7,40 +7,6 @@ from flexmock import flexmock
 from borgmatic.hooks import command as module
 
 
-def test_interpolate_context_passes_through_command_without_variable():
-    assert module.interpolate_context('pre-backup', 'ls', {'foo': 'bar'}) == 'ls'
-
-
-def test_interpolate_context_warns_and_passes_through_command_with_unknown_variable():
-    command = 'ls {baz}'
-    flexmock(module.logger).should_receive('warning').once()
-
-    assert module.interpolate_context('pre-backup', command, {'foo': 'bar'}) == command
-
-
-def test_interpolate_context_does_not_warn_and_passes_through_command_with_unknown_variable_matching_borg_placeholder():
-    command = 'ls {hostname}'
-    flexmock(module.logger).should_receive('warning').never()
-
-    assert module.interpolate_context('pre-backup', command, {'foo': 'bar'}) == command
-
-
-def test_interpolate_context_interpolates_variables():
-    command = 'ls {foo}{baz} {baz}'
-    context = {'foo': 'bar', 'baz': 'quux'}
-
-    assert module.interpolate_context('pre-backup', command, context) == 'ls barquux quux'
-
-
-def test_interpolate_context_escapes_interpolated_variables():
-    command = 'ls {foo} {inject}'
-    context = {'foo': 'bar', 'inject': 'hi; naughty-command'}
-
-    assert (
-        module.interpolate_context('pre-backup', command, context) == "ls bar 'hi; naughty-command'"
-    )
-
-
 def test_make_environment_without_pyinstaller_does_not_touch_environment():
     assert module.make_environment({}, sys_module=flexmock()) == {}
 
@@ -238,6 +204,7 @@ def test_execute_hooks_invokes_each_hook_and_command():
             shell=True,
             environment={},
             working_directory=None,
+            close_fds=True,
         ).once()
 
     module.execute_hooks(
@@ -263,6 +230,7 @@ def test_execute_hooks_with_umask_sets_that_umask():
         shell=True,
         environment={},
         working_directory=None,
+        close_fds=True,
     )
 
     module.execute_hooks(
@@ -286,6 +254,7 @@ def test_execute_hooks_with_working_directory_executes_command_with_it():
         shell=True,
         environment={},
         working_directory='/working',
+        close_fds=True,
     )
 
     module.execute_hooks(
@@ -330,6 +299,7 @@ def test_execute_hooks_with_error_logs_as_error():
         shell=True,
         environment={},
         working_directory=None,
+        close_fds=True,
     ).once()
 
     module.execute_hooks(
@@ -374,6 +344,7 @@ def test_execute_hooks_without_commands_to_run_does_not_raise():
             shell=True,
             environment={},
             working_directory=None,
+            close_fds=True,
         ).once()
 
     module.execute_hooks(

@@ -17,9 +17,11 @@ def run_passcommand(passcommand, working_directory):
     Cache the results so that the passcommand only needs to run—and potentially prompt the user—once
     per borgmatic invocation.
     '''
-    return borgmatic.execute.execute_command_and_capture_output(
-        shlex.split(passcommand),
-        working_directory=working_directory,
+    return '\n'.join(
+        borgmatic.execute.execute_command_and_capture_output(
+            shlex.split(passcommand),
+            working_directory=working_directory,
+        )
     )
 
 

@@ -195,7 +195,7 @@ def test_comment_out_line_comments_twice_indented_option():
     assert module.comment_out_line(line) == '        # - item'
 
 
-def test_comment_out_optional_configuration_comments_optional_config_only():
+def test_transform_optional_configuration_comments_optional_config_only():
     # The "# COMMENT_OUT" comment is a sentinel used to express that the following key is optional.
     # It's stripped out of the final output.
     flexmock(module).comment_out_line = lambda line: '# ' + line
@@ -236,13 +236,66 @@ repositories:
 # other: thing
     '''
 
-    assert module.comment_out_optional_configuration(config.strip()) == expected_config.strip()
+    assert module.transform_optional_configuration(config.strip()) == expected_config.strip()
+
+
+def test_transform_optional_configuration_with_comment_out_false_leaves_in_optional_config():
+    # The "# COMMENT_OUT" comment is a sentinel used to express that the following key is optional.
+    # It's stripped out of the final output.
+    flexmock(module).comment_out_line = lambda line: '# ' + line
+    config = '''
+# COMMENT_OUT
+foo:
+    # COMMENT_OUT
+    bar:
+        - baz
+        - quux
+
+repositories:
+    - path: foo
+      # COMMENT_OUT
+      label: bar
+    - path: baz
+      label: quux
+
+# This comment should be kept.
+# COMMENT_OUT
+other: thing
+    '''
+
+    # flake8: noqa
+    expected_config = '''
+foo:
+    bar:
+        - baz
+        - quux
+
+repositories:
+    - path: foo
+      label: bar
+    - path: baz
+      label: quux
+
+# This comment should be kept.
+other: thing
+    '''
+
+    assert (
+        module.transform_optional_configuration(config.strip(), comment_out=False)
+        == expected_config.strip()
+    )
 
 
 def test_render_configuration_converts_configuration_to_yaml_string():
     yaml_string = module.render_configuration({'foo': 'bar'})
 
     assert yaml_string == 'foo: bar\n'
+
+
+def test_render_configuration_strips_ruamel_yaml_end_of_document_marker():
+    yaml_string = module.render_configuration(33)
+
+    assert yaml_string == '33\n'
 
 
 def test_write_configuration_does_not_raise():
@@ -262,10 +315,10 @@ def test_write_configuration_with_already_existing_file_raises():
         module.write_configuration('config.yaml', 'config: yaml')
 
 
-def test_write_configuration_with_already_existing_file_and_overwrite_does_not_raise():
+def test_write_configuration_with_already_existing_file_and_overwrite_does_not_raise(tmp_path):
     flexmock(os.path).should_receive('exists').and_return(True)
 
-    module.write_configuration('/tmp/config.yaml', 'config: yaml', overwrite=True)
+    module.write_configuration(str(tmp_path / 'config.yaml'), 'config: yaml', overwrite=True)
 
 
 def test_write_configuration_with_already_existing_directory_does_not_raise():
@@ -377,11 +430,30 @@ def test_generate_sample_configuration_does_not_raise():
     )
     flexmock(module).should_receive('schema_to_sample_configuration')
     flexmock(module).should_receive('merge_source_configuration_into_destination')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module).should_receive('render_configuration')
-    flexmock(module).should_receive('comment_out_optional_configuration')
+    flexmock(module).should_receive('transform_optional_configuration')
     flexmock(module).should_receive('write_configuration')
 
     module.generate_sample_configuration(False, None, 'dest.yaml', 'schema.yaml')
+
+
+def test_generate_sample_configuration_with_destination_directory_error():
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('schema.yaml', encoding='utf-8').and_return('')
+    flexmock(module.ruamel.yaml).should_receive('YAML').and_return(
+        flexmock(load=lambda filename: {})
+    )
+    flexmock(module).should_receive('schema_to_sample_configuration')
+    flexmock(module).should_receive('merge_source_configuration_into_destination')
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('isfile').and_return(False)
+    flexmock(module).should_receive('render_configuration').never()
+    flexmock(module).should_receive('transform_optional_configuration').never()
+    flexmock(module).should_receive('write_configuration').never()
+
+    with pytest.raises(ValueError):
+        module.generate_sample_configuration(False, None, 'dest.yaml', 'schema.yaml')
 
 
 def test_generate_sample_configuration_with_source_filename_omits_empty_bootstrap_field():
@@ -398,8 +470,9 @@ def test_generate_sample_configuration_with_source_filename_omits_empty_bootstra
         object, {'foo': 'bar'}
     ).once()
     flexmock(module).should_receive('merge_source_configuration_into_destination')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module).should_receive('render_configuration')
-    flexmock(module).should_receive('comment_out_optional_configuration')
+    flexmock(module).should_receive('transform_optional_configuration')
     flexmock(module).should_receive('write_configuration')
 
     module.generate_sample_configuration(False, 'source.yaml', 'dest.yaml', 'schema.yaml')
@@ -418,8 +491,9 @@ def test_generate_sample_configuration_with_source_filename_keeps_non_empty_boot
         object, source_config
     ).once()
     flexmock(module).should_receive('merge_source_configuration_into_destination')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module).should_receive('render_configuration')
-    flexmock(module).should_receive('comment_out_optional_configuration')
+    flexmock(module).should_receive('transform_optional_configuration')
     flexmock(module).should_receive('write_configuration')
 
     module.generate_sample_configuration(False, 'source.yaml', 'dest.yaml', 'schema.yaml')
@@ -433,8 +507,66 @@ def test_generate_sample_configuration_with_dry_run_does_not_write_file():
     )
     flexmock(module).should_receive('schema_to_sample_configuration')
     flexmock(module).should_receive('merge_source_configuration_into_destination')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module).should_receive('render_configuration')
-    flexmock(module).should_receive('comment_out_optional_configuration')
+    flexmock(module).should_receive('transform_optional_configuration')
     flexmock(module).should_receive('write_configuration').never()
 
     module.generate_sample_configuration(True, None, 'dest.yaml', 'schema.yaml')
+
+
+def test_generate_sample_configuration_with_split_writes_each_option_to_file():
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('schema.yaml', encoding='utf-8').and_return('')
+    builtins.should_receive('open').with_args(
+        'dest/options.json', 'w', encoding='utf-8'
+    ).and_return(flexmock())
+    flexmock(module.json).should_receive('dump').with_args(
+        {'option_names': ['foo', 'bar']}, object
+    ).once()
+    flexmock(module.ruamel.yaml).should_receive('YAML').and_return(
+        flexmock(load=lambda filename: {})
+    )
+    flexmock(module).should_receive('schema_to_sample_configuration')
+    flexmock(module).should_receive('merge_source_configuration_into_destination').and_return(
+        {'foo': 1, 'bar': 2}
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module).should_receive('get_configuration_subset')
+    flexmock(module).should_receive('render_configuration')
+    flexmock(module).should_receive('transform_optional_configuration').and_return(' ')
+    flexmock(module.os).should_receive('makedirs')
+    flexmock(module).should_receive('write_configuration').with_args(
+        'dest/foo.yaml',
+        '',
+        overwrite=False,
+    ).once()
+    flexmock(module).should_receive('write_configuration').with_args(
+        'dest/bar.yaml',
+        '',
+        overwrite=False,
+    ).once()
+
+    module.generate_sample_configuration(False, None, 'dest', 'schema.yaml', split=True)
+
+
+def test_generate_sample_configuration_with_split_and_file_destination_errors():
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('schema.yaml', encoding='utf-8').and_return('')
+    flexmock(module.ruamel.yaml).should_receive('YAML').and_return(
+        flexmock(load=lambda filename: {})
+    )
+    flexmock(module).should_receive('schema_to_sample_configuration')
+    flexmock(module).should_receive('merge_source_configuration_into_destination').and_return(
+        {'foo': 1, 'bar': 2}
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('isdir').and_return(False)
+    flexmock(module).should_receive('get_configuration_subset').never()
+    flexmock(module).should_receive('render_configuration').never()
+    flexmock(module).should_receive('transform_optional_configuration').never()
+    flexmock(module.os).should_receive('makedirs').never()
+    flexmock(module).should_receive('write_configuration').never()
+
+    with pytest.raises(ValueError):
+        module.generate_sample_configuration(False, None, 'dest', 'schema.yaml', split=True)

@@ -31,8 +31,10 @@ ACTION_ALIASES = {
     'transfer': [],
     'break-lock': [],
     'key': [],
-    'borg': [],
     'recreate': [],
+    'diff': [],
+    'browse': [],
+    'borg': [],
 }
 
 
@@ -297,7 +299,14 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     )
 
 
-OMITTED_FLAG_NAMES = {'match-archives', 'progress', 'statistics', 'list-details'}
+OMITTED_FLAG_NAMES = {
+    'match-archives',
+    'progress',
+    'statistics',
+    'list-details',
+    'file-list-format',
+    'archive-list-format',
+}
 
 
 def make_argument_description(schema, flag_name):
@@ -316,7 +325,7 @@ def make_argument_description(schema, flag_name):
             ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).',
         )
 
-    if example and schema_type in ('array', 'object'):  # noqa: PLR6201
+    if example and schema_type in ('array', 'object'):
         example_buffer = io.StringIO()
         yaml = ruamel.yaml.YAML(typ='safe')
         yaml.default_flow_style = True
@@ -568,8 +577,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     ignoring actions, and the combined parser is handy for displaying help that includes everything:
     global flags, a list of actions, etc.
     '''
-    config_paths = collect.get_default_config_paths(expand_home=True)
-    unexpanded_config_paths = collect.get_default_config_paths(expand_home=False)
+    config_paths = collect.get_default_config_paths()
 
     # Using allow_abbrev=False here prevents the global parser from erroring about "ambiguous"
     # options like --encryption. Such options are intended for an action parser rather than the
@@ -582,7 +590,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         '--config',
         dest='config_paths',
         action='append',
-        help=f"Configuration filename or directory, can specify flag multiple times, defaults to: -c {' -c '.join(unexpanded_config_paths)}",
+        help='Configuration filename or directory, can specify flag multiple times, defaults to /etc/borgmatic/config.yaml, /etc/borgmatic.d, $XDG_CONFIG_HOME/borgmatic/config.yaml, and $XDG_CONFIG_HOME/borgmatic.d, where $XDG_CONFIG_HOME defaults to $HOME/.config',
     )
     global_group.add_argument(
         '-n',
@@ -641,8 +649,8 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     repo_create_parser = action_parsers.add_parser(
         'repo-create',
         aliases=ACTION_ALIASES['repo-create'],
-        help='Create a new, empty Borg repository',
-        description='Create a new, empty Borg repository',
+        help='Create a new, empty Borg repository (also known as "init")',
+        description='Create a new, empty Borg repository (also known as "init")',
         add_help=False,
     )
     repo_create_group = repo_create_parser.add_argument_group('repo-create arguments')
@@ -653,10 +661,26 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         help='Borg repository encryption mode',
     )
     repo_create_group.add_argument(
+        '-i',
+        '--id-hash',
+        metavar='HASH_FUNCTION',
+        help='Borg ID hash function name, defaults to "sha256" [Borg 2.x+ only]',
+    )
+    repo_create_group.add_argument(
+        '--key-location',
+        metavar='LOCATION',
+        help='Where to store the key, "repokey" for in the repository (default) or "keyfile" for on the client [Borg 2.x+ only]',
+    )
+    repo_create_group.add_argument(
         '--source-repository',
         '--other-repo',
         metavar='KEY_REPOSITORY',
         help='Path to an existing Borg repository whose key material should be reused [Borg 2.x+ only]',
+    )
+    repo_create_group.add_argument(
+        '--from-borg1',
+        action='store_true',
+        help='Whether the source repository is a Borg 1.x repository [Borg 2.x+ only]',
     )
     repo_create_group.add_argument(
         '--repository',
@@ -711,6 +735,11 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     transfer_group.add_argument(
         '--archive',
         help='Name or hash of a single archive to transfer (or "latest"), defaults to transferring all archives',
+    )
+    transfer_group.add_argument(
+        '--from-borg1',
+        action='store_true',
+        help='Whether the source repository is a Borg 1.x repository, equivalent to "--upgrader From12To20" [Borg 2.x+ only]',
     )
     transfer_group.add_argument(
         '--upgrader',
@@ -796,6 +825,13 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         default=None,
         action='store_true',
         help='Display statistics of the pruned archive [Borg 1 only]',
+    )
+    prune_group.add_argument(
+        '--quick-stats',
+        dest='quick_statistics',
+        default=None,
+        action='store_true',
+        help='Display statistics of the pruned archive, skipping repository-wide "All archives" and chunk index statistics [Borg >= 1.4.5 and < 2 only]',
     )
     prune_group.add_argument(
         '--list',
@@ -888,6 +924,13 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         default=None,
         action='store_true',
         help='Display statistics of archive',
+    )
+    create_group.add_argument(
+        '--quick-stats',
+        dest='quick_statistics',
+        default=None,
+        action='store_true',
+        help='Display statistics of archive, skipping repository-wide "All archives" and chunk index statistics [Borg 1.4.5+ only]',
     )
     create_group.add_argument(
         '--list',
@@ -1213,15 +1256,20 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     config_generate_group.add_argument(
         '-d',
         '--destination',
-        dest='destination_filename',
+        dest='destination_path',
         default=config_paths[0],
-        help=f'Destination configuration file, default: {unexpanded_config_paths[0]}',
+        help='Destination configuration file (or directory if using --split), default: /etc/borgmatic/config.yaml',
     )
     config_generate_group.add_argument(
         '--overwrite',
         default=False,
         action='store_true',
         help='Whether to overwrite any existing destination file, defaults to false',
+    )
+    config_generate_group.add_argument(
+        '--split',
+        action='store_true',
+        help='Assuming the destination is a directory instead of a file, split the configuration into separate files within it, one per option, useful for documentation',
     )
     config_generate_group.add_argument(
         '-h',
@@ -1244,6 +1292,29 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         help='Show the validated configuration after all include merging has occurred',
     )
     config_validate_group.add_argument(
+        '-h',
+        '--help',
+        action='help',
+        help='Show this help message and exit',
+    )
+
+    config_show_parser = config_parsers.add_parser(
+        'show',
+        help='Show the computed configuration for each file specified with --config (see borgmatic --help)',
+        description='Show the computed configuration for each file specified with --config (see borgmatic --help)',
+        add_help=False,
+    )
+    config_show_group = config_show_parser.add_argument_group('config show arguments')
+    config_show_group.add_argument(
+        '--option',
+        help='Show the value of a single named configuration option instead of the entire configuration',
+    )
+    config_show_group.add_argument(
+        '--json',
+        action='store_true',
+        help='Show the configuration as JSON with one array element per configuration file',
+    )
+    config_show_group.add_argument(
         '-h',
         '--help',
         action='help',
@@ -1476,6 +1547,10 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         help='Database port to restore to. Defaults to the "restore_port" option in borgmatic\'s configuration',
     )
     restore_group.add_argument(
+        '--container',
+        help='Container to restore to. Defaults to the "restore_container" option in borgmatic\'s configuration',
+    )
+    restore_group.add_argument(
         '--username',
         help='Username with which to connect to the database. Defaults to the "restore_username" option in borgmatic\'s configuration',
     )
@@ -1488,8 +1563,16 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         help='Path to restore SQLite database dumps to. Defaults to the "restore_path" option in borgmatic\'s configuration',
     )
     restore_group.add_argument(
+        '--original-label',
+        help='The label where the dump to restore came from, only necessary if you need to disambiguate dumps',
+    )
+    restore_group.add_argument(
         '--original-hostname',
         help='The hostname where the dump to restore came from, only necessary if you need to disambiguate dumps',
+    )
+    restore_group.add_argument(
+        '--original-container',
+        help='The container where the dump to restore came from, only necessary if you need to disambiguate dumps',
     )
     restore_group.add_argument(
         '--original-port',
@@ -1525,7 +1608,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         action='store_true',
         help='Output only archive names',
     )
-    repo_list_group.add_argument('--format', help='Format for archive listing')
+    repo_list_group.add_argument('--format', help='Borg format for the archive listing')
     repo_list_group.add_argument(
         '--json',
         default=False,
@@ -1628,7 +1711,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         action='store_true',
         help='Output only path names',
     )
-    list_group.add_argument('--format', help='Format for file listing')
+    list_group.add_argument('--format', help='Borg format for the file listing')
     list_group.add_argument(
         '--json',
         default=False,
@@ -1908,7 +1991,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     )
     recreate_group.add_argument(
         '--archive',
-        help='Archive name, hash, or series to recreate',
+        help='Archive name, hash, or series to recreate, defaults to all archives in the repository (if specified), or all archives across all repositories',
     )
     recreate_group.add_argument(
         '--list',
@@ -1946,6 +2029,60 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         action='help',
         help='Show this help message and exit',
     )
+
+    diff_parser = action_parsers.add_parser(
+        'diff',
+        aliases=ACTION_ALIASES['diff'],
+        help='Find differences (file contents, user/group/mode) between archives',
+        description='Find differences (file contents, user/group/mode) between archives',
+        add_help=False,
+    )
+    diff_group = diff_parser.add_argument_group('diff arguments')
+    diff_group.add_argument(
+        '--repository',
+        help='Path of repository containing archive to diff, defaults to the configured repository if there is only one, quoted globs supported',
+    )
+    diff_group.add_argument(
+        '--archive',
+        help='Archive name, hash, or series to diff',
+        required=True,
+    )
+    diff_group.add_argument(
+        '--second-archive',
+        help='Second archive name, hash, or series to diff',
+        required=True,
+    )
+    diff_group.add_argument(
+        '--same-chunker-params', action='store_true', help='Override check of chunker parameters'
+    )
+    diff_group.add_argument(
+        '--sort-by',
+        metavar='KEY',
+        dest='sort_keys',
+        action='append',
+        help='Advanced sorting: specify field(s) to sort by. Prefix with > for descending or < for ascending (default)',
+    )
+    diff_group.add_argument(
+        '--content-only',
+        action='store_true',
+        help='Only compare differences in content (exclude metadata differences)',
+    )
+    diff_group.add_argument(
+        '--only-patterns',
+        action='store_true',
+        help='Run the diff according to borgmatic configured patterns (ie do not diff entire archives)',
+    )
+    diff_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    browse_parser = action_parsers.add_parser(
+        'browse',
+        aliases=ACTION_ALIASES['browse'],
+        help='Browse repositories, archives, and files in a console UI',
+        description='Browse repositories, archives, and files in a console UI',
+        add_help=False,
+    )
+    browse_group = browse_parser.add_argument_group('browse arguments')
+    browse_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     borg_parser = action_parsers.add_parser(
         'borg',
@@ -1998,7 +2135,7 @@ def parse_arguments(schema, *unparsed_arguments):
     )
 
     if not arguments['global'].config_paths:
-        arguments['global'].config_paths = collect.get_default_config_paths(expand_home=True)
+        arguments['global'].config_paths = collect.get_default_config_paths()
 
     for action_name in ('bootstrap', 'generate', 'validate'):
         if action_name in arguments and len(arguments) > HIGHLANDER_ACTION_ARGUMENTS_COUNT:
@@ -2019,7 +2156,7 @@ def parse_arguments(schema, *unparsed_arguments):
         )
 
     if (
-        ('list' in arguments and 'repo-info' in arguments and arguments['list'].json)  # noqa: PLR0916
+        ('list' in arguments and 'repo-info' in arguments and arguments['list'].json)
         or ('list' in arguments and 'info' in arguments and arguments['list'].json)
         or ('repo-info' in arguments and 'info' in arguments and arguments['repo-info'].json)
     ):
@@ -2037,7 +2174,7 @@ def parse_arguments(schema, *unparsed_arguments):
             'With the repo-list action, only one of --prefix or --match-archives flags can be used.',
         )
 
-    if 'info' in arguments and (  # noqa: PLR0916
+    if 'info' in arguments and (
         (arguments['info'].archive and arguments['info'].prefix)
         or (arguments['info'].archive and arguments['info'].match_archives)
         or (arguments['info'].prefix and arguments['info'].match_archives)

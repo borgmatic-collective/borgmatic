@@ -1,5 +1,6 @@
 import logging
 import re
+import urllib
 
 import requests
 
@@ -40,6 +41,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
 
     data_source_name_url = hook_config.get('data_source_name_url')
+    environment = hook_config.get('environment')
     monitor_slug = hook_config.get('monitor_slug')
     match = DATA_SOURCE_NAME_URL_PATTERN.match(data_source_name_url)
 
@@ -65,10 +67,12 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     if dry_run:
         return
 
+    environment_query = f'&environment={urllib.parse.quote(environment)}' if environment else ''
+
     logging.getLogger('urllib3').setLevel(logging.ERROR)
     try:
         response = requests.post(
-            f'{cron_url}?status={status}',
+            f'{cron_url}?status={status}{environment_query}',
             timeout=TIMEOUT_SECONDS,
             headers={'User-Agent': 'borgmatic'},
         )

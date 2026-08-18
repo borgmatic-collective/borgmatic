@@ -65,16 +65,16 @@ def prune_archives(
     archives according to the retention policy specified in that configuration.
     '''
     borgmatic.logger.add_custom_log_levels()
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get('prune', '')
 
     full_command = (
         (local_path, 'prune')
         + make_prune_flags(config, prune_arguments, local_borg_version)
+        + ('--log-json',)
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if config.get('log_json') else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (
             ('--stats',)
@@ -83,10 +83,23 @@ def prune_archives(
             and not feature.available(feature.Feature.NO_PRUNE_STATS, local_borg_version)
             else ()
         )
+        + (
+            ('--quick-stats',)
+            if config.get('quick_statistics')
+            and not dry_run
+            and not feature.available(feature.Feature.NO_PRUNE_STATS, local_borg_version)
+            else ()
+        )
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + flags.make_flags_from_arguments(
             prune_arguments,
-            excludes=('repository', 'match_archives', 'statistics', 'list_details'),
+            excludes=(
+                'repository',
+                'match_archives',
+                'statistics',
+                'quick_statistics',
+                'list_details',
+            ),
         )
         + (('--list',) if config.get('list_details') else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
@@ -95,7 +108,7 @@ def prune_archives(
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    if config.get('statistics') or config.get('list_details'):
+    if config.get('statistics') or config.get('quick_statistics') or config.get('list_details'):
         output_log_level = logging.ANSWER
     else:
         output_log_level = logging.INFO

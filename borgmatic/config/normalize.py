@@ -205,7 +205,7 @@ def normalize(config_filename, config):  # noqa: PLR0912, PLR0915
                 dict(
                     levelno=logging.WARNING,
                     levelname='WARNING',
-                    msg=f'{config_filename}: The healthchecks hook now expects a key/value pair with "ping_url" as a key. String values for this option are deprecated and support will be removed from a future release.',
+                    msg=f'{config_filename}: The Healthchecks hook now expects a key/value pair with "ping_url" as a key. String values for this option are deprecated and support will be removed from a future release.',
                 ),
             ),
         )
@@ -218,7 +218,7 @@ def normalize(config_filename, config):  # noqa: PLR0912, PLR0915
                 dict(
                     levelno=logging.WARNING,
                     levelname='WARNING',
-                    msg=f'{config_filename}: The healthchecks hook now expects key/value pairs. String values for this option are deprecated and support will be removed from a future release.',
+                    msg=f'{config_filename}: The Cronitor hook now expects key/value pairs. String values for this option are deprecated and support will be removed from a future release.',
                 ),
             ),
         )
@@ -231,24 +231,11 @@ def normalize(config_filename, config):  # noqa: PLR0912, PLR0915
                 dict(
                     levelno=logging.WARNING,
                     levelname='WARNING',
-                    msg=f'{config_filename}: The healthchecks hook now expects key/value pairs. String values for this option are deprecated and support will be removed from a future release.',
+                    msg=f'{config_filename}: The PagerDuty hook now expects key/value pairs. String values for this option are deprecated and support will be removed from a future release.',
                 ),
             ),
         )
         config['pagerduty'] = {'integration_key': pagerduty}
-
-    cronhub = config.get('cronhub')
-    if isinstance(cronhub, str):
-        logs.append(
-            logging.makeLogRecord(
-                dict(
-                    levelno=logging.WARNING,
-                    levelname='WARNING',
-                    msg=f'{config_filename}: The healthchecks hook now expects key/value pairs. String values for this option are deprecated and support will be removed from a future release.',
-                ),
-            ),
-        )
-        config['cronhub'] = {'ping_url': cronhub}
 
     # Upgrade consistency checks from a list of strings to a list of dicts.
     checks = config.get('checks')

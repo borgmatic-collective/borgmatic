@@ -12,14 +12,17 @@ import ruamel.yaml
 
 import borgmatic.actions.borg
 import borgmatic.actions.break_lock
+import borgmatic.actions.browse.run
 import borgmatic.actions.change_passphrase
 import borgmatic.actions.check
 import borgmatic.actions.compact
 import borgmatic.actions.config.bootstrap
 import borgmatic.actions.config.generate
+import borgmatic.actions.config.show
 import borgmatic.actions.config.validate
 import borgmatic.actions.create
 import borgmatic.actions.delete
+import borgmatic.actions.diff
 import borgmatic.actions.export_key
 import borgmatic.actions.export_tar
 import borgmatic.actions.extract
@@ -209,7 +212,7 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
             f"Skipping {'/'.join(skip_actions)} action{'s' if len(skip_actions) > 1 else ''} due to configured skip_actions",
         )
 
-    try:  # noqa: PLR1702
+    try:
         with (
             Monitoring_hooks(config_filename, config, arguments, global_arguments),
             borgmatic.hooks.command.Before_after_hooks(
@@ -340,7 +343,7 @@ def run_actions(  # noqa: PLR0912, PLR0915
     '''
     Given parsed command-line arguments as an argparse.ArgumentParser instance, the configuration
     filename, a configuration dict, a sequence of loaded configuration paths, local and remote paths
-    to Borg, a local Borg version string, and a repository name, run all actions from the
+    to Borg, a local Borg version string, and a repository dict, run all actions from the
     command-line arguments on the given repository.
 
     Yield JSON output strings from executing any actions that produce JSON.
@@ -362,6 +365,22 @@ def run_actions(  # noqa: PLR0912, PLR0915
         'repository': repository_path,
     }
     skip_actions = set(get_skip_actions(config, arguments))
+    requested_repository = next(
+        (
+            repository
+            for action_arguments in arguments.values()
+            for repository in (getattr(action_arguments, 'repository', None),)
+            if repository is not None
+        ),
+        None,
+    )
+
+    if requested_repository and not borgmatic.config.validate.repositories_match(
+        repository,
+        requested_repository,
+    ):
+        logger.debug('Skipping actions because the requested --repository does not match')
+        return
 
     with borgmatic.hooks.command.Before_after_hooks(
         command_hooks=config.get('commands'),
@@ -425,6 +444,7 @@ def run_actions(  # noqa: PLR0912, PLR0915
                         local_borg_version,
                         action_arguments,
                         global_arguments,
+                        dry_run_label,
                         local_path,
                         remote_path,
                     )
@@ -605,6 +625,16 @@ def run_actions(  # noqa: PLR0912, PLR0915
                         local_path,
                         remote_path,
                     )
+                elif action_name == 'diff':
+                    borgmatic.actions.diff.run_diff(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
                 elif action_name == 'borg':
                     borgmatic.actions.borg.run_borg(
                         repository,
@@ -635,6 +665,13 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
     config_paths = set()
     logs = []
 
+    # As a special case for the "bootstrap" action, parse configuration for a non-existent
+    # configuration file with None for a filename. This sets any command-line arguments into an
+    # empty configuration dict, so for instance a "--verbosity" flag gets used even if there is no
+    # configuration file yet.
+    if 'bootstrap' in arguments and not config_filenames:
+        config_filenames = (None,)
+
     # Parse and load each configuration file.
     for config_filename in config_filenames:
         logs.extend(
@@ -644,6 +681,7 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
                         levelno=logging.DEBUG,
                         levelname='DEBUG',
                         msg=f'{config_filename}: Loading configuration file',
+                        name=logger.name,
                     ),
                 ),
             ],
@@ -663,9 +701,10 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
                 [
                     logging.makeLogRecord(
                         dict(
-                            levelno=logging.WARNING,
-                            levelname='WARNING',
+                            levelno=logging.CRITICAL,
+                            levelname='CRITICAL',
                             msg=f'{config_filename}: Insufficient permissions to read configuration file',
+                            name=logger.name,
                         ),
                     ),
                 ],
@@ -678,10 +717,16 @@ def load_configurations(config_filenames, arguments, overrides=None, resolve_env
                             levelno=logging.CRITICAL,
                             levelname='CRITICAL',
                             msg=f'{config_filename}: Error parsing configuration file',
+                            name=logger.name,
                         ),
                     ),
                     logging.makeLogRecord(
-                        dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=str(error)),
+                        dict(
+                            levelno=logging.CRITICAL,
+                            levelname='CRITICAL',
+                            msg=str(error),
+                            name=logger.name,
+                        ),
                     ),
                 ],
             )
@@ -694,7 +739,7 @@ def log_record(suppress_log=False, **kwargs):
     Create a log record based on the given makeLogRecord() arguments, one of which must be
     named "levelno". Log the record (unless suppress log is set) and return it.
     '''
-    record = logging.makeLogRecord(kwargs)
+    record = logging.makeLogRecord(dict(kwargs, name=logger.name))
     if suppress_log:
         return record
 
@@ -785,18 +830,18 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
     '''
     add_custom_log_levels()
 
-    if 'bootstrap' in arguments:
-        try:
-            # No configuration file is needed for bootstrap.
-            local_borg_version = borg_version.local_borg_version(
-                {},
-                arguments['bootstrap'].local_path,
-            )
-        except (OSError, CalledProcessError, ValueError) as error:
-            yield from log_error_records('Error getting local Borg version', error)
-            return
+    try:
+        if 'bootstrap' in arguments:
+            try:
+                local_borg_version = borg_version.local_borg_version(
+                    # No configuration file is needed for bootstrap.
+                    {},
+                    arguments['bootstrap'].local_path,
+                )
+            except (OSError, CalledProcessError, ValueError) as error:
+                yield from log_error_records('Error getting local Borg version', error)
+                return
 
-        try:
             borgmatic.actions.config.bootstrap.run_bootstrap(
                 arguments['bootstrap'],
                 arguments['global'],
@@ -807,19 +852,13 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
                     levelno=logging.ANSWER,
                     levelname='ANSWER',
                     msg='Bootstrap successful',
+                    name=logger.name,
                 ),
             )
-        except (
-            CalledProcessError,
-            ValueError,
-            OSError,
-        ) as error:
-            yield from log_error_records(error)
 
-        return
+            return
 
-    if 'generate' in arguments:
-        try:
+        if 'generate' in arguments:
             borgmatic.actions.config.generate.run_generate(
                 arguments['generate'],
                 arguments['global'],
@@ -829,30 +868,25 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
                     levelno=logging.ANSWER,
                     levelname='ANSWER',
                     msg='Generate successful',
-                ),
-            )
-        except (
-            CalledProcessError,
-            ValueError,
-            OSError,
-        ) as error:
-            yield from log_error_records(error)
-
-        return
-
-    if 'validate' in arguments:
-        if configuration_parse_errors:
-            yield logging.makeLogRecord(
-                dict(
-                    levelno=logging.CRITICAL,
-                    levelname='CRITICAL',
-                    msg='Configuration validation failed',
+                    name=logger.name,
                 ),
             )
 
             return
 
-        try:
+        if 'validate' in arguments:
+            if configuration_parse_errors:
+                yield logging.makeLogRecord(
+                    dict(
+                        levelno=logging.CRITICAL,
+                        levelname='CRITICAL',
+                        msg='Configuration validation failed',
+                        name=logger.name,
+                    ),
+                )
+
+                return
+
             borgmatic.actions.config.validate.run_validate(arguments['validate'], configs)
 
             yield logging.makeLogRecord(
@@ -860,16 +894,30 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
                     levelno=logging.ANSWER,
                     levelname='ANSWER',
                     msg='All configuration files are valid',
+                    name=logger.name,
                 ),
             )
-        except (
-            CalledProcessError,
-            ValueError,
-            OSError,
-        ) as error:
-            yield from log_error_records(error)
 
-        return
+            return
+
+        if 'show' in arguments:
+            borgmatic.actions.config.show.run_show(arguments['show'], configs)
+
+            return
+
+        if 'browse' in arguments:
+            borgmatic.actions.browse.run.run_browse(
+                arguments['browse'],
+                arguments['global'],
+                configs,
+            )
+
+    except (
+        CalledProcessError,
+        ValueError,
+        OSError,
+    ) as error:
+        yield from log_error_records(error)
 
 
 def collect_configuration_run_summary_logs(configs, config_paths, arguments, log_file_path):  # noqa: PLR0912
@@ -952,6 +1000,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments, log
                         levelno=logging.INFO,
                         levelname='INFO',
                         msg=f'{config_filename}: Successfully ran configuration file',
+                        name=logger.name,
                     ),
                 )
                 if results:
@@ -1010,16 +1059,17 @@ def exit_with_help_link():  # pragma: no cover
     sys.exit(1)
 
 
-def check_and_show_help_on_no_args(configs):
+def check_and_show_help_on_no_args(configs, schema):
     '''
-    Given a dict of configuration filename to corresponding parsed configuration, check if the
-    borgmatic command is run without any arguments. If the configuration option "default_actions" is
-    set to False, show the help message. Otherwise, trigger the default backup behavior.
+    Given a dict of configuration filename to corresponding parsed configuration and the
+    configuration schema as a dict, check if the borgmatic command was run without any arguments. If
+    the configuration option "default_actions" is set to False, then show the help message an exit.
     '''
-    if len(sys.argv) == 1:  # No arguments provided
+    if len(sys.argv) == 1:  # No arguments provided.
         default_actions = any(config.get('default_actions', True) for config in configs.values())
-        if not default_actions:
-            parse_arguments('--help')
+
+        if configs and not default_actions:
+            parse_arguments(schema, '--help')
             sys.exit(0)
 
 
@@ -1051,6 +1101,23 @@ def get_singular_option_value(configs, option_name):
         return None
 
 
+def display_summary(summary_logs, log_json):  # pragma: no cover
+    summary_logs_max_level = max(log.levelno for log in summary_logs)
+
+    for message in ('summary:',) if log_json else ('', 'summary:'):
+        log_record(
+            levelno=summary_logs_max_level,
+            levelname=logging.getLevelName(summary_logs_max_level),
+            msg=message,
+        )
+
+    for log in summary_logs:
+        logger.handle(log)
+
+    if summary_logs_max_level >= logging.CRITICAL:
+        exit_with_help_link()
+
+
 def main(extra_summary_logs=()):  # pragma: no cover
     configure_signals()
     configure_delayed_logging()
@@ -1071,7 +1138,7 @@ def main(extra_summary_logs=()):  # pragma: no cover
         exit_with_help_link()
     except SystemExit as error:
         if error.code == 0:
-            raise error
+            raise
 
         configure_logging(logging.CRITICAL)
         logger.critical(f"Error parsing arguments: {' '.join(sys.argv)}")
@@ -1099,8 +1166,7 @@ def main(extra_summary_logs=()):  # pragma: no cover
         resolve_env=global_arguments.resolve_env and not arguments.get('validate'),
     )
 
-    # Use the helper function to check and show help on no arguments, passing the preloaded configs
-    check_and_show_help_on_no_args(configs)
+    check_and_show_help_on_no_args(configs, schema)
 
     configuration_parse_errors = (
         (max(log.levelno for log in parse_logs) >= logging.CRITICAL) if parse_logs else False
@@ -1110,6 +1176,7 @@ def main(extra_summary_logs=()):  # pragma: no cover
         getattr(sub_arguments, 'json', False) for sub_arguments in arguments.values()
     )
     log_file_path = get_singular_option_value(configs, 'log_file')
+    log_json = get_singular_option_value(configs, 'log_json')
 
     try:
         configure_logging(
@@ -1119,7 +1186,8 @@ def main(extra_summary_logs=()):  # pragma: no cover
             verbosity_to_log_level(get_verbosity(configs, 'monitoring_verbosity')),
             log_file_path,
             get_singular_option_value(configs, 'log_file_format'),
-            color_enabled=should_do_markup(configs, any_json_flags),
+            log_json,
+            color_enabled=should_do_markup(configs, any_json_flags or log_json),
         )
     except (FileNotFoundError, PermissionError) as error:
         configure_logging(logging.CRITICAL)
@@ -1147,17 +1215,9 @@ def main(extra_summary_logs=()):  # pragma: no cover
             )
         )
     )
-    summary_logs_max_level = max(log.levelno for log in summary_logs)
 
-    for message in ('', 'summary:'):
-        log_record(
-            levelno=summary_logs_max_level,
-            levelname=logging.getLevelName(summary_logs_max_level),
-            msg=message,
-        )
+    display_summary(summary_logs, log_json)
 
-    for log in summary_logs:
-        logger.handle(log)
 
-    if summary_logs_max_level >= logging.CRITICAL:
-        exit_with_help_link()
+if __name__ == '__main__':  # pragma: no cover
+    main()

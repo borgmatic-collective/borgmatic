@@ -939,6 +939,7 @@ def test_run_configuration_with_multiple_repositories_retries_with_timeout():
 def test_run_actions_runs_repo_create():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -962,9 +963,64 @@ def test_run_actions_runs_repo_create():
     )
 
 
+def test_run_actions_with_matching_repository_flag_runs_repo_create():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock(),
+    )
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
+    flexmock(borgmatic.actions.repo_create).should_receive('run_repo_create').once()
+
+    tuple(
+        module.run_actions(
+            arguments={
+                'global': flexmock(dry_run=False),
+                'repo-create': flexmock(repository='repo'),
+            },
+            config_filename=flexmock(),
+            config={'repositories': []},
+            config_paths=[],
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        ),
+    )
+
+
+def test_run_actions_with_non_matching_repository_flag_bails():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(
+        False
+    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').never()
+    flexmock(module.command).should_receive('Before_after_hooks').never()
+    flexmock(borgmatic.actions.repo_create).should_receive('run_repo_create').never()
+
+    tuple(
+        module.run_actions(
+            arguments={
+                'global': flexmock(dry_run=False),
+                'repo-create': flexmock(repository='other-repo'),
+            },
+            config_filename=flexmock(),
+            config={'repositories': []},
+            config_paths=[],
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        ),
+    )
+
+
 def test_run_actions_adds_label_file_to_hook_context():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1001,6 +1057,7 @@ def test_run_actions_adds_label_file_to_hook_context():
 def test_run_actions_adds_log_file_to_hook_context():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1037,6 +1094,7 @@ def test_run_actions_adds_log_file_to_hook_context():
 def test_run_actions_runs_transfer():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1060,6 +1118,7 @@ def test_run_actions_runs_transfer():
 def test_run_actions_runs_create():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1085,6 +1144,7 @@ def test_run_actions_runs_create():
 def test_run_actions_with_skip_actions_does_not_run_action_or_action_command_hooks():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return(['create'])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1121,6 +1181,7 @@ def test_run_actions_with_skip_actions_does_not_run_action_or_action_command_hoo
 def test_run_actions_runs_recreate():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1145,6 +1206,7 @@ def test_run_actions_runs_recreate():
 def test_run_actions_runs_prune():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1168,6 +1230,7 @@ def test_run_actions_runs_prune():
 def test_run_actions_runs_compact():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1191,6 +1254,7 @@ def test_run_actions_runs_compact():
 def test_run_actions_runs_check_when_repository_enabled_for_checks():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1215,6 +1279,7 @@ def test_run_actions_runs_check_when_repository_enabled_for_checks():
 def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1239,6 +1304,7 @@ def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
 def test_run_actions_runs_extract():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1262,6 +1328,7 @@ def test_run_actions_runs_extract():
 def test_run_actions_runs_export_tar():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1285,6 +1352,7 @@ def test_run_actions_runs_export_tar():
 def test_run_actions_runs_mount():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1308,6 +1376,7 @@ def test_run_actions_runs_mount():
 def test_run_actions_runs_restore():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1331,6 +1400,7 @@ def test_run_actions_runs_restore():
 def test_run_actions_runs_repo_list():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1356,6 +1426,7 @@ def test_run_actions_runs_repo_list():
 def test_run_actions_runs_list():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1381,6 +1452,7 @@ def test_run_actions_runs_list():
 def test_run_actions_runs_repo_info():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1406,6 +1478,7 @@ def test_run_actions_runs_repo_info():
 def test_run_actions_runs_info():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1431,6 +1504,7 @@ def test_run_actions_runs_info():
 def test_run_actions_runs_break_lock():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1454,6 +1528,7 @@ def test_run_actions_runs_break_lock():
 def test_run_actions_runs_export_key():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1477,6 +1552,7 @@ def test_run_actions_runs_export_key():
 def test_run_actions_runs_import_key():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1500,6 +1576,7 @@ def test_run_actions_runs_import_key():
 def test_run_actions_runs_change_passphrase():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1526,6 +1603,7 @@ def test_run_actions_runs_change_passphrase():
 def test_run_actions_runs_delete():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1549,6 +1627,7 @@ def test_run_actions_runs_delete():
 def test_run_actions_runs_repo_delete():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1575,6 +1654,7 @@ def test_run_actions_runs_repo_delete():
 def test_run_actions_runs_borg():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1598,6 +1678,7 @@ def test_run_actions_runs_borg():
 def test_run_actions_runs_multiple_actions_in_argument_order():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1626,6 +1707,7 @@ def test_run_actions_runs_multiple_actions_in_argument_order():
 def test_run_actions_runs_action_hooks_for_one_action_at_a_time():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
@@ -1695,7 +1777,7 @@ def test_load_configurations_collects_parsed_configurations_and_logs(resolve_env
     assert set(logs) >= set(test_expected_logs + other_expected_logs)
 
 
-def test_load_configurations_logs_warning_for_permission_error():
+def test_load_configurations_logs_error_for_permission_error():
     flexmock(module.validate).should_receive('parse_configuration').and_raise(PermissionError)
 
     configs, config_paths, logs = tuple(
@@ -1704,7 +1786,7 @@ def test_load_configurations_logs_warning_for_permission_error():
 
     assert configs == {}
     assert config_paths == []
-    assert max(log.levelno for log in logs) == logging.WARNING
+    assert max(log.levelno for log in logs) == logging.CRITICAL
 
 
 def test_load_configurations_logs_critical_for_parse_error():
@@ -1717,6 +1799,50 @@ def test_load_configurations_logs_critical_for_parse_error():
     assert configs == {}
     assert config_paths == []
     assert max(log.levelno for log in logs) == logging.CRITICAL
+
+
+def test_load_configurations_with_bootstrap_action_and_no_configuration_file_creates_configuration_from_whole_cloth():
+    configuration = flexmock()
+    test_expected_logs = [flexmock(), flexmock()]
+    flexmock(module.validate).should_receive('parse_configuration').and_return(
+        configuration,
+        [None],
+        test_expected_logs,
+    )
+
+    configs, config_paths, logs = tuple(
+        module.load_configurations(
+            (),
+            arguments={'bootstrap': flexmock()},
+            resolve_env=False,
+        ),
+    )
+
+    assert configs == {None: configuration}
+    assert config_paths == [None]
+    assert logs
+
+
+def test_load_configurations_with_bootstrap_action_and_existing_configuration_file_uses_it():
+    configuration = flexmock()
+    test_expected_logs = [flexmock(), flexmock()]
+    flexmock(module.validate).should_receive('parse_configuration').and_return(
+        configuration,
+        ['/tmp/test.yaml'],
+        test_expected_logs,
+    )
+
+    configs, config_paths, logs = tuple(
+        module.load_configurations(
+            ('test.yaml',),
+            arguments={'bootstrap': flexmock()},
+            resolve_env=False,
+        ),
+    )
+
+    assert configs == {'test.yaml': configuration}
+    assert config_paths == ['/tmp/test.yaml']
+    assert logs
 
 
 def test_log_record_does_not_raise():
@@ -1963,6 +2089,80 @@ def test_collect_highlander_action_summary_logs_error_on_run_validate_failure():
     arguments = {
         'validate': flexmock(),
         'global': flexmock(dry_run=False),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}},
+            arguments=arguments,
+            configuration_parse_errors=False,
+        ),
+    )
+
+    assert {log.levelno for log in logs} == {logging.CRITICAL}
+
+
+def test_collect_highlander_action_summary_logs_nothing_additional_for_success_with_show():
+    flexmock(module.borgmatic.actions.config.show).should_receive('run_show')
+    arguments = {
+        'show': flexmock(),
+        'global': flexmock(),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}},
+            arguments=arguments,
+            configuration_parse_errors=False,
+        ),
+    )
+    assert not logs
+
+
+def test_collect_highlander_action_summary_logs_error_on_run_show_failure():
+    flexmock(module.borgmatic.actions.config.show).should_receive('run_show').and_raise(
+        ValueError,
+    )
+    arguments = {
+        'show': flexmock(),
+        'global': flexmock(),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}},
+            arguments=arguments,
+            configuration_parse_errors=False,
+        ),
+    )
+
+    assert {log.levelno for log in logs} == {logging.CRITICAL}
+
+
+def test_collect_highlander_action_summary_logs_nothing_additional_for_success_with_browse():
+    flexmock(module.borgmatic.actions.browse.run).should_receive('run_browse')
+    arguments = {
+        'browse': flexmock(),
+        'global': flexmock(),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}},
+            arguments=arguments,
+            configuration_parse_errors=False,
+        ),
+    )
+    assert not logs
+
+
+def test_collect_highlander_action_summary_logs_error_on_run_browse_failure():
+    flexmock(module.borgmatic.actions.browse.run).should_receive('run_browse').and_raise(
+        ValueError,
+    )
+    arguments = {
+        'browse': flexmock(),
+        'global': flexmock(),
     }
 
     logs = tuple(
@@ -2463,23 +2663,40 @@ def test_collect_configuration_run_summary_logs_outputs_merged_json_results():
 
 def test_check_and_show_help_on_no_args_shows_help_when_no_args_and_default_actions_false():
     flexmock(module.sys).should_receive('argv').and_return(['borgmatic'])
-    flexmock(module).should_receive('parse_arguments').with_args('--help').once()
+    flexmock(module).should_receive('parse_arguments').with_args({}, '--help').once()
     flexmock(module.sys).should_receive('exit').with_args(0).once()
-    module.check_and_show_help_on_no_args({'test.yaml': {'default_actions': False}})
+
+    module.check_and_show_help_on_no_args(
+        configs={'test.yaml': {'default_actions': False}}, schema={}
+    )
+
+
+def test_check_and_show_help_on_no_args_does_not_show_help_when_no_args_and_no_configurations():
+    flexmock(module.sys).should_receive('argv').and_return(['borgmatic'])
+    flexmock(module).should_receive('parse_arguments').never()
+    flexmock(module.sys).should_receive('exit').never()
+
+    module.check_and_show_help_on_no_args(configs={}, schema={})
 
 
 def test_check_and_show_help_on_no_args_does_not_show_help_when_no_args_and_default_actions_true():
     flexmock(module.sys).should_receive('argv').and_return(['borgmatic'])
     flexmock(module).should_receive('parse_arguments').never()
     flexmock(module.sys).should_receive('exit').never()
-    module.check_and_show_help_on_no_args({'test.yaml': {'default_actions': True}})
+
+    module.check_and_show_help_on_no_args(
+        configs={'test.yaml': {'default_actions': True}}, schema={}
+    )
 
 
 def test_check_and_show_help_on_no_args_does_not_show_help_when_args_provided():
     flexmock(module.sys).should_receive('argv').and_return(['borgmatic', '--create'])
     flexmock(module).should_receive('parse_arguments').never()
     flexmock(module.sys).should_receive('exit').never()
-    module.check_and_show_help_on_no_args({'test.yaml': {'default_actions': False}})
+
+    module.check_and_show_help_on_no_args(
+        configs={'test.yaml': {'default_actions': False}}, schema={}
+    )
 
 
 def test_check_and_show_help_on_no_args_with_no_default_actions_in_all_configs():
@@ -2492,10 +2709,10 @@ def test_check_and_show_help_on_no_args_with_no_default_actions_in_all_configs()
     }
 
     # Expect help to be shown
-    flexmock(module).should_receive('parse_arguments').with_args('--help').once()
+    flexmock(module).should_receive('parse_arguments').with_args({}, '--help').once()
     flexmock(module.sys).should_receive('exit').with_args(0).once()
 
-    module.check_and_show_help_on_no_args(configs)
+    module.check_and_show_help_on_no_args(configs=configs, schema={})
 
 
 def test_check_and_show_help_on_no_args_with_conflicting_configs():
@@ -2511,7 +2728,7 @@ def test_check_and_show_help_on_no_args_with_conflicting_configs():
     flexmock(module).should_receive('parse_arguments').never()
     flexmock(module.sys).should_receive('exit').never()
 
-    module.check_and_show_help_on_no_args(configs)
+    module.check_and_show_help_on_no_args(configs=configs, schema={})
 
 
 def test_get_singular_option_value_with_conflicting_values_exits():
@@ -2569,4 +2786,28 @@ def test_get_singular_option_value_with_no_config_returns_none():
             option_name='foo',
         )
         is None
+    )
+
+
+def test_run_actions_runs_diff():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock(),
+    )
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
+    flexmock(borgmatic.actions.diff).should_receive('run_diff').once()
+
+    tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False), 'diff': flexmock()},
+            config_filename=flexmock(),
+            config={'repositories': []},
+            config_paths=[],
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        ),
     )

@@ -1,23 +1,23 @@
+import contextlib
 import json
 import os
 
 import pytest
 from flexmock import flexmock
 
+import borgmatic.borg.pattern
 from borgmatic.actions import create as module
 
 
 def test_run_create_executes_and_calls_hooks_for_configured_repository():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return({})
-    flexmock(module.borgmatic.hooks.dispatch).should_receive(
-        'call_hooks_even_if_unconfigured',
-    ).and_return({})
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
     flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
@@ -47,86 +47,8 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
     )
 
 
-def test_run_create_runs_with_selected_repository():
-    flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive(
-        'repositories_match',
-    ).once().and_return(True)
-    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
-        flexmock(),
-    )
-    flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return({})
-    flexmock(module.borgmatic.hooks.dispatch).should_receive(
-        'call_hooks_even_if_unconfigured',
-    ).and_return({})
-    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
-    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
-    flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
-    create_arguments = flexmock(
-        repository=flexmock(),
-        progress=flexmock(),
-        statistics=flexmock(),
-        json=False,
-        comment=None,
-        list_details=flexmock(),
-    )
-    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
-
-    list(
-        module.run_create(
-            config_filename='test.yaml',
-            repository={'path': 'repo'},
-            config={},
-            config_paths=['/tmp/test.yaml'],
-            local_borg_version=None,
-            create_arguments=create_arguments,
-            global_arguments=global_arguments,
-            dry_run_label='',
-            local_path=None,
-            remote_path=None,
-        ),
-    )
-
-
-def test_run_create_bails_if_repository_does_not_match():
-    flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive(
-        'repositories_match',
-    ).once().and_return(False)
-    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').never()
-    flexmock(module.borgmatic.borg.create).should_receive('create_archive').never()
-    create_arguments = flexmock(
-        repository=flexmock(),
-        progress=flexmock(),
-        statistics=flexmock(),
-        json=False,
-        comment=None,
-        list_details=flexmock(),
-    )
-    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
-
-    list(
-        module.run_create(
-            config_filename='test.yaml',
-            repository='repo',
-            config={},
-            config_paths=['/tmp/test.yaml'],
-            local_borg_version=None,
-            create_arguments=create_arguments,
-            global_arguments=global_arguments,
-            dry_run_label='',
-            local_path=None,
-            remote_path=None,
-        ),
-    )
-
-
 def test_run_create_with_both_list_and_json_errors():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive(
-        'repositories_match',
-    ).once().and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').never()
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').never()
     create_arguments = flexmock(
@@ -158,9 +80,6 @@ def test_run_create_with_both_list_and_json_errors():
 
 def test_run_create_with_both_list_and_progress_errors():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive(
-        'repositories_match',
-    ).once().and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').never()
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').never()
     create_arguments = flexmock(
@@ -192,9 +111,6 @@ def test_run_create_with_both_list_and_progress_errors():
 
 def test_run_create_produces_json():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive(
-        'repositories_match',
-    ).once().and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
@@ -204,9 +120,8 @@ def test_run_create_produces_json():
     parsed_json = flexmock()
     flexmock(module.borgmatic.actions.json).should_receive('parse_json').and_return(parsed_json)
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return({})
-    flexmock(module.borgmatic.hooks.dispatch).should_receive(
-        'call_hooks_even_if_unconfigured',
-    ).and_return({})
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
     flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
@@ -241,7 +156,6 @@ def test_run_create_with_active_dumps_roundtrips_via_checkpoint_archive():
     mock_dump_process.should_receive('poll').and_return(None).and_return(0)
 
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
@@ -249,9 +163,8 @@ def test_run_create_with_active_dumps_roundtrips_via_checkpoint_archive():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'dump': mock_dump_process},
     )
-    flexmock(module.borgmatic.hooks.dispatch).should_receive(
-        'call_hooks_even_if_unconfigured',
-    ).and_return({})
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
     flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
@@ -321,7 +234,6 @@ def test_run_create_with_active_dumps_json_updates_archive_info():
     }
 
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
@@ -332,9 +244,8 @@ def test_run_create_with_active_dumps_json_updates_archive_info():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'dump': mock_dump_process},
     )
-    flexmock(module.borgmatic.hooks.dispatch).should_receive(
-        'call_hooks_even_if_unconfigured',
-    ).and_return({})
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
     flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
@@ -379,7 +290,90 @@ def test_run_create_with_active_dumps_json_updates_archive_info():
     ) == [expected_create_result]
 
 
-def test_rename_checkpoint_archive_renames_archive():
+def mock_call_hooks(
+    function_name, config, hook_type, config_paths, borgmatic_runtime_directory, patterns, dry_run
+):
+    '''
+    Simulate a dump_data_sources() call that mutates the given patterns.
+    '''
+    mock_dump_process = flexmock()
+    mock_dump_process.should_receive('poll').and_return(None).and_return(0)
+
+    patterns[0] = borgmatic.borg.pattern.Pattern('/mutated/pattern/path')
+
+    return {'dump': mock_dump_process}
+
+
+@contextlib.contextmanager
+def mock_dump_cleanup(config, borgmatic_runtime_directory, patterns, dry_run):
+    '''
+    Assert that we're dealing with the original patterns here, not the mutated patterns.
+    '''
+    assert patterns[0].path == 'foo'
+
+    yield
+
+
+def test_run_create_with_active_dumps_removes_data_source_dumps_with_original_patterns():
+    flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
+        flexmock(),
+    )
+    flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').replace_with(
+        mock_call_hooks
+    )
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').replace_with(
+        mock_dump_cleanup
+    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(
+        (borgmatic.borg.pattern.Pattern('foo'), borgmatic.borg.pattern.Pattern('bar'))
+    )
+    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').replace_with(
+        lambda patterns, *args, **kwargs: list(patterns)
+    )
+    flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
+    flexmock(module.borgmatic.borg.repo_list).should_receive('get_latest_archive').and_return(
+        {'id': 'id1', 'name': 'archive.checkpoint'},
+    )
+
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
+
+    flexmock(module).should_receive('rename_checkpoint_archive').with_args(
+        repository_path='repo',
+        global_arguments=global_arguments,
+        config={},
+        local_borg_version=None,
+        local_path=None,
+        remote_path=None,
+    ).once()
+    create_arguments = flexmock(
+        repository=None,
+        progress=flexmock(),
+        statistics=flexmock(),
+        json=False,
+        comment=None,
+        list_details=flexmock(),
+    )
+
+    list(
+        module.run_create(
+            config_filename='test.yaml',
+            repository={'path': 'repo'},
+            config={},
+            config_paths=['/tmp/test.yaml'],
+            local_borg_version=None,
+            create_arguments=create_arguments,
+            global_arguments=global_arguments,
+            dry_run_label='',
+            local_path=None,
+            remote_path=None,
+        ),
+    )
+
+
+def test_rename_checkpoint_archive_renames_archive_using_name():
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
     flexmock(module.borgmatic.borg.repo_list).should_receive('get_latest_archive').and_return(
         {'id': 'id1', 'name': 'archive.checkpoint'},
@@ -395,6 +389,35 @@ def test_rename_checkpoint_archive_renames_archive():
         local_path=None,
         remote_path=None,
     )
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
+
+    module.rename_checkpoint_archive(
+        repository_path='path',
+        global_arguments=global_arguments,
+        config={},
+        local_borg_version=None,
+        local_path=None,
+        remote_path=None,
+    )
+
+
+def test_rename_checkpoint_with_feature_available_archive_renames_archive_using_id():
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
+    flexmock(module.borgmatic.borg.repo_list).should_receive('get_latest_archive').and_return(
+        {'id': 'id1', 'name': 'archive.checkpoint'},
+    )
+
+    flexmock(module.borgmatic.borg.rename).should_receive('rename_archive').with_args(
+        repository_name='path',
+        old_archive_name='id1',
+        new_archive_name='archive',
+        dry_run=False,
+        config={},
+        local_borg_version=None,
+        local_path=None,
+        remote_path=None,
+    )
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
 
     module.rename_checkpoint_archive(
         repository_path='path',

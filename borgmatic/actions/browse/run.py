@@ -1,0 +1,29 @@
+import logging
+
+
+def run_browse(
+    diff_arguments,
+    global_arguments,
+    configs,
+):
+    '''
+    Run the "browse" action for the given borgmatic configurations. This launches a console UI.
+
+    Raise ValueError if the Textual library (a prerequisite for this action) can't be imported.
+    '''
+    if not configs:
+        return
+
+    logging.getLogger('asyncio').setLevel(logging.WARNING)
+
+    try:
+        import textual  # noqa: F401, PLC0415
+    except ImportError:  # pragma: no cover
+        raise ValueError(
+            'Unable to import the Textual library for the browse action; try installing "borgmatic[browse]"'
+        )
+
+    import borgmatic.actions.browse.app  # noqa: PLC0415
+
+    app = borgmatic.actions.browse.app.Browse_app(configs)
+    app.run()

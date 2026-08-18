@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.config.paths
 import borgmatic.logger
@@ -24,6 +25,7 @@ def transfer_archives(
     instance, transfer archives to the given repository.
     '''
     borgmatic.logger.add_custom_log_levels()
+    extra_borg_options = config.get('extra_borg_options', {}).get('transfer', '')
 
     full_command = (
         (local_path, 'transfer')
@@ -31,7 +33,7 @@ def transfer_archives(
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
-        + flags.make_flags('log-json', config.get('log_json'))
+        + (('--log-json',) if (config.get('log_json') or not config.get('progress')) else ())
         + flags.make_flags('lock-wait', config.get('lock_wait'))
         + flags.make_flags('progress', config.get('progress'))
         + (
@@ -53,6 +55,7 @@ def transfer_archives(
                 )
             )
         )
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
         + flags.make_flags('other-repo', transfer_arguments.source_repository)
         + flags.make_flags('dry-run', dry_run)

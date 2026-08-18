@@ -1,6 +1,7 @@
 import logging
 import operator
 
+import borgmatic.hooks.credential.parse
 import borgmatic.hooks.monitoring.logs
 import borgmatic.hooks.monitoring.monitor
 
@@ -17,7 +18,7 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
     we can send them all to an Apprise notification service upon a finish or failure state. But skip
     this if the "send_logs" option is false.
     '''
-    if hook_config.get('send_logs') is False:
+    if hook_config.get('send_logs', False) is False:
         return
 
     logs_size_limit = max(
@@ -44,7 +45,9 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         import apprise  # noqa: PLC0415
         from apprise import NotifyFormat, NotifyType  # noqa: PLC0415
     except ImportError:  # pragma: no cover
-        logger.warning('Unable to import Apprise in monitoring hook')
+        logger.warning(
+            'Unable to import Apprise in its monitoring hook; try installing "borgmatic[Apprise]"'
+        )
         return
 
     state_to_notify_type = {
@@ -76,7 +79,12 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     logger.info(f'Pinging Apprise services: {labels_string}{dry_run_string}')
 
     apprise_object = apprise.Apprise()
-    apprise_object.add(list(map(operator.itemgetter('url'), hook_config.get('services'))))
+    apprise_object.add(
+        [
+            borgmatic.hooks.credential.parse.resolve_credential(service['url'], config)
+            for service in hook_config.get('services')
+        ]
+    )
 
     if dry_run:
         return

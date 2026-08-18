@@ -4,6 +4,7 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.hooks.data_source.config
 from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks.data_source import dump
 
@@ -49,11 +50,17 @@ def dump_data_sources(
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
+    dumps_metadata = []
 
     logger.info(f'Dumping SQLite databases{dry_run_label}')
 
     for database in databases:
         database_path = database['path']
+        dumps_metadata.append(
+            borgmatic.actions.restore.Dump(
+                'sqlite_databases', database['name'], label=database.get('label')
+            )
+        )
 
         if database['name'] == 'all':
             logger.warning('The "all" database name has no meaning for SQLite databases')
@@ -64,7 +71,9 @@ def dump_data_sources(
             )
 
         dump_path = make_dump_path(borgmatic_runtime_directory)
-        dump_filename = dump.make_data_source_dump_filename(dump_path, database['name'])
+        dump_filename = dump.make_data_source_dump_filename(
+            dump_path, database['name'], label=database.get('label')
+        )
 
         if os.path.exists(dump_filename):
             logger.warning(
@@ -77,6 +86,7 @@ def dump_data_sources(
         )
         command = (
             *sqlite_command,
+            '-bail',
             shlex.quote(database_path),
             '.dump',
             '>',
@@ -91,11 +101,20 @@ def dump_data_sources(
 
         dump.create_named_pipe_for_dump(dump_filename)
         processes.append(
-            execute_command(command, shell=True, run_to_completion=False),  # noqa: S604
+            execute_command(  # noqa: S604
+                command,
+                shell=True,
+                run_to_completion=False,
+                working_directory=borgmatic.config.paths.get_working_directory(config),
+            ),
         )
 
     if not dry_run:
-        patterns.append(
+        dump.write_data_source_dumps_metadata(
+            borgmatic_runtime_directory, 'sqlite_databases', dumps_metadata
+        )
+        borgmatic.hooks.data_source.config.inject_pattern(
+            patterns,
             borgmatic.borg.pattern.Pattern(
                 os.path.join(borgmatic_runtime_directory, 'sqlite_databases'),
                 source=borgmatic.borg.pattern.Pattern_source.HOOK,
@@ -109,6 +128,7 @@ def remove_data_source_dumps(
     databases,
     config,
     borgmatic_runtime_directory,
+    patterns,
     dry_run,
 ):  # pragma: no cover
     '''
@@ -124,6 +144,10 @@ def make_data_source_dump_patterns(
     config,
     borgmatic_runtime_directory,
     name=None,
+    hostname=None,
+    port=None,
+    container=None,
+    label=None,
 ):  # pragma: no cover
     '''
     Given a sequence of configurations dicts, a configuration dict, the borgmatic runtime directory,
@@ -133,16 +157,24 @@ def make_data_source_dump_patterns(
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
     return (
-        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
+        dump.make_data_source_dump_filename(
+            make_dump_path('borgmatic'), name, hostname, port, container, label
+        ),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
             name,
-            hostname='*',
+            hostname,
+            port,
+            container,
+            label,
         ),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_source_directory),
             name,
-            hostname='*',
+            hostname,
+            port,
+            container,
+            label,
         ),
     )
 
@@ -182,12 +214,17 @@ def restore_data_source_dump(
         shlex.quote(part)
         for part in shlex.split(data_source.get('sqlite_restore_command') or 'sqlite3')
     )
-    restore_command = (*sqlite_restore_command, shlex.quote(database_path))
+    restore_command = (*sqlite_restore_command, '-bail', shlex.quote(database_path))
+
     # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
     # if the restore paths don't exist in the archive.
-    execute_command_with_processes(
-        restore_command,
-        [extract_process],
-        output_log_level=logging.DEBUG,
-        input_file=extract_process.stdout,
+    tuple(
+        execute_command_with_processes(
+            restore_command,
+            [extract_process],
+            output_log_level=logging.DEBUG,
+            input_file=extract_process.stdout,
+            working_directory=borgmatic.config.paths.get_working_directory(config),
+            borg_local_path=config.get('local_path', 'borg'),
+        )
     )

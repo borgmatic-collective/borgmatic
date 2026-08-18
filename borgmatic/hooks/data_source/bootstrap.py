@@ -1,12 +1,14 @@
 import contextlib
 import glob
 import importlib
+import itertools
 import json
 import logging
 import os
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.hooks.data_source.config
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +18,32 @@ def use_streaming(hook_config, config):  # pragma: no cover
     Return whether dump streaming is used for this hook. (Spoiler: It isn't.)
     '''
     return False
+
+
+MAXIMUM_CONFIG_SYMLINKS_TO_FOLLOW = 10
+
+
+def resolve_config_path_symlinks(path):
+    '''
+    Given a path, resolve and yield each successive symlink until the final non-symlink target. If
+    the given path isn't a symlink, then just yield it.
+
+    The purpose of this is to ensure that configuration files that are behind a symbolic link (or
+    several) actually get backed up.
+
+    Raise ValueError if we have to follow too many symlinks without getting to the final target.
+    '''
+    original_path = os.path.normpath(path)
+
+    for _ in range(MAXIMUM_CONFIG_SYMLINKS_TO_FOLLOW):
+        yield path
+
+        if not os.path.islink(path):
+            return
+
+        path = os.path.normpath(os.path.join(os.path.dirname(path), os.readlink(path)))
+
+    raise ValueError(f'Too many symlinks to follow for configuration path: {original_path}')
 
 
 def dump_data_sources(
@@ -33,6 +61,9 @@ def dump_data_sources(
     the archive. But skip this if the bootstrap store_config_files option is False or if this is a
     dry run.
 
+    If any configuration paths are symlinks, then store each symlink along with any destination
+    paths as well.
+
     Return an empty sequence, since there are no ongoing dump processes from this hook.
     '''
     if hook_config and hook_config.get('store_config_files') is False:
@@ -44,6 +75,10 @@ def dump_data_sources(
         'manifest.json',
     )
 
+    resolved_config_paths = tuple(
+        itertools.chain.from_iterable(resolve_config_path_symlinks(path) for path in config_paths)
+    )
+
     if dry_run:
         return []
 
@@ -53,33 +88,36 @@ def dump_data_sources(
         json.dump(
             {
                 'borgmatic_version': importlib.metadata.version('borgmatic'),
-                'config_paths': config_paths,
+                'config_paths': resolved_config_paths,
             },
             manifest_file,
         )
 
-    patterns.extend(
-        borgmatic.borg.pattern.Pattern(
-            config_path,
-            source=borgmatic.borg.pattern.Pattern_source.HOOK,
-        )
-        for config_path in config_paths
-    )
-    patterns.append(
+    borgmatic.hooks.data_source.config.inject_pattern(
+        patterns,
         borgmatic.borg.pattern.Pattern(
             os.path.join(borgmatic_runtime_directory, 'bootstrap'),
             source=borgmatic.borg.pattern.Pattern_source.HOOK,
         ),
     )
 
+    for config_path in resolved_config_paths:
+        borgmatic.hooks.data_source.config.inject_pattern(
+            patterns,
+            borgmatic.borg.pattern.Pattern(
+                config_path,
+                source=borgmatic.borg.pattern.Pattern_source.HOOK,
+            ),
+        )
+
     return []
 
 
-def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):
+def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, patterns, dry_run):
     '''
-    Given a bootstrap configuration dict, a configuration dict, the borgmatic runtime directory, and
-    whether this is a dry run, then remove the manifest file created above. If this is a dry run,
-    then don't actually remove anything.
+    Given a bootstrap configuration dict, a configuration dict, the borgmatic runtime directory, the
+    configured patterns, and whether this is a dry run, then remove the manifest file created above.
+    If this is a dry run, then don't actually remove anything.
     '''
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
@@ -112,6 +150,10 @@ def make_data_source_dump_patterns(
     config,
     borgmatic_runtime_directory,
     name=None,
+    hostname=None,
+    port=None,
+    container=None,
+    label=None,
 ):  # pragma: no cover
     '''
     Restores are implemented via the separate, purpose-specific "bootstrap" action rather than the

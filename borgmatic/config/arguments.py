@@ -146,9 +146,9 @@ def prepare_arguments_for_config(global_arguments, schema):
         keys = tuple(argument_name.split('.'))
         option_type = type_for_option(schema, keys)
 
-        # The argument doesn't correspond to any option in the schema, so ignore it. It's
-        # probably a flag that borgmatic has on the command-line but not in configuration.
-        if option_type is None:
+        # The argument doesn't correspond to any option in the schema, or it is a complex argument, so ignore it.
+        # It's probably a flag that borgmatic has on the command-line but not in configuration.
+        if option_type in {'object', None}:
             continue
 
         prepared_values.append(

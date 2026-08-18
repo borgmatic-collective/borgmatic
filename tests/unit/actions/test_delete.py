@@ -5,7 +5,6 @@ from borgmatic.actions import delete as module
 
 def test_run_delete_does_not_raise():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name')
     flexmock(module.borgmatic.actions.arguments).should_receive('update_arguments').and_return(
         flexmock(),
@@ -25,7 +24,6 @@ def test_run_delete_does_not_raise():
 
 def test_run_delete_without_archive_does_not_raise():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name')
     flexmock(module.borgmatic.actions.arguments).should_receive('update_arguments').and_return(
         flexmock(),

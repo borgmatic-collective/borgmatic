@@ -5,7 +5,6 @@ from borgmatic.actions import borg as module
 
 def test_run_borg_does_not_raise():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         flexmock(),
     )

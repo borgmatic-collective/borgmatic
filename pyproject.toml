@@ -1,17 +1,18 @@
 [project]
 name = "borgmatic"
-version = "2.0.8.dev0"
+version = "2.1.8.dev0"
 authors = [
   { name="Dan Helfman", email="witten@torsion.org" },
 ]
 description = "Simple, configuration-driven backup software for servers and workstations"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers=[
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: System Administrators",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python",
     "Topic :: Security :: Cryptography",
     "Topic :: System :: Archiving :: Backup",
@@ -30,6 +31,8 @@ validate-borgmatic-config = "borgmatic.commands.validate_config:main"
 
 [project.optional-dependencies]
 Apprise = ["apprise"]
+browse = ["textual", "binaryornot"]
+browse-dev = ["textual-dev"]
 
 [project.urls]
 Homepage = "https://torsion.org/borgmatic"
@@ -44,7 +47,7 @@ namespaces = false
 
 [tool.pytest.ini_options]
 testpaths = "tests"
-addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --no-cov-on-fail --cov-fail-under=100 --ignore=tests/end-to-end"
+addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --no-cov-on-fail --cov-fail-under=100 --ignore=tests/end-to-end --timeout=120 --asyncio-mode=auto"
 
 [tool.ruff]
 line-length = 100
@@ -54,7 +57,7 @@ exclude = ["*.*/*"]
 quote-style = "preserve"
 
 [tool.ruff.lint]
-preview = true
+preview = false
 extend-select = [
     "A",  # flake8-builtins: builtin shadowing
     "B",  # flake8-bugbear: bugs and design problems
@@ -100,6 +103,7 @@ ignore = [
     "S404",  # subprocess import
     "SIM115",  # open() without context manager
     "SIM905",  # split() on literal string
+    "TRY004", # type check and raise something other than TypeError
 ]
 
 [tool.ruff.lint.flake8-quotes]

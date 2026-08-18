@@ -35,7 +35,7 @@ def test_parse_pattern_with_invalid_pattern_line_errors():
 
 
 def test_collect_patterns_converts_source_directories():
-    assert module.collect_patterns({'source_directories': ['/foo', '/bar']}) == (
+    assert module.collect_patterns({'source_directories': ['/foo', '/bar']}, '/working') == (
         Pattern('/foo', source=Pattern_source.CONFIG),
         Pattern('/bar', source=Pattern_source.CONFIG),
     )
@@ -48,14 +48,18 @@ def test_collect_patterns_parses_config_patterns():
     flexmock(module).should_receive('parse_pattern').with_args('   ').never()
     flexmock(module).should_receive('parse_pattern').with_args('R /bar').and_return(Pattern('/bar'))
 
-    assert module.collect_patterns({'patterns': ['R /foo', '# comment', '', '   ', 'R /bar']}) == (
+    assert module.collect_patterns(
+        {'patterns': ['R /foo', '# comment', '', '   ', 'R /bar']}, '/working'
+    ) == (
         Pattern('/foo'),
         Pattern('/bar'),
     )
 
 
 def test_collect_patterns_converts_exclude_patterns():
-    assert module.collect_patterns({'exclude_patterns': ['/foo', '/bar', 'sh:**/baz']}) == (
+    assert module.collect_patterns(
+        {'exclude_patterns': ['/foo', '/bar', 'sh:**/baz']}, '/working'
+    ) == (
         Pattern(
             '/foo',
             Pattern_type.NO_RECURSE,
@@ -78,6 +82,12 @@ def test_collect_patterns_converts_exclude_patterns():
 
 
 def test_collect_patterns_reads_config_patterns_from_file():
+    flexmock(module).should_receive('expand_directory').with_args(
+        'file1.txt', '/working'
+    ).and_return(['file1.txt'])
+    flexmock(module).should_receive('expand_directory').with_args(
+        'file2.txt', '/working'
+    ).and_return(['file2.txt'])
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('file1.txt', encoding='utf-8').and_return(
         io.StringIO('R /foo')
@@ -92,7 +102,7 @@ def test_collect_patterns_reads_config_patterns_from_file():
     flexmock(module).should_receive('parse_pattern').with_args('R /bar').and_return(Pattern('/bar'))
     flexmock(module).should_receive('parse_pattern').with_args('R /baz').and_return(Pattern('/baz'))
 
-    assert module.collect_patterns({'patterns_from': ['file1.txt', 'file2.txt']}) == (
+    assert module.collect_patterns({'patterns_from': ['file1.txt', 'file2.txt']}, '/working') == (
         Pattern('/foo'),
         Pattern('/bar'),
         Pattern('/baz'),
@@ -101,16 +111,25 @@ def test_collect_patterns_reads_config_patterns_from_file():
 
 def test_collect_patterns_errors_on_missing_config_patterns_from_file():
     builtins = flexmock(sys.modules['builtins'])
+    flexmock(module).should_receive('expand_directory').with_args(
+        'file1.txt', '/working'
+    ).and_return(['file1.txt'])
     builtins.should_receive('open').with_args('file1.txt', encoding='utf-8').and_raise(
         FileNotFoundError
     )
     flexmock(module).should_receive('parse_pattern').never()
 
     with pytest.raises(ValueError):
-        module.collect_patterns({'patterns_from': ['file1.txt', 'file2.txt']})
+        module.collect_patterns({'patterns_from': ['file1.txt', 'file2.txt']}, '/working')
 
 
 def test_collect_patterns_reads_config_exclude_from_file():
+    flexmock(module).should_receive('expand_directory').with_args(
+        'file1.txt', '/working'
+    ).and_return(['file1.txt'])
+    flexmock(module).should_receive('expand_directory').with_args(
+        'file2.txt', '/working'
+    ).and_return(['file2.txt'])
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('file1.txt', encoding='utf-8').and_return(
         io.StringIO('/foo')
@@ -134,7 +153,7 @@ def test_collect_patterns_reads_config_exclude_from_file():
         default_style=Pattern_style.FNMATCH,
     ).and_return(Pattern('/baz', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH))
 
-    assert module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']}) == (
+    assert module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']}, '/working') == (
         Pattern('/foo', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
         Pattern('/bar', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
         Pattern('/baz', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
@@ -142,12 +161,15 @@ def test_collect_patterns_reads_config_exclude_from_file():
 
 
 def test_collect_patterns_errors_on_missing_config_exclude_from_file():
+    flexmock(module).should_receive('expand_directory').with_args(
+        'file1.txt', '/working'
+    ).and_return(['file1.txt'])
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('file1.txt', encoding='utf-8').and_raise(OSError)
     flexmock(module).should_receive('parse_pattern').never()
 
     with pytest.raises(ValueError):
-        module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']})
+        module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']}, '/working')
 
 
 def test_expand_directory_with_basic_path_passes_it_through():
@@ -375,43 +397,103 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
 
 
 @pytest.mark.parametrize(
-    'patterns,expected_patterns,one_file_system',
+    'patterns,borgmatic_runtime_directory,expected_patterns,one_file_system',
     (
-        ((Pattern('/', device=1), Pattern('/root', device=1)), (Pattern('/', device=1),), False),
-        ((Pattern('/', device=1), Pattern('/root/', device=1)), (Pattern('/', device=1),), False),
         (
-            (Pattern('/', device=1), Pattern('/root', device=2)),
+            (Pattern('/', device=1), Pattern('/root', device=1)),
+            '/root',
             (Pattern('/', device=1),),
             False,
         ),
-        ((Pattern('/root', device=1), Pattern('/', device=1)), (Pattern('/', device=1),), False),
+        # No deduplication is expected when borgmatic runtime directory is None.
+        (
+            (Pattern('/', device=1), Pattern('/root', device=1)),
+            None,
+            (Pattern('/', device=1), Pattern('/root', device=1)),
+            False,
+        ),
+        (
+            (Pattern('/', device=1), Pattern('/root/', device=1)),
+            '/root',
+            (Pattern('/', device=1),),
+            False,
+        ),
+        (
+            (Pattern('/', device=1), Pattern('/root', device=2)),
+            '/root',
+            (Pattern('/', device=1),),
+            False,
+        ),
+        (
+            (Pattern('/', device=1), Pattern('/other', device=1)),
+            '/root',
+            (Pattern('/', device=1), Pattern('/other', device=1)),
+            False,
+        ),
+        (
+            (Pattern('/', device=1), Pattern('/root', device=2)),
+            None,
+            (Pattern('/', device=1), Pattern('/root', device=2)),
+            False,
+        ),
+        (
+            (Pattern('/root', device=1), Pattern('/', device=1)),
+            '/root',
+            (Pattern('/', device=1),),
+            False,
+        ),
+        (
+            (Pattern('/root', device=1), Pattern('/', device=1)),
+            None,
+            (Pattern('/root', device=1), Pattern('/', device=1)),
+            False,
+        ),
         (
             (Pattern('/root', device=1), Pattern('/root/foo', device=1)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             False,
         ),
         (
+            (Pattern('/root', device=1), Pattern('/root/foo', device=1)),
+            None,
+            (Pattern('/root', device=1), Pattern('/root/foo', device=1)),
+            False,
+        ),
+        # No deduplication is expected when the runtime directory doesn't match the patterns.
+        (
+            (Pattern('/root', device=1), Pattern('/root/foo', device=1)),
+            '/other',
+            (Pattern('/root', device=1), Pattern('/root/foo', device=1)),
+            False,
+        ),
+        (
             (Pattern('/root/', device=1), Pattern('/root/foo', device=1)),
+            '/root/foo',
             (Pattern('/root/', device=1),),
             False,
         ),
         (
             (Pattern('/root', device=1), Pattern('/root/foo/', device=1)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             False,
         ),
         (
             (Pattern('/root', device=1), Pattern('/root/foo', device=2)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             False,
         ),
         (
             (Pattern('/root/foo', device=1), Pattern('/root', device=1)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             False,
         ),
         (
             (Pattern('/root', device=None), Pattern('/root/foo', device=None)),
+            '/root/foo',
             (Pattern('/root'), Pattern('/root/foo')),
             False,
         ),
@@ -421,6 +503,7 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
                 Pattern('/etc', device=1),
                 Pattern('/root/foo/bar', device=1),
             ),
+            '/root/foo/bar',
             (Pattern('/root', device=1), Pattern('/etc', device=1)),
             False,
         ),
@@ -430,70 +513,126 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
                 Pattern('/root/foo', device=1),
                 Pattern('/root/foo/bar', device=1),
             ),
+            '/root/foo/bar',
             (Pattern('/root', device=1),),
             False,
         ),
         (
+            (
+                Pattern('/root', device=1),
+                Pattern('/root/foo', device=1),
+                Pattern('/root/foo/bar', device=1),
+            ),
+            None,
+            (
+                Pattern('/root', device=1),
+                Pattern('/root/foo', device=1),
+                Pattern('/root/foo/bar', device=1),
+            ),
+            False,
+        ),
+        (
+            (
+                Pattern('/root', device=1),
+                Pattern('/root/foo', device=1),
+                Pattern('/root/foo/bar', device=1),
+            ),
+            '/other',
+            (
+                Pattern('/root', device=1),
+                Pattern('/root/foo', device=1),
+                Pattern('/root/foo/bar', device=1),
+            ),
+            False,
+        ),
+        (
             (Pattern('/dup', device=1), Pattern('/dup', device=1)),
+            '/dup',
             (Pattern('/dup', device=1),),
             False,
         ),
         (
             (Pattern('/foo', device=1), Pattern('/bar', device=1)),
+            '/bar',
             (Pattern('/foo', device=1), Pattern('/bar', device=1)),
             False,
         ),
         (
             (Pattern('/foo', device=1), Pattern('/bar', device=2)),
+            '/bar',
             (Pattern('/foo', device=1), Pattern('/bar', device=2)),
             False,
         ),
-        ((Pattern('/root/foo', device=1),), (Pattern('/root/foo', device=1),), False),
+        ((Pattern('/root/foo', device=1),), '/root/foo', (Pattern('/root/foo', device=1),), False),
         (
             (Pattern('/', device=1), Pattern('/root', Pattern_type.INCLUDE, device=1)),
+            '/root',
             (Pattern('/', device=1), Pattern('/root', Pattern_type.INCLUDE, device=1)),
             False,
         ),
         (
             (Pattern('/root', Pattern_type.INCLUDE, device=1), Pattern('/', device=1)),
+            '/root',
             (Pattern('/root', Pattern_type.INCLUDE, device=1), Pattern('/', device=1)),
             False,
         ),
-        ((Pattern('/', device=1), Pattern('/root', device=1)), (Pattern('/', device=1),), True),
-        ((Pattern('/', device=1), Pattern('/root/', device=1)), (Pattern('/', device=1),), True),
+        (
+            (Pattern('/', device=1), Pattern('/root', device=1)),
+            '/root',
+            (Pattern('/', device=1),),
+            True,
+        ),
+        (
+            (Pattern('/', device=1), Pattern('/root/', device=1)),
+            '/root',
+            (Pattern('/', device=1),),
+            True,
+        ),
         (
             (Pattern('/', device=1), Pattern('/root', device=2)),
+            '/root',
             (Pattern('/', device=1), Pattern('/root', device=2)),
             True,
         ),
-        ((Pattern('/root', device=1), Pattern('/', device=1)), (Pattern('/', device=1),), True),
+        (
+            (Pattern('/root', device=1), Pattern('/', device=1)),
+            '/root',
+            (Pattern('/', device=1),),
+            True,
+        ),
         (
             (Pattern('/root', device=1), Pattern('/root/foo', device=1)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             True,
         ),
         (
             (Pattern('/root/', device=1), Pattern('/root/foo', device=1)),
+            '/root/foo',
             (Pattern('/root/', device=1),),
             True,
         ),
         (
             (Pattern('/root', device=1), Pattern('/root/foo/', device=1)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             True,
         ),
         (
             (Pattern('/root', device=1), Pattern('/root/foo', device=2)),
+            '/root/foo',
             (Pattern('/root', device=1), Pattern('/root/foo', device=2)),
             True,
         ),
         (
             (Pattern('/root/foo', device=1), Pattern('/root', device=1)),
+            '/root/foo',
             (Pattern('/root', device=1),),
             True,
         ),
         (
             (Pattern('/root', device=None), Pattern('/root/foo', device=None)),
+            '/root/foo',
             (Pattern('/root'), Pattern('/root/foo')),
             True,
         ),
@@ -503,6 +642,7 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
                 Pattern('/etc', device=1),
                 Pattern('/root/foo/bar', device=1),
             ),
+            '/root/foo/bar',
             (Pattern('/root', device=1), Pattern('/etc', device=1)),
             True,
         ),
@@ -512,50 +652,59 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
                 Pattern('/root/foo', device=1),
                 Pattern('/root/foo/bar', device=1),
             ),
+            '/root/foo/bar',
             (Pattern('/root', device=1),),
             True,
         ),
         (
             (Pattern('/dup', device=1), Pattern('/dup', device=1)),
+            '/dup',
             (Pattern('/dup', device=1),),
             True,
         ),
         (
             (Pattern('/foo', device=1), Pattern('/bar', device=1)),
+            '/bar',
             (Pattern('/foo', device=1), Pattern('/bar', device=1)),
             True,
         ),
         (
             (Pattern('/foo', device=1), Pattern('/bar', device=2)),
+            '/bar',
             (Pattern('/foo', device=1), Pattern('/bar', device=2)),
             True,
         ),
-        ((Pattern('/root/foo', device=1),), (Pattern('/root/foo', device=1),), True),
+        ((Pattern('/root/foo', device=1),), '/root/foo', (Pattern('/root/foo', device=1),), True),
         (
             (Pattern('/', device=1), Pattern('/root', Pattern_type.INCLUDE, device=1)),
+            '/root',
             (Pattern('/', device=1), Pattern('/root', Pattern_type.INCLUDE, device=1)),
             True,
         ),
         (
             (Pattern('/root', Pattern_type.INCLUDE, device=1), Pattern('/', device=1)),
+            '/root',
             (Pattern('/root', Pattern_type.INCLUDE, device=1), Pattern('/', device=1)),
             True,
         ),
     ),
 )
-def test_deduplicate_patterns_omits_child_paths_based_on_device_and_one_file_system(
+def test_deduplicate_runtime_directory_patterns_omits_child_paths_based_on_device_and_one_file_system(
     patterns,
+    borgmatic_runtime_directory,
     expected_patterns,
     one_file_system,
 ):
     assert (
-        module.deduplicate_patterns(patterns, {'one_file_system': one_file_system})
+        module.deduplicate_runtime_directory_patterns(
+            patterns, {'one_file_system': one_file_system}, borgmatic_runtime_directory
+        )
         == expected_patterns
     )
 
 
 def test_process_patterns_includes_patterns():
-    flexmock(module).should_receive('deduplicate_patterns').and_return(
+    flexmock(module).should_receive('deduplicate_runtime_directory_patterns').and_return(
         (Pattern('foo'), Pattern('bar')),
     )
     flexmock(module).should_receive('device_map_patterns').and_return({})
@@ -574,7 +723,7 @@ def test_process_patterns_includes_patterns():
 
 def test_process_patterns_skips_expand_for_requested_paths():
     skip_paths = {flexmock()}
-    flexmock(module).should_receive('deduplicate_patterns').and_return(
+    flexmock(module).should_receive('deduplicate_runtime_directory_patterns').and_return(
         (Pattern('foo'), Pattern('bar')),
     )
     flexmock(module).should_receive('device_map_patterns').and_return({})

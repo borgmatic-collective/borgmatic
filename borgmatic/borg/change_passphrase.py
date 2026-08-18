@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.config.paths
 import borgmatic.execute
@@ -23,17 +24,18 @@ def change_passphrase(
     based on an interactive prompt.
     '''
     borgmatic.logger.add_custom_log_levels()
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
+    extra_borg_options = config.get('extra_borg_options', {}).get('key_change_passphrase', '')
 
     full_command = (
         (local_path, 'key', 'change-passphrase')
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if config.get('log_json') else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(
             repository_path,
             local_borg_version,
@@ -63,5 +65,5 @@ def change_passphrase(
     )
 
     logger.answer(
-        f"{repository_path}: Don't forget to update your encryption_passphrase option (if needed)",
+        "Don't forget to update your encryption_passphrase option (if needed)",
     )

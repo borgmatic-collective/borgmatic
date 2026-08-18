@@ -18,7 +18,7 @@ def test_transfer_archives_calls_borg_with_flags():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--repo', 'repo'),
+        ('borg', 'transfer', '--log-json', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -26,6 +26,7 @@ def test_transfer_archives_calls_borg_with_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -55,7 +56,7 @@ def test_transfer_archives_with_dry_run_calls_borg_with_dry_run_flag():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--repo', 'repo', '--dry-run'),
+        ('borg', 'transfer', '--log-json', '--repo', 'repo', '--dry-run'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -63,6 +64,7 @@ def test_transfer_archives_with_dry_run_calls_borg_with_dry_run_flag():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=True,
@@ -89,7 +91,7 @@ def test_transfer_archives_with_log_info_calls_borg_with_info_flag():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--info', '--repo', 'repo'),
+        ('borg', 'transfer', '--info', '--log-json', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -98,6 +100,7 @@ def test_transfer_archives_with_log_info_calls_borg_with_info_flag():
         borg_exit_codes=None,
     )
     insert_logging_mock(logging.INFO)
+
     module.transfer_archives(
         dry_run=False,
         repository_path='repo',
@@ -123,7 +126,7 @@ def test_transfer_archives_with_log_debug_calls_borg_with_debug_flag():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--debug', '--show-rc', '--repo', 'repo'),
+        ('borg', 'transfer', '--debug', '--show-rc', '--log-json', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -162,7 +165,7 @@ def test_transfer_archives_with_archive_calls_borg_with_match_archives_flag():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--match-archives', 'archive', '--repo', 'repo'),
+        ('borg', 'transfer', '--log-json', '--match-archives', 'archive', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -170,6 +173,7 @@ def test_transfer_archives_with_archive_calls_borg_with_match_archives_flag():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -200,7 +204,7 @@ def test_transfer_archives_with_match_archives_calls_borg_with_match_archives_fl
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--match-archives', 'sh:foo*', '--repo', 'repo'),
+        ('borg', 'transfer', '--log-json', '--match-archives', 'sh:foo*', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -208,6 +212,7 @@ def test_transfer_archives_with_match_archives_calls_borg_with_match_archives_fl
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -238,7 +243,7 @@ def test_transfer_archives_with_archive_name_format_calls_borg_with_match_archiv
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--match-archives', 'sh:bar-*', '--repo', 'repo'),
+        ('borg', 'transfer', '--log-json', '--match-archives', 'sh:bar-*', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -246,6 +251,7 @@ def test_transfer_archives_with_archive_name_format_calls_borg_with_match_archiv
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -272,7 +278,7 @@ def test_transfer_archives_with_local_path_calls_borg_via_local_path():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg2', 'transfer', '--repo', 'repo'),
+        ('borg2', 'transfer', '--log-json', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -280,6 +286,7 @@ def test_transfer_archives_with_local_path_calls_borg_via_local_path():
         borg_local_path='borg2',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -308,7 +315,7 @@ def test_transfer_archives_with_exit_codes_calls_borg_using_them():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     borg_exit_codes = flexmock()
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--repo', 'repo'),
+        ('borg', 'transfer', '--log-json', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -316,6 +323,7 @@ def test_transfer_archives_with_exit_codes_calls_borg_using_them():
         borg_local_path='borg',
         borg_exit_codes=borg_exit_codes,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -346,7 +354,7 @@ def test_transfer_archives_with_remote_path_calls_borg_with_remote_path_flags():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--remote-path', 'borg2', '--repo', 'repo'),
+        ('borg', 'transfer', '--remote-path', 'borg2', '--log-json', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -354,6 +362,7 @@ def test_transfer_archives_with_remote_path_calls_borg_with_remote_path_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -383,7 +392,7 @@ def test_transfer_archives_with_umask_calls_borg_with_umask_flags():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--umask', '077', '--repo', 'repo'),
+        ('borg', 'transfer', '--umask', '077', '--log-json', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -391,48 +400,12 @@ def test_transfer_archives_with_umask_calls_borg_with_umask_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
         repository_path='repo',
         config={'umask': '077'},
-        local_borg_version='2.3.4',
-        transfer_arguments=flexmock(
-            archive=None,
-            progress=None,
-            match_archives=None,
-            source_repository=None,
-        ),
-        global_arguments=flexmock(),
-    )
-
-
-def test_transfer_archives_with_log_json_calls_borg_with_log_json_flags():
-    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-    flexmock(module.flags).should_receive('make_flags').and_return(())
-    flexmock(module.flags).should_receive('make_flags').with_args('log-json', True).and_return(
-        ('--log-json',),
-    )
-    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
-    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
-    flexmock(module.environment).should_receive('make_environment')
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--log-json', '--repo', 'repo'),
-        output_log_level=module.borgmatic.logger.ANSWER,
-        output_file=None,
-        environment=None,
-        working_directory=None,
-        borg_local_path='borg',
-        borg_exit_codes=None,
-    )
-
-    module.transfer_archives(
-        dry_run=False,
-        repository_path='repo',
-        config={'log_json': True},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
             archive=None,
@@ -458,7 +431,7 @@ def test_transfer_archives_with_lock_wait_calls_borg_with_lock_wait_flags():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--lock-wait', '5', '--repo', 'repo'),
+        ('borg', 'transfer', '--log-json', '--lock-wait', '5', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -466,6 +439,43 @@ def test_transfer_archives_with_lock_wait_calls_borg_with_lock_wait_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
+
+    module.transfer_archives(
+        dry_run=False,
+        repository_path='repo',
+        config=config,
+        local_borg_version='2.3.4',
+        transfer_arguments=flexmock(
+            archive=None,
+            progress=None,
+            match_archives=None,
+            source_repository=None,
+        ),
+        global_arguments=flexmock(),
+    )
+
+
+def test_transfer_archives_calls_borg_with_extra_borg_options():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    config = {'extra_borg_options': {'transfer': '--extra "value with space"'}}
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'transfer', '--log-json', '--extra', 'value with space', '--repo', 'repo'),
+        output_log_level=module.borgmatic.logger.ANSWER,
+        output_file=None,
+        environment=None,
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -503,6 +513,7 @@ def test_transfer_archives_with_progress_calls_borg_with_progress_flags():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -519,11 +530,49 @@ def test_transfer_archives_with_progress_calls_borg_with_progress_flags():
     )
 
 
-@pytest.mark.parametrize('argument_name', ('upgrader', 'sort_by', 'first', 'last'))
+def test_transfer_archives_with_log_json_and_progress_calls_borg_with_both_flags():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('progress', True).and_return(
+        ('--progress',),
+    )
+    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'transfer', '--log-json', '--progress', '--repo', 'repo'),
+        output_log_level=module.borgmatic.logger.ANSWER,
+        output_file=module.DO_NOT_CAPTURE,
+        environment=None,
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.transfer_archives(
+        dry_run=False,
+        repository_path='repo',
+        config={'log_json': True, 'progress': True},
+        local_borg_version='2.3.4',
+        transfer_arguments=flexmock(
+            archive=None,
+            progress=None,
+            match_archives=None,
+            source_repository=None,
+        ),
+        global_arguments=flexmock(),
+    )
+
+
+@pytest.mark.parametrize('argument_name', ('from_borg1', 'upgrader', 'sort_by', 'first', 'last'))
 def test_transfer_archives_passes_through_arguments_to_borg(argument_name):
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-    flag_name = f"--{argument_name.replace('_', ' ')}"
+    flag_name = f"--{argument_name.replace('_', '-')}"
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
@@ -533,14 +582,15 @@ def test_transfer_archives_passes_through_arguments_to_borg(argument_name):
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', flag_name, 'value', '--repo', 'repo'),
+        ('borg', 'transfer', '--log-json', flag_name, 'value', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
-    )
+    ).once()
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -570,7 +620,7 @@ def test_transfer_archives_with_source_repository_calls_borg_with_other_repo_fla
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--repo', 'repo', '--other-repo', 'other'),
+        ('borg', 'transfer', '--log-json', '--repo', 'repo', '--other-repo', 'other'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -578,6 +628,7 @@ def test_transfer_archives_with_source_repository_calls_borg_with_other_repo_fla
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -608,6 +659,7 @@ def test_transfer_archives_with_date_based_matching_calls_borg_with_date_based_f
         (
             'borg',
             'transfer',
+            '--log-json',
             '--newer',
             '1d',
             '--newest',
@@ -626,6 +678,7 @@ def test_transfer_archives_with_date_based_matching_calls_borg_with_date_based_f
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,
@@ -657,7 +710,7 @@ def test_transfer_archives_calls_borg_with_working_directory():
         '/working/dir',
     )
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'transfer', '--repo', 'repo'),
+        ('borg', 'transfer', '--log-json', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         environment=None,
@@ -665,6 +718,7 @@ def test_transfer_archives_calls_borg_with_working_directory():
         borg_local_path='borg',
         borg_exit_codes=None,
     )
+    insert_logging_mock(logging.WARNING)
 
     module.transfer_archives(
         dry_run=False,

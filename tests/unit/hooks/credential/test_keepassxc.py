@@ -31,6 +31,55 @@ def test_load_credential_with_missing_database_raises():
         )
 
 
+def test_load_credential_with_secret_service_database_path_fetches_password_via_secret_tool():
+    flexmock(module.os.path).should_receive('expanduser').never()
+    flexmock(module.os.path).should_receive('exists').never()
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output',
+    ).with_args(
+        (
+            'secret-tool',
+            'lookup',
+            'Path',
+            'mypassword',
+        ),
+    ).and_yield('password').once()
+
+    assert (
+        module.load_credential(
+            hook_config={},
+            config={},
+            credential_parameters=('secret-service', 'mypassword'),
+        )
+        == 'password'
+    )
+
+
+def test_load_credential_with_secret_service_database_path_and_secret_tool_command_calls_it():
+    flexmock(module.os.path).should_receive('expanduser').never()
+    flexmock(module.os.path).should_receive('exists').never()
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output',
+    ).with_args(
+        (
+            '/usr/local/bin/secret-tool',
+            '--some-option',
+            'lookup',
+            'Path',
+            'mypassword',
+        ),
+    ).and_yield('password').once()
+
+    assert (
+        module.load_credential(
+            hook_config={'secret_tool_command': '/usr/local/bin/secret-tool --some-option'},
+            config={},
+            credential_parameters=('secret-service', 'mypassword'),
+        )
+        == 'password'
+    )
+
+
 def test_load_credential_with_present_database_fetches_password_from_keepassxc():
     flexmock(module.os.path).should_receive('expanduser').with_args('database.kdbx').and_return(
         'database.kdbx',
@@ -48,7 +97,7 @@ def test_load_credential_with_present_database_fetches_password_from_keepassxc()
             'database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
@@ -79,7 +128,7 @@ def test_load_credential_with_custom_keepassxc_cli_command_calls_it():
             'database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
@@ -108,7 +157,7 @@ def test_load_credential_with_expanded_directory_with_present_database_fetches_p
             '/root/database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
@@ -139,11 +188,43 @@ def test_load_credential_with_key_file():
             'database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
             hook_config={'key_file': '/path/to/keyfile'},
+            config={},
+            credential_parameters=('database.kdbx', 'mypassword'),
+        )
+        == 'password'
+    )
+
+
+def test_load_credential_with_key_file_and_ask_for_password_false():
+    flexmock(module.os.path).should_receive('expanduser').with_args('database.kdbx').and_return(
+        'database.kdbx',
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output',
+    ).with_args(
+        (
+            'keepassxc-cli',
+            'show',
+            '--show-protected',
+            '--attributes',
+            'Password',
+            '--no-password',
+            '--key-file',
+            '/path/to/keyfile',
+            'database.kdbx',
+            'mypassword',
+        ),
+    ).and_yield('password').once()
+
+    assert (
+        module.load_credential(
+            hook_config={'key_file': '/path/to/keyfile', 'ask_for_password': False},
             config={},
             credential_parameters=('database.kdbx', 'mypassword'),
         )
@@ -170,7 +251,7 @@ def test_load_credential_with_yubikey():
             'database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(
@@ -203,7 +284,7 @@ def test_load_credential_with_key_file_and_yubikey():
             'database.kdbx',
             'mypassword',
         ),
-    ).and_return('password').once()
+    ).and_yield('password').once()
 
     assert (
         module.load_credential(

@@ -6,10 +6,11 @@ from borgmatic.actions import recreate as module
 
 def test_run_recreate_does_not_raise():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
+    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
+    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         None,
     )
@@ -21,6 +22,7 @@ def test_run_recreate_does_not_raise():
         local_borg_version=None,
         recreate_arguments=flexmock(repository=flexmock(), archive=None),
         global_arguments=flexmock(),
+        dry_run_label='',
         local_path=None,
         remote_path=None,
     )
@@ -28,10 +30,11 @@ def test_run_recreate_does_not_raise():
 
 def test_run_recreate_with_archive_does_not_raise():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
+    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
+    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'test-archive',
     )
@@ -43,6 +46,7 @@ def test_run_recreate_with_archive_does_not_raise():
         local_borg_version=None,
         recreate_arguments=flexmock(repository=flexmock(), archive='test-archive'),
         global_arguments=flexmock(),
+        dry_run_label='',
         local_path=None,
         remote_path=None,
     )
@@ -50,10 +54,11 @@ def test_run_recreate_with_archive_does_not_raise():
 
 def test_run_recreate_with_leftover_recreate_archive_raises():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
+    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
+    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'test-archive.recreate',
     )
@@ -66,6 +71,7 @@ def test_run_recreate_with_leftover_recreate_archive_raises():
             local_borg_version=None,
             recreate_arguments=flexmock(repository=flexmock(), archive='test-archive.recreate'),
             global_arguments=flexmock(),
+            dry_run_label='',
             local_path=None,
             remote_path=None,
         )
@@ -73,10 +79,11 @@ def test_run_recreate_with_leftover_recreate_archive_raises():
 
 def test_run_recreate_with_latest_archive_resolving_to_leftover_recreate_archive_raises():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
+    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
+    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'test-archive.recreate',
     )
@@ -89,6 +96,7 @@ def test_run_recreate_with_latest_archive_resolving_to_leftover_recreate_archive
             local_borg_version=None,
             recreate_arguments=flexmock(repository=flexmock(), archive='latest'),
             global_arguments=flexmock(),
+            dry_run_label='',
             local_path=None,
             remote_path=None,
         )
@@ -96,10 +104,11 @@ def test_run_recreate_with_latest_archive_resolving_to_leftover_recreate_archive
 
 def test_run_recreate_with_archive_already_exists_error_raises():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
+    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
+    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'test-archive',
     )
@@ -117,6 +126,7 @@ def test_run_recreate_with_archive_already_exists_error_raises():
             local_borg_version=None,
             recreate_arguments=flexmock(repository=flexmock(), archive='test-archive', target=None),
             global_arguments=flexmock(),
+            dry_run_label='',
             local_path=None,
             remote_path=None,
         )
@@ -124,10 +134,11 @@ def test_run_recreate_with_archive_already_exists_error_raises():
 
 def test_run_recreate_with_target_and_archive_already_exists_error_raises():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
+    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
+    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'test-archive',
     )
@@ -149,6 +160,7 @@ def test_run_recreate_with_target_and_archive_already_exists_error_raises():
                 target='target-archive',
             ),
             global_arguments=flexmock(),
+            dry_run_label='',
             local_path=None,
             remote_path=None,
         )
@@ -156,10 +168,11 @@ def test_run_recreate_with_target_and_archive_already_exists_error_raises():
 
 def test_run_recreate_with_other_called_process_error_passes_it_through():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
+    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
+    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'test-archive',
     )
@@ -181,6 +194,7 @@ def test_run_recreate_with_other_called_process_error_passes_it_through():
                 target='target-archive',
             ),
             global_arguments=flexmock(),
+            dry_run_label='',
             local_path=None,
             remote_path=None,
         )

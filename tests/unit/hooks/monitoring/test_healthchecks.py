@@ -17,7 +17,7 @@ def test_initialize_monitor_creates_log_handler_with_ping_body_limit():
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler')
 
     module.initialize_monitor(
-        {'ping_body_limit': ping_body_limit},
+        {'send_logs': True, 'ping_body_limit': ping_body_limit},
         {},
         'test.yaml',
         monitoring_log_level,
@@ -38,7 +38,9 @@ def test_initialize_monitor_creates_log_handler_with_default_ping_body_limit():
     ).once()
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler')
 
-    module.initialize_monitor({}, {}, 'test.yaml', monitoring_log_level, dry_run=False)
+    module.initialize_monitor(
+        {'send_logs': True}, {}, 'test.yaml', monitoring_log_level, dry_run=False
+    )
 
 
 def test_initialize_monitor_creates_log_handler_with_zero_ping_body_limit():
@@ -51,7 +53,7 @@ def test_initialize_monitor_creates_log_handler_with_zero_ping_body_limit():
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler')
 
     module.initialize_monitor(
-        {'ping_body_limit': ping_body_limit},
+        {'send_logs': True, 'ping_body_limit': ping_body_limit},
         {},
         'test.yaml',
         monitoring_log_level,
@@ -82,6 +84,21 @@ def test_initialize_monitor_bails_when_send_logs_false():
 
     module.initialize_monitor(
         {'send_logs': False},
+        {},
+        'test.yaml',
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
+def test_initialize_monitor_bails_when_send_logs_omitted():
+    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
+        'Forgetful_buffering_handler',
+    ).never()
+    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler')
+
+    module.initialize_monitor(
+        {},
         {},
         'test.yaml',
         monitoring_log_level=1,

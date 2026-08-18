@@ -22,6 +22,29 @@ def initialize_monitor(
     '''
 
 
+def convert_string_to_array(value):
+    value = '' if value is None else str(value)
+    items = []
+
+    for item in value.split(','):
+        stripped = item.strip()
+
+        if stripped:
+            items.append(stripped)
+
+    return items
+
+
+PRIORITY_NAME_TO_ID = {
+    'max': 5,
+    'urgent': 5,
+    'high': 4,
+    'default': 3,
+    'low': 2,
+    'min': 1,
+}
+
+
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
     '''
     Ping the configured Ntfy topic. Use the given configuration filename in any log entries.
@@ -31,13 +54,13 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     if state.name.lower() in run_states:
         dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
-
+        default_priority = PRIORITY_NAME_TO_ID['default']
         state_config = hook_config.get(
             state.name.lower(),
             {
                 'title': f'A borgmatic {state.name} event happened',
                 'message': f'A borgmatic {state.name} event happened',
-                'priority': 'default',
+                'priority': default_priority,
                 'tags': 'borgmatic',
             },
         )
@@ -46,14 +69,17 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         topic = hook_config.get('topic')
 
         logger.info(f'Pinging ntfy topic {topic}{dry_run_label}')
-        logger.debug(f'Using Ntfy ping URL {base_url}/{topic}')
+        logger.debug(f'Using ntfy ping URL {base_url}')
 
         headers = {
             'User-Agent': 'borgmatic',
-            'X-Title': state_config.get('title'),
-            'X-Message': state_config.get('message'),
-            'X-Priority': state_config.get('priority'),
-            'X-Tags': state_config.get('tags'),
+        }
+        payload = {
+            'topic': topic,
+            'title': state_config.get('title'),
+            'message': state_config.get('message'),
+            'priority': PRIORITY_NAME_TO_ID.get(state_config.get('priority'), default_priority),
+            'tags': convert_string_to_array(state_config.get('tags')),
         }
 
         try:
@@ -81,7 +107,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
                     'ntfy access_token is set but so is username/password, only using access_token',
                 )
 
-            auth = requests.auth.HTTPBasicAuth('', access_token)
+            headers['Authorization'] = f'Bearer {access_token}'
         elif (username and password) is not None:
             auth = requests.auth.HTTPBasicAuth(username, password)
             logger.info(f'Using basic auth with user {username} for ntfy')
@@ -94,10 +120,11 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             logging.getLogger('urllib3').setLevel(logging.ERROR)
             try:
                 response = requests.post(
-                    f'{base_url}/{topic}',
+                    base_url,
                     auth=auth,
                     timeout=TIMEOUT_SECONDS,
                     headers=headers,
+                    json=payload,
                 )
                 if not response.ok:
                     response.raise_for_status()

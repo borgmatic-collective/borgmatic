@@ -69,6 +69,7 @@ class Background_web_server:
         self.thread.join()
 
 
+FINISH = 1
 START_AND_FINISH = 2
 START_LOG_AND_FINISH = 3
 
@@ -77,16 +78,20 @@ START_LOG_AND_FINISH = 3
     'monitoring_hook_configuration,expected_request_count',
     (
         (
-            'cronhub:\n    ping_url: http://localhost:12345/start/1f5e3410-254c-11e8-b61d-55875966d031',
-            START_AND_FINISH,
-        ),
-        (
             'cronitor:\n    ping_url: http://localhost:12345/d3x0c1',
             START_AND_FINISH,
         ),
         (
-            'healthchecks:\n    ping_url: http://localhost:12345/addffa72-da17-40ae-be9c-ff591afb942a',
+            'healthchecks:\n    ping_url: http://localhost:12345/addffa72-da17-40ae-be9c-ff591afb942a\n    send_logs: true',
             START_LOG_AND_FINISH,
+        ),
+        (
+            'healthchecks:\n    ping_url: http://localhost:12345/addffa72-da17-40ae-be9c-ff591afb942a',
+            START_AND_FINISH,
+        ),
+        (
+            'loki:\n    url: http://localhost:12345/loki/api/v1/push\n    labels:\n        app: borgmatic\n    send_logs: true',
+            FINISH,
         ),
         (
             'loki:\n    url: http://localhost:12345/loki/api/v1/push\n    labels:\n        app: borgmatic',

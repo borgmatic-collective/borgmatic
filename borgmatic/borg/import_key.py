@@ -1,10 +1,10 @@
 import logging
 import os
+import shlex
 
 import borgmatic.config.paths
-import borgmatic.logger
 from borgmatic.borg import environment, flags
-from borgmatic.execute import DO_NOT_CAPTURE, execute_command
+from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
 
@@ -27,32 +27,33 @@ def import_key(
 
     Raise ValueError if the path is given and it does not exist.
     '''
-    umask = config.get('umask', None)
-    lock_wait = config.get('lock_wait', None)
+    umask = config.get('umask')
+    lock_wait = config.get('lock_wait')
     working_directory = borgmatic.config.paths.get_working_directory(config)
+    extra_borg_options = config.get('extra_borg_options', {}).get('key_import', '')
 
-    if import_arguments.path and import_arguments.path != '-':
-        if not os.path.exists(os.path.join(working_directory or '', import_arguments.path)):
-            raise ValueError(f'Path {import_arguments.path} does not exist. Aborting.')
-
-        input_file = None
-    else:
-        input_file = DO_NOT_CAPTURE
+    if (
+        import_arguments.path
+        and import_arguments.path != '-'
+        and not os.path.exists(os.path.join(working_directory or '', import_arguments.path))
+    ):
+        raise ValueError(f'Path {import_arguments.path} does not exist. Aborting.')
 
     full_command = (
         (local_path, 'key', 'import')
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if config.get('log_json') else ())
+        + ('--log-json',)
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + flags.make_flags('paper', import_arguments.paper)
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(
             repository_path,
             local_borg_version,
         )
-        + ((import_arguments.path,) if input_file is None else ())
+        + (import_arguments.path or '-',)
     )
 
     if global_arguments.dry_run:
@@ -61,7 +62,6 @@ def import_key(
 
     execute_command(
         full_command,
-        input_file=input_file,
         output_log_level=logging.INFO,
         environment=environment.make_environment(config),
         working_directory=working_directory,

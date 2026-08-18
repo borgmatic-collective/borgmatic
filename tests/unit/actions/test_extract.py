@@ -5,7 +5,6 @@ from borgmatic.actions import extract as module
 
 def test_run_extract_calls_hooks():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive')
     extract_arguments = flexmock(
         paths=flexmock(),
@@ -31,7 +30,6 @@ def test_run_extract_calls_hooks():
 
 def test_run_extract_favors_flags_over_config():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').with_args(
         object,
         object,
@@ -69,7 +67,6 @@ def test_run_extract_favors_flags_over_config():
 
 def test_run_extract_defaults_to_config():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').with_args(
         object,
         object,

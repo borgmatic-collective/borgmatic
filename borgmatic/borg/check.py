@@ -20,7 +20,7 @@ def make_archive_filter_flags(local_borg_version, config, checks, check_argument
     flag. And if "prefix" is set in configuration and "archives" is in checks, then include a
     "--match-archives" flag.
     '''
-    check_last = config.get('check_last', None)
+    check_last = config.get('check_last')
     prefix = config.get('prefix')
 
     if 'archives' in checks or 'data' in checks:
@@ -149,8 +149,10 @@ def check_archives(
 
     max_duration = check_arguments.max_duration or repository_check_config.get('max_duration')
 
+    # If not configured, elevate Borg's exit code 1 (an ostensible warning) to error, because Borg
+    # returns exit code 1 for repository check errors!
+    borg_exit_codes = [*config.get('borg_exit_codes', []), *[{'code': 1, 'treat_as': 'error'}]]
     umask = config.get('umask')
-    borg_exit_codes = config.get('borg_exit_codes')
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
     if 'data' in checks:
@@ -176,7 +178,13 @@ def check_archives(
             + make_check_name_flags(checks_subset, archive_filter_flags)
             + (('--remote-path', remote_path) if remote_path else ())
             + (('--umask', str(umask)) if umask else ())
-            + (('--log-json',) if config.get('log_json') else ())
+            + (
+                ('--log-json',)
+                if (
+                    config.get('log_json') or not (check_arguments.repair or config.get('progress'))
+                )
+                else ()
+            )
             + (('--lock-wait', str(lock_wait)) if lock_wait else ())
             + verbosity_flags
             + (('--progress',) if config.get('progress') else ())

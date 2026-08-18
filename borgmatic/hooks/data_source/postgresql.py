@@ -8,11 +8,13 @@ import shlex
 import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.hooks.credential.parse
+import borgmatic.hooks.data_source.config
 from borgmatic.execute import (
     execute_command,
     execute_command_and_capture_output,
     execute_command_with_processes,
 )
+from borgmatic.hooks.data_source import config as database_config
 from borgmatic.hooks.data_source import dump
 
 logger = logging.getLogger(__name__)
@@ -32,22 +34,15 @@ def make_environment(database, config, restore_connection_params=None):
     '''
     environment = dict(os.environ)
 
-    try:
-        if restore_connection_params:
-            environment['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
-                (
-                    restore_connection_params.get('password')
-                    or database.get('restore_password', database['password'])
-                ),
-                config,
-            )
-        else:
-            environment['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
-                database['password'],
-                config,
-            )
-    except (AttributeError, KeyError):
-        pass
+    password = database_config.resolve_database_option(
+        'password', database, restore_connection_params, restore=restore_connection_params
+    )
+
+    if password:
+        environment['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
+            password,
+            config,
+        )
 
     if 'ssl_mode' in database:
         environment['PGSSLMODE'] = database['ssl_mode']
@@ -91,10 +86,11 @@ def database_names_to_dump(database, config, environment, dry_run):
     psql_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('psql_command') or 'psql')
     )
+    hostname = database_config.resolve_database_option('hostname', database)
     list_command = (
         psql_command
         + ('--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only')
-        + (('--host', database['hostname']) if 'hostname' in database else ())
+        + (('--host', hostname) if hostname else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (
             (
@@ -104,14 +100,22 @@ def database_names_to_dump(database, config, environment, dry_run):
             if 'username' in database
             else ()
         )
-        + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
+        + (
+            tuple(shlex.quote(part) for part in shlex.split(database['list_options']))
+            if 'list_options' in database
+            else ()
+        )
     )
     logger.debug('Querying for "all" PostgreSQL databases to dump')
-    list_output = execute_command_and_capture_output(list_command, environment=environment)
+    list_lines = execute_command_and_capture_output(
+        list_command,
+        environment=environment,
+        working_directory=borgmatic.config.paths.get_working_directory(config),
+    )
 
     return tuple(
         row[0]
-        for row in csv.reader(list_output.splitlines(), delimiter=',', quotechar='"')
+        for row in csv.reader(list_lines, delimiter=',', quotechar='"')
         if row[0] not in EXCLUDED_DATABASE_NAMES
     )
 
@@ -150,12 +154,13 @@ def dump_data_sources(
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
+    dumps_metadata = []
 
     logger.info(f'Dumping PostgreSQL databases{dry_run_label}')
+    dump_path = make_dump_path(borgmatic_runtime_directory)
 
     for database in databases:
         environment = make_environment(database, config)
-        dump_path = make_dump_path(borgmatic_runtime_directory)
         dump_database_names = database_names_to_dump(database, config, environment, dry_run)
 
         if not dump_database_names:
@@ -165,6 +170,16 @@ def dump_data_sources(
             raise ValueError('Cannot find any PostgreSQL databases to dump.')
 
         for database_name in dump_database_names:
+            dumps_metadata.append(
+                borgmatic.actions.restore.Dump(
+                    'postgresql_databases',
+                    database_name,
+                    database.get('hostname'),
+                    database.get('port'),
+                    database.get('label'),
+                    database.get('container'),
+                )
+            )
             dump_format = database.get('format', None if database_name == 'all' else 'custom')
             compression = database.get('compression')
             default_dump_command = 'pg_dumpall' if database_name == 'all' else 'pg_dump'
@@ -175,15 +190,19 @@ def dump_data_sources(
             dump_filename = dump.make_data_source_dump_filename(
                 dump_path,
                 database_name,
-                database.get('hostname'),
-                database.get('port'),
+                hostname=database.get('hostname'),
+                port=database.get('port'),
+                container=database.get('container'),
+                label=database.get('label'),
             )
+
             if os.path.exists(dump_filename):
                 logger.warning(
                     f'Skipping duplicate dump of PostgreSQL database "{database_name}" to {dump_filename}',
                 )
                 continue
 
+            hostname = database_config.resolve_database_option('hostname', database)
             command = (
                 dump_command
                 + (
@@ -191,7 +210,7 @@ def dump_data_sources(
                     '--clean',
                     '--if-exists',
                 )
-                + (('--host', shlex.quote(database['hostname'])) if 'hostname' in database else ())
+                + (('--host', shlex.quote(hostname)) if hostname else ())
                 + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
                 + (
                     (
@@ -211,7 +230,7 @@ def dump_data_sources(
                 + (('--compress', shlex.quote(str(compression))) if compression is not None else ())
                 + (('--file', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
                 + (
-                    tuple(shlex.quote(option) for option in database['options'].split(' '))
+                    tuple(shlex.quote(part) for part in shlex.split(database['options']))
                     if 'options' in database
                     else ()
                 )
@@ -234,6 +253,7 @@ def dump_data_sources(
                     command,
                     shell=True,
                     environment=environment,
+                    working_directory=borgmatic.config.paths.get_working_directory(config),
                 )
             else:
                 dump.create_named_pipe_for_dump(dump_filename)
@@ -243,11 +263,16 @@ def dump_data_sources(
                         shell=True,
                         environment=environment,
                         run_to_completion=False,
+                        working_directory=borgmatic.config.paths.get_working_directory(config),
                     ),
                 )
 
     if not dry_run:
-        patterns.append(
+        dump.write_data_source_dumps_metadata(
+            borgmatic_runtime_directory, 'postgresql_databases', dumps_metadata
+        )
+        borgmatic.hooks.data_source.config.inject_pattern(
+            patterns,
             borgmatic.borg.pattern.Pattern(
                 os.path.join(borgmatic_runtime_directory, 'postgresql_databases'),
                 source=borgmatic.borg.pattern.Pattern_source.HOOK,
@@ -261,6 +286,7 @@ def remove_data_source_dumps(
     databases,
     config,
     borgmatic_runtime_directory,
+    patterns,
     dry_run,
 ):  # pragma: no cover
     '''
@@ -280,7 +306,11 @@ def make_data_source_dump_patterns(
     config,
     borgmatic_runtime_directory,
     name=None,
-):  # pragma: no cover
+    hostname=None,
+    port=None,
+    container=None,
+    label=None,
+):
     '''
     Given a sequence of configurations dicts, a configuration dict, the borgmatic runtime directory,
     and a database name to match, return the corresponding glob patterns to match the database dump
@@ -289,16 +319,54 @@ def make_data_source_dump_patterns(
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
     return (
-        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
-        dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_runtime_directory),
-            name,
-            hostname='*',
+        *(
+            dump.make_data_source_dump_filename(
+                make_dump_path('borgmatic'), name, hostname, port, container, label
+            ),
+            dump.make_data_source_dump_filename(
+                make_dump_path(borgmatic_runtime_directory),
+                name,
+                hostname,
+                port,
+                container,
+                label,
+            ),
+            dump.make_data_source_dump_filename(
+                make_dump_path(borgmatic_source_directory),
+                name,
+                hostname,
+                port,
+                container,
+                label,
+            ),
         ),
-        dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_source_directory),
-            name,
-            hostname='*',
+        *(
+            (
+                dump.make_data_source_dump_filename(
+                    make_dump_path('borgmatic'),
+                    name,
+                    hostname,
+                    port=None,
+                    container=container,
+                    label=label,
+                ),
+            )
+            if port == get_default_port(databases, config)
+            else ()
+        ),
+        *(
+            (
+                dump.make_data_source_dump_filename(
+                    make_dump_path('borgmatic'),
+                    name,
+                    hostname,
+                    port=get_default_port(databases, config),
+                    container=container,
+                    label=label,
+                ),
+            )
+            if port is None
+            else ()
         ),
     )
 
@@ -326,17 +394,15 @@ def restore_data_source_dump(
     hostname, port, username, and password.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
-    hostname = connection_params['hostname'] or data_source.get(
-        'restore_hostname',
-        data_source.get('hostname'),
+    hostname = database_config.resolve_database_option(
+        'hostname', data_source, connection_params, restore=True
     )
-    port = str(
-        connection_params['port'] or data_source.get('restore_port', data_source.get('port', '')),
+    port = database_config.resolve_database_option(
+        'port', data_source, connection_params, restore=True
     )
     username = borgmatic.hooks.credential.parse.resolve_credential(
-        (
-            connection_params['username']
-            or data_source.get('restore_username', data_source.get('username'))
+        database_config.resolve_database_option(
+            'username', data_source, connection_params, restore=True
         ),
         config,
     )
@@ -345,7 +411,10 @@ def restore_data_source_dump(
     dump_filename = dump.make_data_source_dump_filename(
         make_dump_path(borgmatic_runtime_directory),
         data_source['name'],
-        data_source.get('hostname'),
+        hostname=hostname,
+        port=port,
+        container=data_source.get('container'),
+        label=data_source.get('label'),
     )
     psql_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('psql_command') or 'psql')
@@ -354,11 +423,11 @@ def restore_data_source_dump(
         psql_command
         + ('--no-password', '--no-psqlrc', '--quiet')
         + (('--host', hostname) if hostname else ())
-        + (('--port', port) if port else ())
+        + (('--port', str(port)) if port else ())
         + (('--username', username) if username else ())
         + (('--dbname', data_source['name']) if not all_databases else ())
         + (
-            tuple(data_source['analyze_options'].split(' '))
+            tuple(shlex.quote(part) for part in shlex.split(data_source['analyze_options']))
             if 'analyze_options' in data_source
             else ()
         )
@@ -375,11 +444,11 @@ def restore_data_source_dump(
         + (('--no-psqlrc',) if use_psql_command else ('--if-exists', '--exit-on-error', '--clean'))
         + (('--dbname', data_source['name']) if not all_databases else ())
         + (('--host', hostname) if hostname else ())
-        + (('--port', port) if port else ())
+        + (('--port', str(port)) if port else ())
         + (('--username', username) if username else ())
         + (('--no-owner',) if data_source.get('no_owner', False) else ())
         + (
-            tuple(data_source['restore_options'].split(' '))
+            tuple(shlex.quote(part) for part in shlex.split(data_source['restore_options']))
             if 'restore_options' in data_source
             else ()
         )
@@ -399,11 +468,19 @@ def restore_data_source_dump(
 
     # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
     # if the restore paths don't exist in the archive.
-    execute_command_with_processes(
-        restore_command,
-        [extract_process] if extract_process else [],
-        output_log_level=logging.DEBUG,
-        input_file=extract_process.stdout if extract_process else None,
-        environment=environment,
+    tuple(
+        execute_command_with_processes(
+            restore_command,
+            [extract_process] if extract_process else [],
+            output_log_level=logging.DEBUG,
+            input_file=extract_process.stdout if extract_process else None,
+            environment=environment,
+            working_directory=borgmatic.config.paths.get_working_directory(config),
+            borg_local_path=config.get('local_path', 'borg'),
+        )
     )
-    execute_command(analyze_command, environment=environment)
+    execute_command(
+        analyze_command,
+        environment=environment,
+        working_directory=borgmatic.config.paths.get_working_directory(config),
+    )

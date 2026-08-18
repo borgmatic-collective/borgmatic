@@ -85,7 +85,7 @@ def test_borgmatic_command(generate_configuration):
         )
 
         # Run borgmatic to generate a backup archive, and then list it to make sure it exists.
-        subprocess.check_call(f'borgmatic --config {config_path}'.split(' '))
+        subprocess.check_call(f'borgmatic -v 2 --config {config_path}'.split(' '))
         output = subprocess.check_output(
             f'borgmatic --config {config_path} list --json'.split(' '),
         ).decode(sys.stdout.encoding)

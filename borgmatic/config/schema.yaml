@@ -27,6 +27,13 @@ properties:
             - /etc
             - /var/log/syslog*
             - /home/user/path with spaces
+    source_directories_must_exist:
+        type: boolean
+        description: |
+            When true, source directories (and root pattern paths) must exist
+            before a backup begins. If they don't, borgmatic errors. Defaults to
+            true.
+        example: false
     repositories:
         type: array
         items:
@@ -53,7 +60,20 @@ properties:
                         only used for the repo-create action. To see the
                         available encryption modes, run "borg init --help" with
                         Borg 1 or "borg repo-create --help" with Borg 2.
-                    example: repokey-blake2
+                    example: repokey
+                id_hash:
+                    type: string
+                    description: |
+                        Borg ID hash function name. Defaults to "sha256". Only
+                        supported with Borg 2+.
+                    example: blake3
+                key_location:
+                    type: string
+                    description: |
+                        Where to store the key, "repokey" for in the repository
+                        (default) or "keyfile" for on the client. Only supported
+                        with Borg 2+.
+                    example: blake3
                 append_only:
                     type: boolean
                     description: |
@@ -73,7 +93,7 @@ properties:
                         Whether any missing parent directories of the repository
                         path should be created, only used for the repo-create
                         action. Defaults to false. (This option is supported 
-                        for Borg 1.x only)
+                        for Borg 1.x only.)
                     example: true
         description: |
             A required list of local or remote repositories with paths and
@@ -134,12 +154,39 @@ properties:
             false. But when a database hook is used, the setting here is ignored
             and read_special is considered true.
         example: true
+    unsafe_skip_path_validation_before_create:
+        type: boolean
+        description: |
+            Skip pre-backup safety validation: (1) runtime directory exclusion
+            detection, and (2) special file exclusion for database streaming.
+            Can significantly improve performance for large filesystems.
+
+            UNSAFE because, when this option is enabled, Borg may hang on
+            special files (named pipes, devices) and data from borgmatic data
+            source hooks may be silently excluded if your excluded patterns
+            match the runtime directory (see the "user_runtime_directory"
+            option).
+
+            Only enable if not using data source hooks and you manually verify
+            that your excludes don't affect the runtime directory. Defaults
+            to false.
+        example: true
     flags:
         type: boolean
         description: |
             Record filesystem flags (e.g. NODUMP, IMMUTABLE) in archive.
             Defaults to true.
         example: false
+    files_changed:
+        type: string
+        enum: ['ctime', 'mtime', 'disabled']
+        description: |
+            Threshold for considering a file as changed. See
+            https://borgbackup.readthedocs.io/en/stable/usage/create.html for
+            details. Defaults to "ctime". E.g., a file is considered changed if
+            its ctime has changed since the last backup. (This option is
+            supported for Borg 1.4.2+ only.)
+        example: ctime
     files_cache:
         type: string
         description: |
@@ -163,9 +210,13 @@ properties:
             type: string
         description: |
             Any paths matching these patterns are included/excluded from
-            backups. Globs are expanded. (Tildes are not.) See the output of
-            "borg help patterns" for more details. Quote any value if it
-            contains leading punctuation, so it parses correctly.
+            backups. Recursion root patterns ("R ...") are effectively the same
+            as "source_directories"; they tell Borg which paths to backup
+            (modulo any excludes). Globs are expanded. (Tildes are not.) See
+            the output of "borg help patterns" for more details. Quote any value
+            if it contains leading punctuation, so it parses correctly. Also use
+            leading slashes in absolute paths, or data source hooks may be
+            unable to rewrite patterns as needed.
         example:
             - 'R /'
             - '- /home/*/.cache'
@@ -232,7 +283,8 @@ properties:
     exclude_nodump:
         type: boolean
         description: |
-            Exclude files with the NODUMP flag. Defaults to false.
+            Exclude files with the NODUMP flag. Defaults to false. (This option
+            is supported for Borg 1.x only.)
         example: true
     borgmatic_source_directory:
         type: string
@@ -248,7 +300,7 @@ properties:
             Path for storing temporary runtime data like streaming database
             dumps and bootstrap metadata. borgmatic automatically creates and
             uses a "borgmatic" subdirectory here. Defaults to $XDG_RUNTIME_DIR
-            or or $TMPDIR or $TEMP or /run/user/$UID.
+            or $TMPDIR or $TEMP or /run/user/$UID.
         example: /run/user/1001
     user_state_directory:
         type: string
@@ -259,12 +311,6 @@ properties:
             create the check records again (and therefore re-run checks).
             Defaults to $XDG_STATE_HOME or ~/.local/state.
         example: /var/lib/borgmatic
-    source_directories_must_exist:
-        type: boolean
-        description: |
-            If true, then source directories (and root pattern paths) must
-            exist. If they don't, an error is raised. Defaults to false.
-        example: true
     encryption_passcommand:
         type: string
         description: |
@@ -275,7 +321,7 @@ properties:
             encryption_passphrase takes precedence. This can also be used to
             access encrypted systemd service credentials. Defaults to not set.
             For more details, see:
-            https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
+            https://torsion.org/borgmatic/how-to/provide-your-passwords/
         example: "secret-tool lookup borg-repository repo-name"
     encryption_passphrase:
         type: string
@@ -406,14 +452,20 @@ properties:
         type: string
         description: |
             Path for Borg security and encryption nonce files. Defaults to
-            $borg_base_directory/.config/borg/security
+            $borg_config_directory/security
         example: /path/to/base/config/security
     borg_keys_directory:
         type: string
         description: |
             Path for Borg encryption key files. Defaults to
-            $borg_base_directory/.config/borg/keys
+            $borg_config_directory/keys
         example: /path/to/base/config/keys
+    borg_key_file:
+        type: string
+        description: |
+            Path for the Borg repository key file, for use with a repository
+            created with "keyfile" encryption.
+        example: /path/to/base/config/keyfile
     borg_exit_codes:
         type: array
         items:
@@ -437,9 +489,9 @@ properties:
         description: |
             A list of Borg exit codes that should be elevated to errors or
             squashed to warnings as indicated. By default, Borg error exit codes
-            (2 to 99) are treated as errors while warning exit codes (1 and
-            100+) are treated as warnings. Exit codes other than 1 and 2 are
-            only present in Borg 1.4.0+.
+            (2 to 99) are treated as errors and most warning exit codes (1 and
+            100+) are treated as errors as well. Exit codes other than 1 and 2
+            are only present in Borg 1.4.0+.
         example:
             - code: 13
               treat_as: warning
@@ -450,6 +502,9 @@ properties:
         description: |
             Umask used for when executing Borg or calling hooks. Defaults to
             0077 for Borg or the umask that borgmatic is run with for hooks.
+            Even though this value is a YAML integer, borgmatic interprets it as
+            octal. YAML's "0o"-prefixed octal notation is not currently
+            supported.
         example: 0077
     lock_wait:
         type: integer
@@ -479,6 +534,42 @@ properties:
             If match_archives is not specified, borgmatic defaults to deriving
             the match_archives value from archive_name_format.
         example: "sh:{hostname}-*"
+    archive_hostname:
+        type: string
+        description: |
+            Hostname to use for the "{hostname}" placeholder in
+            "archive_name_format", "match_archives", etc. Defaults to the system
+            hostname. (This option is supported for Borg 1.4.5+ only.)
+        example: example.org
+    archive_username:
+        type: string
+        description: |
+            Username to use for the "{user}" placeholder in
+            "archive_name_format", "match_archives", etc. Defaults to the
+            username of the user running borgmatic. (This option is supported
+            for Borg 1.4.5+ only.)
+        example: backup_user
+    file_list_format:
+        type: string
+        description: |
+            Borg format for the files listing of the "list" action. Corresponds
+            to the "--format" flag. Defaults to "{mode} {user:6} {group:6}
+            {size:8} {mtime} {path}{extra}{NL}". With "--json", the form of the
+            format is ignored, but the keys used in it are added to the JSON
+            output. See
+            https://borgbackup.readthedocs.io/en/stable/usage/list.html for
+            details.
+        example: "{path}{extra}{NL}"
+    archive_list_format:
+        type: string
+        description: |
+            Borg format for the archives listing of the "repo-list" action.
+            Corresponds to the "--format" flag. Defaults to "{archive:<36}
+            {time} [{id}]{NL}". With "--json", the form of the format is
+            ignored, but the keys used in it are added to the JSON output. See
+            https://borgbackup.readthedocs.io/en/stable/usage/list.html for
+            details.
+        example: "{archive}{NL}"
     relocated_repo_access_is_ok:
         type: boolean
         description: |
@@ -510,34 +601,133 @@ properties:
             Bypass Borg confirmation about check with repair option. Defaults to
             false and an interactive prompt from Borg.
         example: true
+    msgpack_version_check:
+        type: boolean
+        description: |
+            Optionally disable the msgpack version check. Default is true; use
+            at your own risk. (This option is supported for Borg 1.4.2+ only.)
+        example: false
     extra_borg_options:
         type: object
         additionalProperties: false
         properties:
-            init:
+            break_lock:
                 type: string
                 description: |
-                  Extra command-line options to pass to "borg init".
+                  Extra command-line options to pass to "borg break-lock".
                 example: "--extra-option"
-            create:
+            check:
                 type: string
                 description: |
-                  Extra command-line options to pass to "borg create".
-                example: "--extra-option"
-            prune:
-                type: string
-                description: |
-                  Extra command-line options to pass to "borg prune".
+                  Extra command-line options to pass to "borg check".
                 example: "--extra-option"
             compact:
                 type: string
                 description: |
                   Extra command-line options to pass to "borg compact".
                 example: "--extra-option"
-            check:
+            create:
                 type: string
                 description: |
-                  Extra command-line options to pass to "borg check".
+                  Extra command-line options to pass to "borg create".
+                example: "--extra-option"
+            delete:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg delete".
+                example: "--extra-option"
+            export_tar:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg export-tar".
+                example: "--extra-option"
+            extract:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg extract".
+                example: "--extra-option"
+            key_export:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg key export".
+                example: "--extra-option"
+            key_import:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg key import".
+                example: "--extra-option"
+            key_change_passphrase:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg key
+                  change-passphrase".
+                example: "--extra-option"
+            info:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg info".
+                example: "--extra-option"
+            init:
+                type: string
+                description: |
+                  Deprecated. Use "repo_create" instead. Extra command-line
+                  options to pass to "borg init" / "borg repo-create".
+                example: "--extra-option"
+            list:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg list".
+                example: "--extra-option"
+            mount:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg mount".
+                example: "--extra-option"
+            prune:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg prune".
+                example: "--extra-option"
+            recreate:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg recreate".
+                example: "--extra-option"
+            rename:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg rename".
+                example: "--extra-option"
+            repo_create:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg init" / "borg
+                  repo-create".
+                example: "--extra-option"
+            repo_delete:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg repo-delete".
+                example: "--extra-option"
+            repo_info:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg repo-info".
+                example: "--extra-option"
+            repo_list:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg repo-list".
+                example: "--extra-option"
+            transfer:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg transfer".
+                example: "--extra-option"
+            umount:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg umount".
                 example: "--extra-option"
         description: |
             Additional options to pass directly to particular Borg commands,
@@ -892,6 +1082,8 @@ properties:
         type: string
         description: |
             Python format string used for log messages written to the log file.
+            See https://docs.python.org/3/library/logging.html (and specifically
+            the LogRecord attributes with "{}-formatting") for details.
         example: "[{asctime}] {levelname}: {prefix}{message}"
     monitoring_verbosity:
         type: integer
@@ -927,6 +1119,16 @@ properties:
             Corresponds to the "--stats" flag on those actions. Defaults to
             false.
         example: true
+    quick_statistics:
+        type: boolean
+        description: |
+            Display statistics for an archive when running supported actions,
+            skipping the repository-wide "All archives" and chunk index
+            statistics to save some time. Corresponds to the "--quick-stats"
+            flag on those actions. Defaults to false. (This option is supported
+            for Borg 1.4.5+ only for the "create" action and for Borg >= 1.4.5
+            and < Borg 2 for the "prune" action.)
+        example: true
     list_details:
         type: boolean
         description: |
@@ -937,9 +1139,9 @@ properties:
     default_actions:
         type: boolean
         description: |
-            Whether to apply default actions (create, prune, compact and check)
-            when no arguments are supplied to the borgmatic command. If set to
-            false, borgmatic displays the help message instead.
+            Whether to run default actions (create, prune, compact, and check)
+            when no arguments are given on the command line. If set to false,
+            borgmatic displays the help message instead.
         example: true
     skip_actions:
         type: array
@@ -967,6 +1169,8 @@ properties:
                 - info
                 - break-lock
                 - key
+                - diff
+                - browse
                 - borg
         description: |
             List of one or more actions to skip running for this configuration
@@ -1183,6 +1387,8 @@ properties:
                                   - info
                                   - break-lock
                                   - key
+                                  - diff
+                                  - browse
                                   - borg
                           description: |
                               List of actions for which the commands will be
@@ -1248,6 +1454,8 @@ properties:
                                   - info
                                   - break-lock
                                   - key
+                                  - diff
+                                  - browse
                                   - borg
                           description: |
                               Only trigger the hook when borgmatic is run with
@@ -1430,6 +1638,23 @@ properties:
                         implicitly enables read_special (see above) to support
                         dump and restore streaming.
                     example: users
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
+                container:
+                    type: string
+                    description: |
+                        Container name/id to connect to. When specified, the
+                        hostname is ignored. Requires docker/podman CLI.
+                    example: debian_stable
+                restore_container:
+                    type: string
+                    description: |
+                        Container name/id to restore to. Defaults to the
+                        "container" option.
+                    example: restore_container
                 hostname:
                     type: string
                     description: |
@@ -1631,6 +1856,32 @@ properties:
                         database hook implicitly enables read_special (see
                         above) to support dump and restore streaming.
                     example: users
+                skip_names:
+                    type: array
+                    items:
+                        type: string
+                    description: |
+                        Database names to skip when dumping "all" databases.
+                        Ignored when the database name is not "all".
+                    example:
+                        - cache
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
+                container:
+                    type: string
+                    description: |
+                        Container name/id to connect to. When specified, the
+                        hostname is ignored. Requires docker/podman CLI.
+                    example: debian_stable
+                restore_container:
+                    type: string
+                    description: |
+                        Container name/id to restore to. Defaults to the
+                        "container" option.
+                    example: restore_container
                 hostname:
                     type: string
                     description: |
@@ -1652,6 +1903,20 @@ properties:
                     description: |
                         Port to restore to. Defaults to the "port" option.
                     example: 5433
+                socket_path:
+                    type: string
+                    description: |
+                        Path of a Unix socket to connect to instead of a remote
+                        hostname. Ignored when "hostname" is set and not
+                        "localhost". Defaults to "/run/mysqld/mysqld.sock".
+                    example: database.example.org
+                restore_socket_path:
+                    type: string
+                    description: |
+                        Path of a Unix socket to connect to instead of a remote
+                        hostname. Ignored when "hostname" is set and not
+                        "localhost". Defaults to the "socket_path" option.
+                    example: database.example.org
                 username:
                     type: string
                     description: |
@@ -1712,21 +1977,45 @@ properties:
                         client and restore server. The default varies based on
                         the MariaDB version.
                     example: false
+                events:
+                    type: boolean
+                    description: |
+                        Whether to include scheduled events within the dump.
+                        Disable if your database user doesn't have the
+                        permissions to dump events. Defaults to true.
+                    example: false
+                routines:
+                    type: boolean
+                    description: |
+                        Whether to include stored routines within the dump.
+                        Disable if your user database doesn't have the
+                        permissions to dump routines. Defaults to true.
+                    example: false
+                tablespaces:
+                    type: boolean
+                    description: |
+                        Whether to include tablespaces within the dump. Disable
+                        if your database user doesn't have the permissions to
+                        dump tablespaces. Defaults to true.
+                    example: false
                 mariadb_dump_command:
                     type: string
                     description: |
-                        Command to use instead of "mariadb-dump". This can be
-                        used to run a specific mariadb_dump version (e.g., one
-                        inside a running container). If you run it from within a
-                        container, make sure to mount the path in the
-                        "user_runtime_directory" option from the host into the
-                        container at the same location. Defaults to
-                        "mariadb-dump".
+                        Command to use instead of "mariadb-dump". But set any
+                        additional command-line flags in "options", not here.
+                        This command can be used to run a specific mariadb_dump
+                        version (e.g., one inside a running container). If you
+                        run it from within a container, make sure to mount the
+                        path in the "user_runtime_directory" option from the
+                        host into the container at the same location. Defaults
+                        to "mariadb-dump".
                     example: docker exec mariadb_container mariadb-dump
                 mariadb_command:
                     type: string
                     description: |
-                        Command to run instead of "mariadb". This can be used to
+                        Command to run instead of "mariadb". But set any
+                        additional command-line flags in "list_options" or
+                        "restore_options", not here. This command can be used to
                         run a specific mariadb version (e.g., one inside a
                         running container). Defaults to "mariadb".
                     example: docker exec mariadb_container mariadb           
@@ -1796,6 +2085,32 @@ properties:
                         database hook implicitly enables read_special (see
                         above) to support dump and restore streaming.
                     example: users
+                skip_names:
+                    type: array
+                    items:
+                        type: string
+                    description: |
+                        Database names to skip when dumping "all" databases.
+                        Ignored when the database name is not "all".
+                    example:
+                        - cache
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
+                container:
+                    type: string
+                    description: |
+                        Container name/id to connect to. When specified, the
+                        hostname is ignored. Requires docker/podman CLI.
+                    example: debian_stable
+                restore_container:
+                    type: string
+                    description: |
+                        Container name/id to restore to. Defaults to the
+                        "container" option.
+                    example: restore_container
                 hostname:
                     type: string
                     description: |
@@ -1817,6 +2132,20 @@ properties:
                     description: |
                         Port to restore to. Defaults to the "port" option.
                     example: 5433
+                socket_path:
+                    type: string
+                    description: |
+                        Path of a Unix socket to connect to instead of a remote
+                        hostname. Ignored when "hostname" is set and not
+                        "localhost". Defaults to "/run/mysqld/mysqld.sock".
+                    example: database.example.org
+                restore_socket_path:
+                    type: string
+                    description: |
+                        Path of a Unix socket to connect to instead of a remote
+                        hostname. Ignored when "hostname" is set and not
+                        "localhost". Defaults to the "socket_path" option.
+                    example: database.example.org
                 username:
                     type: string
                     description: |
@@ -1877,20 +2206,45 @@ properties:
                         client and restore server. The default varies based on
                         the MySQL installation.
                     example: false
+                events:
+                    type: boolean
+                    description: |
+                        Whether to include scheduled events within the dump.
+                        Disable if your database user doesn't have the
+                        permissions to dump events. Defaults to true.
+                    example: false
+                routines:
+                    type: boolean
+                    description: |
+                        Whether to include stored routines within the dump.
+                        Disable if your database user doesn't have the
+                        permissions to dump routines. Defaults to true.
+                    example: false
+                tablespaces:
+                    type: boolean
+                    description: |
+                        Whether to include tablespaces within the dump. Disable
+                        if your database user doesn't have the permissions to
+                        dump tablespaces. Defaults to true.
+                    example: false
                 mysql_dump_command:
                     type: string
                     description: |
-                        Command to use instead of "mysqldump". This can be used
-                        to run a specific mysql_dump version (e.g., one inside a
-                        running container). If you run it from within a
-                        container, make sure to mount the path in the
-                        "user_runtime_directory" option from the host into the
-                        container at the same location. Defaults to "mysqldump".
+                        Command to use instead of "mysqldump". But set any
+                        additional command-line flags in "options", not here.
+                        This command can be used to run a specific mysql_dump
+                        version (e.g., one inside a running container). If you
+                        run it from within a container, make sure to mount the
+                        path in the "user_runtime_directory" option from the
+                        host into the container at the same location. Defaults
+                        to "mysqldump".
                     example: docker exec mysql_container mysqldump
                 mysql_command:
                     type: string
                     description: |
-                        Command to run instead of "mysql". This can be used to
+                        Command to run instead of "mysql". But set any
+                        additional command-line flags in "list_options" or
+                        "restore_options", not here. This command can be used to
                         run a specific mysql version (e.g., one inside a running
                         container). Defaults to "mysql".
                     example: docker exec mysql_container mysql
@@ -1969,6 +2323,11 @@ properties:
                         read_special (see above) to support dump and restore
                         streaming.
                     example: /var/lib/sqlite/users.db
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
                 restore_path:
                     type: string
                     description: |
@@ -2017,6 +2376,23 @@ properties:
                         database hook implicitly enables read_special (see
                         above) to support dump and restore streaming.
                     example: users
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
+                container:
+                    type: string
+                    description: |
+                        Container name/id to connect to. When specified, the
+                        hostname is ignored. Requires docker/podman CLI.
+                    example: debian_stable
+                restore_container:
+                    type: string
+                    description: |
+                        Container name/id to restore to. Defaults to the
+                        "container" option.
+                    example: restore_container
                 hostname:
                     type: string
                     description: |
@@ -2105,8 +2481,7 @@ properties:
                         running container). If you run it from within a
                         container, make sure to mount the path in the
                         "user_runtime_directory" option from the host into the
-                        container at the same location.  Defaults to
-                        "mongodump".
+                        container at the same location. Defaults to "mongodump".
                     example: docker exec mongodb_container mongodump
                 mongorestore_command:
                     type: string
@@ -2173,17 +2548,24 @@ properties:
                         type: string
                         description: |
                             The message body to publish.
-                        example: Your backups have failed.
+                        example: Your backups have started.
                     priority:
                         type: string
+                        enum:
+                            - max
+                            - urgent
+                            - high
+                            - default
+                            - low
+                            - min
                         description: |
                             The priority to set.
-                        example: urgent
+                        example: min
                     tags:
                         type: string
                         description: |
                             Tags to attach to the message.
-                        example: incoming_envelope
+                        example: borgmatic
             finish:
                 type: object
                 additionalProperties: false
@@ -2197,17 +2579,24 @@ properties:
                         type: string
                         description: |
                             The message body to publish.
-                        example: Your backups have failed.
+                        example: Your backups have finished.
                     priority:
                         type: string
+                        enum:
+                            - max
+                            - urgent
+                            - high
+                            - default
+                            - low
+                            - min
                         description: |
                             The priority to set.
-                        example: urgent
+                        example: min
                     tags:
                         type: string
                         description: |
                             Tags to attach to the message.
-                        example: incoming_envelope
+                        example: borgmatic,+1
             fail:
                 type: object
                 additionalProperties: false
@@ -2224,14 +2613,21 @@ properties:
                         example: Your backups have failed.
                     priority:
                         type: string
+                        enum:
+                            - max
+                            - urgent
+                            - high
+                            - default
+                            - low
+                            - min
                         description: |
                             The priority to set.
-                        example: urgent
+                        example: max
                     tags:
                         type: string
                         description: |
                             Tags to attach to the message.
-                        example: incoming_envelope
+                        example: borgmatic,-1,skull
             states:
                 type: array
                 items:
@@ -2618,7 +3014,9 @@ properties:
                     properties:
                         url:
                             type: string
-                            description: URL of this Apprise service.
+                            description: |
+                                URL of this Apprise service. Supports the
+                                "{credential ...}" syntax.
                             example: "gotify://hostname/token"
                         label:
                             type: string
@@ -2640,8 +3038,8 @@ properties:
                 type: boolean
                 description: |
                     Send borgmatic logs to Apprise services as part of the
-                    "finish", "fail", and "log" states. Defaults to true.
-                example: false
+                    "finish", "fail", and "log" states. Defaults to false.
+                example: true
             logs_size_limit:
                 type: integer
                 description: |
@@ -2755,8 +3153,8 @@ properties:
                 type: boolean
                 description: |
                     Send borgmatic logs to Healthchecks as part of the "finish",
-                    "fail", and "log" states. Defaults to true.
-                example: false
+                    "fail", and "log" states. Defaults to false.
+                example: true
             ping_body_limit:
                 type: integer
                 description: |
@@ -2862,27 +3260,12 @@ properties:
                 type: boolean
                 description: |
                     Send borgmatic logs to PagerDuty when a backup errors.
-                    Defaults to true.
-                example: false
+                    Defaults to false.
+                example: true
         description: |
             Configuration for a monitoring integration with PagerDuty. Create an
             account at https://www.pagerduty.com if you'd like to use this
             service. See borgmatic monitoring documentation for details.
-    cronhub:
-        type: object
-        required: ['ping_url']
-        additionalProperties: false
-        properties:
-            ping_url:
-                type: string
-                description: |
-                    Cronhub ping URL to notify when a backup begins,
-                    ends, or errors.
-                example: https://cronhub.io/ping/1f5e3410-254c-5587
-        description: |
-            Configuration for a monitoring integration with Cronhub. Create an
-            account at https://cronhub.io if you'd like to use this service. See
-            borgmatic monitoring documentation for details.
     loki:
         type: object
         required: ['url', 'labels']
@@ -2891,9 +3274,27 @@ properties:
             url:
                 type: string
                 description: |
-                    Grafana loki log URL to notify when a backup begins,
+                    Grafana Loki log URL to notify when a backup begins,
                     ends, or fails.
                 example: "http://localhost:3100/loki/api/v1/push"
+            tls:
+                type: object
+                additionalProperties: false
+                properties:
+                    cert_path:
+                        type: string
+                        description: |
+                            Path to a PEM client certificate file for mutual
+                            TLS authentication.
+                        example: /etc/borgmatic/loki-client.crt
+                    key_path:
+                        type: string
+                        description: |
+                            Path to a PEM private key file for the client
+                            certificate.
+                        example: /etc/borgmatic/loki-client.key
+                description: |
+                    TLS options for mutual TLS (mTLS) authentication with Loki.
             labels:
                 type: object
                 additionalProperties:
@@ -2908,6 +3309,11 @@ properties:
                     app: "borgmatic"
                     config: "__config"
                     hostname: "__hostname"
+            send_logs:
+                type: boolean
+                description: |
+                    Send borgmatic logs to Loki. Defaults to false.
+                example: true
         description: |
             Configuration for a monitoring integration with Grafana Loki. You
             can send the logs to a self-hosted instance or create an account at
@@ -2932,6 +3338,12 @@ properties:
                     project monitor. Used along with the data source name URL to
                     construct a cron URL.
                 example: mymonitor
+            environment:
+                type: string
+                description: |
+                    Sentry monitor environment used in the call to Sentry. If
+                    not set, the Sentry default is used.
+                example: production
             states:
                 type: array
                 items:
@@ -2952,6 +3364,65 @@ properties:
             a self-hosted instance via https://develop.sentry.dev/self-hosted/
             or create a cloud-hosted account at https://sentry.io. See borgmatic
             monitoring documentation for details.
+    watchgoose:
+        type: object
+        required: ['ping_url']
+        additionalProperties: false
+        properties:
+            ping_url:
+                type: string
+                description: |
+                    Watchgoose ping URL or UUID to notify when a backup
+                    begins, ends, errors, or to send only logs.
+                example: https://watchgoose.com/your-uuid-here
+            verify_tls:
+                type: boolean
+                description: |
+                    Verify the TLS certificate of the ping URL host. Defaults to
+                    true.
+                example: false
+            send_logs:
+                type: boolean
+                description: |
+                    Send borgmatic logs to Watchgoose as part of the "finish",
+                    "fail", and "log" states. Defaults to false.
+                example: true
+            ping_body_limit:
+                type: integer
+                description: |
+                    Number of bytes of borgmatic logs to send to Watchgoose. Set
+                    to 0 to send all logs and disable this truncation on the
+                    client. Defaults to 10000, Watchgoose's current server-side
+                    limit.
+                example: 0
+            states:
+                type: array
+                items:
+                    type: string
+                    enum:
+                        - start
+                        - finish
+                        - fail
+                        - log
+                    uniqueItems: true
+                description: |
+                    List of one or more monitoring states to ping for: "start",
+                    "finish", "fail", and/or "log". Defaults to pinging for all
+                    states.
+                example:
+                    - finish
+            create_slug:
+                type: boolean
+                description: |
+                    Create the check if it does not exist. Only works with the
+                    slug URL scheme (https://watchgoose.com/<ping-key>/<slug> as
+                    opposed to https://watchgoose.com/<uuid>). Defaults to
+                    false.
+                example: true
+        description: |
+            Configuration for a monitoring integration with Watchgoose. Create
+            an account at https://watchgoose.com if you'd like to use this
+            service. See borgmatic monitoring documentation for details.
     zfs:
         type: ["object", "null"]
         additionalProperties: false
@@ -2985,7 +3456,8 @@ properties:
             findmnt_command:
                 type: string
                 description: |
-                    Command to use instead of "findmnt".
+                    Deprecated and unused. Was the command to use instead of
+                    "findmnt".
                 example: /usr/local/bin/findmnt
         description: |
             Configuration for integration with the Btrfs filesystem.
@@ -3036,6 +3508,25 @@ properties:
         description: |
             Configuration for integration with Linux LVM (Logical Volume
             Manager).
+    systemd:
+        type: object
+        additionalProperties: false
+        properties:
+            systemd_creds_command:
+                type: string
+                description: |
+                    Command to use instead of "systemd-creds". Only used as a
+                    fallback when borgmatic is run outside of a systemd service.
+                example: /usr/local/bin/systemd-creds
+            encrypted_credentials_directory:
+                type: string
+                description: |
+                    Directory containing encrypted credentials for
+                    "systemd-creds" to use instead of
+                    "/etc/credstore.encrypted".
+                example: /path/to/credstore.encrypted
+        description: |
+            Configuration for integration with systemd credentials.
     container:
         type: object
         additionalProperties: false
@@ -3056,16 +3547,32 @@ properties:
                 description: |
                     Command to use instead of "keepassxc-cli".
                 example: /usr/local/bin/keepassxc-cli
+            secret_tool_command:
+                type: string
+                description: |
+                    Command to use instead of "secret-tool".
+                example: /usr/local/bin/secret-tool
+            ask_for_password:
+                type: boolean
+                description: |
+                    Whether keepassxc-cli should prompt the user for a password.
+                    Disabling this is only really useful if you're unlocking
+                    your KeePassXC database with a key file instead of a
+                    password. Ignored when using KeePassXC's secret service
+                    integration. Defaults to true.
+                example: false
             key_file:
                 type: string
                 description: |
                     Path to a key file for unlocking the KeePassXC database.
+                    Ignored when using KeePassXC's secret service integration.
                 example: /path/to/keyfile
             yubikey:
                 type: string
                 description: |
                     YubiKey slot and optional serial number used to access the
-                    KeePassXC database. The format is "<slot[:serial]>", where:
+                    KeePassXC database. Ignored when using KeePassXC's secret
+                    service integration. The format is "<slot[:serial]>", where:
                      * <slot> is the YubiKey slot number (e.g., `1` or `2`).
                      * <serial> (optional) is the YubiKey's serial number (e.g.,
                        `7370001`).

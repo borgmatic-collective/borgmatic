@@ -1,5 +1,4 @@
 import itertools
-import json
 import logging
 import re
 
@@ -95,15 +94,19 @@ def make_match_archives_flags(  # noqa: PLR0911
     archive_name_format,
     local_borg_version,
     default_archive_name_format=None,
+    force_flags_even_for_globs=False,
 ):
     '''
     Return match archives flags based on the given match archives value, if any. If it isn't set,
     return match archives flags to match archives created with the given (or default) archive name
     format. This is done by replacing certain archive name format placeholders for ephemeral data
     (like "{now}") with globs.
+
+    If the given match archives value is just a glob (e.g. "*"), omit any flags—unless the force
+    flags even for globs value is True.
     '''
     if match_archives:
-        if match_archives in {'*', 're:.*', 'sh:*'}:
+        if not force_flags_even_for_globs and match_archives in {'*', 're:.*', 'sh:*'}:
             return ()
 
         if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
@@ -126,7 +129,7 @@ def make_match_archives_flags(  # noqa: PLR0911
         or get_default_archive_name_format(local_borg_version),
     )
 
-    if derived_match_archives == '*':
+    if not force_flags_even_for_globs and derived_match_archives == '*':
         return ()
 
     if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
@@ -135,27 +138,18 @@ def make_match_archives_flags(  # noqa: PLR0911
     return ('--glob-archives', f'{derived_match_archives}')
 
 
-def warn_for_aggressive_archive_flags(json_command, json_output):
+def warn_for_aggressive_archive_flags(command, output_lines):
     '''
-    Given a JSON archives command and the resulting JSON string output from running it, parse the
-    JSON and warn if the command used an archive flag but the output indicates zero archives were
-    found.
+    Given an archives command and the resulting output lines from running it, warn if the command
+    used an archive flag but the output indicates zero archives were found.
     '''
-    archive_flags_used = {'--glob-archives', '--match-archives'}.intersection(set(json_command))
-
-    if not archive_flags_used:
-        return
-
-    try:
-        if len(json.loads(json_output)['archives']) == 0:
-            logger.warning('An archive filter was applied, but no matching archives were found.')
-            logger.warning(
-                'Try adding --match-archives "*" or adjusting archive_name_format/match_archives in configuration.',
-            )
-    except json.JSONDecodeError as error:
-        logger.debug(f'Cannot parse JSON output from archive command: {error}')
-    except (TypeError, KeyError):
-        logger.debug('Cannot parse JSON output from archive command: No "archives" key found')
+    if {'--glob-archives', '--match-archives'}.intersection(set(command)) and len(
+        tuple(line for line in output_lines if not line.startswith('terminating with '))
+    ) == 0:
+        logger.warning('An archive filter was applied, but no matching archives were found.')
+        logger.warning(
+            'Try adding --match-archives "*" or adjusting archive_name_format/match_archives in configuration.',
+        )
 
 
 def omit_flag(arguments, flag):

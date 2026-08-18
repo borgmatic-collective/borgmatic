@@ -19,6 +19,7 @@ def generate_configuration(config_path, repository_path):
         .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
         .replace('- path: /e2e/mnt/backup', '')
         .replace('label: local', '')
+        .replace('- /home/user/path with spaces', '')
         .replace('- /home', f'- {config_path}')
         .replace('- /etc', '- /e2e/mnt/lvolume/subdir')
         .replace('- /var/log/syslog*', '')

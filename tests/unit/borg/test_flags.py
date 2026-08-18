@@ -108,19 +108,22 @@ def test_get_default_archive_name_format_without_archive_series_feature_uses_non
 
 
 @pytest.mark.parametrize(
-    'match_archives,archive_name_format,feature_available,expected_result',
+    'match_archives,archive_name_format,feature_available,force_flags_even_for_globs,expected_result',
     (
-        (None, None, True, ('--match-archives', 'sh:{hostname}-*')),
-        (None, '', True, ('--match-archives', 'sh:{hostname}-*')),
+        (None, None, True, False, ('--match-archives', 'sh:{hostname}-*')),
+        (None, None, True, True, ('--match-archives', 'sh:{hostname}-*')),
+        (None, '', True, False, ('--match-archives', 'sh:{hostname}-*')),
         (
             're:foo-.*',
             '{hostname}-{now}',
             True,
+            False,
             ('--match-archives', 're:foo-.*'),
         ),
         (
             'sh:foo-*',
             '{hostname}-{now}',
+            False,
             False,
             ('--glob-archives', 'foo-*'),
         ),
@@ -128,30 +131,35 @@ def test_get_default_archive_name_format_without_archive_series_feature_uses_non
             'foo-*',
             '{hostname}-{now}',
             False,
+            False,
             ('--glob-archives', 'foo-*'),
         ),
         (
             None,
             '{hostname}-docs-{now}',
             True,
+            False,
             ('--match-archives', 'sh:{hostname}-docs-*'),
         ),
         (
             None,
             '{utcnow}-docs-{user}',
             True,
+            False,
             ('--match-archives', 'sh:*-docs-{user}'),
         ),
-        (None, '{fqdn}-{pid}', True, ('--match-archives', 'sh:{fqdn}-*')),
+        (None, '{fqdn}-{pid}', True, False, ('--match-archives', 'sh:{fqdn}-*')),
         (
             None,
             'stuff-{now:%Y-%m-%dT%H:%M:%S.%f}',
             True,
+            False,
             ('--match-archives', 'sh:stuff-*'),
         ),
         (
             None,
             '{hostname}-docs-{now}',
+            False,
             False,
             ('--glob-archives', '{hostname}-docs-*'),
         ),
@@ -159,17 +167,34 @@ def test_get_default_archive_name_format_without_archive_series_feature_uses_non
             None,
             '{now}',
             False,
+            False,
+            (),
+        ),
+        (
+            None,
+            '{now}',
+            False,
+            True,
+            ('--glob-archives', '*'),
+        ),
+        (
+            None,
+            '{now}',
+            True,
+            False,
             (),
         ),
         (
             None,
             '{now}',
             True,
-            (),
+            True,
+            ('--match-archives', 'sh:*'),
         ),
         (
             None,
             '{utcnow}-docs-{user}',
+            False,
             False,
             ('--glob-archives', '*-docs-{user}'),
         ),
@@ -177,11 +202,34 @@ def test_get_default_archive_name_format_without_archive_series_feature_uses_non
             '*',
             '{now}',
             True,
+            False,
             (),
         ),
         (
             '*',
             '{now}',
+            True,
+            True,
+            ('--match-archives', '*'),
+        ),
+        (
+            '*',
+            '{now}',
+            False,
+            False,
+            (),
+        ),
+        (
+            '*',
+            '{now}',
+            False,
+            True,
+            ('--glob-archives', '*'),
+        ),
+        (
+            're:.*',
+            '{now}',
+            True,
             False,
             (),
         ),
@@ -189,24 +237,35 @@ def test_get_default_archive_name_format_without_archive_series_feature_uses_non
             're:.*',
             '{now}',
             True,
+            True,
+            ('--match-archives', 're:.*'),
+        ),
+        (
+            'sh:*',
+            '{now}',
+            True,
+            False,
             (),
         ),
         (
             'sh:*',
             '{now}',
             True,
-            (),
+            True,
+            ('--match-archives', 'sh:*'),
         ),
         (
             'abcdefabcdef',
             None,
             True,
+            False,
             ('--match-archives', 'aid:abcdefabcdef'),
         ),
         (
             'aid:abcdefabcdef',
             None,
             True,
+            False,
             ('--match-archives', 'aid:abcdefabcdef'),
         ),
     ),
@@ -215,6 +274,7 @@ def test_make_match_archives_flags_makes_flags_with_globs(
     match_archives,
     archive_name_format,
     feature_available,
+    force_flags_even_for_globs,
     expected_result,
 ):
     flexmock(module.feature).should_receive('available').and_return(feature_available)
@@ -227,6 +287,7 @@ def test_make_match_archives_flags_makes_flags_with_globs(
             match_archives,
             archive_name_format,
             local_borg_version=flexmock(),
+            force_flags_even_for_globs=force_flags_even_for_globs,
         )
         == expected_result
     )
@@ -246,10 +307,10 @@ def test_make_match_archives_flags_accepts_default_archive_name_format():
     )
 
 
-def test_warn_for_aggressive_archive_flags_without_archive_flags_bails():
+def test_warn_for_aggressive_archive_flags_without_archive_flags_does_not_warn():
     flexmock(module.logger).should_receive('warning').never()
 
-    module.warn_for_aggressive_archive_flags(('borg', '--do-stuff'), '{}')
+    module.warn_for_aggressive_archive_flags(('borg', '--do-stuff'), ())
 
 
 def test_warn_for_aggressive_archive_flags_with_glob_archives_and_zero_archives_warns():
@@ -257,7 +318,7 @@ def test_warn_for_aggressive_archive_flags_with_glob_archives_and_zero_archives_
 
     module.warn_for_aggressive_archive_flags(
         ('borg', '--glob-archives', 'foo*'),
-        '{"archives": []}',
+        (),
     )
 
 
@@ -266,7 +327,16 @@ def test_warn_for_aggressive_archive_flags_with_match_archives_and_zero_archives
 
     module.warn_for_aggressive_archive_flags(
         ('borg', '--match-archives', 'foo*'),
-        '{"archives": []}',
+        (),
+    )
+
+
+def test_warn_for_aggressive_archive_flags_with_match_archives_and_just_exit_code_warns():
+    flexmock(module.logger).should_receive('warning').twice()
+
+    module.warn_for_aggressive_archive_flags(
+        ('borg', '--match-archives', 'foo*'),
+        ('terminating with success status, rc 0',),
     )
 
 
@@ -275,7 +345,7 @@ def test_warn_for_aggressive_archive_flags_with_glob_archives_and_one_archive_do
 
     module.warn_for_aggressive_archive_flags(
         ('borg', '--glob-archives', 'foo*'),
-        '{"archives": [{"name": "foo"]}',
+        ('this is an archive line',),
     )
 
 
@@ -284,20 +354,8 @@ def test_warn_for_aggressive_archive_flags_with_match_archives_and_one_archive_d
 
     module.warn_for_aggressive_archive_flags(
         ('borg', '--match-archives', 'foo*'),
-        '{"archives": [{"name": "foo"]}',
+        ('this is an archive line',),
     )
-
-
-def test_warn_for_aggressive_archive_flags_with_glob_archives_and_invalid_json_does_not_warn():
-    flexmock(module.logger).should_receive('warning').never()
-
-    module.warn_for_aggressive_archive_flags(('borg', '--glob-archives', 'foo*'), '{"archives": [}')
-
-
-def test_warn_for_aggressive_archive_flags_with_glob_archives_and_json_missing_archives_does_not_warn():
-    flexmock(module.logger).should_receive('warning').never()
-
-    module.warn_for_aggressive_archive_flags(('borg', '--glob-archives', 'foo*'), '{}')
 
 
 def test_omit_flag_removes_flag_from_arguments():

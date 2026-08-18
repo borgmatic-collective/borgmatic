@@ -23,13 +23,20 @@ MAX_BUFFER_LINES = 100
 
 class Loki_log_buffer:
     '''
-    A log buffer that allows to output the logs as loki requests in json. Allows
-    adding labels to the log stream and takes care of communication with loki.
+    A log buffer that allows to output the logs as Loki requests in json. Allows
+    adding labels to the log stream and takes care of communication with Loki.
     '''
 
-    def __init__(self, url, dry_run):
+    def __init__(self, url, dry_run, tls_cert_path=None, tls_key_path=None):
+        '''
+        Given a Loki URL, a dry run flag, and optional TLS certificate and key paths for mTLS authentication,
+        create an instance of Loki_log_buffer.
+        '''
+
         self.url = url
         self.dry_run = dry_run
+        self.tls_cert_path = tls_cert_path
+        self.tls_key_path = tls_key_path
         self.root = {'streams': [{'stream': {}, 'values': []}]}
 
     def add_value(self, value):
@@ -58,44 +65,58 @@ class Loki_log_buffer:
         if self.dry_run:
             # Just empty the buffer and skip
             self.root['streams'][0]['values'] = []
-            logger.info('Skipped uploading logs to loki due to dry run')
+            logger.info('Skipped uploading logs to Loki due to dry run')
             return
 
         if len(self) == 0:
             # Skip as there are not logs to send yet
             return
 
+        request_body = self.to_request()
         self.root['streams'][0]['values'] = []
 
         try:
             result = requests.post(
                 self.url,
-                data=self.to_request(),
+                data=request_body,
                 timeout=TIMEOUT_SECONDS,
                 headers={
                     'Content-Type': 'application/json',
                     'User-Agent': 'borgmatic',
                 },
+                cert=(self.tls_cert_path, self.tls_key_path) if self.tls_cert_path else None,
             )
             result.raise_for_status()
         except requests.RequestException:
-            logger.warning('Failed to upload logs to loki')
+            logger.warning('Failed to upload logs to Loki')
 
 
 class Loki_log_handler(logging.Handler):
     '''
-    A log handler that sends logs to loki.
+    A log handler that sends logs to Loki.
     '''
 
-    def __init__(self, url, dry_run):
+    def __init__(self, url, send_logs, log_level, dry_run, tls_cert_path=None, tls_key_path=None):
+        '''
+        Given a URL to send logs to, whether all borgmatic logs should be sent (or just explicitly
+        added messages from this hook), the log level to use (influencing which logs get sent), and
+        whether this is a dry run, create an instance of Loki_log_buffer.
+        '''
         super().__init__()
-        self.buffer = Loki_log_buffer(url, dry_run)
+
+        self.buffer = Loki_log_buffer(
+            url, dry_run, tls_cert_path=tls_cert_path, tls_key_path=tls_key_path
+        )
+        self.send_logs = send_logs
+        self.setLevel(log_level)
 
     def emit(self, record):
         '''
-        Add a log record from the logging module to the stream.
+        Add a general log record from the logging module to the stream—but only if send logs is
+        enabled.
         '''
-        self.raw(record.getMessage())
+        if self.send_logs:
+            self.raw(record.getMessage())
 
     def add_label(self, key, value):
         '''
@@ -109,22 +130,40 @@ class Loki_log_handler(logging.Handler):
         '''
         self.buffer.add_value(msg)
 
-        if len(self.buffer) > MAX_BUFFER_LINES:
+        # If log sending is enabled, flush the buffer (and send data to Loki) once we accumulate
+        # enough log data in the buffer. But if log sending is disabled, flush immediately so that,
+        # for instance, start backup notifications are sent when the backup starts instead of after
+        # it finishes!
+        if len(self.buffer) > MAX_BUFFER_LINES or not self.send_logs:
             self.buffer.flush()
 
     def flush(self):
         '''
-        Send the logs to loki and empty the buffer.
+        Send the logs to Loki and empty the buffer.
         '''
         self.buffer.flush()
 
 
 def initialize_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
     '''
-    Add a handler to the root logger to regularly send the logs to loki.
+    Add a handler to the root logger to regularly send the logs to Loki.
     '''
     url = hook_config.get('url')
-    loki = Loki_log_handler(url, dry_run)
+    tls = hook_config.get('tls', {})
+
+    if bool(tls.get('cert_path')) != bool(tls.get('key_path')):
+        raise ValueError(
+            'Invalid Loki TLS configuration: cert_path and key_path must both be set or both be unset'
+        )
+
+    loki = Loki_log_handler(
+        url,
+        hook_config.get('send_logs', False),
+        monitoring_log_level,
+        dry_run,
+        tls_cert_path=tls.get('cert_path'),
+        tls_key_path=tls.get('key_path'),
+    )
 
     for key, value in hook_config.get('labels').items():
         if value == '__hostname':
@@ -136,12 +175,14 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
         else:
             loki.add_label(key, value)
 
-    logging.getLogger().addHandler(loki)
+    global_logger = logging.getLogger()
+    global_logger.addHandler(loki)
+    global_logger.setLevel(min(handler.level for handler in global_logger.handlers))
 
 
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
     '''
-    Add an entry to the loki logger with the current state.
+    Add an entry to the Loki logger with the current state.
     '''
     for handler in tuple(logging.getLogger().handlers):
         if isinstance(handler, Loki_log_handler) and state in MONITOR_STATE_TO_LOKI:
@@ -152,9 +193,11 @@ def destroy_monitor(hook_config, config, monitoring_log_level, dry_run):
     '''
     Remove the monitor handler that was added to the root logger.
     '''
-    logger = logging.getLogger()
+    global_logger = logging.getLogger()
 
-    for handler in tuple(logger.handlers):
+    for handler in tuple(global_logger.handlers):
         if isinstance(handler, Loki_log_handler):
             handler.flush()
-            logger.removeHandler(handler)
+            global_logger.removeHandler(handler)
+
+    global_logger.setLevel(min(handler.level for handler in global_logger.handlers))

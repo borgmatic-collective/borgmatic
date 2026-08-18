@@ -1,11 +1,11 @@
 ---
-title: How to develop on borgmatic
+title: 🏗️ How to develop on borgmatic
 eleventyNavigation:
   key: 🏗️ Develop on borgmatic
   parent: How-to guides
   order: 15
 ---
-## Source code
+<span data-pagefind-weight="0.25">
 
 To get set up to develop on borgmatic, first [`install
 uv`](https://docs.astral.sh/uv/) to make managing your borgmatic environment
@@ -31,19 +31,34 @@ changes work:
 ```bash
 cd borgmatic
 uv tool update-shell
-uv tool install --editable .
+uv tool install --editable .[dev]
 ```
 
 Or to work on the [Apprise
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook),
+hook](https://torsion.org/borgmatic/reference/configuration/monitoring/apprise/),
 change that last line to:
 
 ```bash
-uv tool install --editable .[Apprise]
+uv tool install --editable .[dev,Apprise]
+```
+
+Or to work on the [browse
+action](https://torsion.org/borgmatic/reference/command-line/actions/browse/):
+
+```bash
+uv tool install --editable .[dev,browse]
 ```
 
 To get oriented with the borgmatic source code, have a look at the [source
-code reference](https://torsion.org/borgmatic/docs/reference/source-code/).
+code reference](https://torsion.org/borgmatic/reference/source-code/).
+
+
+### Source packages
+
+Each [borgmatic
+release](https://projects.torsion.org/borgmatic-collective/borgmatic/releases)
+also has source packages available. These include automated tests and serve as
+a good starting point for creating third-party borgmatic packages.
 
 
 ## Automated tests
@@ -105,6 +120,10 @@ them:
 tox -e spell
 ```
 
+See the [code style
+documentation](https://torsion.org/borgmatic/reference/source-code/#code-style)
+for more specifics about borgmatic's own code style.
+
 
 ### End-to-end tests
 
@@ -149,36 +168,6 @@ Then you'll be able to run end-to-end tests as per normal, and the test script
 will automatically use your non-root Podman socket instead of a Docker socket.
 
 
-## Code style
-
-When writing code for borgmatic, start with [PEP
-8](https://www.python.org/dev/peps/pep-0008/). But then, apply the following
-deviations from it:
-
- * For strings, prefer single quotes over double quotes.
- * Limit all lines to a maximum of 100 characters.
- * Use trailing commas within multiline values or argument lists.
- * For multiline constructs, put opening and closing delimiters on lines
-   separate from their contents.
- * Within multiline constructs, use standard four-space indentation. Don't align
-   indentation with an opening delimiter.
- * In general, spell out words in variable names instead of shortening them.
-   So, think `index` instead of `idx`. There are some notable exceptions to
-   this though (like `config`).
- * Favor blank lines around logical code groupings, `if` statements,
-   `return`s, etc. Readability is more important than packing code tightly.
- * Import fully qualified Python modules instead of importing individual
-   functions, classes, or constants. E.g., do `import os.path` instead of
-   `from os import path`. (Some exceptions to this are made in tests.)
- * Only use classes and OOP as a last resort, such as when integrating with
-   Python libraries that require it.
- * Prefer functional code where it makes sense, e.g. when constructing a
-   command (to subsequently execute imperatively).
-
-Since borgmatic uses Ruff for code lining and formatting, many other code style
-requirements are also enforced when running automated tests.
-
-
 ## Continuous integration
 
 Each commit to
@@ -208,8 +197,28 @@ This requires Docker (or Podman; see below) to be installed on your system.
 This script assumes you have permission to run `docker`. If you don't, then
 you may need to run with `sudo`.
 
+### How to choose a different port
+
+You can choose a different listening port in two ways:
+
+#### 1. Modify the `.env` file
+
+1.  Open `docs/.env`.
+2.  Change `PORT=8080` to your desired port number (e.g., `PORT=3000`).
+3.  Run the development script: `scripts/dev-docs`.
+
+#### 2. Use an environment variable
+
+Alternatively, you can override the port directly from your terminal without
+modifying any files:
+
+```bash
+PORT=3000 ./scripts/dev-docs
+```
+
 After you run the script, you can point your web browser at
-http://localhost:8080 to view the documentation with your changes.
+http://localhost:8080/borgmatic/ (or your chosen port) to view the documentation
+with your changes.
 
 To close the documentation server, ctrl-C the script. Note that it does not
 currently auto-reload, so you'll need to stop it and re-run it for any
@@ -223,5 +232,24 @@ borgmatic's developer build for documentation optionally supports using
 [Podman](https://podman.io/) instead of Docker.
 
 Setting up Podman is outside the scope of this documentation. But once you
-install and configure Podman, then `scripts/dev-docs` should automatically use
-Podman instead of Docker.
+install and configure Podman, then `scripts/dev-docs` automatically uses Podman
+instead of Docker and [Podman
+Compose](https://github.com/containers/podman-compose) (if present) instead of
+Docker Compose. However Podman works fine with either Podman Compose or Docker
+Compose.
+
+
+## Use of generative AI
+
+Please do not use AI agents to modify this codebase. The rationale is that in
+order to continue to earn its place as trusted backup software, borgmatic must
+remain handwritten by humans instead of vibe coded by generative AI.
+
+Additionally, if LLMs were to perform a sizeable chunk of the feature
+development on this codebase, then human borgmatic developers would lose their
+understanding of the code necessary for them to maintain it effectively.
+
+Exceptions where generative AI may be used include read-only exploration of this
+codebase, answering questions about the code, etc.
+
+</span>

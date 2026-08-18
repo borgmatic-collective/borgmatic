@@ -1,15 +1,16 @@
 import collections
+import functools
 import glob
-import itertools
-import json
 import logging
 import os
+import pathlib
 import shutil
 import subprocess
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.execute
+import borgmatic.hooks.data_source.config
 import borgmatic.hooks.data_source.snapshot
 
 logger = logging.getLogger(__name__)
@@ -22,105 +23,49 @@ def use_streaming(hook_config, config):  # pragma: no cover
     return False
 
 
-def get_contained_subvolume_paths(btrfs_command, subvolume_path):
+BTRFS_SUBVOLUME_INODE_NUMBER = 256
+
+
+@functools.cache
+def path_is_a_subvolume(path):
     '''
-    Given the path of a Btrfs subvolume, return it in a sequence along with the paths of its
-    contained subvolumes.
+    Given a path, return whether it is a Btrfs subvolume. Return False if the path doesn't exist.
 
-    If the btrfs command errors, log that error and return an empty sequence.
+    As a performance optimization, multiple calls to this function with the same path are cached.
     '''
-    try:
-        btrfs_output = borgmatic.execute.execute_command_and_capture_output(
-            (
-                *btrfs_command.split(' '),
-                'subvolume',
-                'list',
-                subvolume_path,
-            ),
-            close_fds=True,
-        )
-    except subprocess.CalledProcessError as error:
-        logger.debug(
-            f'Ignoring Btrfs subvolume {subvolume_path} because of error listing its subvolumes: {error}',
-        )
-
-        return ()
-
-    return (
-        subvolume_path,
-        *tuple(
-            os.path.join(subvolume_path, line.split(' ')[-1])
-            for line in btrfs_output.splitlines()
-            if line.strip()
-        ),
-    )
-
-
-FINDMNT_BTRFS_ROOT_SUBVOLUME_OPTION = 'subvolid=5'
-
-
-def get_all_subvolume_paths(btrfs_command, findmnt_command):
-    '''
-    Given btrfs and findmnt commands to run, get the sorted paths for all Btrfs subvolumes on the
-    system.
-    '''
-    findmnt_output = borgmatic.execute.execute_command_and_capture_output(
-        (
-            *findmnt_command.split(' '),
-            '-t',  # Filesystem type.
-            'btrfs',
-            '--json',
-            '--list',  # Request a flat list instead of a nested subvolume hierarchy.
-        ),
-        close_fds=True,
-    )
+    if path == os.environ.get('BTRFS_TEST_SUBVOLUME_PATH'):  # pragma: no cover
+        return True
 
     try:
-        return tuple(
-            sorted(
-                itertools.chain.from_iterable(
-                    # If findmnt gave us a Btrfs root filesystem, list the subvolumes within it.
-                    # This is necessary because findmnt only returns a subvolume's mount point
-                    # rather than its original subvolume path (which can differ). For instance,
-                    # a subvolume might exist at /mnt/subvolume but be mounted at /home/myuser.
-                    # findmnt is still useful though because it's a global way to discover all
-                    # Btrfs subvolumes—even if we have to do some additional legwork ourselves.
-                    (
-                        get_contained_subvolume_paths(btrfs_command, filesystem['target'])
-                        if FINDMNT_BTRFS_ROOT_SUBVOLUME_OPTION in filesystem['options'].split(',')
-                        else (filesystem['target'],)
-                    )
-                    for filesystem in json.loads(findmnt_output)['filesystems']
-                ),
-            ),
-        )
-    except json.JSONDecodeError as error:
-        raise ValueError(f'Invalid {findmnt_command} JSON output: {error}')
-    except KeyError as error:
-        raise ValueError(f'Invalid {findmnt_command} output: Missing key "{error}"')
+        return os.stat(path).st_ino == BTRFS_SUBVOLUME_INODE_NUMBER
+    except FileNotFoundError:
+        return False
 
 
-Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_patterns'), defaults=((),))
-
-
+@functools.cache
 def get_subvolume_property(btrfs_command, subvolume_path, property_name):
     '''
     Given a btrfs command, a subvolume path, and a property name to lookup, return the value of the
     corresponding property.
 
     Raise subprocess.CalledProcessError if the btrfs command errors.
+
+    As a performance optimization, multiple calls to this function with the same arguments are
+    cached.
     '''
-    output = borgmatic.execute.execute_command_and_capture_output(
-        (
-            *btrfs_command.split(' '),
-            'property',
-            'get',
-            '-t',  # Type.
-            'subvol',
-            subvolume_path,
-            property_name,
-        ),
-        close_fds=True,
+    output = '\n'.join(
+        borgmatic.execute.execute_command_and_capture_output(
+            (
+                *btrfs_command.split(' '),
+                'property',
+                'get',
+                '-t',  # Type.
+                'subvol',
+                subvolume_path,
+                property_name,
+            ),
+            close_fds=True,
+        )
     )
 
     try:
@@ -134,37 +79,71 @@ def get_subvolume_property(btrfs_command, subvolume_path, property_name):
     }.get(value, value)
 
 
-def omit_read_only_subvolume_paths(btrfs_command, subvolume_paths):
+def get_containing_subvolume_path(btrfs_command, path):
     '''
-    Given a Btrfs command to run and a sequence of Btrfs subvolume paths, filter them down to just
-    those that are read-write. The idea is that Btrfs can't actually snapshot a read-only subvolume,
-    so we should just ignore them.
-    '''
-    retained_subvolume_paths = []
+    Given a btrfs command and a path, return the subvolume path that contains the given path (or is
+    the same as the path).
 
-    for subvolume_path in subvolume_paths:
+    If there is no such subvolume path or the containing subvolume is read-only, return None.
+    '''
+    # Probe the given pattern's path and all of its parents, grandparents, etc. to try to find a
+    # Btrfs subvolume.
+    for candidate_path in (
+        path,
+        *tuple(str(ancestor) for ancestor in pathlib.PurePath(path).parents),
+    ):
+        if not path_is_a_subvolume(candidate_path):
+            continue
+
         try:
-            if get_subvolume_property(btrfs_command, subvolume_path, 'ro'):
-                logger.debug(f'Ignoring Btrfs subvolume {subvolume_path} because it is read-only')
-            else:
-                retained_subvolume_paths.append(subvolume_path)
-        except subprocess.CalledProcessError as error:  # noqa: PERF203
+            if get_subvolume_property(btrfs_command, candidate_path, 'ro'):
+                logger.debug(f'Ignoring Btrfs subvolume {candidate_path} because it is read-only')
+
+                return None
+
+            logger.debug(f'Path {candidate_path} is a Btrfs subvolume')
+
+            return candidate_path
+        except subprocess.CalledProcessError as error:
             logger.debug(
-                f'Error determining read-only status of Btrfs subvolume {subvolume_path}: {error}',
+                f'Error determining read-only status of Btrfs subvolume {candidate_path}: {error}',
             )
 
-    return tuple(retained_subvolume_paths)
+            return None
+
+    return None
 
 
-def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
+def get_all_subvolume_paths(btrfs_command, patterns):
+    '''
+    Given a btrfs command and a sequence of patterns, get the sorted paths for all Btrfs subvolumes
+    containing those patterns.
+    '''
+    return tuple(
+        sorted(
+            {
+                subvolume_path
+                for pattern in patterns
+                if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
+                if pattern.source == borgmatic.borg.pattern.Pattern_source.CONFIG
+                for subvolume_path in (get_containing_subvolume_path(btrfs_command, pattern.path),)
+                if subvolume_path
+            }
+        ),
+    )
+
+
+Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_patterns'), defaults=((),))
+
+
+def get_subvolumes(btrfs_command, patterns):
     '''
     Given a Btrfs command to run and a sequence of configured patterns, find the intersection
-    between the current Btrfs filesystem and subvolume paths and the paths of any patterns.  The
-    idea is that these pattern paths represent the requested subvolumes to snapshot.
+    between the current Btrfs filesystem/subvolume paths and the paths of any patterns. The idea is
+    that these pattern paths represent the requested subvolumes to snapshot.
 
     Only include subvolumes that contain at least one root pattern sourced from borgmatic
-    configuration (as opposed to generated elsewhere in borgmatic). But if patterns is None, then
-    return all subvolumes instead, sorted by path.
+    configuration (as opposed to generated elsewhere in borgmatic).
 
     Return the result as a sequence of matching Subvolume instances.
     '''
@@ -172,15 +151,10 @@ def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
     subvolumes = []
 
     # For each subvolume path, match it against the given patterns to find the subvolumes to
-    # backup. Sort the subvolumes from longest to shortest mount points, so longer mount points get
+    # backup. Sort the subvolumes from longest to shortest mount points, so longer subvolumes get
     # a whack at the candidate pattern piñata before their parents do. (Patterns are consumed during
     # this process, so no two subvolumes end up with the same contained patterns.)
-    for subvolume_path in reversed(
-        omit_read_only_subvolume_paths(
-            btrfs_command,
-            get_all_subvolume_paths(btrfs_command, findmnt_command),
-        ),
-    ):
+    for subvolume_path in reversed(get_all_subvolume_paths(btrfs_command, patterns)):
         subvolumes.extend(
             Subvolume(subvolume_path, contained_patterns)
             for contained_patterns in (
@@ -189,8 +163,7 @@ def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
                     candidate_patterns,
                 ),
             )
-            if patterns is None
-            or any(
+            if any(
                 pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
                 and pattern.source == borgmatic.borg.pattern.Pattern_source.CONFIG
                 for pattern in contained_patterns
@@ -200,7 +173,7 @@ def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
     return tuple(sorted(subvolumes, key=lambda subvolume: subvolume.path))
 
 
-BORGMATIC_SNAPSHOT_PREFIX = '.borgmatic-snapshot-'
+BORGMATIC_SNAPSHOT_PREFIX = '.borgmatic-snapshot'
 
 
 def make_snapshot_path(subvolume_path):
@@ -209,7 +182,7 @@ def make_snapshot_path(subvolume_path):
     '''
     return os.path.join(
         subvolume_path,
-        f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}',
+        f'{BORGMATIC_SNAPSHOT_PREFIX}',
         # Included so that the snapshot ends up in the Borg archive at the "original" subvolume path.
     ) + subvolume_path.rstrip(os.path.sep)
 
@@ -222,16 +195,16 @@ def make_snapshot_exclude_pattern(subvolume_path):  # pragma: no cover
     directory within the snapshot itself. For instance, if you have a Btrfs subvolume at /mnt and
     make a snapshot of it at:
 
-        /mnt/.borgmatic-snapshot-1234/mnt
+        /mnt/.borgmatic-snapshot/mnt
 
     ... then the snapshot itself will have an empty directory at:
 
-        /mnt/.borgmatic-snapshot-1234/mnt/.borgmatic-snapshot-1234
+        /mnt/.borgmatic-snapshot/mnt/.borgmatic-snapshot
 
     So to prevent that from ending up in the Borg archive, this function produces an exclude pattern
     to exclude that path.
     '''
-    snapshot_directory = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
+    snapshot_directory = f'{BORGMATIC_SNAPSHOT_PREFIX}'
 
     return borgmatic.borg.pattern.Pattern(
         os.path.join(
@@ -264,8 +237,11 @@ def make_borg_snapshot_pattern(subvolume_path, pattern):
 
     rewritten_path = initial_caret + os.path.join(
         subvolume_path,
-        f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}',
-        '.',  # Borg 1.4+ "slashdot" hack.
+        f'{BORGMATIC_SNAPSHOT_PREFIX}',
+        # Use the Borg 1.4+ "slashdot" hack to prevent the snapshot path prefix from getting
+        # included in the archive—but only if there's not already a slashdot hack present in the
+        # pattern.
+        ('' if f'{os.path.sep}.{os.path.sep}' in pattern.path else '.'),
         # Included so that the source directory ends up in the Borg archive at its "original" path.
         pattern.path.lstrip('^').lstrip(os.path.sep),
     )
@@ -291,7 +267,6 @@ def snapshot_subvolume(btrfs_command, subvolume_path, snapshot_path):  # pragma:
             *btrfs_command.split(' '),
             'subvolume',
             'snapshot',
-            '-r',  # Read-only.
             subvolume_path,
             snapshot_path,
         ),
@@ -322,11 +297,15 @@ def dump_data_sources(
     dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
     logger.info(f'Snapshotting Btrfs subvolumes{dry_run_label}')
 
+    if 'findmnt_command' in hook_config:
+        logger.warning(
+            'The Btrfs "findmnt_command" option is deprecated and will be removed from a future release; findmnt is no longer used',
+        )
+
     # Based on the configured patterns, determine Btrfs subvolumes to backup. Only consider those
     # patterns that came from actual user configuration (as opposed to, say, other hooks).
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')
-    findmnt_command = hook_config.get('findmnt_command', 'findmnt')
-    subvolumes = get_subvolumes(btrfs_command, findmnt_command, patterns)
+    subvolumes = get_subvolumes(btrfs_command, patterns)
 
     if not subvolumes:
         logger.warning(f'No Btrfs subvolumes found to snapshot{dry_run_label}')
@@ -344,14 +323,11 @@ def dump_data_sources(
 
         for pattern in subvolume.contained_patterns:
             snapshot_pattern = make_borg_snapshot_pattern(subvolume.path, pattern)
+            borgmatic.hooks.data_source.config.replace_pattern(patterns, pattern, snapshot_pattern)
 
-            # Attempt to update the pattern in place, since pattern order matters to Borg.
-            try:
-                patterns[patterns.index(pattern)] = snapshot_pattern
-            except ValueError:
-                patterns.append(snapshot_pattern)
-
-        patterns.append(make_snapshot_exclude_pattern(subvolume.path))
+        borgmatic.hooks.data_source.config.inject_pattern(
+            patterns, make_snapshot_exclude_pattern(subvolume.path)
+        )
 
     return []
 
@@ -372,11 +348,12 @@ def delete_snapshot(btrfs_command, snapshot_path):  # pragma: no cover
     )
 
 
-def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):
+def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, patterns, dry_run):
     '''
-    Given a Btrfs configuration dict, a configuration dict, the borgmatic runtime directory, and
-    whether this is a dry run, delete any Btrfs snapshots created by borgmatic. If this is a dry run
-    or Btrfs isn't configured in borgmatic's configuration, then don't actually remove anything.
+    Given a Btrfs configuration dict, a configuration dict, the borgmatic runtime directory, the
+    configured patterns, and whether this is a dry run, delete any Btrfs snapshots created by
+    borgmatic. If this is a dry run or Btrfs isn't configured in borgmatic's configuration, then
+    don't actually remove anything.
     '''
     if hook_config is None:
         return
@@ -384,10 +361,9 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')
-    findmnt_command = hook_config.get('findmnt_command', 'findmnt')
 
     try:
-        all_subvolumes = get_subvolumes(btrfs_command, findmnt_command)
+        all_subvolumes = get_subvolumes(btrfs_command, patterns)
     except FileNotFoundError as error:
         logger.debug(f'Could not find "{error.filename}" command')
         return
@@ -438,6 +414,10 @@ def make_data_source_dump_patterns(
     config,
     borgmatic_runtime_directory,
     name=None,
+    hostname=None,
+    port=None,
+    container=None,
+    label=None,
 ):  # pragma: no cover
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".

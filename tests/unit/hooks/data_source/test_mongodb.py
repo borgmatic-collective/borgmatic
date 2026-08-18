@@ -31,13 +31,33 @@ def test_dump_data_sources_runs_mongodump_for_each_database():
         'databases/localhost/foo',
     ).and_return('databases/localhost/bar')
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        '/path/to/working/dir'
+    )
 
     for name, process in zip(('foo', 'bar'), processes):
         flexmock(module).should_receive('execute_command').with_args(
             ('mongodump', '--db', name, '--archive', '>', f'databases/localhost/{name}'),
             shell=True,
             run_to_completion=False,
+            working_directory='/path/to/working/dir',
         ).and_return(process).once()
+
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'bar'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mongodb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -60,6 +80,8 @@ def test_dump_data_sources_with_dry_run_skips_mongodump():
     ).and_return('databases/localhost/bar')
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').never()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
 
     assert (
         module.dump_data_sources(
@@ -75,13 +97,14 @@ def test_dump_data_sources_with_dry_run_skips_mongodump():
 
 
 def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
-    databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
+    databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 27018}]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
         'databases/database.example.org/foo',
     )
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -89,7 +112,7 @@ def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
             '--host',
             'database.example.org',
             '--port',
-            '5433',
+            '27018',
             '--db',
             'foo',
             '--archive',
@@ -98,7 +121,24 @@ def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
         ),
         shell=True,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump(
+                'mongodb_databases', 'foo', 'database.example.org', 27018
+            ),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mongodb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -131,6 +171,7 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
         '/dev/fd/99',
     )
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -149,7 +190,22 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
         ),
         shell=True,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mongodb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -169,11 +225,27 @@ def test_dump_data_sources_runs_mongodump_with_directory_format():
     )
     flexmock(module.dump).should_receive('create_parent_directory_for_dump')
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         ('mongodump', '--out', 'databases/localhost/foo', '--db', 'foo'),
         shell=True,
+        working_directory=None,
     ).and_return(flexmock()).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mongodb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert (
         module.dump_data_sources(
@@ -196,6 +268,7 @@ def test_dump_data_sources_runs_mongodump_with_options():
         'databases/localhost/foo',
     )
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -209,7 +282,22 @@ def test_dump_data_sources_runs_mongodump_with_options():
         ),
         shell=True,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mongodb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -229,12 +317,28 @@ def test_dump_data_sources_runs_mongodumpall_for_all_databases():
         'databases/localhost/all',
     )
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         ('mongodump', '--archive', '>', 'databases/localhost/all'),
         shell=True,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'all'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mongodb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -274,6 +378,86 @@ def test_build_dump_command_with_username_injection_attack_gets_escaped():
     assert "'bob; naughty-command'" in command
 
 
+def test_make_data_source_dump_patterns_with_no_port_adds_pattern_with_default_port():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('.borgmatic')
+    flexmock(module).should_receive('make_dump_path').replace_with(lambda path: path)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').replace_with(
+        lambda dump_path, name, hostname, port, container, label: '/'.join(
+            (dump_path, f'{hostname}:{port}' if port else hostname, name)
+        )
+    )
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+
+    assert module.make_data_source_dump_patterns(
+        databases=flexmock(),
+        config=flexmock(),
+        borgmatic_runtime_directory='run',
+        name='db',
+        hostname='host',
+        port=None,
+    ) == (
+        'borgmatic/host/db',
+        'run/host/db',
+        '.borgmatic/host/db',
+        'borgmatic/host:9999/db',
+    )
+
+
+def test_make_data_source_dump_patterns_with_default_port_adds_pattern_with_no_port():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('.borgmatic')
+    flexmock(module).should_receive('make_dump_path').replace_with(lambda path: path)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').replace_with(
+        lambda dump_path, name, hostname, port, container, label: '/'.join(
+            (dump_path, f'{hostname}:{port}' if port else hostname, name)
+        )
+    )
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+
+    assert module.make_data_source_dump_patterns(
+        databases=flexmock(),
+        config=flexmock(),
+        borgmatic_runtime_directory='run',
+        name='db',
+        hostname='host',
+        port=9999,
+    ) == (
+        'borgmatic/host:9999/db',
+        'run/host:9999/db',
+        '.borgmatic/host:9999/db',
+        'borgmatic/host/db',
+    )
+
+
+def test_make_data_source_dump_patterns_with_non_default_port_adds_no_extra_patterns():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('.borgmatic')
+    flexmock(module).should_receive('make_dump_path').replace_with(lambda path: path)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').replace_with(
+        lambda dump_path, name, hostname, port, container, label: '/'.join(
+            (dump_path, f'{hostname}:{port}' if port else hostname, name)
+        )
+    )
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+
+    assert module.make_data_source_dump_patterns(
+        databases=flexmock(),
+        config=flexmock(),
+        borgmatic_runtime_directory='run',
+        name='db',
+        hostname='host',
+        port=1234,
+    ) == (
+        'borgmatic/host:1234/db',
+        'run/host:1234/db',
+        '.borgmatic/host:1234/db',
+    )
+
+
 def test_restore_data_source_dump_runs_mongorestore():
     hook_config = [{'name': 'foo', 'schemas': None}, {'name': 'bar'}]
     extract_process = flexmock(stdout=flexmock())
@@ -283,12 +467,15 @@ def test_restore_data_source_dump_runs_mongorestore():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ['mongorestore', '--archive', '--drop'],
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -308,7 +495,7 @@ def test_restore_data_source_dump_runs_mongorestore():
 
 def test_restore_data_source_dump_runs_mongorestore_with_hostname_and_port():
     hook_config = [
-        {'name': 'foo', 'hostname': 'database.example.org', 'port': 5433, 'schemas': None},
+        {'name': 'foo', 'hostname': 'database.example.org', 'port': 27018, 'schemas': None},
     ]
     extract_process = flexmock(stdout=flexmock())
 
@@ -317,6 +504,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_hostname_and_port():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -325,12 +513,14 @@ def test_restore_data_source_dump_runs_mongorestore_with_hostname_and_port():
             '--host',
             'database.example.org',
             '--port',
-            '5433',
+            '27018',
         ],
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -368,6 +558,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_username_and_password()
     flexmock(module).should_receive('make_password_config_file').with_args('trustsome1').and_return(
         '/dev/fd/99',
     )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -383,7 +574,9 @@ def test_restore_data_source_dump_runs_mongorestore_with_username_and_password()
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -425,6 +618,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     flexmock(module).should_receive('make_password_config_file').with_args(
         'clipassword',
     ).and_return('/dev/fd/99')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -444,7 +638,9 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -486,6 +682,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     flexmock(module).should_receive('make_password_config_file').with_args(
         'restorepass',
     ).and_return('/dev/fd/99')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -505,7 +702,9 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -532,12 +731,15 @@ def test_restore_data_source_dump_runs_mongorestore_with_options():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ['mongorestore', '--archive', '--drop', '--harder'],
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -564,6 +766,7 @@ def test_restore_databases_dump_runs_mongorestore_with_schemas():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -577,7 +780,9 @@ def test_restore_databases_dump_runs_mongorestore_with_schemas():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -604,12 +809,15 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ['mongorestore', '--archive'],
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -661,12 +869,15 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ['mongorestore', '--dir', '/dump/path', '--drop'],
         processes=[],
         output_log_level=logging.DEBUG,
         input_file=None,
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,
@@ -695,6 +906,7 @@ def test_dump_data_sources_uses_custom_mongodump_command():
         'databases/localhost/foo',
     )
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -707,7 +919,15 @@ def test_dump_data_sources_uses_custom_mongodump_command():
         ),
         shell=True,
         run_to_completion=False,
+        working_directory=None,
     ).and_return(process).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mongodb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mongodb_databases', 'foo'),
+        ],
+    ).once()
 
     assert module.dump_data_sources(
         databases,
@@ -758,6 +978,7 @@ def test_restore_data_source_dump_uses_custom_mongorestore_command():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'custom_mongorestore',  # Should use custom command instead of default
@@ -768,7 +989,9 @@ def test_restore_data_source_dump_uses_custom_mongorestore_command():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-    ).once()
+        working_directory=None,
+        borg_local_path='borg',
+    ).and_yield().once()
 
     module.restore_data_source_dump(
         hook_config,

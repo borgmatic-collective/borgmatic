@@ -1,16 +1,14 @@
 ---
-title: Source code reference
+title: 🐍 Source code
 eleventyNavigation:
-  key: 🐍 Source code reference
+  key: 🐍 Source code
   parent: Reference guides
   order: 3
 ---
-## getting oriented
-
-If case you're interested in [developing on
-borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/),
-here's an abridged primer on how its Python source code is organized to help
-you get started. Starting at the top level, we have:
+If you're interested in [developing on
+borgmatic](https://torsion.org/borgmatic/how-to/develop-on-borgmatic/), here's
+an abridged primer on how its Python source code is organized to help you get
+started. Starting at the top level, we have:
 
  * [borgmatic](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic): The main borgmatic source module. Most of the code is here. Within that:
    * [actions](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/actions): borgmatic-specific logic for running each action (create, list, check, etc.).
@@ -26,4 +24,36 @@ you get started. Starting at the top level, we have:
  * [scripts](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/scripts): Dev-facing scripts for things like building documentation and running end-to-end tests.
  * [tests](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/tests): Automated tests organized by: end-to-end, integration, and unit.
 
-So, broadly speaking, the control flow goes: `commands` → `config` followed by `commands` → `actions` → `borg` and `hooks`.
+So, broadly speaking, the control flow goes: `commands` → `config` followed by
+`commands` → `actions` → `borg` and `hooks`.
+
+
+## Code style
+
+When writing code for borgmatic, start with [PEP
+8](https://www.python.org/dev/peps/pep-0008/). But then, apply the following
+deviations from it:
+
+ * For strings, prefer single quotes over double quotes.
+ * Limit all lines to a maximum of 100 characters.
+ * Use trailing commas within multiline values or argument lists.
+ * For multiline constructs, put opening and closing delimiters on lines
+   separate from their contents.
+ * Within multiline constructs, use standard four-space indentation. Don't align
+   indentation with an opening delimiter.
+ * In general, spell out words in variable names instead of shortening them.
+   So, think `index` instead of `idx`. There are some notable exceptions to
+   this though (like `config`).
+ * Favor blank lines around logical code groupings, `if` statements,
+   `return`s, etc. Readability is more important than packing code tightly.
+ * Import fully qualified Python modules instead of importing individual
+   functions, classes, or constants. E.g., do `import os.path` instead of
+   `from os import path`. (Some exceptions to this are made in tests.)
+ * Only use classes and OOP as a last resort, such as when integrating with
+   Python libraries that require it.
+ * Prefer functional code where it makes sense, e.g. when constructing a
+   command (to subsequently execute imperatively).
+
+Since borgmatic uses [Ruff](https://docs.astral.sh/ruff/) for code lining and
+formatting, many other code style requirements are also enforced when running
+automated tests.
