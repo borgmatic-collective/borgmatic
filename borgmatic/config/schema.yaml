@@ -1519,17 +1519,18 @@ properties:
         items:
             type: object
             required:
-                - password
                 - name
                 - format
             additionalProperties: false
             properties:
                 name:
                     type: string
-                    enum: ['all']
                     description: |
-                        Database name (required to be 'all').
-                    example: all
+                        Bucket name to dump (required if using this hook). Or
+                        "all" to dump all buckets on the host. Ignored for
+                        dumping purposes if "bucket_id" is given, but still
+                        used to identify the dump in the backup.
+                    example: mybucket
                 format:
                     type: string
                     enum: ['directory']
@@ -1543,10 +1544,12 @@ properties:
                 password:
                     type: string
                     description: |
-                        InfluxDB token to authenticate request. Field is named
-                        `password` and not `token` (which would be a better 
-                        suit for InfluxDB terminology) in order to support 
-                        borgmatic native handling of passwords. Required.
+                        InfluxDB API token used to authenticate requests. This
+                        option is named "password" rather than "token" (which
+                        would better suit InfluxDB terminology) so that
+                        borgmatic's native password handling applies. Omit it
+                        when the token comes from the influx CLI configuration
+                        selected by "active_configuration".
                 tls:
                     type: boolean
                     description: |
@@ -1576,12 +1579,8 @@ properties:
                 bucket_id:
                     type: string
                     description: |
-                        The ID of the bucket to backup. 
-                bucket_name:
-                    type: string
-                    description: |
-                        The name of the bucket to backup. Field will be ignored
-                        if `bucket_id` is also provided.
+                        The ID of the bucket to backup. Takes precedence over
+                        the bucket named by the "name" option.
                 configurations_path:
                     type: string
                     description: |

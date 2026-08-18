@@ -155,8 +155,8 @@ def build_dump_command(database, dump_filename):
             else ()
         )
         + (
-            ('--bucket', shlex.quote(str(database['bucket_name'])))
-            if 'bucket_name' in database and 'bucket_id' not in database
+            ('--bucket', shlex.quote(str(database['name'])))
+            if database.get('name') not in {None, 'all'} and 'bucket_id' not in database
             else ()
         )
         + (dump_filename,)
@@ -272,8 +272,8 @@ def restore_data_source_dump(
     dump_filename = dump.make_data_source_dump_filename(
         make_dump_path(borgmatic_runtime_directory),
         data_source.get('name'),
-        data_source.get('hostname'),
-        data_source.get('port'),
+        hostname=data_source.get('hostname'),
+        port=data_source.get('port'),
     )
 
     restore_command = build_restore_command(
@@ -316,7 +316,7 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     organization_id = database.get('organization_id')
     organization_name = database.get('organization_name')
     bucket_id = database.get('bucket_id')
-    bucket_name = database.get('bucket_name')
+    bucket_name = database.get('name') if database.get('name') != 'all' else None
     restore_bucket = database.get('restore_bucket')
     restore_organization = database.get('restore_organization')
     configurations_path = database.get('configurations_path')
