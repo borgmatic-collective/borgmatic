@@ -90,7 +90,7 @@ def dump_data_sources(
         )
 
         dump.create_parent_directory_for_dump(dump_filename)
-        execute_command(command, shell=True)  # noqa: S604
+        execute_command(command)
 
     if not dry_run:
         dump.write_data_source_dumps_metadata(
@@ -123,51 +123,37 @@ def build_dump_command(database, config, dump_filename):
     token = borgmatic.hooks.credential.parse.resolve_credential(database.get('password'), config)
     skip_verify = database.get('skip_verify')
     http_debug = database.get('http_debug')
-    influx_command = tuple(
-        shlex.quote(part) for part in shlex.split(database.get('influx_command') or 'influx')
-    )
+    influx_command = tuple(shlex.split(database.get('influx_command') or 'influx'))
     return (
         influx_command
         + ('backup',)
         + (('--skip-verify',) if skip_verify else ())
         + (('--http-debug',) if http_debug else ())
-        + (('--host', shlex.quote(str(host))) if host else ())
+        + (('--host', str(host)) if host else ())
         + (
-            ('--configs-path', shlex.quote(str(database['configurations_path'])))
+            ('--configs-path', str(database['configurations_path']))
             if 'configurations_path' in database
             else ()
         )
         + (
-            ('--active-config', shlex.quote(str(database['active_configuration'])))
+            ('--active-config', str(database['active_configuration']))
             if 'active_configuration' in database
             else ()
         )
-        + (('--token', shlex.quote(str(token))) if token else ())
+        + (('--token', str(token)) if token else ())
+        + (('--org-id', str(database['organization_id'])) if 'organization_id' in database else ())
         + (
-            ('--org-id', shlex.quote(str(database['organization_id'])))
-            if 'organization_id' in database
-            else ()
-        )
-        + (
-            ('--org', shlex.quote(str(database['organization_name'])))
+            ('--org', str(database['organization_name']))
             if 'organization_name' in database and 'organization_id' not in database
             else ()
         )
+        + (('--bucket-id', str(database['bucket_id'])) if 'bucket_id' in database else ())
         + (
-            ('--bucket-id', shlex.quote(str(database['bucket_id'])))
-            if 'bucket_id' in database
-            else ()
-        )
-        + (
-            ('--bucket', shlex.quote(str(database['name'])))
+            ('--bucket', str(database['name']))
             if database.get('name') not in {None, 'all'} and 'bucket_id' not in database
             else ()
         )
-        + (
-            ('--compression', shlex.quote(database['compression']))
-            if 'compression' in database
-            else ()
-        )
+        + (('--compression', database['compression']) if 'compression' in database else ())
         + (dump_filename,)
     )
 
@@ -335,9 +321,7 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
     skip_verify = database.get('skip_verify')
     http_debug = database.get('http_debug')
     full = database.get('full_replace')
-    influx_command = tuple(
-        shlex.quote(part) for part in shlex.split(database.get('influx_command') or 'influx')
-    )
+    influx_command = tuple(shlex.split(database.get('influx_command') or 'influx'))
 
     return (
         influx_command
