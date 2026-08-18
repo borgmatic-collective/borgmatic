@@ -1554,7 +1554,8 @@ properties:
                         would better suit InfluxDB terminology) so that
                         borgmatic's native password handling applies. Omit it
                         when the token comes from the influx CLI configuration
-                        selected by "active_configuration".
+                        selected by "active_configuration". Supports the
+                        "{credential ...}" syntax.
                 tls:
                     type: boolean
                     description: |

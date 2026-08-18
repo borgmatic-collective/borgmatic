@@ -4,6 +4,7 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.hooks.credential.parse
 import borgmatic.hooks.data_source.config
 from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks.data_source import config as database_config
@@ -80,7 +81,7 @@ def dump_data_sources(
             f'Dumping InfluxDB database to {dump_filename}{dry_run_label}',
         )
 
-        command = build_dump_command(database, dump_filename)
+        command = build_dump_command(database, config, dump_filename)
         if dry_run:
             continue
 
@@ -106,7 +107,7 @@ def dump_data_sources(
     return processes
 
 
-def build_dump_command(database, dump_filename):
+def build_dump_command(database, config, dump_filename):
     '''
     Return the backup command.
     '''
@@ -119,7 +120,7 @@ def build_dump_command(database, dump_filename):
         # Format as protocol://hostname:port
         host = f'{protocol}{host}:{port}'
 
-    token = database.get('password')
+    token = borgmatic.hooks.credential.parse.resolve_credential(database.get('password'), config)
     skip_verify = database.get('skip_verify')
     http_debug = database.get('http_debug')
     influx_command = tuple(
@@ -276,7 +277,7 @@ def restore_data_source_dump(
     )
 
     restore_command = build_restore_command(
-        extract_process, data_source, dump_filename, connection_params
+        extract_process, data_source, config, dump_filename, connection_params
     )
 
     logger.debug(f"Restoring InfluxDB database {data_source.get('name')}{dry_run_label}")
@@ -297,7 +298,7 @@ def restore_data_source_dump(
     )
 
 
-def build_restore_command(extract_process, database, dump_filename, connection_params):
+def build_restore_command(extract_process, database, config, dump_filename, connection_params):
     '''
     Return the restore command.
     '''
@@ -312,8 +313,11 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
         database_config.resolve_database_option('port', database, connection_params, restore=True)
         or get_default_port(None, None)  # Use default port if not specified
     )
-    token = database_config.resolve_database_option(
-        'password', database, connection_params, restore=True
+    token = borgmatic.hooks.credential.parse.resolve_credential(
+        database_config.resolve_database_option(
+            'password', database, connection_params, restore=True
+        ),
+        config,
     )
 
     # Add protocol prefix based on the tls setting, formatted as protocol://hostname:port.
