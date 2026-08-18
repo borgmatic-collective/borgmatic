@@ -3,19 +3,6 @@ from flexmock import flexmock
 from borgmatic.hooks.data_source import influxdb as module
 
 
-def test_make_dump_path_creates_correct_path():
-    assert module.make_dump_path('/tmp') == '/tmp/influxdb_databases'
-
-
-def test_get_default_port_returns_correct_port():
-    assert module.get_default_port(None, None) == 8086
-
-
-def test_use_streaming_always_returns_false():
-    assert not module.use_streaming(databases=[], config={})
-    assert not module.use_streaming(databases=[{'name': 'bucket1'}], config={})
-
-
 def test_build_dump_command_creates_correct_command():
     # Example: influx backup --host https://myexample:8086 --skip-verify --token <REDACTED> \
     #  --org-id ccf6258c1e195e27 --bucket TestBucket .
@@ -82,7 +69,7 @@ def test_build_dump_command_with_http_debug_flag():
     )
 
 
-def test_build_dump_command_with_http_disabled():
+def test_build_dump_command_with_tls_disabled():
     database = {
         'hostname': 'myexample.com',
         'port': 8086,
@@ -106,6 +93,56 @@ def test_build_dump_command_with_http_disabled():
         'testtoken',
         '--org-id',
         'ccf6258c1e195e27',
+        '/tmp/dumpfile',
+    )
+
+
+def test_build_dump_command_with_no_port_uses_default_port():
+    database = {
+        'hostname': 'myexample.com',
+        'password': 'testtoken',
+    }
+    dump_filename = '/tmp/dumpfile'
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+
+    command = module.build_dump_command(database, {}, dump_filename)
+
+    assert command == (
+        'influx',
+        'backup',
+        '--host',
+        'https://myexample.com:9999',
+        '--token',
+        'testtoken',
+        '/tmp/dumpfile',
+    )
+
+
+def test_build_dump_command_with_skip_verify_flag():
+    database = {
+        'hostname': 'myexample.com',
+        'port': 8086,
+        'password': 'testtoken',
+        'skip_verify': True,
+    }
+    dump_filename = '/tmp/dumpfile'
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+
+    command = module.build_dump_command(database, {}, dump_filename)
+
+    assert command == (
+        'influx',
+        'backup',
+        '--skip-verify',
+        '--host',
+        'https://myexample.com:8086',
+        '--token',
+        'testtoken',
         '/tmp/dumpfile',
     )
 
@@ -353,8 +390,7 @@ def test_build_dump_command_with_influx_command_containing_spaces():
     )
 
 
-def test_dump_data_sources_creates_named_pipe_and_executes_command():
-    # Using proper InfluxDB parameters with default hostname (localhost)
+def test_dump_data_sources_dumps_each_database():
     databases = [
         {
             'name': 'influx-backup',
@@ -363,40 +399,37 @@ def test_dump_data_sources_creates_named_pipe_and_executes_command():
             'password': 'mytoken',
             'organization_id': 'org123',
             'label': 'mylabel',
-        }
+        },
+        {
+            'name': 'other-backup',
+            'hostname': 'influx.example.org',
+            'port': 8087,
+        },
     ]
+    commands = (flexmock(), flexmock())
+    patterns = []
     flexmock(module.dump).should_receive('make_data_source_dump_filename').with_args(
         '/tmp/influxdb_databases',
         'influx-backup',
         hostname=None,
         port=8086,
         label='mylabel',
-    ).and_return('/tmp/dumpfile')
-    flexmock(module.dump).should_receive('create_parent_directory_for_dump').once()
-    flexmock(module).should_receive('build_dump_command').and_return(
-        (
-            'influx',
-            'backup',
-            '--host',
-            'https://localhost:8086',
-            '--token',
-            'mytoken',
-            '--org-id',
-            'org123',
-        )
-    )
-    flexmock(module).should_receive('execute_command').with_args(
-        (
-            'influx',
-            'backup',
-            '--host',
-            'https://localhost:8086',
-            '--token',
-            'mytoken',
-            '--org-id',
-            'org123',
-        ),
-    ).once()
+    ).and_return('/tmp/dumpfile').once()
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').with_args(
+        '/tmp/influxdb_databases',
+        'other-backup',
+        hostname='influx.example.org',
+        port=8087,
+        label=None,
+    ).and_return('/tmp/other_dumpfile').once()
+    flexmock(module.dump).should_receive('create_parent_directory_for_dump').twice()
+
+    for database, command in zip(databases, commands):
+        flexmock(module).should_receive('build_dump_command').with_args(
+            database, {}, object
+        ).and_return(command).once()
+        flexmock(module).should_receive('execute_command').with_args(command).once()
+
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
         '/tmp',
         'influxdb_databases',
@@ -404,89 +437,93 @@ def test_dump_data_sources_creates_named_pipe_and_executes_command():
             module.borgmatic.actions.restore.Dump(
                 'influxdb_databases', 'influx-backup', None, 8086, 'mylabel'
             ),
+            module.borgmatic.actions.restore.Dump(
+                'influxdb_databases', 'other-backup', 'influx.example.org', 8087, None
+            ),
         ],
     ).once()
-    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
-        object,
-        module.borgmatic.borg.pattern.Pattern(
-            '/tmp/influxdb_databases',
-            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
-        ),
-    ).once()
 
-    processes = module.dump_data_sources(
-        databases,
-        config={},
-        config_paths=[],
-        borgmatic_runtime_directory='/tmp',
-        patterns=[],
-        dry_run=False,
+    # No subprocess.Popen instances are returned.
+    assert (
+        module.dump_data_sources(
+            databases,
+            config={},
+            config_paths=[],
+            borgmatic_runtime_directory='/tmp',
+            patterns=patterns,
+            dry_run=False,
+        )
+        == []
     )
 
-    assert len(processes) == 0  # No subprocess.Popen instances are returned.
+    assert patterns == [
+        module.borgmatic.borg.pattern.Pattern('/tmp/influxdb_databases'),
+        module.borgmatic.borg.pattern.Pattern(
+            '/tmp/influxdb_databases',
+            type=module.borgmatic.borg.pattern.Pattern_type.INCLUDE,
+        ),
+    ]
 
 
 def test_dump_data_sources_with_dry_run_skips_command_execution():
     databases = [{'name': 'influx-backup', 'hostname': 'localhost', 'password': 'mytoken'}]
+    patterns = []
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
         '/tmp/dumpfile'
     )
-    flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
+    flexmock(module.dump).should_receive('create_parent_directory_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').never()
-    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
 
-    processes = module.dump_data_sources(
-        databases,
-        config={},
-        config_paths=[],
-        borgmatic_runtime_directory='/tmp',
-        patterns=[],
-        dry_run=True,
+    assert (
+        module.dump_data_sources(
+            databases,
+            config={},
+            config_paths=[],
+            borgmatic_runtime_directory='/tmp',
+            patterns=patterns,
+            dry_run=True,
+        )
+        == []
     )
 
-    assert len(processes) == 0
+    assert patterns == []
 
 
 def test_restore_data_source_dump_executes_restore_command():
-    # Using proper InfluxDB parameters
     data_source = {
         'name': 'influx-backup',
         'hostname': 'localhost',
-        'port': '8086',  # Changed to string to avoid TypeError
+        'port': 8086,
         'password': 'mytoken',
         'organization_id': 'org123',
         'label': 'mylabel',
     }
     connection_params = {
         'hostname': 'localhost',
-        'port': '8086',  # Changed to string to avoid TypeError
+        'port': 8086,
         'password': 'mytoken',
     }
-    extract_process = flexmock(stdout=flexmock())
+    restore_command = flexmock()
 
-    # Mock dump_filename creation to avoid the TypeError
     flexmock(module.dump).should_receive('make_data_source_dump_filename').with_args(
         '/tmp/influxdb_databases',
         'influx-backup',
         hostname='localhost',
-        port='8086',
+        port=8086,
         label='mylabel',
     ).and_return('/tmp/dumpfile')
-
-    # Mock the build_restore_command to return a proper InfluxDB restore command
-    flexmock(module).should_receive('build_restore_command').and_return(
-        ('influx', 'restore', '--host', 'https://localhost:8086', '--token', 'mytoken')
-    )
-
+    flexmock(module).should_receive('build_restore_command').with_args(
+        data_source, {}, '/tmp/dumpfile', connection_params
+    ).and_return(restore_command).once()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working'
     )
+    # There's no extract process to consume, as this hook restores from a dump directory.
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ('influx', 'restore', '--host', 'https://localhost:8086', '--token', 'mytoken'),
-        [extract_process],
+        restore_command,
+        [],
         output_log_level=module.logging.DEBUG,
-        input_file=extract_process.stdout,
         working_directory='/working',
         borg_local_path='borg',
     ).and_yield().once()
@@ -496,7 +533,7 @@ def test_restore_data_source_dump_executes_restore_command():
         config={},
         data_source=data_source,
         dry_run=False,
-        extract_process=extract_process,
+        extract_process=None,
         connection_params=connection_params,
         borgmatic_runtime_directory='/tmp',
     )
@@ -509,15 +546,10 @@ def test_restore_data_source_dump_with_dry_run_skips_command_execution():
         'port': None,
         'password': None,
     }
-    extract_process = flexmock(stdout=flexmock())
-
-    # Mock dump_filename creation
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
         '/tmp/dumpfile'
     )
-
-    # Allow build_restore_command to be called, but ensure execute_command_with_processes is never called
-    flexmock(module).should_receive('build_restore_command').and_return(('influx', 'restore'))
+    flexmock(module).should_receive('build_restore_command').and_return(flexmock())
     flexmock(module).should_receive('execute_command_with_processes').never()
 
     module.restore_data_source_dump(
@@ -525,7 +557,7 @@ def test_restore_data_source_dump_with_dry_run_skips_command_execution():
         config={},
         data_source=data_source,
         dry_run=True,
-        extract_process=extract_process,
+        extract_process=None,
         connection_params=connection_params,
         borgmatic_runtime_directory='/tmp',
     )
@@ -544,15 +576,12 @@ def test_build_restore_command_with_basic_parameters():
         'token': None,
     }
     dump_filename = '/tmp/dumpfile'
-    extract_process = flexmock()
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
 
-    command = module.build_restore_command(
-        extract_process, database, {}, dump_filename, connection_params
-    )
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
 
     assert command == (
         'influx',
@@ -580,15 +609,12 @@ def test_build_restore_command_with_connection_params():
         'password': 'restoretoken',
     }
     dump_filename = '/tmp/dumpfile'
-    extract_process = flexmock()
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
 
-    command = module.build_restore_command(
-        extract_process, database, {}, dump_filename, connection_params
-    )
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
 
     # The connection parameters take precedence over the database values.
     assert command == (
@@ -598,6 +624,73 @@ def test_build_restore_command_with_connection_params():
         'https://restorehost:9999',
         '--token',
         'restoretoken',
+        '--bucket',
+        'influx-backup',
+        '/tmp/dumpfile',
+    )
+
+
+def test_build_restore_command_with_no_port_uses_default_port():
+    database = {
+        'name': 'influx-backup',
+        'hostname': 'localhost',
+        'password': 'mytoken',
+    }
+    connection_params = {
+        'hostname': None,
+        'port': None,
+        'password': None,
+    }
+    dump_filename = '/tmp/dumpfile'
+
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+
+    assert command == (
+        'influx',
+        'restore',
+        '--host',
+        'https://localhost:9999',
+        '--token',
+        'mytoken',
+        '--bucket',
+        'influx-backup',
+        '/tmp/dumpfile',
+    )
+
+
+def test_build_restore_command_with_tls_disabled():
+    database = {
+        'name': 'influx-backup',
+        'hostname': 'localhost',
+        'port': 8086,
+        'tls': False,  # HTTP instead of HTTPS
+        'password': 'mytoken',
+    }
+    connection_params = {
+        'hostname': None,
+        'port': None,
+        'password': None,
+    }
+    dump_filename = '/tmp/dumpfile'
+
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+
+    assert command == (
+        'influx',
+        'restore',
+        '--host',
+        'http://localhost:8086',
+        '--token',
+        'mytoken',
         '--bucket',
         'influx-backup',
         '/tmp/dumpfile',
@@ -617,14 +710,11 @@ def test_build_restore_command_resolves_password_credential():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-    extract_process = flexmock()
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).with_args('{credential file /path/to/token}', {}).and_return('resolvedtoken').once()
 
-    command = module.build_restore_command(
-        extract_process, database, {}, dump_filename, connection_params
-    )
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
 
     assert command == (
         'influx',
@@ -654,15 +744,12 @@ def test_build_restore_command_with_organization_parameters():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-    extract_process = flexmock()
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
 
-    command = module.build_restore_command(
-        extract_process, database, {}, dump_filename, connection_params
-    )
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
 
     # With both organization_id and organization_name, only organization_id should be used
     assert command == (
@@ -694,15 +781,12 @@ def test_build_restore_command_with_organization_name_only():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-    extract_process = flexmock()
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
 
-    command = module.build_restore_command(
-        extract_process, database, {}, dump_filename, connection_params
-    )
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
 
     assert command == (
         'influx',
@@ -733,15 +817,12 @@ def test_build_restore_command_with_bucket_parameters():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-    extract_process = flexmock()
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
 
-    command = module.build_restore_command(
-        extract_process, database, {}, dump_filename, connection_params
-    )
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
 
     # With both bucket_id and name, only bucket_id should be used
     assert command == (
@@ -770,15 +851,12 @@ def test_build_restore_command_with_bucket_name_from_name_only():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-    extract_process = flexmock()
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
 
-    command = module.build_restore_command(
-        extract_process, database, {}, dump_filename, connection_params
-    )
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
 
     assert command == (
         'influx',
@@ -809,15 +887,12 @@ def test_build_restore_command_with_restore_bucket_and_organization():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-    extract_process = flexmock()
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
 
-    command = module.build_restore_command(
-        extract_process, database, {}, dump_filename, connection_params
-    )
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
 
     assert command == (
         'influx',
@@ -853,15 +928,12 @@ def test_build_restore_command_with_configurations():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-    extract_process = flexmock()
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
 
-    command = module.build_restore_command(
-        extract_process, database, {}, dump_filename, connection_params
-    )
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
 
     assert command == (
         'influx',
@@ -896,15 +968,12 @@ def test_build_restore_command_with_flags():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-    extract_process = flexmock()
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
 
-    command = module.build_restore_command(
-        extract_process, database, {}, dump_filename, connection_params
-    )
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
 
     assert command == (
         'influx',
@@ -936,15 +1005,12 @@ def test_build_restore_command_with_influx_command_containing_spaces():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-    extract_process = flexmock()
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
 
-    command = module.build_restore_command(
-        extract_process, database, {}, dump_filename, connection_params
-    )
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
 
     # The command is not shell quoted, as it doesn't get run within a shell.
     assert command == (
@@ -975,15 +1041,12 @@ def test_build_restore_command_with_custom_influx_command():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-    extract_process = flexmock()
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
 
-    command = module.build_restore_command(
-        extract_process, database, {}, dump_filename, connection_params
-    )
+    command = module.build_restore_command(database, {}, dump_filename, connection_params)
 
     assert command == (
         '/usr/local/bin/influx2',
@@ -995,20 +1058,6 @@ def test_build_restore_command_with_custom_influx_command():
         '--bucket',
         'influx-backup',
         '/tmp/dumpfile',
-    )
-
-
-def test_remove_data_source_dumps_removes_dumps():
-    flexmock(module.dump).should_receive('remove_data_source_dumps').with_args(
-        '/tmp/influxdb_databases', 'InfluxDB', False
-    ).once()
-
-    module.remove_data_source_dumps(
-        databases=[],
-        config={},
-        borgmatic_runtime_directory='/tmp',
-        patterns=[],
-        dry_run=False,
     )
 
 

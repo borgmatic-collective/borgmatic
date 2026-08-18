@@ -24,7 +24,7 @@ def get_default_port(databases, config):  # pragma: no cover
     return 8086
 
 
-def use_streaming(databases, config):
+def use_streaming(databases, config):  # pragma: no cover
     '''
     Return whether dump streaming is used for this hook. (Spoiler: It isn't.)
     '''
@@ -84,10 +84,6 @@ def dump_data_sources(
         if dry_run:
             continue
 
-        logger.debug(
-            f'Command: {command}',
-        )
-
         dump.create_parent_directory_for_dump(dump_filename)
         execute_command(command)
 
@@ -111,14 +107,12 @@ def build_dump_command(database, config, dump_filename):
     Given a database configuration dict, a configuration dict, and a dump filename, return an
     "influx backup" command as a tuple for dumping that database to that filename.
     '''
-    host = database.get('hostname', 'localhost')
+    hostname = database.get('hostname') or 'localhost'
     port = database.get('port') or get_default_port(None, None)  # Use default port if not specified
 
-    if host:
-        # Add protocol prefix based on tls setting
-        protocol = 'https://' if database.get('tls', True) else 'http://'
-        # Format as protocol://hostname:port
-        host = f'{protocol}{host}:{port}'
+    # Add protocol prefix based on the tls setting, formatted as protocol://hostname:port.
+    protocol = 'https://' if database.get('tls', True) else 'http://'
+    host = f'{protocol}{hostname}:{port}'
 
     token = borgmatic.hooks.credential.parse.resolve_credential(database.get('password'), config)
     skip_verify = database.get('skip_verify')
@@ -129,27 +123,27 @@ def build_dump_command(database, config, dump_filename):
         + ('backup',)
         + (('--skip-verify',) if skip_verify else ())
         + (('--http-debug',) if http_debug else ())
-        + (('--host', str(host)) if host else ())
+        + ('--host', host)
         + (
-            ('--configs-path', str(database['configurations_path']))
+            ('--configs-path', database['configurations_path'])
             if 'configurations_path' in database
             else ()
         )
         + (
-            ('--active-config', str(database['active_configuration']))
+            ('--active-config', database['active_configuration'])
             if 'active_configuration' in database
             else ()
         )
-        + (('--token', str(token)) if token else ())
-        + (('--org-id', str(database['organization_id'])) if 'organization_id' in database else ())
+        + (('--token', token) if token else ())
+        + (('--org-id', database['organization_id']) if 'organization_id' in database else ())
         + (
-            ('--org', str(database['organization_name']))
+            ('--org', database['organization_name'])
             if 'organization_name' in database and 'organization_id' not in database
             else ()
         )
-        + (('--bucket-id', str(database['bucket_id'])) if 'bucket_id' in database else ())
+        + (('--bucket-id', database['bucket_id']) if 'bucket_id' in database else ())
         + (
-            ('--bucket', str(database['name']))
+            ('--bucket', database['name'])
             if database.get('name') not in {None, 'all'} and 'bucket_id' not in database
             else ()
         )
@@ -262,9 +256,7 @@ def restore_data_source_dump(
         label=data_source.get('label'),
     )
 
-    restore_command = build_restore_command(
-        extract_process, data_source, config, dump_filename, connection_params
-    )
+    restore_command = build_restore_command(data_source, config, dump_filename, connection_params)
 
     logger.debug(f"Restoring InfluxDB database {data_source.get('name')}{dry_run_label}")
     if dry_run:
@@ -275,20 +267,19 @@ def restore_data_source_dump(
     tuple(
         execute_command_with_processes(
             restore_command,
-            [extract_process] if extract_process else [],
+            [],
             output_log_level=logging.DEBUG,
-            input_file=extract_process.stdout if extract_process else None,
             working_directory=borgmatic.config.paths.get_working_directory(config),
             borg_local_path=config.get('local_path', 'borg'),
         )
     )
 
 
-def build_restore_command(extract_process, database, config, dump_filename, connection_params):
+def build_restore_command(database, config, dump_filename, connection_params):
     '''
-    Given an unused extract process, a database configuration dict, a configuration dict, a dump
-    filename, and a dict of connection parameters overriding the database configuration, return an
-    "influx restore" command as a tuple for restoring that dump.
+    Given a database configuration dict, a configuration dict, a dump filename, and a dict of
+    connection parameters overriding the database configuration, return an "influx restore" command
+    as a tuple for restoring that dump.
     '''
 
     hostname = (
@@ -330,9 +321,9 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
         + ('restore',)
         + ('--host', host)
         + (('--token', token) if token else ())
-        + (('--org-id', str(organization_id)) if organization_id else ())
+        + (('--org-id', organization_id) if organization_id else ())
         + (('--org', organization_name) if organization_name and not organization_id else ())
-        + (('--bucket-id', str(bucket_id)) if bucket_id else ())
+        + (('--bucket-id', bucket_id) if bucket_id else ())
         + (('--bucket', bucket_name) if bucket_name and not bucket_id else ())
         + (('--new-bucket', restore_bucket) if restore_bucket else ())
         + (('--new-org', restore_organization) if restore_organization else ())
