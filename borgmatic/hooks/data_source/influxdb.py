@@ -193,8 +193,6 @@ def make_data_source_dump_patterns(
     and a database name to match, return the corresponding glob patterns to match the database dump
     in an archive.
     '''
-    borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
-
     return (
         *(
             dump.make_data_source_dump_filename(
@@ -202,14 +200,6 @@ def make_data_source_dump_patterns(
             ),
             dump.make_data_source_dump_filename(
                 make_dump_path(borgmatic_runtime_directory),
-                name,
-                hostname,
-                port,
-                container,
-                label,
-            ),
-            dump.make_data_source_dump_filename(
-                make_dump_path(borgmatic_source_directory),
                 name,
                 hostname,
                 port,
