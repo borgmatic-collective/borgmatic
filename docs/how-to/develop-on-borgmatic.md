@@ -31,7 +31,7 @@ changes work:
 ```bash
 cd borgmatic
 uv tool update-shell
-uv tool install --editable .[dev]
+uv tool install --editable .
 ```
 
 Or to work on the [Apprise
@@ -39,14 +39,14 @@ hook](https://torsion.org/borgmatic/reference/configuration/monitoring/apprise/)
 change that last line to:
 
 ```bash
-uv tool install --editable .[dev,Apprise]
+uv tool install --editable .[Apprise]
 ```
 
 Or to work on the [browse
 action](https://torsion.org/borgmatic/reference/command-line/actions/browse/):
 
 ```bash
-uv tool install --editable .[dev,browse]
+uv tool install --editable .[browse,browse-dev]
 ```
 
 To get oriented with the borgmatic source code, have a look at the [source
