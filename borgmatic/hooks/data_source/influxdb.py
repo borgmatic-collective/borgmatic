@@ -4,6 +4,7 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.hooks.data_source.config
 from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks.data_source import dump
 
@@ -52,13 +53,24 @@ def dump_data_sources(
     logger.info(f'Dumping InfluxDB databases{dry_run_label}')
 
     processes = []
+    dumps_metadata = []
 
     for database in databases:
+        name = database.get('name')
+        dumps_metadata.append(
+            borgmatic.actions.restore.Dump(
+                'influxdb_databases',
+                name,
+                database.get('hostname'),
+                database.get('port'),
+            )
+        )
+
         dump_filename = dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
-            database.get('name'),
-            database.get('hostname'),
-            database.get('port'),
+            name,
+            hostname=database.get('hostname'),
+            port=database.get('port'),
         )
 
         logger.debug(
@@ -77,11 +89,15 @@ def dump_data_sources(
         execute_command(command, shell=True)  # noqa: S604
 
     if not dry_run:
-        patterns.append(
+        dump.write_data_source_dumps_metadata(
+            borgmatic_runtime_directory, 'influxdb_databases', dumps_metadata
+        )
+        borgmatic.hooks.data_source.config.inject_pattern(
+            patterns,
             borgmatic.borg.pattern.Pattern(
                 os.path.join(borgmatic_runtime_directory, 'influxdb_databases'),
                 source=borgmatic.borg.pattern.Pattern_source.HOOK,
-            )
+            ),
         )
 
     return processes

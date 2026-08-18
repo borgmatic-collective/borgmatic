@@ -279,6 +279,22 @@ def test_dump_data_sources_creates_named_pipe_and_executes_command():
         ),
         shell=True,
     ).once()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/tmp',
+        'influxdb_databases',
+        [
+            module.borgmatic.actions.restore.Dump(
+                'influxdb_databases', 'influx-backup', None, 8086
+            ),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/tmp/influxdb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
 
     processes = module.dump_data_sources(
         databases,
@@ -299,6 +315,8 @@ def test_dump_data_sources_with_dry_run_skips_command_execution():
     )
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').never()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').never()
 
     processes = module.dump_data_sources(
         databases,
