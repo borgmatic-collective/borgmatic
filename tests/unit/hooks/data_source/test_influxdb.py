@@ -736,5 +736,6 @@ def test_remove_data_source_dumps_removes_dumps():
         databases=[],
         config={},
         borgmatic_runtime_directory='/tmp',
+        patterns=[],
         dry_run=False,
     )

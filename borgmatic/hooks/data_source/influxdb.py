@@ -148,12 +148,16 @@ def build_dump_command(database, dump_filename):
 
 
 def remove_data_source_dumps(
-    databases, config, borgmatic_runtime_directory, dry_run
+    databases,
+    config,
+    borgmatic_runtime_directory,
+    patterns,
+    dry_run,
 ):  # pragma: no cover
     '''
     Remove all database dump files for this hook regardless of the given databases. Use the
-    borgmatic_runtime_directory to construct the destination path and the log prefix in any log
-    entries. If this is a dry run, then don't actually remove anything.
+    borgmatic_runtime_directory to construct the destination path. If this is a dry run, then don't
+    actually remove anything.
     '''
     dump.remove_data_source_dumps(make_dump_path(borgmatic_runtime_directory), 'InfluxDB', dry_run)
 
