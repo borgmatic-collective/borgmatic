@@ -40,21 +40,20 @@ def dump_data_sources(
     dry_run,
 ):
     '''
-    Dump the given InfluxDB databases to a named pipe. The databases are supplied as a sequence of
+    Dump the given InfluxDB databases to a directory. The databases are supplied as a sequence of
     dicts, one dict describing each database as per the configuration schema. Use the borgmatic
-    runtime directory to construct the destination path (used for the directory format and the given
-    log prefix in any log entries).
+    runtime directory to construct the destination path. If this is a dry run, then don't actually
+    dump anything.
 
-    Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
-    pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
-    Also append the the parent directory of the database dumps to the given patterns list, so the
-    dumps actually get backed up.
+    Also inject a pattern for the parent directory of the database dumps into the given patterns
+    list, so the dumps actually get backed up.
+
+    Return an empty sequence, since there are no ongoing dump processes from this hook.
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
 
     logger.info(f'Dumping InfluxDB databases{dry_run_label}')
 
-    processes = []
     dumps_metadata = []
 
     for database in databases:
@@ -104,12 +103,13 @@ def dump_data_sources(
             ),
         )
 
-    return processes
+    return []
 
 
 def build_dump_command(database, config, dump_filename):
     '''
-    Return the backup command.
+    Given a database configuration dict, a configuration dict, and a dump filename, return an
+    "influx backup" command as a tuple for dumping that database to that filename.
     '''
     host = database.get('hostname', 'localhost')
     port = database.get('port') or get_default_port(None, None)  # Use default port if not specified
@@ -184,9 +184,9 @@ def make_data_source_dump_patterns(
     label=None,
 ):
     '''
-    Given a sequence of configurations dicts, a configuration dict, the borgmatic runtime directory,
-    and a database name to match, return the corresponding glob patterns to match the database dump
-    in an archive.
+    Given a sequence of configuration dicts, a configuration dict, the borgmatic runtime directory,
+    and a database name, hostname, port, container, and label to match, return the corresponding
+    glob patterns to match the database dump in an archive.
     '''
     return (
         *(
@@ -243,14 +243,14 @@ def restore_data_source_dump(
     borgmatic_runtime_directory,
 ):
     '''
-    Restore a database from the given extract stream. The database is supplied as a data source
-    configuration dict, but the given hook configuration is ignored. The given configuration dict is
-    used to construct the destination path, and the given log prefix is used for any log entries. If
-    this is a dry run, then don't actually restore anything. Trigger the given active extract
-    process (an instance of subprocess.Popen) to produce output to consume.
+    Restore a database from a dump in the given borgmatic runtime directory. The database is
+    supplied as a data source configuration dict, but the given hook configuration is ignored. The
+    given configuration dict is used to construct the dump path, and the given connection parameters
+    override the corresponding database configuration options. If this is a dry run, then don't
+    actually restore anything.
 
-    If the extract process is None, then restore the dump from the filesystem rather than from an
-    extract stream.
+    The given extract process is unused, as this hook restores from a dump directory rather than
+    from an extract stream.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
 
@@ -286,7 +286,9 @@ def restore_data_source_dump(
 
 def build_restore_command(extract_process, database, config, dump_filename, connection_params):
     '''
-    Return the restore command.
+    Given an unused extract process, a database configuration dict, a configuration dict, a dump
+    filename, and a dict of connection parameters overriding the database configuration, return an
+    "influx restore" command as a tuple for restoring that dump.
     '''
 
     hostname = (
