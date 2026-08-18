@@ -163,22 +163,71 @@ def remove_data_source_dumps(
 
 
 def make_data_source_dump_patterns(
-    databases, config, borgmatic_runtime_directory, name=None
-):  # pragma: no cover
+    databases,
+    config,
+    borgmatic_runtime_directory,
+    name=None,
+    hostname=None,
+    port=None,
+    container=None,
+    label=None,
+):
     '''
-    Given a sequence of configurations dicts, a configuration dict, a prefix to log with, the
-    borgmatic runtime directory, and a database name to match, return the corresponding glob
-    patterns to match the database dump in an archive.
+    Given a sequence of configurations dicts, a configuration dict, the borgmatic runtime directory,
+    and a database name to match, return the corresponding glob patterns to match the database dump
+    in an archive.
     '''
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
     return (
-        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
-        dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_runtime_directory), name, hostname='*'
+        *(
+            dump.make_data_source_dump_filename(
+                make_dump_path('borgmatic'), name, hostname, port, container, label
+            ),
+            dump.make_data_source_dump_filename(
+                make_dump_path(borgmatic_runtime_directory),
+                name,
+                hostname,
+                port,
+                container,
+                label,
+            ),
+            dump.make_data_source_dump_filename(
+                make_dump_path(borgmatic_source_directory),
+                name,
+                hostname,
+                port,
+                container,
+                label,
+            ),
         ),
-        dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_source_directory), name, hostname='*'
+        *(
+            (
+                dump.make_data_source_dump_filename(
+                    make_dump_path('borgmatic'),
+                    name,
+                    hostname,
+                    port=None,
+                    container=container,
+                    label=label,
+                ),
+            )
+            if port == get_default_port(databases, config)
+            else ()
+        ),
+        *(
+            (
+                dump.make_data_source_dump_filename(
+                    make_dump_path('borgmatic'),
+                    name,
+                    hostname,
+                    port=get_default_port(databases, config),
+                    container=container,
+                    label=label,
+                ),
+            )
+            if port is None
+            else ()
         ),
     )
 

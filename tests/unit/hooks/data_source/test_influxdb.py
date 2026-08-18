@@ -739,3 +739,83 @@ def test_remove_data_source_dumps_removes_dumps():
         patterns=[],
         dry_run=False,
     )
+
+
+def test_make_data_source_dump_patterns_with_no_port_adds_pattern_with_default_port():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('.borgmatic')
+    flexmock(module).should_receive('make_dump_path').replace_with(lambda path: path)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').replace_with(
+        lambda dump_path, name, hostname, port, container, label: '/'.join(
+            (dump_path, f'{hostname}:{port}' if port else hostname, name)
+        )
+    )
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+
+    assert module.make_data_source_dump_patterns(
+        databases=flexmock(),
+        config=flexmock(),
+        borgmatic_runtime_directory='run',
+        name='db',
+        hostname='host',
+        port=None,
+    ) == (
+        'borgmatic/host/db',
+        'run/host/db',
+        '.borgmatic/host/db',
+        'borgmatic/host:9999/db',
+    )
+
+
+def test_make_data_source_dump_patterns_with_default_port_adds_pattern_with_no_port():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('.borgmatic')
+    flexmock(module).should_receive('make_dump_path').replace_with(lambda path: path)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').replace_with(
+        lambda dump_path, name, hostname, port, container, label: '/'.join(
+            (dump_path, f'{hostname}:{port}' if port else hostname, name)
+        )
+    )
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+
+    assert module.make_data_source_dump_patterns(
+        databases=flexmock(),
+        config=flexmock(),
+        borgmatic_runtime_directory='run',
+        name='db',
+        hostname='host',
+        port=9999,
+    ) == (
+        'borgmatic/host:9999/db',
+        'run/host:9999/db',
+        '.borgmatic/host:9999/db',
+        'borgmatic/host/db',
+    )
+
+
+def test_make_data_source_dump_patterns_with_non_default_port_adds_no_extra_patterns():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('.borgmatic')
+    flexmock(module).should_receive('make_dump_path').replace_with(lambda path: path)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').replace_with(
+        lambda dump_path, name, hostname, port, container, label: '/'.join(
+            (dump_path, f'{hostname}:{port}' if port else hostname, name)
+        )
+    )
+    flexmock(module).should_receive('get_default_port').and_return(9999)
+
+    assert module.make_data_source_dump_patterns(
+        databases=flexmock(),
+        config=flexmock(),
+        borgmatic_runtime_directory='run',
+        name='db',
+        hostname='host',
+        port=1234,
+    ) == (
+        'borgmatic/host:1234/db',
+        'run/host:1234/db',
+        '.borgmatic/host:1234/db',
+    )
