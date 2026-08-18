@@ -262,15 +262,15 @@ def restore_data_source_dump(
     if dry_run:
         return
 
-    # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
-    # if the restore paths don't exist in the archive.
+    # Don't give Borg's local path, as there's no Borg process here for it to apply to: this hook
+    # restores from a dump directory that Borg has already extracted rather than from an extract
+    # stream.
     tuple(
         execute_command_with_processes(
             restore_command,
             [],
             output_log_level=logging.DEBUG,
             working_directory=borgmatic.config.paths.get_working_directory(config),
-            borg_local_path=config.get('local_path', 'borg'),
         )
     )
 

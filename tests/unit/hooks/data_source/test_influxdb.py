@@ -519,13 +519,13 @@ def test_restore_data_source_dump_executes_restore_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working'
     )
-    # There's no extract process to consume, as this hook restores from a dump directory.
+    # There's no extract process to consume and therefore no Borg local path, as this hook restores
+    # from a dump directory.
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         restore_command,
         [],
         output_log_level=module.logging.DEBUG,
         working_directory='/working',
-        borg_local_path='borg',
     ).and_yield().once()
 
     module.restore_data_source_dump(
