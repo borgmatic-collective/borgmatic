@@ -567,7 +567,7 @@ def test_build_restore_command_with_basic_parameters():
     database = {
         'name': 'influx-backup',
         # hostname defaults to 'localhost'
-        'port': '8086',  # Changed to string to avoid TypeError
+        'port': 8086,
         'password': 'mytoken',
     }
     connection_params = {
@@ -600,12 +600,12 @@ def test_build_restore_command_with_connection_params():
     database = {
         'name': 'influx-backup',
         'hostname': 'localhost',
-        'port': '8086',  # Changed to string to avoid TypeError
+        'port': 8086,
         'password': 'mytoken',
     }
     connection_params = {
         'hostname': 'restorehost',
-        'port': '9999',  # Changed to string to avoid TypeError
+        'port': '9999',
         'password': 'restoretoken',
     }
     dump_filename = '/tmp/dumpfile'
@@ -701,7 +701,7 @@ def test_build_restore_command_resolves_password_credential():
     database = {
         'name': 'influx-backup',
         'hostname': 'localhost',
-        'port': '8086',
+        'port': 8086,
         'password': '{credential file /path/to/token}',
     }
     connection_params = {
@@ -733,7 +733,7 @@ def test_build_restore_command_with_organization_parameters():
     database = {
         'name': 'influx-backup',
         'hostname': 'localhost',
-        'port': '8086',  # Changed to string to avoid TypeError
+        'port': 8086,
         'password': 'mytoken',
         'organization_id': 'org123',
         'organization_name': 'my-org',
@@ -771,7 +771,7 @@ def test_build_restore_command_with_organization_name_only():
     database = {
         'name': 'influx-backup',
         'hostname': 'localhost',
-        'port': '8086',
+        'port': 8086,
         'password': 'mytoken',
         'organization_name': 'my-org',
     }
@@ -807,7 +807,7 @@ def test_build_restore_command_with_bucket_parameters():
     database = {
         'name': 'my-bucket',
         'hostname': 'localhost',
-        'port': '8086',  # Changed to string to avoid TypeError
+        'port': 8086,
         'password': 'mytoken',
         'bucket_id': 'bucket123',
     }
@@ -842,7 +842,7 @@ def test_build_restore_command_with_bucket_name_from_name_only():
     database = {
         'name': 'my-bucket',
         'hostname': 'localhost',
-        'port': '8086',
+        'port': 8086,
         'password': 'mytoken',
     }
     connection_params = {
@@ -875,7 +875,7 @@ def test_build_restore_command_with_restore_bucket_and_organization():
     database = {
         'name': 'my-bucket',
         'hostname': 'localhost',
-        'port': '8086',  # Changed to string to avoid TypeError
+        'port': 8086,
         'password': 'mytoken',
         'organization_name': 'my-org',
         'restore_bucket': 'new-bucket',
@@ -917,7 +917,7 @@ def test_build_restore_command_with_configurations():
     database = {
         'name': 'influx-backup',
         'hostname': 'localhost',
-        'port': '8086',  # Changed to string to avoid TypeError
+        'port': 8086,
         'password': 'mytoken',
         'configurations_path': '/etc/influxdb/configs',
         'active_configuration': 'default',
@@ -956,7 +956,7 @@ def test_build_restore_command_with_flags():
     database = {
         'name': 'influx-backup',
         'hostname': 'localhost',
-        'port': '8086',  # Changed to string to avoid TypeError
+        'port': 8086,
         'password': 'mytoken',
         'skip_verify': True,
         'http_debug': True,
@@ -995,7 +995,7 @@ def test_build_restore_command_with_influx_command_containing_spaces():
     database = {
         'name': 'influx-backup',
         'hostname': 'localhost',
-        'port': '8086',  # Changed to string to avoid TypeError
+        'port': 8086,
         'password': 'mytoken',
         'influx_command': '"/usr/local/my influx/influx" --skip-verify',
     }
@@ -1031,7 +1031,7 @@ def test_build_restore_command_with_custom_influx_command():
     database = {
         'name': 'influx-backup',
         'hostname': 'localhost',
-        'port': '8086',  # Changed to string to avoid TypeError
+        'port': 8086,
         'password': 'mytoken',
         'influx_command': '/usr/local/bin/influx2',
     }
