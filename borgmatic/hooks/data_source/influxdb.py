@@ -161,6 +161,11 @@ def build_dump_command(database, dump_filename):
             if database.get('name') not in {None, 'all'} and 'bucket_id' not in database
             else ()
         )
+        + (
+            ('--compression', shlex.quote(database['compression']))
+            if 'compression' in database
+            else ()
+        )
         + (dump_filename,)
     )
 

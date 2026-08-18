@@ -218,6 +218,29 @@ def test_build_dump_command_with_bucket_id_and_name_precedence():
     )
 
 
+def test_build_dump_command_with_compression():
+    database = {
+        'hostname': 'myexample.com',
+        'port': 8086,
+        'password': 'testtoken',
+        'compression': 'none',
+    }
+    dump_filename = '/tmp/dumpfile'
+    command = module.build_dump_command(database, dump_filename)
+
+    assert command == (
+        'influx',
+        'backup',
+        '--host',
+        'https://myexample.com:8086',
+        '--token',
+        'testtoken',
+        '--compression',
+        'none',
+        '/tmp/dumpfile',
+    )
+
+
 def test_build_dump_command_with_custom_influx_command():
     database = {
         'hostname': 'myexample.com',
