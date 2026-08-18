@@ -1,0 +1,110 @@
+---
+title: InfluxDB
+eleventyNavigation:
+  key: InfluxDB
+  parent: 🗄️ Data sources
+---
+
+<span class="minilink minilink-addedin">New in version 2.1.8</span> To backup
+InfluxDB with borgmatic, use the `influxdb_databases:` hook. For instance:
+
+```yaml
+influxdb_databases:
+    - name: mybucket
+      format: directory
+      password: mytoken
+```
+
+This hook requires the [`influx` command-line
+tool](https://docs.influxdata.com/influxdb/v2/tools/influx-cli/) from InfluxDB
+2.x, as borgmatic dumps and restores with `influx backup` and `influx restore`.
+The `format` option is required and must be `directory`, because those commands
+produce a directory of files rather than a single file. That's also what tells
+borgmatic to extract the dump to a directory when restoring instead of streaming
+it.
+
+See below for the full set of configuration options available, including
+hostname, organization, TLS settings, etc.
+
+
+## Buckets
+
+The `name` option is the name of the InfluxDB bucket to dump. To dump every
+bucket in an instance instead, set it to `all`:
+
+```yaml
+influxdb_databases:
+    - name: all
+      format: directory
+      password: mytoken
+```
+
+If you'd rather select a bucket by ID than by name, set the `bucket_id` option.
+It takes precedence over the bucket named by `name` (but `name` is still used to
+identify the dump within the backup, so it remains required):
+
+```yaml
+influxdb_databases:
+    - name: mybucket
+      bucket_id: 06fc0dfd1a97b4c1
+      format: directory
+      password: mytoken
+```
+
+Organizations work the same way: `organization_id` takes precedence over
+`organization_name` when both are given.
+
+
+## Authentication
+
+The `password` option is an InfluxDB API token. It's named `password` rather
+than `token` so that borgmatic's own password handling applies to it (which means
+you can keep it out of your configuration file with the [`{credential ...}`
+syntax](https://torsion.org/borgmatic/reference/configuration/credentials/)):
+
+```yaml
+influxdb_databases:
+    - name: mybucket
+      format: directory
+      password: "{credential file /credentials/influxdb_token.txt}"
+```
+
+Alternatively, omit `password` entirely and let the `influx` command-line tool
+supply the token from its own configuration, selected with the
+`active_configuration` option and optionally located with `configurations_path`:
+
+```yaml
+influxdb_databases:
+    - name: mybucket
+      format: directory
+      active_configuration: myconfig
+```
+
+
+## Restoring
+
+By default, borgmatic restores each bucket back to the bucket and organization
+it was dumped from. Use `restore_bucket` and `restore_organization` to restore
+somewhere else instead, and `full_replace` to replace all data on the server
+rather than merging into it.
+
+You can also override the connection settings at restore time without editing
+your configuration:
+
+```bash
+borgmatic restore --data-source mybucket --hostname influx.example.org --port 8086 --password othertoken
+```
+
+
+## Full configuration
+
+{% include snippet/configuration/sample.md %}
+
+```yaml
+{% include borgmatic/influxdb_databases.yaml %}
+```
+
+
+## Related documentation
+
+ * [How to backup your databases](https://torsion.org/borgmatic/how-to/backup-your-databases/)
