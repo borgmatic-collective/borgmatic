@@ -1531,6 +1531,11 @@ properties:
                         dumping purposes if "bucket_id" is given, but still
                         used to identify the dump in the backup.
                     example: mybucket
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
                 format:
                     type: string
                     enum: ['directory']

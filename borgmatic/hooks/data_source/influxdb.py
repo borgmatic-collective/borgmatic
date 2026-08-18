@@ -63,6 +63,7 @@ def dump_data_sources(
                 name,
                 database.get('hostname'),
                 database.get('port'),
+                database.get('label'),
             )
         )
 
@@ -71,6 +72,7 @@ def dump_data_sources(
             name,
             hostname=database.get('hostname'),
             port=database.get('port'),
+            label=database.get('label'),
         )
 
         logger.debug(
@@ -264,6 +266,7 @@ def restore_data_source_dump(
         data_source.get('name'),
         hostname=data_source.get('hostname'),
         port=data_source.get('port'),
+        label=data_source.get('label'),
     )
 
     restore_command = build_restore_command(

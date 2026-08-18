@@ -248,11 +248,16 @@ def test_dump_data_sources_creates_named_pipe_and_executes_command():
             'port': 8086,
             'password': 'mytoken',
             'organization_id': 'org123',
+            'label': 'mylabel',
         }
     ]
-    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/tmp/dumpfile'
-    )
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').with_args(
+        '/tmp/influxdb_databases',
+        'influx-backup',
+        hostname=None,
+        port=8086,
+        label='mylabel',
+    ).and_return('/tmp/dumpfile')
     flexmock(module.dump).should_receive('create_parent_directory_for_dump').once()
     flexmock(module).should_receive('build_dump_command').and_return(
         (
@@ -284,7 +289,7 @@ def test_dump_data_sources_creates_named_pipe_and_executes_command():
         'influxdb_databases',
         [
             module.borgmatic.actions.restore.Dump(
-                'influxdb_databases', 'influx-backup', None, 8086
+                'influxdb_databases', 'influx-backup', None, 8086, 'mylabel'
             ),
         ],
     ).once()
@@ -338,6 +343,7 @@ def test_restore_data_source_dump_executes_restore_command():
         'port': '8086',  # Changed to string to avoid TypeError
         'password': 'mytoken',
         'organization_id': 'org123',
+        'label': 'mylabel',
     }
     connection_params = {
         'hostname': 'localhost',
@@ -347,9 +353,13 @@ def test_restore_data_source_dump_executes_restore_command():
     extract_process = flexmock(stdout=flexmock())
 
     # Mock dump_filename creation to avoid the TypeError
-    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/tmp/dumpfile'
-    )
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').with_args(
+        '/tmp/influxdb_databases',
+        'influx-backup',
+        hostname='localhost',
+        port='8086',
+        label='mylabel',
+    ).and_return('/tmp/dumpfile')
 
     # Mock the build_restore_command to return a proper InfluxDB restore command
     flexmock(module).should_receive('build_restore_command').and_return(
