@@ -30,9 +30,9 @@ configuration.
 As part of each backup, borgmatic streams a database dump for each configured
 database directly to Borg, so it's included in the backup without consuming
 additional disk space. (The exceptions are the PostgreSQL/MongoDB `directory`
-dump formats, which can't stream and therefore do consume temporary disk
-space. Additionally, prior to borgmatic 1.5.3, all database dumps consumed
-temporary disk space.)
+dump formats and InfluxDB, which can't stream and therefore do consume
+temporary disk space. Additionally, prior to borgmatic 1.5.3, all database
+dumps consumed temporary disk space.)
 
 Also note that using a database hook implicitly enables the `read_special`
 configuration option (even if it's disabled in your configuration) to support
@@ -117,6 +117,7 @@ mongodb_databases:
     - name: all
 influxdb_databases:
     - name: all
+      format: directory
 ```
 
 Note that you may need to use a `username` of the `postgres` superuser for
@@ -143,9 +144,6 @@ mariadb_databases:
 mysql_databases:
     - name: all
       format: sql
-influxdb_databases:
-    - name: all
-      format: directory
 ```
 
 ### Database containers
