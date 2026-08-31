@@ -164,8 +164,8 @@ properties:
             UNSAFE because, when this option is enabled, Borg may hang on
             special files (named pipes, devices) and data from borgmatic data
             source hooks may be silently excluded if your excluded patterns
-            match the runtime directory. (See the "user_runtime_directory"
-            option.)
+            match the runtime directory (see the "user_runtime_directory"
+            option).
 
             Only enable if not using data source hooks and you manually verify
             that your excludes don't affect the runtime directory. Defaults
@@ -2335,26 +2335,6 @@ properties:
                         Defaults to the "password" option. Supports the
                         "{credential ...}" syntax.
                     example: trustsome1
-                password_transport:
-                    type: string
-                    enum:
-                        - pipe
-                        - file
-                    description: |
-                        How to transmit database passwords from borgmatic to the
-                        MongoDB client, one of:
-                         * "pipe": Securely transmit passwords via anonymous
-                           pipe. Only works if the database client is on the
-                           same host as borgmatic. (The server can be
-                           somewhere else.) This is the default value.
-                         * "file": Transmit passwords via a temporary file
-                           created in the runtime directory. (See the
-                           "user_runtime_directory" option.) Potentially less
-                           secure than a pipe, but necessary when the database
-                           client is elsewhere, e.g. when "mariadb_dump_command"
-                           is configured to "exec" into a container and run a
-                           client there. (In that case though, you will need to
-                           mount the runtime directory into the container.)
                 authentication_database:
                     type: string
                     description: |
