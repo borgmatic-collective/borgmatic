@@ -21,6 +21,7 @@ option: "{credential type ...}"
    * `container`: [Container secrets](https://torsion.org/borgmatic/reference/configuration/credentials/container/)
    * `file`: [File-based credentials](https://torsion.org/borgmatic/reference/configuration/credentials/file/)
    * `keepassxc`: [KeePassXC passwords](https://torsion.org/borgmatic/reference/configuration/credentials/keepassxc/)
+   * `onepassword`: [1Password CLI credentials](https://torsion.org/borgmatic/reference/configuration/credentials/onepassword/)
    * `systemd`: [systemd service credentials](https://torsion.org/borgmatic/reference/configuration/credentials/systemd/)
  * "`...`" provides additional arguments specific to the selected credential
    type

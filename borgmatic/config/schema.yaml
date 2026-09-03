@@ -3472,3 +3472,14 @@ properties:
                 example: "1:7370001"
         description: |
             Configuration for integration with the KeePassXC password manager.
+    onepassword:
+        type: object
+        additionalProperties: false
+        properties:
+            op_command:
+                type: string
+                description: |
+                    Command to use instead of "op".
+                example: /usr/local/bin/op
+        description: |
+            Configuration for integration with the 1Password CLI.
