@@ -1,5 +1,5 @@
 2.1.8.dev0
- * #1137: Add an OpenLDAP database hook for dumping and restoring OpenLDAP databases with slapcat
+ * #1346: Add an OpenLDAP database hook for dumping and restoring OpenLDAP databases with slapcat
    and slapadd. See the documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/data-sources/openldap/
  * #1340: For the `--repair` flag on the `check` action, don't attempt to run `borg info` first,
