@@ -78,6 +78,9 @@ mongodb_databases:
 sqlite_databases:
     - name: mydb
       path: /var/lib/sqlite3/mydb.sqlite
+openldap_databases:
+    - name: cn=config
+    - name: dc=example,dc=com
 ```
 
 See the [data sources

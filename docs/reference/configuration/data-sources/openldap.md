@@ -59,6 +59,15 @@ borgmatic restore --archive latest --database cn=config
 borgmatic restore --archive latest --database dc=example,dc=com
 ```
 
+Dumping `cn=config` covers everything in the `slapd.d` configuration directory,
+schema included. It doesn't cover files that your configuration merely points
+to, like TLS certificates and keys, so back those up with `source_directories`.
+
+And if your `slapd` still reads a legacy `slapd.conf` file instead of a
+`slapd.d` directory, then there's no configuration database to dump—`slapcat -b
+cn=config` just errors with "could not open database". In that case, back up
+`slapd.conf` itself with `source_directories`.
+
 
 ## Restoring
 

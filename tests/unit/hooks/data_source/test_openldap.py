@@ -18,8 +18,26 @@ def test_use_streaming_false_for_no_databases():
     assert not module.use_streaming(databases=[], config=flexmock())
 
 
-def test_build_dump_command_selects_database_by_suffix():
+def test_make_debug_flags_with_debug_log_level_returns_full_debug_flag():
+    insert_logging_mock(logging.DEBUG)
+
+    assert module.make_debug_flags() == ('-d', '65535')
+
+
+def test_make_debug_flags_with_info_log_level_returns_stats_debug_flag():
+    insert_logging_mock(logging.INFO)
+
+    assert module.make_debug_flags() == ('-d', '256')
+
+
+def test_make_debug_flags_with_warning_log_level_returns_no_flags():
     insert_logging_mock(logging.WARNING)
+
+    assert module.make_debug_flags() == ()
+
+
+def test_build_dump_command_selects_database_by_suffix():
+    flexmock(module).should_receive('make_debug_flags').and_return(())
 
     assert module.build_dump_command(
         {'name': 'dc=example,dc=com'},
@@ -28,16 +46,16 @@ def test_build_dump_command_selects_database_by_suffix():
 
 
 def test_build_dump_command_with_slapcat_command_uses_it():
-    insert_logging_mock(logging.WARNING)
+    flexmock(module).should_receive('make_debug_flags').and_return(())
 
     assert module.build_dump_command(
-        {'name': 'dc=example,dc=com', 'slapcat_command': '/usr/sbin/slapcat -q'},
+        {'name': 'dc=example,dc=com', 'slapcat_command': '/usr/sbin/slapcat -c'},
         '/run/borgmatic/dump',
-    ) == ('/usr/sbin/slapcat', '-q', '-b', 'dc=example,dc=com', '-l', '/run/borgmatic/dump')
+    ) == ('/usr/sbin/slapcat', '-c', '-b', 'dc=example,dc=com', '-l', '/run/borgmatic/dump')
 
 
 def test_build_dump_command_passes_shell_metacharacters_through_literally():
-    insert_logging_mock(logging.WARNING)
+    flexmock(module).should_receive('make_debug_flags').and_return(())
 
     # The dump command runs without a shell, so a metacharacter is just a literal argument with
     # nothing to inject into. Escaping it here would corrupt commands at paths containing spaces.
@@ -48,7 +66,7 @@ def test_build_dump_command_passes_shell_metacharacters_through_literally():
 
 
 def test_build_dump_command_with_space_in_suffix_passes_it_through():
-    insert_logging_mock(logging.WARNING)
+    flexmock(module).should_receive('make_debug_flags').and_return(())
 
     # LDAP suffixes legitimately contain spaces, so escaping the name would corrupt it.
     assert module.build_dump_command(
@@ -63,22 +81,13 @@ def test_build_dump_command_with_space_in_suffix_passes_it_through():
     )
 
 
-def test_build_dump_command_with_info_log_level_includes_stats_debug_flag():
-    insert_logging_mock(logging.INFO)
+def test_build_dump_command_includes_debug_flags():
+    flexmock(module).should_receive('make_debug_flags').and_return(('-d', '256'))
 
     assert module.build_dump_command(
         {'name': 'dc=example,dc=com'},
         '/run/borgmatic/dump',
     ) == ('slapcat', '-d', '256', '-b', 'dc=example,dc=com', '-l', '/run/borgmatic/dump')
-
-
-def test_build_dump_command_with_debug_log_level_includes_full_debug_flag():
-    insert_logging_mock(logging.DEBUG)
-
-    assert module.build_dump_command(
-        {'name': 'dc=example,dc=com'},
-        '/run/borgmatic/dump',
-    ) == ('slapcat', '-d', '65535', '-b', 'dc=example,dc=com', '-l', '/run/borgmatic/dump')
 
 
 def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
@@ -89,6 +98,7 @@ def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
         '/run/borgmatic/dump',
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module).should_receive('build_dump_command').never()
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
@@ -123,8 +133,6 @@ def test_dump_data_sources_dumps_each_database():
     databases = [{'name': 'dc=example,dc=com'}, {'name': 'dc=other,dc=com'}]
     processes = [flexmock(), flexmock()]
 
-    insert_logging_mock(logging.WARNING)
-
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
         '/run/borgmatic/dump',
@@ -135,9 +143,13 @@ def test_dump_data_sources_dumps_each_database():
         '/path/to/working/dir',
     )
 
-    for name, process in zip(('dc=example,dc=com', 'dc=other,dc=com'), processes):
+    for database, process in zip(databases, processes):
+        flexmock(module).should_receive('build_dump_command').with_args(
+            database,
+            '/run/borgmatic/dump',
+        ).and_return(('slapcat', database['name'])).once()
         flexmock(module).should_receive('execute_command').with_args(
-            ('slapcat', '-b', name, '-l', '/run/borgmatic/dump'),
+            ('slapcat', database['name']),
             run_to_completion=False,
             working_directory='/path/to/working/dir',
         ).and_return(process).once()
@@ -185,6 +197,7 @@ def test_dump_data_sources_with_label_passes_it_through():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
     )
+    flexmock(module).should_receive('build_dump_command').and_return(('slapcat',))
     flexmock(module).should_receive('execute_command').and_return(flexmock())
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
         '/run/borgmatic',
@@ -215,6 +228,7 @@ def test_dump_data_sources_with_dry_run_skips_dump():
         '/run/borgmatic/dump',
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module).should_receive('build_dump_command').and_return(('slapcat',))
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').never()
@@ -234,7 +248,7 @@ def test_dump_data_sources_with_dry_run_skips_dump():
 
 
 def test_build_restore_command_selects_database_by_suffix():
-    insert_logging_mock(logging.WARNING)
+    flexmock(module).should_receive('make_debug_flags').and_return(())
 
     assert module.build_restore_command({'name': 'dc=example,dc=com'}) == (
         'slapadd',
@@ -244,7 +258,7 @@ def test_build_restore_command_selects_database_by_suffix():
 
 
 def test_build_restore_command_with_slapadd_command_uses_it():
-    insert_logging_mock(logging.WARNING)
+    flexmock(module).should_receive('make_debug_flags').and_return(())
 
     assert module.build_restore_command(
         {'name': 'dc=example,dc=com', 'slapadd_command': '/usr/sbin/slapadd -q'},
@@ -252,7 +266,7 @@ def test_build_restore_command_with_slapadd_command_uses_it():
 
 
 def test_build_restore_command_passes_shell_metacharacters_through_literally():
-    insert_logging_mock(logging.WARNING)
+    flexmock(module).should_receive('make_debug_flags').and_return(())
 
     assert module.build_restore_command(
         {'name': 'dc=example,dc=com', 'slapadd_command': 'slapadd *'},
@@ -260,7 +274,7 @@ def test_build_restore_command_passes_shell_metacharacters_through_literally():
 
 
 def test_build_restore_command_with_space_in_suffix_passes_it_through():
-    insert_logging_mock(logging.WARNING)
+    flexmock(module).should_receive('make_debug_flags').and_return(())
 
     assert module.build_restore_command({'name': 'o=Example Corp,dc=example,dc=com'}) == (
         'slapadd',
@@ -269,8 +283,8 @@ def test_build_restore_command_with_space_in_suffix_passes_it_through():
     )
 
 
-def test_build_restore_command_with_info_log_level_includes_stats_debug_flag():
-    insert_logging_mock(logging.INFO)
+def test_build_restore_command_includes_debug_flags():
+    flexmock(module).should_receive('make_debug_flags').and_return(('-d', '256'))
 
     assert module.build_restore_command({'name': 'dc=example,dc=com'}) == (
         'slapadd',
@@ -281,23 +295,12 @@ def test_build_restore_command_with_info_log_level_includes_stats_debug_flag():
     )
 
 
-def test_build_restore_command_with_debug_log_level_includes_full_debug_flag():
-    insert_logging_mock(logging.DEBUG)
-
-    assert module.build_restore_command({'name': 'dc=example,dc=com'}) == (
-        'slapadd',
-        '-d',
-        '65535',
-        '-b',
-        'dc=example,dc=com',
-    )
-
-
 def test_restore_data_source_dump_restores_database():
     extract_process = flexmock(stdout=flexmock())
 
-    insert_logging_mock(logging.WARNING)
-
+    flexmock(module).should_receive('build_restore_command').with_args(
+        {'name': 'dc=example,dc=com'},
+    ).and_return(('slapadd', '-b', 'dc=example,dc=com')).once()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('slapadd', '-b', 'dc=example,dc=com'),
@@ -322,8 +325,9 @@ def test_restore_data_source_dump_restores_database():
 def test_restore_data_source_dump_with_local_path_uses_it_as_borg_local_path():
     extract_process = flexmock(stdout=flexmock())
 
-    insert_logging_mock(logging.WARNING)
-
+    flexmock(module).should_receive('build_restore_command').and_return(
+        ('slapadd', '-b', 'dc=example,dc=com'),
+    )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('slapadd', '-b', 'dc=example,dc=com'),
