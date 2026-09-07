@@ -30,6 +30,24 @@ def use_streaming(databases, config):
     return any(databases)
 
 
+def make_debug_flags():
+    '''
+    Return the slapcat/slapadd debug flags corresponding to the current borgmatic log level as a
+    tuple, or an empty tuple if the log level is low enough not to warrant any.
+
+    The levels are the bit mask documented in the slapd manual: 256 is "stats", a summary of what
+    got processed, while 65535 sets every bit for the full firehose. Both go to standard error, so
+    they can't corrupt an LDIF dump.
+    '''
+    if logger.isEnabledFor(logging.DEBUG):
+        return ('-d', '65535')
+
+    if logger.getEffectiveLevel() == logging.INFO:
+        return ('-d', '256')
+
+    return ()
+
+
 def build_dump_command(database, dump_filename):
     '''
     Given an OpenLDAP database configuration dict and a dump filename, return the corresponding
@@ -45,6 +63,7 @@ def build_dump_command(database, dump_filename):
     '''
     return (
         *shlex.split(database.get('slapcat_command') or 'slapcat'),
+        *make_debug_flags(),
         '-b',
         database['name'],
         '-l',
@@ -153,22 +172,12 @@ def make_data_source_dump_patterns(
     and a database name to match, return the corresponding glob patterns to match the database dump
     in an archive.
     '''
-    borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
-
     return (
         dump.make_data_source_dump_filename(
             make_dump_path('borgmatic'), name, hostname, port, container, label
         ),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory),
-            name,
-            hostname,
-            port,
-            container,
-            label,
-        ),
-        dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_source_directory),
             name,
             hostname,
             port,
@@ -188,6 +197,7 @@ def build_restore_command(data_source):
     '''
     return (
         *shlex.split(data_source.get('slapadd_command') or 'slapadd'),
+        *make_debug_flags(),
         '-b',
         data_source['name'],
     )
