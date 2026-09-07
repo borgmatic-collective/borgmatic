@@ -78,6 +78,9 @@ mongodb_databases:
 sqlite_databases:
     - name: mydb
       path: /var/lib/sqlite3/mydb.sqlite
+openldap_databases:
+    - name: cn=config
+    - name: dc=example,dc=com
 ```
 
 See the [data sources
@@ -111,7 +114,8 @@ mongodb_databases:
 Note that you may need to use a `username` of the `postgres` superuser for
 this to work with PostgreSQL.
 
-The SQLite hook in particular does not consider "all" a special database name.
+The SQLite hook in particular does not consider "all" a special database name,
+and the OpenLDAP hook doesn't accept it at all.
 
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
 these options in the `hooks:` section of your configuration.

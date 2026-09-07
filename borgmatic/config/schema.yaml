@@ -2394,6 +2394,56 @@ properties:
         example:
             - name: users
               hostname: database.example.org
+    openldap_databases:
+        type: array
+        items:
+            type: object
+            required: ['name']
+            additionalProperties: false
+            properties:
+                name:
+                    type: string
+                    not: {enum: ['all']}
+                    description: |
+                        The suffix (base DN) of the database to dump, given to
+                        slapcat's "-b" flag. Use "cn=config" to dump the slapd
+                        configuration database. Unlike the other database hooks,
+                        "all" is not accepted here, as slapcat without a suffix
+                        dumps only the first configured database rather than
+                        every one of them. Note that using this database hook
+                        implicitly enables read_special (see above) to support
+                        dump and restore streaming.
+                    example: dc=example,dc=com
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
+                slapcat_command:
+                    type: string
+                    description: |
+                        Command to use instead of "slapcat". This can be used to
+                        run slapcat from a non-standard path or with additional
+                        flags. Defaults to "slapcat".
+                    example: /usr/sbin/slapcat
+                slapadd_command:
+                    type: string
+                    description: |
+                        Command to run when restoring a database instead of
+                        "slapadd". Defaults to "slapadd".
+                    example: /usr/sbin/slapadd
+        description: |
+            List of one or more OpenLDAP databases to dump before creating a
+            backup, run once per configuration file. The database dumps are
+            added to your source directories at runtime and streamed directly to
+            Borg. Requires the slapcat and slapadd commands, which read the
+            local slapd databases directly instead of connecting over the
+            network—so borgmatic must run on the LDAP server itself and with
+            sufficient permissions to read those databases. See
+            https://www.openldap.org/software/man.cgi?query=slapcat and
+            https://www.openldap.org/software/man.cgi?query=slapadd for details.
+        example:
+            - name: dc=example,dc=com
     ntfy:
         type: object
         required: ['topic']
