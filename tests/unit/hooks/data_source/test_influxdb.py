@@ -231,13 +231,13 @@ def test_build_dump_command_with_organization_name():
     )
 
 
-def test_build_dump_command_with_organization_id_and_name_precedence():
+def test_build_dump_command_prefers_organization_id_to_name():
     database = {
         'hostname': 'myexample.com',
         'port': 8086,
         'password': 'testtoken',
         'organization_id': 'org123',
-        'organization_name': 'my-org',  # This should be ignored when organization_id is present
+        'organization_name': 'my-org',
     }
     dump_filename = '/tmp/dumpfile'
 
@@ -276,13 +276,13 @@ def test_build_dump_command_with_bucket_id():
     )
 
 
-def test_build_dump_command_with_bucket_id_and_name_precedence():
+def test_build_dump_command_prefers_bucket_id_to_name():
     database = {
         'hostname': 'myexample.com',
         'port': 8086,
         'password': 'testtoken',
         'bucket_id': 'abc123',
-        'name': 'my-bucket',  # This should be ignored when bucket_id is present
+        'name': 'my-bucket',
     }
     dump_filename = '/tmp/dumpfile'
 
@@ -597,7 +597,7 @@ def test_build_restore_command_with_connection_params():
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
-    # The connection parameters take precedence over the database values.
+    # The resolved connection parameter values are what end up in the command.
     assert command == (
         'influx',
         'restore',
@@ -679,7 +679,7 @@ def test_build_restore_command_with_tls_disabled():
     )
 
 
-def test_build_restore_command_with_organization_parameters():
+def test_build_restore_command_prefers_organization_id_to_name():
     database = {
         'name': 'influx-backup',
         'hostname': 'localhost',
@@ -704,7 +704,6 @@ def test_build_restore_command_with_organization_parameters():
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
-    # With both organization_id and organization_name, only organization_id should be used
     assert command == (
         'influx',
         'restore',
@@ -755,7 +754,7 @@ def test_build_restore_command_with_organization_name_only():
     )
 
 
-def test_build_restore_command_with_bucket_parameters():
+def test_build_restore_command_prefers_bucket_id_to_name():
     database = {
         'name': 'my-bucket',
         'hostname': 'localhost',
@@ -779,7 +778,6 @@ def test_build_restore_command_with_bucket_parameters():
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
-    # With both bucket_id and name, only bucket_id should be used
     assert command == (
         'influx',
         'restore',
