@@ -81,7 +81,7 @@ influxdb_databases:
       port: 8087
       tls: true
       verify_tls: false
-      password: mysecretpassword
+      password: trustsome1
       organization_name: BorgCorp
 sqlite_databases:
     - name: mydb

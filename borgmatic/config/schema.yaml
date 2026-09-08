@@ -1545,7 +1545,7 @@ properties:
                     type: string
                     description: |
                         The InfluxDB executable to use, from InfluxDB 2.x.
-                        InfluxDB 3 is not supported. Defaults to `influx`.
+                        InfluxDB 3 is not supported. Defaults to "influx".
                     example: /usr/local/bin/influx
                 password:
                     type: string
@@ -1567,7 +1567,7 @@ properties:
                 hostname:
                     type: string
                     description: |
-                        InfluxDB hostname/IP to connect to. 
+                        InfluxDB hostname/IP to connect to.
                         Defaults to localhost.
                     example: localhost
                 port:
@@ -1583,8 +1583,8 @@ properties:
                 organization_name:
                     type: string
                     description: |
-                        The name of the organization. Field will be ignored
-                        if `organization_id` is also provided.
+                        The name of the organization. Ignored if
+                        "organization_id" is also provided.
                     example: my-org
                 configurations_path:
                     type: string
@@ -1621,9 +1621,8 @@ properties:
                 compression:
                     type: string
                     description: |
-                        Compression to use for local backup files,
-                        either 'none' or 'gzip'.
-                        Defaults to gzip.
+                        Compression to use for local backup files, either
+                        "none" or "gzip". Defaults to "gzip".
                     enum:
                         - none
                         - gzip

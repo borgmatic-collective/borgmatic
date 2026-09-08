@@ -87,6 +87,10 @@ influxdb_databases:
       password: "{credential file /credentials/influxdb_token.txt}"
 ```
 
+borgmatic gives the token to the `influx` command-line tool via the
+`INFLUX_TOKEN` environment variable rather than a command-line flag, so it
+doesn't show up in the process list for other users on the same machine to see.
+
 Alternatively, omit `password` entirely and let the `influx` command-line tool
 supply the token from its own configuration, selected with the
 `active_configuration` option and optionally located with `configurations_path`:
