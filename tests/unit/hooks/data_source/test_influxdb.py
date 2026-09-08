@@ -6,6 +6,9 @@ from borgmatic.hooks.data_source import influxdb as module
 def test_make_environment_maps_password_to_token():
     database = {'name': 'TestBucket', 'password': 'testtoken'}
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'password', database, None, restore=None
+    ).and_return('testtoken')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -18,7 +21,11 @@ def test_make_environment_maps_password_to_token():
 
 def test_make_environment_with_cli_password_sets_correct_token():
     database = {'name': 'TestBucket', 'password': 'testtoken'}
+    restore_connection_params = {'password': 'clitoken'}
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'password', database, restore_connection_params, restore=restore_connection_params
+    ).and_return('clitoken')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
@@ -26,7 +33,7 @@ def test_make_environment_with_cli_password_sets_correct_token():
     environment = module.make_environment(
         database,
         {},
-        restore_connection_params={'password': 'clitoken'},
+        restore_connection_params=restore_connection_params,
     )
 
     assert environment['INFLUX_TOKEN'] == 'clitoken'
@@ -34,12 +41,16 @@ def test_make_environment_with_cli_password_sets_correct_token():
 
 def test_make_environment_without_cli_password_or_configured_password_does_not_set_token():
     database = {'name': 'TestBucket'}
+    restore_connection_params = {'hostname': 'influx.example.org'}
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'password', database, restore_connection_params, restore=restore_connection_params
+    ).and_return(None)
 
     environment = module.make_environment(
         database,
         {},
-        restore_connection_params={'hostname': 'influx.example.org'},
+        restore_connection_params=restore_connection_params,
     )
 
     assert 'INFLUX_TOKEN' not in environment
@@ -48,6 +59,9 @@ def test_make_environment_without_cli_password_or_configured_password_does_not_s
 def test_make_environment_resolves_password_credential():
     database = {'name': 'TestBucket', 'password': '{credential file /credentials/influxdb.txt}'}
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'password', database, None, restore=None
+    ).and_return('{credential file /credentials/influxdb.txt}')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).with_args('{credential file /credentials/influxdb.txt}', {}).and_return('testtoken').once()
@@ -540,6 +554,13 @@ def test_build_restore_command_with_basic_parameters():
     }
     dump_filename = '/tmp/dumpfile'
 
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return(None)
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return(8086)
+
     command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
@@ -567,6 +588,13 @@ def test_build_restore_command_with_connection_params():
     }
     dump_filename = '/tmp/dumpfile'
 
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return('restorehost')
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return('9999')
+
     command = module.build_restore_command(database, dump_filename, connection_params)
 
     # The connection parameters take precedence over the database values.
@@ -593,6 +621,13 @@ def test_build_restore_command_with_no_port_uses_default_port():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
+
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return('localhost')
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return(None)
 
     flexmock(module).should_receive('get_default_port').and_return(9999)
 
@@ -624,6 +659,13 @@ def test_build_restore_command_with_tls_disabled():
     }
     dump_filename = '/tmp/dumpfile'
 
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return('localhost')
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return(8086)
+
     command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
@@ -652,6 +694,13 @@ def test_build_restore_command_with_organization_parameters():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
+
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return('localhost')
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return(8086)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
@@ -684,6 +733,13 @@ def test_build_restore_command_with_organization_name_only():
     }
     dump_filename = '/tmp/dumpfile'
 
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return('localhost')
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return(8086)
+
     command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
@@ -714,6 +770,13 @@ def test_build_restore_command_with_bucket_parameters():
     }
     dump_filename = '/tmp/dumpfile'
 
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return('localhost')
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return(8086)
+
     command = module.build_restore_command(database, dump_filename, connection_params)
 
     # With both bucket_id and name, only bucket_id should be used
@@ -741,6 +804,13 @@ def test_build_restore_command_with_bucket_name_from_name_only():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
+
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return('localhost')
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return(8086)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
@@ -771,6 +841,13 @@ def test_build_restore_command_with_restore_bucket_and_organization():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
+
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return('localhost')
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return(8086)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
@@ -807,6 +884,13 @@ def test_build_restore_command_with_configurations():
     }
     dump_filename = '/tmp/dumpfile'
 
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return('localhost')
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return(8086)
+
     command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
@@ -840,6 +924,13 @@ def test_build_restore_command_with_flags():
     }
     dump_filename = '/tmp/dumpfile'
 
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return('localhost')
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return(8086)
+
     command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
@@ -870,6 +961,13 @@ def test_build_restore_command_with_influx_command_containing_spaces():
     }
     dump_filename = '/tmp/dumpfile'
 
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return('localhost')
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return(8086)
+
     command = module.build_restore_command(database, dump_filename, connection_params)
 
     # The command is not shell quoted, as it doesn't get run within a shell.
@@ -899,6 +997,13 @@ def test_build_restore_command_with_custom_influx_command():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
+
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'hostname', database, connection_params, restore=True
+    ).and_return('localhost')
+    flexmock(module.database_config).should_receive('resolve_database_option').with_args(
+        'port', database, connection_params, restore=True
+    ).and_return(8086)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
