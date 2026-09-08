@@ -80,7 +80,7 @@ influxdb_databases:
       hostname: database6.example.org
       port: 8087
       tls: true
-      skip_verify: true
+      verify_tls: false
       password: mysecretpassword
       organization_name: BorgCorp
 sqlite_databases:

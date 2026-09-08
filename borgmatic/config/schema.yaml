@@ -1597,11 +1597,12 @@ properties:
                     type: string
                     description: |
                         New name to use for the restored organization.
-                skip_verify:
+                verify_tls:
                     type: boolean
                     description: |
-                        Skip TLS certificate chain and host name verification.
-                        Defaults to false.
+                        Verify the TLS certificate chain and host name of the
+                        InfluxDB host. Defaults to true.
+                    example: false
                 http_debug:
                     type: boolean
                     description: |

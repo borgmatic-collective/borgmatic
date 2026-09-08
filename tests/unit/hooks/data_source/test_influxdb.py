@@ -66,7 +66,7 @@ def test_build_dump_command_creates_correct_command():
         'port': 8086,
         'tls': True,
         'password': 'testtoken',
-        'skip_verify': True,
+        'verify_tls': False,
         'http_debug': False,
         'organization_id': 'ccf6258c1e195e27',
         'name': 'TestBucket',
@@ -155,12 +155,12 @@ def test_build_dump_command_with_no_port_uses_default_port():
     )
 
 
-def test_build_dump_command_with_skip_verify_flag():
+def test_build_dump_command_with_verify_tls_false_skips_verification():
     database = {
         'hostname': 'myexample.com',
         'port': 8086,
         'password': 'testtoken',
-        'skip_verify': True,
+        'verify_tls': False,
     }
     dump_filename = '/tmp/dumpfile'
 
@@ -170,6 +170,25 @@ def test_build_dump_command_with_skip_verify_flag():
         'influx',
         'backup',
         '--skip-verify',
+        '--host',
+        'https://myexample.com:8086',
+        '/tmp/dumpfile',
+    )
+
+
+def test_build_dump_command_without_verify_tls_verifies_by_default():
+    database = {
+        'hostname': 'myexample.com',
+        'port': 8086,
+        'password': 'testtoken',
+    }
+    dump_filename = '/tmp/dumpfile'
+
+    command = module.build_dump_command(database, dump_filename)
+
+    assert command == (
+        'influx',
+        'backup',
         '--host',
         'https://myexample.com:8086',
         '/tmp/dumpfile',
@@ -837,7 +856,7 @@ def test_build_restore_command_with_flags():
         'hostname': 'localhost',
         'port': 8086,
         'password': 'mytoken',
-        'skip_verify': True,
+        'verify_tls': False,
         'http_debug': True,
         'full_replace': True,
     }
