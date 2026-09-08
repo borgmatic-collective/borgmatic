@@ -41,7 +41,7 @@ def test_make_environment_with_cli_password_sets_correct_token():
 
 def test_make_environment_without_cli_password_or_configured_password_does_not_set_token():
     database = {'name': 'TestBucket'}
-    restore_connection_params = {'hostname': 'influx.example.org'}
+    restore_connection_params = {'hostname': 'clihost'}
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.database_config).should_receive('resolve_database_option').with_args(
         'password', database, restore_connection_params, restore=restore_connection_params
@@ -476,9 +476,9 @@ def test_restore_data_source_dump_executes_restore_command():
         'label': 'mylabel',
     }
     connection_params = {
-        'hostname': 'localhost',
-        'port': 8086,
-        'password': 'mytoken',
+        'hostname': 'clihost',
+        'port': 'cliport',
+        'password': 'clitoken',
     }
     restore_command = flexmock()
 
@@ -582,18 +582,18 @@ def test_build_restore_command_with_connection_params():
         'password': 'mytoken',
     }
     connection_params = {
-        'hostname': 'restorehost',
-        'port': '9999',
-        'password': 'restoretoken',
+        'hostname': 'clihost',
+        'port': 'cliport',
+        'password': 'clitoken',
     }
     dump_filename = '/tmp/dumpfile'
 
     flexmock(module.database_config).should_receive('resolve_database_option').with_args(
         'hostname', database, connection_params, restore=True
-    ).and_return('restorehost')
+    ).and_return('clihost')
     flexmock(module.database_config).should_receive('resolve_database_option').with_args(
         'port', database, connection_params, restore=True
-    ).and_return('9999')
+    ).and_return('cliport')
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
@@ -602,7 +602,7 @@ def test_build_restore_command_with_connection_params():
         'influx',
         'restore',
         '--host',
-        'https://restorehost:9999',
+        'https://clihost:cliport',
         '--bucket',
         'influx-backup',
         '/tmp/dumpfile',
