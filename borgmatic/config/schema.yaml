@@ -1530,6 +1530,12 @@ properties:
                         dumping purposes if "bucket_id" is given, but still
                         used to identify the dump in the backup.
                     example: mybucket
+                bucket_id:
+                    type: string
+                    description: |
+                        The ID of the bucket to backup. Takes precedence over
+                        the bucket named by the "name" option.
+                    example: 3c9bb0c293be4658
                 label:
                     type: string
                     description: |
@@ -1557,7 +1563,7 @@ properties:
                     description: |
                         Selects if using HTTP (false) or HTTPS (true).
                         Defaults to true.
-                    example: True
+                    example: false
                 hostname:
                     type: string
                     description: |
@@ -1580,12 +1586,6 @@ properties:
                         The name of the organization. Field will be ignored
                         if `organization_id` is also provided.
                     example: my-org
-                bucket_id:
-                    type: string
-                    description: |
-                        The ID of the bucket to backup. Takes precedence over
-                        the bucket named by the "name" option.
-                    example: 3c9bb0c293be4658
                 configurations_path:
                     type: string
                     description: |
