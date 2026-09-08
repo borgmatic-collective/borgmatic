@@ -27,6 +27,29 @@ See below for the full set of configuration options available, including
 hostname, organization, TLS settings, etc.
 
 
+## InfluxDB versions
+
+This hook supports InfluxDB 2.x only. InfluxDB 3 has no means of producing a
+local database dump, so there's nothing for borgmatic to include in a backup:
+
+ * [InfluxDB 3
+   Core](https://docs.influxdata.com/influxdb3/core/admin/backup-restore/) has
+   no backup or restore commands at all. Backing it up means copying its object
+   store by hand in a particular order.
+ * InfluxDB 3 Enterprise added [backup and
+   restore](https://docs.influxdata.com/influxdb3/enterprise/admin/backup-restore/)
+   in 3.11, but a backup goes to the server's own object store rather than to a
+   path of your choosing, and the command returns as soon as the backup starts
+   instead of when it finishes.
+
+The 2.x `influx` command-line tool can't bridge the gap either, because its
+`backup` and `restore` commands use the `/api/v2/backup` and `/api/v2/restore`
+endpoints, which InfluxDB 3 doesn't implement.
+
+Supporting InfluxDB 3 therefore calls for a separate hook that works
+differently, which may come in a future version of borgmatic.
+
+
 ## Buckets
 
 The `name` option is the name of the InfluxDB bucket to dump. To dump every

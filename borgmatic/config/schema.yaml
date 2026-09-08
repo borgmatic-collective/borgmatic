@@ -1545,7 +1545,8 @@ properties:
                 influx_command:
                     type: string
                     description: |
-                        The InfluxDB executable to use. Defaults to `influx`.
+                        The InfluxDB executable to use, from InfluxDB 2.x.
+                        InfluxDB 3 is not supported. Defaults to `influx`.
                 password:
                     type: string
                     description: |
