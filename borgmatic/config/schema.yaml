@@ -1540,6 +1540,7 @@ properties:
                     description: |
                         The InfluxDB executable to use, from InfluxDB 2.x.
                         InfluxDB 3 is not supported. Defaults to `influx`.
+                    example: /usr/local/bin/influx
                 password:
                     type: string
                     description: |
@@ -1550,6 +1551,7 @@ properties:
                         when the token comes from the influx CLI configuration
                         selected by "active_configuration". Supports the
                         "{credential ...}" syntax.
+                    example: trustsome1
                 tls:
                     type: boolean
                     description: |
@@ -1570,33 +1572,40 @@ properties:
                 organization_id:
                     type: string
                     description: |
-                        The ID of the organization. 
+                        The ID of the organization.
+                    example: ccf6258c1e195e27
                 organization_name:
                     type: string
                     description: |
-                        The name of the organization. Field will be ignored 
+                        The name of the organization. Field will be ignored
                         if `organization_id` is also provided.
+                    example: my-org
                 bucket_id:
                     type: string
                     description: |
                         The ID of the bucket to backup. Takes precedence over
                         the bucket named by the "name" option.
+                    example: 3c9bb0c293be4658
                 configurations_path:
                     type: string
                     description: |
                         Path to the influx CLI configurations.
+                    example: /root/.influxdbv2/configs
                 active_configuration:
                     type: string
                     description: |
                         Config name to use for command.
+                    example: default
                 restore_bucket:
                     type: string
                     description: |
                         New name to use for the restored bucket.
+                    example: mybucket-restored
                 restore_organization:
                     type: string
                     description: |
                         New name to use for the restored organization.
+                    example: my-org-restored
                 verify_tls:
                     type: boolean
                     description: |
@@ -1608,15 +1617,17 @@ properties:
                     description: |
                         Fully restore and replace all data on server.
                         Defaults to false.
+                    example: true
                 compression:
                     type: string
                     description: |
-                        Compression to use for local backup files, 
+                        Compression to use for local backup files,
                         either 'none' or 'gzip'.
                         Defaults to gzip.
                     enum:
                         - none
                         - gzip
+                    example: none
     postgresql_databases:
         type: array
         items:
