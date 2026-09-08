@@ -65,6 +65,7 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 <a href="https://openzfs.org/"><img src="https://torsion.org/borgmatic/static/openzfs.png" alt="OpenZFS" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://btrfs.readthedocs.io/"><img src="https://torsion.org/borgmatic/static/btrfs.png" alt="Btrfs" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://sourceware.org/lvm2/"><img src="https://torsion.org/borgmatic/static/lvm.png" alt="LVM" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://www.openldap.org/"><img src="https://torsion.org/borgmatic/static/openldap.png" alt="OpenLDAP" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://rclone.org"><img src="https://torsion.org/borgmatic/static/rclone.png" alt="rclone" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://www.borgbase.com/?utm_source=borgmatic"><img src="https://torsion.org/borgmatic/static/borgbase.png" alt="BorgBase" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 
