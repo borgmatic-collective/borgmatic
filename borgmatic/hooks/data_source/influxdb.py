@@ -6,7 +6,7 @@ import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.hooks.credential.parse
 import borgmatic.hooks.data_source.config
-from borgmatic.execute import execute_command, execute_command_with_processes
+from borgmatic.execute import execute_command
 from borgmatic.hooks.data_source import config as database_config
 from borgmatic.hooks.data_source import dump
 
@@ -147,7 +147,6 @@ def build_dump_command(database, dump_filename):
         influx_command
         + ('backup',)
         + (() if verify_tls else ('--skip-verify',))
-        + (('--http-debug',) if logger.isEnabledFor(logging.DEBUG) else ())
         + ('--host', host)
         + (
             ('--configs-path', database['configurations_path'])
@@ -289,16 +288,13 @@ def restore_data_source_dump(
     # Don't give Borg's local path, as there's no Borg process here for it to apply to: this hook
     # restores from a dump directory that Borg has already extracted rather than from an extract
     # stream.
-    tuple(
-        execute_command_with_processes(
-            restore_command,
-            [],
-            output_log_level=logging.DEBUG,
-            environment=make_environment(
-                data_source, config, restore_connection_params=connection_params
-            ),
-            working_directory=borgmatic.config.paths.get_working_directory(config),
-        )
+    execute_command(
+        restore_command,
+        output_log_level=logging.DEBUG,
+        environment=make_environment(
+            data_source, config, restore_connection_params=connection_params
+        ),
+        working_directory=borgmatic.config.paths.get_working_directory(config),
     )
 
 
@@ -350,7 +346,6 @@ def build_restore_command(database, dump_filename, connection_params):
         + (('--configs-path', configurations_path) if configurations_path else ())
         + (('--active-config', active_configuration) if active_configuration else ())
         + (() if verify_tls else ('--skip-verify',))
-        + (('--http-debug',) if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--full',) if full else ())
         + (dump_filename,)
     )

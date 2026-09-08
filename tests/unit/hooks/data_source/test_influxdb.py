@@ -1,10 +1,6 @@
-import logging
-
 from flexmock import flexmock
 
 from borgmatic.hooks.data_source import influxdb as module
-
-from ...test_verbosity import insert_logging_mock
 
 
 def test_make_environment_maps_password_to_token():
@@ -76,8 +72,6 @@ def test_build_dump_command_creates_correct_command():
     }
     dump_filename = '/tmp/dumpfile'
 
-    insert_logging_mock(logging.WARNING)
-
     command = module.build_dump_command(database, dump_filename)
 
     assert command == (
@@ -94,53 +88,6 @@ def test_build_dump_command_creates_correct_command():
     )
 
 
-def test_build_dump_command_with_debug_logging_includes_http_debug_flag():
-    database = {
-        'hostname': 'myexample.com',
-        'port': 8086,
-        'password': 'testtoken',
-        'organization_id': 'ccf6258c1e195e27',
-    }
-    dump_filename = '/tmp/dumpfile'
-    insert_logging_mock(logging.DEBUG)
-
-    command = module.build_dump_command(database, dump_filename)
-
-    assert command == (
-        'influx',
-        'backup',
-        '--http-debug',
-        '--host',
-        'https://myexample.com:8086',
-        '--org-id',
-        'ccf6258c1e195e27',
-        '/tmp/dumpfile',
-    )
-
-
-def test_build_dump_command_without_debug_logging_omits_http_debug_flag():
-    database = {
-        'hostname': 'myexample.com',
-        'port': 8086,
-        'password': 'testtoken',
-        'organization_id': 'ccf6258c1e195e27',
-    }
-    dump_filename = '/tmp/dumpfile'
-    insert_logging_mock(logging.WARNING)
-
-    command = module.build_dump_command(database, dump_filename)
-
-    assert command == (
-        'influx',
-        'backup',
-        '--host',
-        'https://myexample.com:8086',
-        '--org-id',
-        'ccf6258c1e195e27',
-        '/tmp/dumpfile',
-    )
-
-
 def test_build_dump_command_with_tls_disabled():
     database = {
         'hostname': 'myexample.com',
@@ -150,8 +97,6 @@ def test_build_dump_command_with_tls_disabled():
         'organization_id': 'ccf6258c1e195e27',
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_dump_command(database, dump_filename)
 
@@ -174,8 +119,6 @@ def test_build_dump_command_with_no_port_uses_default_port():
     dump_filename = '/tmp/dumpfile'
     flexmock(module).should_receive('get_default_port').and_return(9999)
 
-    insert_logging_mock(logging.WARNING)
-
     command = module.build_dump_command(database, dump_filename)
 
     assert command == (
@@ -195,8 +138,6 @@ def test_build_dump_command_with_verify_tls_false_skips_verification():
         'verify_tls': False,
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_dump_command(database, dump_filename)
 
@@ -218,8 +159,6 @@ def test_build_dump_command_without_verify_tls_verifies_by_default():
     }
     dump_filename = '/tmp/dumpfile'
 
-    insert_logging_mock(logging.WARNING)
-
     command = module.build_dump_command(database, dump_filename)
 
     assert command == (
@@ -240,8 +179,6 @@ def test_build_dump_command_with_configurations():
         'active_configuration': 'default',
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_dump_command(database, dump_filename)
 
@@ -267,8 +204,6 @@ def test_build_dump_command_with_organization_name():
     }
     dump_filename = '/tmp/dumpfile'
 
-    insert_logging_mock(logging.WARNING)
-
     command = module.build_dump_command(database, dump_filename)
 
     assert command == (
@@ -292,8 +227,6 @@ def test_build_dump_command_with_organization_id_and_name_precedence():
     }
     dump_filename = '/tmp/dumpfile'
 
-    insert_logging_mock(logging.WARNING)
-
     command = module.build_dump_command(database, dump_filename)
 
     assert command == (
@@ -315,8 +248,6 @@ def test_build_dump_command_with_bucket_id():
         'bucket_id': 'abc123',
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_dump_command(database, dump_filename)
 
@@ -341,8 +272,6 @@ def test_build_dump_command_with_bucket_id_and_name_precedence():
     }
     dump_filename = '/tmp/dumpfile'
 
-    insert_logging_mock(logging.WARNING)
-
     command = module.build_dump_command(database, dump_filename)
 
     assert command == (
@@ -364,8 +293,6 @@ def test_build_dump_command_with_compression():
         'compression': 'none',
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_dump_command(database, dump_filename)
 
@@ -389,8 +316,6 @@ def test_build_dump_command_with_custom_influx_command():
     }
     dump_filename = '/tmp/dumpfile'
 
-    insert_logging_mock(logging.WARNING)
-
     command = module.build_dump_command(database, dump_filename)
 
     assert command == (
@@ -410,8 +335,6 @@ def test_build_dump_command_with_influx_command_containing_spaces():
         'influx_command': '"/usr/local/my influx/influx" --skip-verify',
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_dump_command(database, dump_filename)
 
@@ -561,13 +484,12 @@ def test_restore_data_source_dump_executes_restore_command():
     )
     # There's no extract process to consume and therefore no Borg local path, as this hook restores
     # from a dump directory.
-    flexmock(module).should_receive('execute_command_with_processes').with_args(
+    flexmock(module).should_receive('execute_command').with_args(
         restore_command,
-        [],
         output_log_level=module.logging.DEBUG,
         environment={'INFLUX_TOKEN': 'mytoken'},
         working_directory='/working',
-    ).and_yield().once()
+    ).once()
 
     module.restore_data_source_dump(
         hook_config={},
@@ -591,7 +513,7 @@ def test_restore_data_source_dump_with_dry_run_skips_command_execution():
         '/tmp/dumpfile'
     )
     flexmock(module).should_receive('build_restore_command').and_return(flexmock())
-    flexmock(module).should_receive('execute_command_with_processes').never()
+    flexmock(module).should_receive('execute_command').never()
 
     module.restore_data_source_dump(
         hook_config={},
@@ -617,8 +539,6 @@ def test_build_restore_command_with_basic_parameters():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
@@ -646,8 +566,6 @@ def test_build_restore_command_with_connection_params():
         'password': 'restoretoken',
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
@@ -678,8 +596,6 @@ def test_build_restore_command_with_no_port_uses_default_port():
 
     flexmock(module).should_receive('get_default_port').and_return(9999)
 
-    insert_logging_mock(logging.WARNING)
-
     command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
@@ -707,8 +623,6 @@ def test_build_restore_command_with_tls_disabled():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
@@ -738,8 +652,6 @@ def test_build_restore_command_with_organization_parameters():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
@@ -772,8 +684,6 @@ def test_build_restore_command_with_organization_name_only():
     }
     dump_filename = '/tmp/dumpfile'
 
-    insert_logging_mock(logging.WARNING)
-
     command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
@@ -804,8 +714,6 @@ def test_build_restore_command_with_bucket_parameters():
     }
     dump_filename = '/tmp/dumpfile'
 
-    insert_logging_mock(logging.WARNING)
-
     command = module.build_restore_command(database, dump_filename, connection_params)
 
     # With both bucket_id and name, only bucket_id should be used
@@ -833,8 +741,6 @@ def test_build_restore_command_with_bucket_name_from_name_only():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
@@ -865,8 +771,6 @@ def test_build_restore_command_with_restore_bucket_and_organization():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
@@ -903,8 +807,6 @@ def test_build_restore_command_with_configurations():
     }
     dump_filename = '/tmp/dumpfile'
 
-    insert_logging_mock(logging.WARNING)
-
     command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
@@ -937,7 +839,6 @@ def test_build_restore_command_with_flags():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-    insert_logging_mock(logging.DEBUG)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
@@ -949,7 +850,6 @@ def test_build_restore_command_with_flags():
         '--bucket',
         'influx-backup',
         '--skip-verify',
-        '--http-debug',
         '--full',
         '/tmp/dumpfile',
     )
@@ -969,8 +869,6 @@ def test_build_restore_command_with_influx_command_containing_spaces():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
@@ -1001,8 +899,6 @@ def test_build_restore_command_with_custom_influx_command():
         'password': None,
     }
     dump_filename = '/tmp/dumpfile'
-
-    insert_logging_mock(logging.WARNING)
 
     command = module.build_restore_command(database, dump_filename, connection_params)
 
