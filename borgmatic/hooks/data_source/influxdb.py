@@ -31,6 +31,32 @@ def use_streaming(databases, config):  # pragma: no cover
     return False
 
 
+def make_environment(database, config, restore_connection_params=None):
+    '''
+    Make an environment dict from the current environment variables and the given database
+    configuration. If restore connection params are given, this is for a restore operation.
+
+    The InfluxDB API token gets passed via the "INFLUX_TOKEN" environment variable rather than the
+    "--token" flag, so that it doesn't show up in the process list for other users to see.
+    '''
+    environment = dict(os.environ)
+
+    token = database_config.resolve_database_option(
+        'password',
+        database,
+        restore_connection_params,
+        restore=restore_connection_params,
+    )
+
+    if token:
+        environment['INFLUX_TOKEN'] = borgmatic.hooks.credential.parse.resolve_credential(
+            token,
+            config,
+        )
+
+    return environment
+
+
 def dump_data_sources(
     databases,
     config,
@@ -80,12 +106,12 @@ def dump_data_sources(
             f'Dumping InfluxDB database to {dump_filename}{dry_run_label}',
         )
 
-        command = build_dump_command(database, config, dump_filename)
+        command = build_dump_command(database, dump_filename)
         if dry_run:
             continue
 
         dump.create_parent_directory_for_dump(dump_filename)
-        execute_command(command)
+        execute_command(command, environment=make_environment(database, config))
 
     if not dry_run:
         dump.write_data_source_dumps_metadata(
@@ -102,10 +128,11 @@ def dump_data_sources(
     return []
 
 
-def build_dump_command(database, config, dump_filename):
+def build_dump_command(database, dump_filename):
     '''
-    Given a database configuration dict, a configuration dict, and a dump filename, return an
-    "influx backup" command as a tuple for dumping that database to that filename.
+    Given a database configuration dict and a dump filename, return an "influx backup" command as a
+    tuple for dumping that database to that filename. The API token isn't included, as it gets passed
+    via the environment instead. See make_environment().
     '''
     hostname = database.get('hostname') or 'localhost'
     port = database.get('port') or get_default_port(None, None)  # Use default port if not specified
@@ -114,7 +141,6 @@ def build_dump_command(database, config, dump_filename):
     protocol = 'https://' if database.get('tls', True) else 'http://'
     host = f'{protocol}{hostname}:{port}'
 
-    token = borgmatic.hooks.credential.parse.resolve_credential(database.get('password'), config)
     skip_verify = database.get('skip_verify')
     http_debug = database.get('http_debug')
     influx_command = tuple(shlex.split(database.get('influx_command') or 'influx'))
@@ -134,7 +160,6 @@ def build_dump_command(database, config, dump_filename):
             if 'active_configuration' in database
             else ()
         )
-        + (('--token', token) if token else ())
         + (('--org-id', database['organization_id']) if 'organization_id' in database else ())
         + (
             ('--org', database['organization_name'])
@@ -256,7 +281,7 @@ def restore_data_source_dump(
         label=data_source.get('label'),
     )
 
-    restore_command = build_restore_command(data_source, config, dump_filename, connection_params)
+    restore_command = build_restore_command(data_source, dump_filename, connection_params)
 
     logger.debug(f"Restoring InfluxDB database {data_source.get('name')}{dry_run_label}")
     if dry_run:
@@ -270,16 +295,20 @@ def restore_data_source_dump(
             restore_command,
             [],
             output_log_level=logging.DEBUG,
+            environment=make_environment(
+                data_source, config, restore_connection_params=connection_params
+            ),
             working_directory=borgmatic.config.paths.get_working_directory(config),
         )
     )
 
 
-def build_restore_command(database, config, dump_filename, connection_params):
+def build_restore_command(database, dump_filename, connection_params):
     '''
-    Given a database configuration dict, a configuration dict, a dump filename, and a dict of
-    connection parameters overriding the database configuration, return an "influx restore" command
-    as a tuple for restoring that dump.
+    Given a database configuration dict, a dump filename, and a dict of connection parameters
+    overriding the database configuration, return an "influx restore" command as a tuple for
+    restoring that dump. The API token isn't included, as it gets passed via the environment instead.
+    See make_environment().
     '''
 
     hostname = (
@@ -291,12 +320,6 @@ def build_restore_command(database, config, dump_filename, connection_params):
     port = (
         database_config.resolve_database_option('port', database, connection_params, restore=True)
         or get_default_port(None, None)  # Use default port if not specified
-    )
-    token = borgmatic.hooks.credential.parse.resolve_credential(
-        database_config.resolve_database_option(
-            'password', database, connection_params, restore=True
-        ),
-        config,
     )
 
     # Add protocol prefix based on the tls setting, formatted as protocol://hostname:port.
@@ -320,7 +343,6 @@ def build_restore_command(database, config, dump_filename, connection_params):
         influx_command
         + ('restore',)
         + ('--host', host)
-        + (('--token', token) if token else ())
         + (('--org-id', organization_id) if organization_id else ())
         + (('--org', organization_name) if organization_name and not organization_id else ())
         + (('--bucket-id', bucket_id) if bucket_id else ())

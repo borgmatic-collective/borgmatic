@@ -3,8 +3,62 @@ from flexmock import flexmock
 from borgmatic.hooks.data_source import influxdb as module
 
 
+def test_make_environment_maps_password_to_token():
+    database = {'name': 'TestBucket', 'password': 'testtoken'}
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+
+    assert module.make_environment(database, {}) == {
+        'USER': 'root',
+        'INFLUX_TOKEN': 'testtoken',
+    }
+
+
+def test_make_environment_with_cli_password_sets_correct_token():
+    database = {'name': 'TestBucket', 'password': 'testtoken'}
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+
+    environment = module.make_environment(
+        database,
+        {},
+        restore_connection_params={'password': 'clitoken'},
+    )
+
+    assert environment['INFLUX_TOKEN'] == 'clitoken'
+
+
+def test_make_environment_without_cli_password_or_configured_password_does_not_set_token():
+    database = {'name': 'TestBucket'}
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+
+    environment = module.make_environment(
+        database,
+        {},
+        restore_connection_params={'hostname': 'influx.example.org'},
+    )
+
+    assert 'INFLUX_TOKEN' not in environment
+
+
+def test_make_environment_resolves_password_credential():
+    database = {'name': 'TestBucket', 'password': '{credential file /credentials/influxdb.txt}'}
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).with_args('{credential file /credentials/influxdb.txt}', {}).and_return('testtoken').once()
+
+    environment = module.make_environment(database, {})
+
+    assert environment['INFLUX_TOKEN'] == 'testtoken'
+
+
 def test_build_dump_command_creates_correct_command():
-    # Example: influx backup --host https://myexample:8086 --skip-verify --token <REDACTED> \
+    # Example: influx backup --host https://myexample:8086 --skip-verify \
     #  --org-id ccf6258c1e195e27 --bucket TestBucket .
 
     database = {
@@ -18,11 +72,8 @@ def test_build_dump_command_creates_correct_command():
         'name': 'TestBucket',
     }
     dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     assert command == (
         'influx',
@@ -30,8 +81,6 @@ def test_build_dump_command_creates_correct_command():
         '--skip-verify',
         '--host',
         'https://myexample.com:8086',
-        '--token',
-        'testtoken',
         '--org-id',
         'ccf6258c1e195e27',
         '--bucket',
@@ -49,11 +98,8 @@ def test_build_dump_command_with_http_debug_flag():
         'organization_id': 'ccf6258c1e195e27',
     }
     dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     assert command == (
         'influx',
@@ -61,8 +107,6 @@ def test_build_dump_command_with_http_debug_flag():
         '--http-debug',
         '--host',
         'https://myexample.com:8086',
-        '--token',
-        'testtoken',
         '--org-id',
         'ccf6258c1e195e27',
         '/tmp/dumpfile',
@@ -78,19 +122,14 @@ def test_build_dump_command_with_tls_disabled():
         'organization_id': 'ccf6258c1e195e27',
     }
     dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     assert command == (
         'influx',
         'backup',
         '--host',
         'http://myexample.com:8086',
-        '--token',
-        'testtoken',
         '--org-id',
         'ccf6258c1e195e27',
         '/tmp/dumpfile',
@@ -104,19 +143,14 @@ def test_build_dump_command_with_no_port_uses_default_port():
     }
     dump_filename = '/tmp/dumpfile'
     flexmock(module).should_receive('get_default_port').and_return(9999)
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     assert command == (
         'influx',
         'backup',
         '--host',
         'https://myexample.com:9999',
-        '--token',
-        'testtoken',
         '/tmp/dumpfile',
     )
 
@@ -129,11 +163,8 @@ def test_build_dump_command_with_skip_verify_flag():
         'skip_verify': True,
     }
     dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     assert command == (
         'influx',
@@ -141,8 +172,6 @@ def test_build_dump_command_with_skip_verify_flag():
         '--skip-verify',
         '--host',
         'https://myexample.com:8086',
-        '--token',
-        'testtoken',
         '/tmp/dumpfile',
     )
 
@@ -156,11 +185,8 @@ def test_build_dump_command_with_configurations():
         'active_configuration': 'default',
     }
     dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     assert command == (
         'influx',
@@ -171,8 +197,6 @@ def test_build_dump_command_with_configurations():
         '/etc/influxdb/configs',
         '--active-config',
         'default',
-        '--token',
-        'testtoken',
         '/tmp/dumpfile',
     )
 
@@ -185,19 +209,14 @@ def test_build_dump_command_with_organization_name():
         'organization_name': 'my-org',
     }
     dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     assert command == (
         'influx',
         'backup',
         '--host',
         'https://myexample.com:8086',
-        '--token',
-        'testtoken',
         '--org',
         'my-org',
         '/tmp/dumpfile',
@@ -213,19 +232,14 @@ def test_build_dump_command_with_organization_id_and_name_precedence():
         'organization_name': 'my-org',  # This should be ignored when organization_id is present
     }
     dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     assert command == (
         'influx',
         'backup',
         '--host',
         'https://myexample.com:8086',
-        '--token',
-        'testtoken',
         '--org-id',
         'org123',
         '/tmp/dumpfile',
@@ -240,19 +254,14 @@ def test_build_dump_command_with_bucket_id():
         'bucket_id': 'abc123',
     }
     dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     assert command == (
         'influx',
         'backup',
         '--host',
         'https://myexample.com:8086',
-        '--token',
-        'testtoken',
         '--bucket-id',
         'abc123',
         '/tmp/dumpfile',
@@ -268,19 +277,14 @@ def test_build_dump_command_with_bucket_id_and_name_precedence():
         'name': 'my-bucket',  # This should be ignored when bucket_id is present
     }
     dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     assert command == (
         'influx',
         'backup',
         '--host',
         'https://myexample.com:8086',
-        '--token',
-        'testtoken',
         '--bucket-id',
         'abc123',
         '/tmp/dumpfile',
@@ -295,45 +299,16 @@ def test_build_dump_command_with_compression():
         'compression': 'none',
     }
     dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     assert command == (
         'influx',
         'backup',
         '--host',
         'https://myexample.com:8086',
-        '--token',
-        'testtoken',
         '--compression',
         'none',
-        '/tmp/dumpfile',
-    )
-
-
-def test_build_dump_command_resolves_password_credential():
-    database = {
-        'hostname': 'myexample.com',
-        'port': 8086,
-        'password': '{credential file /path/to/token}',
-    }
-    dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).with_args('{credential file /path/to/token}', {}).and_return('resolvedtoken').once()
-
-    command = module.build_dump_command(database, {}, dump_filename)
-
-    assert command == (
-        'influx',
-        'backup',
-        '--host',
-        'https://myexample.com:8086',
-        '--token',
-        'resolvedtoken',
         '/tmp/dumpfile',
     )
 
@@ -346,19 +321,14 @@ def test_build_dump_command_with_custom_influx_command():
         'influx_command': '/usr/local/bin/influx2',
     }
     dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     assert command == (
         '/usr/local/bin/influx2',
         'backup',
         '--host',
         'https://myexample.com:8086',
-        '--token',
-        'testtoken',
         '/tmp/dumpfile',
     )
 
@@ -371,11 +341,8 @@ def test_build_dump_command_with_influx_command_containing_spaces():
         'influx_command': '"/usr/local/my influx/influx" --skip-verify',
     }
     dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, {}, dump_filename)
+    command = module.build_dump_command(database, dump_filename)
 
     # The command is not shell quoted, as it doesn't get run within a shell.
     assert command == (
@@ -384,8 +351,6 @@ def test_build_dump_command_with_influx_command_containing_spaces():
         'backup',
         '--host',
         'https://myexample.com:8086',
-        '--token',
-        'testtoken',
         '/tmp/dumpfile',
     )
 
@@ -423,12 +388,15 @@ def test_dump_data_sources_dumps_each_database():
         label=None,
     ).and_return('/tmp/other_dumpfile').once()
     flexmock(module.dump).should_receive('create_parent_directory_for_dump').twice()
+    flexmock(module).should_receive('make_environment').and_return({'INFLUX_TOKEN': 'mytoken'})
 
     for database, command in zip(databases, commands):
         flexmock(module).should_receive('build_dump_command').with_args(
-            database, {}, object
+            database, object
         ).and_return(command).once()
-        flexmock(module).should_receive('execute_command').with_args(command).once()
+        flexmock(module).should_receive('execute_command').with_args(
+            command, environment={'INFLUX_TOKEN': 'mytoken'}
+        ).once()
 
     flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
         '/tmp',
@@ -514,8 +482,9 @@ def test_restore_data_source_dump_executes_restore_command():
         label='mylabel',
     ).and_return('/tmp/dumpfile')
     flexmock(module).should_receive('build_restore_command').with_args(
-        data_source, {}, '/tmp/dumpfile', connection_params
+        data_source, '/tmp/dumpfile', connection_params
     ).and_return(restore_command).once()
+    flexmock(module).should_receive('make_environment').and_return({'INFLUX_TOKEN': 'mytoken'})
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working'
     )
@@ -525,6 +494,7 @@ def test_restore_data_source_dump_executes_restore_command():
         restore_command,
         [],
         output_log_level=module.logging.DEBUG,
+        environment={'INFLUX_TOKEN': 'mytoken'},
         working_directory='/working',
     ).and_yield().once()
 
@@ -573,23 +543,17 @@ def test_build_restore_command_with_basic_parameters():
     connection_params = {
         'hostname': None,
         'port': None,
-        'token': None,
+        'password': None,
     }
     dump_filename = '/tmp/dumpfile'
 
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
         'influx',
         'restore',
         '--host',
         'https://localhost:8086',
-        '--token',
-        'mytoken',
         '--bucket',
         'influx-backup',
         '/tmp/dumpfile',
@@ -610,11 +574,7 @@ def test_build_restore_command_with_connection_params():
     }
     dump_filename = '/tmp/dumpfile'
 
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     # The connection parameters take precedence over the database values.
     assert command == (
@@ -622,8 +582,6 @@ def test_build_restore_command_with_connection_params():
         'restore',
         '--host',
         'https://restorehost:9999',
-        '--token',
-        'restoretoken',
         '--bucket',
         'influx-backup',
         '/tmp/dumpfile',
@@ -644,19 +602,14 @@ def test_build_restore_command_with_no_port_uses_default_port():
     dump_filename = '/tmp/dumpfile'
 
     flexmock(module).should_receive('get_default_port').and_return(9999)
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
 
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
         'influx',
         'restore',
         '--host',
         'https://localhost:9999',
-        '--token',
-        'mytoken',
         '--bucket',
         'influx-backup',
         '/tmp/dumpfile',
@@ -678,51 +631,13 @@ def test_build_restore_command_with_tls_disabled():
     }
     dump_filename = '/tmp/dumpfile'
 
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
         'influx',
         'restore',
         '--host',
         'http://localhost:8086',
-        '--token',
-        'mytoken',
-        '--bucket',
-        'influx-backup',
-        '/tmp/dumpfile',
-    )
-
-
-def test_build_restore_command_resolves_password_credential():
-    database = {
-        'name': 'influx-backup',
-        'hostname': 'localhost',
-        'port': 8086,
-        'password': '{credential file /path/to/token}',
-    }
-    connection_params = {
-        'hostname': None,
-        'port': None,
-        'password': None,
-    }
-    dump_filename = '/tmp/dumpfile'
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).with_args('{credential file /path/to/token}', {}).and_return('resolvedtoken').once()
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
-
-    assert command == (
-        'influx',
-        'restore',
-        '--host',
-        'https://localhost:8086',
-        '--token',
-        'resolvedtoken',
         '--bucket',
         'influx-backup',
         '/tmp/dumpfile',
@@ -745,11 +660,7 @@ def test_build_restore_command_with_organization_parameters():
     }
     dump_filename = '/tmp/dumpfile'
 
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     # With both organization_id and organization_name, only organization_id should be used
     assert command == (
@@ -757,8 +668,6 @@ def test_build_restore_command_with_organization_parameters():
         'restore',
         '--host',
         'https://localhost:8086',
-        '--token',
-        'mytoken',
         '--org-id',
         'org123',
         '--bucket',
@@ -782,19 +691,13 @@ def test_build_restore_command_with_organization_name_only():
     }
     dump_filename = '/tmp/dumpfile'
 
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
         'influx',
         'restore',
         '--host',
         'https://localhost:8086',
-        '--token',
-        'mytoken',
         '--org',
         'my-org',
         '--bucket',
@@ -818,11 +721,7 @@ def test_build_restore_command_with_bucket_parameters():
     }
     dump_filename = '/tmp/dumpfile'
 
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     # With both bucket_id and name, only bucket_id should be used
     assert command == (
@@ -830,8 +729,6 @@ def test_build_restore_command_with_bucket_parameters():
         'restore',
         '--host',
         'https://localhost:8086',
-        '--token',
-        'mytoken',
         '--bucket-id',
         'bucket123',
         '/tmp/dumpfile',
@@ -852,19 +749,13 @@ def test_build_restore_command_with_bucket_name_from_name_only():
     }
     dump_filename = '/tmp/dumpfile'
 
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
         'influx',
         'restore',
         '--host',
         'https://localhost:8086',
-        '--token',
-        'mytoken',
         '--bucket',
         'my-bucket',
         '/tmp/dumpfile',
@@ -888,19 +779,13 @@ def test_build_restore_command_with_restore_bucket_and_organization():
     }
     dump_filename = '/tmp/dumpfile'
 
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
         'influx',
         'restore',
         '--host',
         'https://localhost:8086',
-        '--token',
-        'mytoken',
         '--org',
         'my-org',
         '--bucket',
@@ -929,19 +814,13 @@ def test_build_restore_command_with_configurations():
     }
     dump_filename = '/tmp/dumpfile'
 
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
         'influx',
         'restore',
         '--host',
         'https://localhost:8086',
-        '--token',
-        'mytoken',
         '--bucket',
         'influx-backup',
         '--configs-path',
@@ -969,19 +848,13 @@ def test_build_restore_command_with_flags():
     }
     dump_filename = '/tmp/dumpfile'
 
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
         'influx',
         'restore',
         '--host',
         'https://localhost:8086',
-        '--token',
-        'mytoken',
         '--bucket',
         'influx-backup',
         '--skip-verify',
@@ -1006,11 +879,7 @@ def test_build_restore_command_with_influx_command_containing_spaces():
     }
     dump_filename = '/tmp/dumpfile'
 
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     # The command is not shell quoted, as it doesn't get run within a shell.
     assert command == (
@@ -1019,8 +888,6 @@ def test_build_restore_command_with_influx_command_containing_spaces():
         'restore',
         '--host',
         'https://localhost:8086',
-        '--token',
-        'mytoken',
         '--bucket',
         'influx-backup',
         '/tmp/dumpfile',
@@ -1042,19 +909,13 @@ def test_build_restore_command_with_custom_influx_command():
     }
     dump_filename = '/tmp/dumpfile'
 
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential',
-    ).replace_with(lambda value, config: value)
-
-    command = module.build_restore_command(database, {}, dump_filename, connection_params)
+    command = module.build_restore_command(database, dump_filename, connection_params)
 
     assert command == (
         '/usr/local/bin/influx2',
         'restore',
         '--host',
         'https://localhost:8086',
-        '--token',
-        'mytoken',
         '--bucket',
         'influx-backup',
         '/tmp/dumpfile',
