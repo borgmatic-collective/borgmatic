@@ -1603,10 +1603,6 @@ properties:
                         Verify the TLS certificate chain and host name of the
                         InfluxDB host. Defaults to true.
                     example: false
-                http_debug:
-                    type: boolean
-                    description: |
-                        Enable debug logging for HTTP requests.
                 full_replace:
                     type: boolean
                     description: |

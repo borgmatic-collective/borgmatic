@@ -142,13 +142,12 @@ def build_dump_command(database, dump_filename):
     host = f'{protocol}{hostname}:{port}'
 
     verify_tls = database.get('verify_tls', True)
-    http_debug = database.get('http_debug')
     influx_command = tuple(shlex.split(database.get('influx_command') or 'influx'))
     return (
         influx_command
         + ('backup',)
         + (() if verify_tls else ('--skip-verify',))
-        + (('--http-debug',) if http_debug else ())
+        + (('--http-debug',) if logger.isEnabledFor(logging.DEBUG) else ())
         + ('--host', host)
         + (
             ('--configs-path', database['configurations_path'])
@@ -335,7 +334,6 @@ def build_restore_command(database, dump_filename, connection_params):
     configurations_path = database.get('configurations_path')
     active_configuration = database.get('active_configuration')
     verify_tls = database.get('verify_tls', True)
-    http_debug = database.get('http_debug')
     full = database.get('full_replace')
     influx_command = tuple(shlex.split(database.get('influx_command') or 'influx'))
 
@@ -352,7 +350,7 @@ def build_restore_command(database, dump_filename, connection_params):
         + (('--configs-path', configurations_path) if configurations_path else ())
         + (('--active-config', active_configuration) if active_configuration else ())
         + (() if verify_tls else ('--skip-verify',))
-        + (('--http-debug',) if http_debug else ())
+        + (('--http-debug',) if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--full',) if full else ())
         + (dump_filename,)
     )
