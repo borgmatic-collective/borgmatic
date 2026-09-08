@@ -141,12 +141,11 @@ def build_dump_command(database, dump_filename):
     protocol = 'https://' if database.get('tls', True) else 'http://'
     host = f'{protocol}{hostname}:{port}'
 
-    verify_tls = database.get('verify_tls', True)
     influx_command = tuple(shlex.split(database.get('influx_command') or 'influx'))
     return (
         influx_command
         + ('backup',)
-        + (() if verify_tls else ('--skip-verify',))
+        + (() if database.get('verify_tls', True) else ('--skip-verify',))
         + ('--host', host)
         + (
             ('--configs-path', database['configurations_path'])
@@ -330,7 +329,6 @@ def build_restore_command(database, dump_filename, connection_params):
     restore_organization = database.get('restore_organization')
     configurations_path = database.get('configurations_path')
     active_configuration = database.get('active_configuration')
-    verify_tls = database.get('verify_tls', True)
     full = database.get('full_replace')
     influx_command = tuple(shlex.split(database.get('influx_command') or 'influx'))
 
@@ -346,7 +344,7 @@ def build_restore_command(database, dump_filename, connection_params):
         + (('--new-org', restore_organization) if restore_organization else ())
         + (('--configs-path', configurations_path) if configurations_path else ())
         + (('--active-config', active_configuration) if active_configuration else ())
-        + (() if verify_tls else ('--skip-verify',))
+        + (() if database.get('verify_tls', True) else ('--skip-verify',))
         + (('--full',) if full else ())
         + (dump_filename,)
     )
