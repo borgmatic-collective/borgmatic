@@ -260,11 +260,12 @@ def restore_data_source_dump(
     borgmatic_runtime_directory,
 ):
     '''
-    Restore a database from a dump in the given borgmatic runtime directory. The database is
-    supplied as a data source configuration dict, but the given hook configuration is ignored. The
-    given configuration dict is used to construct the dump path, and the given connection parameters
-    override the corresponding database configuration options. If this is a dry run, then don't
-    actually restore anything.
+    Restore a database from a dump in the given borgmatic runtime directory, which is used to
+    construct the dump path. The database is supplied as a data source configuration dict, but the
+    given hook configuration is ignored. The given configuration dict is used to resolve the API
+    token credential and the working directory, and the given connection parameters override the
+    corresponding database configuration options. If this is a dry run, then don't actually restore
+    anything.
 
     The given extract process is unused, as this hook restores from a dump directory rather than
     from an extract stream.
