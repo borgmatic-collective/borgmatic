@@ -165,6 +165,7 @@ def parse_configuration(
         )
 
     apply_logical_validation(config_filename, config)
+    normalize.normalize_data_source_formats(config)
 
     return config, config_paths, logs
 

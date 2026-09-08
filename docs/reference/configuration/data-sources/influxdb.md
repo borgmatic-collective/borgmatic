@@ -11,17 +11,15 @@ InfluxDB with borgmatic, use the `influxdb_databases:` hook. For instance:
 ```yaml
 influxdb_databases:
     - name: mybucket
-      format: directory
       password: mytoken
 ```
 
 This hook requires the [`influx` command-line
 tool](https://docs.influxdata.com/influxdb/v2/tools/influx-cli/) from InfluxDB
 2.x, as borgmatic dumps and restores with `influx backup` and `influx restore`.
-The `format` option is required and must be `directory`, because those commands
-produce a directory of files rather than a single file. That's also what tells
-borgmatic to extract the dump to a directory when restoring instead of streaming
-it.
+Because those commands produce a directory of files rather than a single file,
+this hook writes each dump to temporary disk space instead of streaming it
+directly to Borg.
 
 See below for the full set of configuration options available, including
 hostname, organization, TLS settings, etc.
@@ -58,7 +56,6 @@ bucket in an instance instead, set it to `all`:
 ```yaml
 influxdb_databases:
     - name: all
-      format: directory
       password: mytoken
 ```
 
@@ -70,7 +67,6 @@ identify the dump within the backup, so it remains required):
 influxdb_databases:
     - name: mybucket
       bucket_id: 06fc0dfd1a97b4c1
-      format: directory
       password: mytoken
 ```
 
@@ -88,7 +84,6 @@ syntax](https://torsion.org/borgmatic/reference/configuration/credentials/)):
 ```yaml
 influxdb_databases:
     - name: mybucket
-      format: directory
       password: "{credential file /credentials/influxdb_token.txt}"
 ```
 
@@ -99,7 +94,6 @@ supply the token from its own configuration, selected with the
 ```yaml
 influxdb_databases:
     - name: mybucket
-      format: directory
       active_configuration: myconfig
 ```
 

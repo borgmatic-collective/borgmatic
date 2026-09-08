@@ -77,7 +77,6 @@ mongodb_databases:
       options: "--ssl"
 influxdb_databases:
     - name: all
-      format: directory
       hostname: database6.example.org
       port: 8087
       tls: true
@@ -117,7 +116,6 @@ mongodb_databases:
     - name: all
 influxdb_databases:
     - name: all
-      format: directory
 ```
 
 Note that you may need to use a `username` of the `postgres` superuser for

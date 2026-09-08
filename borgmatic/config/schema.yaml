@@ -1520,7 +1520,6 @@ properties:
             type: object
             required:
                 - name
-                - format
             additionalProperties: false
             properties:
                 name:
@@ -1536,12 +1535,6 @@ properties:
                     description: |
                         Label to identify the database dump in the backup.
                     example: my_backup_label
-                format:
-                    type: string
-                    enum: ['directory']
-                    description: |
-                        Database dump format (required to be 'directory').
-                    example: directory
                 influx_command:
                     type: string
                     description: |
