@@ -374,3 +374,19 @@ def normalize(config_filename, config):  # noqa: PLR0912, PLR0915
         )
 
     return logs
+
+
+def normalize_data_source_formats(config):
+    '''
+    Given a configuration dict, set the dump format for each data source that supports only a single
+    format, so that the user doesn't have to configure it.
+
+    This has to run after schema validation rather than from normalize() above, because these
+    options deliberately aren't in the schema—and the data source schemas set
+    "additionalProperties: false".
+    '''
+    # The InfluxDB hook dumps with "influx backup", which produces a directory of files rather than
+    # a single file. The restore action consults this option to know to extract the dump as a
+    # directory instead of streaming it.
+    for influxdb_database in config.get('influxdb_databases') or ():
+        influxdb_database['format'] = 'directory'
