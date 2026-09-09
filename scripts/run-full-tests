@@ -13,7 +13,7 @@ set -e
 if [ -z "$TEST_CONTAINER" ]; then
     echo "This script is designed to work inside a test container and is not intended to"
     echo "be run manually. If you're trying to run borgmatic's end-to-end tests, execute"
-    echo "scripts/run-end-to-end-dev-tests instead."
+    echo "scripts/run-end-to-end-tests instead."
     exit 1
 fi
 
