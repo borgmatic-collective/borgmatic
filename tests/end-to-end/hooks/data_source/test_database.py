@@ -90,6 +90,14 @@ mongodb_databases:
 sqlite_databases:
     - name: sqlite_test
       path: /tmp/sqlite_test.db
+influxdb_databases:
+    # There's no "all" database here, because restoring one would collide with the buckets that
+    # already exist on the server.
+    - name: influxdb_test
+      hostname: influxdb
+      tls: false
+      password: test_token
+      organization_name: test_org
 '''
 
     with open(config_path, 'w') as config_file:
@@ -231,6 +239,15 @@ sqlite_databases:
     - name: sqlite_test
       path: /tmp/sqlite_test.db
       restore_path: /tmp/sqlite_test2.db
+influxdb_databases:
+    # "restore_bucket" restores onto the same server under a different name, so unlike the other
+    # data sources here, InfluxDB doesn't need a second container.
+    - name: influxdb_test
+      hostname: influxdb
+      tls: false
+      password: test_token
+      organization_name: test_org
+      restore_bucket: influxdb_test2
 '''
 
     with open(config_path, 'w') as config_file:
@@ -356,6 +373,41 @@ def run_sqlite_command(command, config, use_restore_options=False):
     )
 
 
+def get_influxdb_bucket(config, use_restore_options=False):
+    '''
+    Return the bucket to use. There's no restore hostname, port or token to go with it, because
+    InfluxDB restores onto the same server—just into "restore_bucket" instead.
+    '''
+    database = config['influxdb_databases'][0]
+
+    return (database.get('restore_bucket') if use_restore_options else None) or database.get('name')
+
+
+def run_influxdb_command(subcommand, arguments, config, check=True):
+    '''
+    Run the given InfluxDB CLI subcommand with the given arguments, returning the completed process.
+
+    The connection flags go between the subcommand and its arguments, because the InfluxDB CLI stops
+    parsing flags at the first positional argument.
+    '''
+    database = config['influxdb_databases'][0]
+    (hostname, port, _, password) = get_connection_params(database)
+
+    return subprocess.run(
+        [
+            '/usr/bin/influx',
+            *subcommand.split(' '),
+            f'--host=http://{hostname}:{port or 8086}',
+            f"--org={database['organization_name']}",
+            *arguments,
+        ],
+        # As with the InfluxDB hook itself, the configured password is actually an API token.
+        env={'INFLUX_TOKEN': password},
+        capture_output=True,
+        check=check,
+    )
+
+
 DEFAULT_HOOK_NAMES = {'postgresql', 'mariadb', 'mysql', 'mongodb', 'sqlite'}
 
 
@@ -380,6 +432,15 @@ def create_test_tables(config, use_restore_options=False):
     if 'sqlite_databases' in config:
         run_sqlite_command(command.format(id=5), config, use_restore_options)
 
+    if 'influxdb_databases' in config:
+        bucket = get_influxdb_bucket(config, use_restore_options)
+
+        # "influx bucket create" errors if the bucket already exists, e.g. the one that the container
+        # makes at startup. So delete it first, tolerating it not being there.
+        run_influxdb_command('bucket delete', ('--name', bucket), config, check=False)
+        run_influxdb_command('bucket create', ('--name', bucket), config)
+        run_influxdb_command('write', ('--bucket', bucket, 'test6 thing=1'), config)
+
 
 def drop_test_tables(config, use_restore_options=False):
     '''
@@ -401,6 +462,15 @@ def drop_test_tables(config, use_restore_options=False):
 
     if 'sqlite_databases' in config:
         run_sqlite_command(command.format(id=5), config, use_restore_options)
+
+    if 'influxdb_databases' in config:
+        # Unlike "drop table if exists", "influx bucket delete" errors if the bucket is missing.
+        run_influxdb_command(
+            'bucket delete',
+            ('--name', get_influxdb_bucket(config, use_restore_options)),
+            config,
+            check=False,
+        )
 
 
 def select_test_tables(config, use_restore_options=False):
@@ -431,6 +501,17 @@ def select_test_tables(config, use_restore_options=False):
 
     if 'sqlite_databases' in config:
         run_sqlite_command(command.format(id=5), config, use_restore_options)
+
+    if 'influxdb_databases' in config:
+        bucket = get_influxdb_bucket(config, use_restore_options)
+        query = (
+            f'from(bucket:"{bucket}") |> range(start:0)'
+            ' |> filter(fn:(r) => r._measurement == "test6")'
+        )
+        output = run_influxdb_command('query', (query,), config).stdout.decode(sys.stdout.encoding)
+
+        # Querying for a missing measurement succeeds with empty output, so check the output itself.
+        assert 'test6' in output
 
 
 def test_database_dump_and_restore():
