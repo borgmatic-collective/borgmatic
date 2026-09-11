@@ -376,13 +376,14 @@ def normalize(config_filename, config):  # noqa: PLR0912, PLR0915
     return logs
 
 
-def normalize_data_source_formats(config):
+def post_validation_normalize(config):
     '''
-    Given a configuration dict, set the dump format for each data source that supports only a single
-    format, so that the user doesn't have to configure it.
+    Given a configuration dict, apply any normalization that has to run after schema validation
+    rather than from normalize() above.
 
-    This has to run after schema validation rather than from normalize() above, because these
-    options deliberately aren't in the schema—and the data source schemas set
+    So far that's just setting the dump format for each data source that supports only a single
+    format, so that the user doesn't have to configure it. That can't run before validation, because
+    these options deliberately aren't in the schema—and the data source schemas set
     "additionalProperties: false".
     '''
     # The InfluxDB hook dumps with "influx backup", which produces a directory of files rather than
