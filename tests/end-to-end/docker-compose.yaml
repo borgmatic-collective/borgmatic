@@ -43,6 +43,16 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root2
       MONGO_INITDB_ROOT_PASSWORD: test2
     command: docker-entrypoint.sh --port=27018
+  influxdb:
+    image: docker.io/influxdb:2.9.1-alpine
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: influxdb
+      # InfluxDB requires a password of at least eight characters, hence not just "test".
+      DOCKER_INFLUXDB_INIT_PASSWORD: testtest
+      DOCKER_INFLUXDB_INIT_ORG: test_org
+      DOCKER_INFLUXDB_INIT_BUCKET: influxdb_test
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: test_token
   tests:
     image: docker.io/alpine:3.23
     environment:
@@ -62,3 +72,4 @@ services:
       - mariadb2
       - mongodb
       - mongodb2
+      - influxdb

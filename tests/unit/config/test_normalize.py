@@ -393,3 +393,24 @@ def test_normalize_config_with_borgmatic_source_directory_warns():
     assert len(logs) == 1
     assert logs[0].levelno == module.logging.WARNING
     assert 'borgmatic_source_directory' in logs[0].msg
+
+
+def test_post_validation_normalize_sets_influxdb_format_to_directory():
+    config = {'influxdb_databases': [{'name': 'foo'}, {'name': 'bar'}]}
+
+    module.post_validation_normalize(config)
+
+    assert config == {
+        'influxdb_databases': [
+            {'name': 'foo', 'format': 'directory'},
+            {'name': 'bar', 'format': 'directory'},
+        ],
+    }
+
+
+def test_post_validation_normalize_without_influxdb_databases_does_not_raise():
+    config = {'influxdb_databases': None}
+
+    module.post_validation_normalize(config)
+
+    assert config == {'influxdb_databases': None}
