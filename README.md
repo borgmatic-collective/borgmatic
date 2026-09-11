@@ -62,6 +62,7 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 <a href="https://mariadb.com/"><img src="https://torsion.org/borgmatic/static/mariadb.png" alt="MariaDB" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://www.mongodb.com/"><img src="https://torsion.org/borgmatic/static/mongodb.png" alt="MongoDB" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://sqlite.org/"><img src="https://torsion.org/borgmatic/static/sqlite.png" alt="SQLite" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://docs.influxdata.com/influxdb/v2/"><img src="https://torsion.org/borgmatic/static/influxdb.png" alt="InfluxDB" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://openzfs.org/"><img src="https://torsion.org/borgmatic/static/openzfs.png" alt="OpenZFS" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://btrfs.readthedocs.io/"><img src="https://torsion.org/borgmatic/static/btrfs.png" alt="Btrfs" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://sourceware.org/lvm2/"><img src="https://torsion.org/borgmatic/static/lvm.png" alt="LVM" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
