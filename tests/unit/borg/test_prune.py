@@ -579,7 +579,7 @@ def test_prune_archives_with_extra_borg_options_calls_borg_with_extra_options():
     )
 
 
-def test_prune_archives_with_date_based_matching_calls_borg_with_date_based_flags():
+def test_prune_archives_with_from_calls_borg_with_from_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -587,14 +587,8 @@ def test_prune_archives_with_date_based_matching_calls_borg_with_date_based_flag
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
         (
-            '--newer',
-            '1d',
-            '--newest',
-            '1y',
-            '--older',
-            '1m',
-            '--oldest',
-            '1w',
+            '--from',
+            '2026-01-01',
             '--match-archives',
             None,
         ),
@@ -617,14 +611,8 @@ def test_prune_archives_with_date_based_matching_calls_borg_with_date_based_flag
             '--keep-monthly',
             '3',
             '--log-json',
-            '--newer',
-            '1d',
-            '--newest',
-            '1y',
-            '--older',
-            '1m',
-            '--oldest',
-            '1w',
+            '--from',
+            '2026-01-01',
             '--match-archives',
             None,
             '--repo',
@@ -641,10 +629,8 @@ def test_prune_archives_with_date_based_matching_calls_borg_with_date_based_flag
     prune_arguments = flexmock(
         statistics=False,
         list_details=False,
-        newer='1d',
-        newest='1y',
-        older='1m',
-        oldest='1w',
+        # Work around for "from" being a reserved keyword.
+        **{'from': None},
     )
     module.prune_archives(
         dry_run=False,
