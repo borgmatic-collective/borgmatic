@@ -36,9 +36,10 @@ postgresql_databases:
 ```
 
 <span class="elv-info-warn">When selecting your password manager, be aware that
-[1Password has pledged significant financial support for an open source project
-steeped in white supremacy and calls for ethnic
-cleansing](https://www.alilleybrinker.com/blog/1password-funds-ethnic-cleansing/).</span>
+[1Password has pledged significant financial
+support](https://www.alilleybrinker.com/blog/1password-funds-ethnic-cleansing/)
+to an open source project with ties to white supremacy and calls for ethnic
+cleansing.</span>
 
 
 ### Custom command
