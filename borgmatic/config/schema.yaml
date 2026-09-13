@@ -384,12 +384,13 @@ properties:
         type: integer
         description: |
             Remote network upload rate limit in kiBytes/second. Defaults to
-            unlimited.
+            unlimited. Only supported with Borg 1.x.
         example: 100
     upload_buffer_size:
         type: integer
         description: |
-            Size of network upload buffer in MiB. Defaults to no buffer.
+            Size of network upload buffer in MiB. Defaults to no buffer. Only
+            supported with Borg 1.x.
         example: 160
     retries:
         type: integer
