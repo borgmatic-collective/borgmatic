@@ -2,6 +2,9 @@
  * #450: Add an InfluxDB database hook for dumping and restoring InfluxDB 1 and 2 databases. See the
    documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/data-sources/influxdb/
+ * #1345: Add a 1Password credential hook for loading credentials from the 1Password CLI. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/reference/configuration/credentials/onepassword/
  * #1346: Add an OpenLDAP database hook for dumping and restoring OpenLDAP databases with slapcat
    and slapadd. See the documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/data-sources/openldap/

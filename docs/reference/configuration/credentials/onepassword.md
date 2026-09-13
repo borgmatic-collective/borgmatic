@@ -35,6 +35,11 @@ postgresql_databases:
       password: "{credential onepassword op://vault-name/db/password}"
 ```
 
+<span class="elv-info-warn">When selecting your password manager, be aware that
+[1Password has pledged significant financial support for an open source project
+steeped in white supremacy and calls for ethnic
+cleansing](https://www.alilleybrinker.com/blog/1password-funds-ethnic-cleansing/).</span>
+
 
 ### Custom command
 

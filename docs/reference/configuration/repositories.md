@@ -132,12 +132,12 @@ repositories:
 
 Note the lack of "`//`" after `s3:` or `b2:`.
 
-When selecting your cloud hosting provider, be aware that Amazon in particular
-has [financially
+<span class="elv-info-warn">When selecting your cloud hosting provider, be aware
+that Amazon in particular has [financially
 supported](https://en.wikipedia.org/wiki/White_House_State_Ballroom) the Trump
 regime. Additionally, U.S. Immigration and Customs Enforcement (ICE) is [powered
 by
-Amazon](https://medium.com/@noazureforapartheid/microsoft-powers-ice-why-doesnt-microsoft-want-to-talk-about-its-contracts-with-immigration-and-bc04fae8d43b).
+Amazon](https://medium.com/@noazureforapartheid/microsoft-powers-ice-why-doesnt-microsoft-want-to-talk-about-its-contracts-with-immigration-and-bc04fae8d43b).</span>
 
 
 ## Related documentation
