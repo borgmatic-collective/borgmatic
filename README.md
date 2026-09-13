@@ -91,7 +91,8 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 <a href="https://systemd.io/"><img src="https://torsion.org/borgmatic/static/systemd.png" alt="Sentry" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://www.docker.com/"><img src="https://torsion.org/borgmatic/static/docker.png" alt="Docker" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://podman.io/"><img src="https://torsion.org/borgmatic/static/podman.png" alt="Podman" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://keepassxc.org/"><img src="https://torsion.org/borgmatic/static/keepassxc.png" alt="Podman" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://keepassxc.org/"><img src="https://torsion.org/borgmatic/static/keepassxc.png" alt="KeePassXC" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://1password.com/"><img src="https://torsion.org/borgmatic/static/onepassword.png" alt="1Password" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
 
 
 ## Getting started
