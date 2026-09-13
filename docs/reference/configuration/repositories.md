@@ -80,6 +80,12 @@ the path to the SSH binary or passing it custom flags. For example:
 ssh_command: ssh -i /path/to/private/key
 ```
 
+<span class="minilink minilink-addedin">New in borgmatic version 2.1.8</span>
+<span class="minilink minilink-addedin">With Borg version 2.x</span> You may
+need to use a `rest://` prefix instead of `ssh://`, depending on the particular
+version of Borg 2 you're using. You'll know if `rest://` is needed if Borg
+complains when you try to use a `ssh://` repository URL.
+
 
 ### SFTP
 

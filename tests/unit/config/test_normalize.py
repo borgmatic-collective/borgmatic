@@ -314,6 +314,11 @@ def test_normalize_commands_moves_individual_command_hooks_to_unified_commands(
             True,
         ),
         (
+            {'repositories': ['rest://foo@bar:1234/repo']},
+            {'repositories': [{'path': 'rest://foo@bar:1234/repo'}]},
+            True,
+        ),
+        (
             {'repositories': ['rclone:host:repo']},
             {'repositories': [{'path': 'rclone:host:repo'}]},
             True,

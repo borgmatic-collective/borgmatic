@@ -340,7 +340,9 @@ def normalize(config_filename, config):  # noqa: PLR0912, PLR0915
                             path=updated_repository_path,
                         ),
                     )
-                elif repository_path.startswith(('ssh://', 'sftp://', 'rclone:', 's3:', 'b2:')):
+                elif repository_path.startswith(
+                    ('ssh://', 'sftp://', 'rest://', 'rclone:', 's3:', 'b2:')
+                ):
                     config['repositories'].append(repository_dict)
                 else:
                     rewritten_repository_path = f"ssh://{repository_path.replace(':~', '/~').replace(':/', '/').replace(':', '/./')}"
@@ -349,7 +351,7 @@ def normalize(config_filename, config):  # noqa: PLR0912, PLR0915
                             dict(
                                 levelno=logging.WARNING,
                                 levelname='WARNING',
-                                msg=f'{config_filename}: Remote repository paths without ssh://, sftp://, rclone:, s3:, or b2:, syntax are deprecated and support will be removed from a future release. Interpreting "{repository_path}" as "{rewritten_repository_path}"',
+                                msg=f'{config_filename}: Remote repository paths without ssh://, sftp://, rest://, rclone:, s3:, or b2:, syntax are deprecated and support will be removed from a future release. Interpreting "{repository_path}" as "{rewritten_repository_path}"',
                             ),
                         ),
                     )
