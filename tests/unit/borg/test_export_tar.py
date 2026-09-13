@@ -109,8 +109,34 @@ def test_export_tar_archive_calls_borg_with_remote_path_flags():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         ('repo::archive',),
     )
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_execute_command_mock(
         ('borg', 'export-tar', '--remote-path', 'borg1', '--log-json', 'repo::archive', 'test.tar'),
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.export_tar_archive(
+        dry_run=False,
+        repository_path='repo',
+        archive='archive',
+        paths=None,
+        destination_path='test.tar',
+        config={},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        remote_path='borg1',
+    )
+
+
+def test_export_tar_archive_with_feature_available_calls_borg_without_remote_path_flags():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',),
+    )
+    flexmock(module.feature).should_receive('available').and_return(True)
+    insert_execute_command_mock(
+        ('borg', 'export-tar', '--log-json', 'repo::archive', 'test.tar'),
     )
     insert_logging_mock(logging.WARNING)
 

@@ -610,7 +610,42 @@ def test_create_repository_with_remote_path_calls_borg_with_remote_path_flag():
         (*REPO_CREATE_COMMAND, '--remote-path', 'borg1', '--repo', 'repo'),
     )
     insert_logging_mock(logging.WARNING)
-    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.feature).should_receive('available').with_args(
+        module.feature.Feature.REPO_CREATE, object
+    ).and_return(True)
+    flexmock(module.feature).should_receive('available').with_args(
+        module.feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, object
+    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        ),
+    )
+
+    module.create_repository(
+        dry_run=False,
+        repository_path='repo',
+        config={},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(),
+        encryption_mode='repokey',
+        remote_path='borg1',
+    )
+
+
+def test_create_repository_with_remote_path_and_feature_available_calls_borg_without_remote_path_flag():
+    insert_repo_info_command_not_found_mock()
+    insert_repo_create_command_mock(
+        (*REPO_CREATE_COMMAND, '--repo', 'repo'),
+    )
+    insert_logging_mock(logging.WARNING)
+    flexmock(module.feature).should_receive('available').with_args(
+        module.feature.Feature.REPO_CREATE, object
+    ).and_return(True)
+    flexmock(module.feature).should_receive('available').with_args(
+        module.feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, object
+    ).and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
         (
             '--repo',

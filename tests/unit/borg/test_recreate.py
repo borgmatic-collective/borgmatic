@@ -97,7 +97,12 @@ def test_recreate_with_remote_path():
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
-    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
+    flexmock(module.borgmatic.borg.feature).should_receive('available').with_args(
+        module.borgmatic.borg.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, object
+    ).and_return(True)
+    flexmock(module.borgmatic.borg.feature).should_receive('available').with_args(
+        module.borgmatic.borg.feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, object
+    ).and_return(False)
     flexmock(module.borgmatic.borg.flags).should_receive(
         'make_repository_archive_flags',
     ).and_return(
@@ -109,6 +114,47 @@ def test_recreate_with_remote_path():
     insert_execute_command_mock(
         ('borg', 'recreate', '--remote-path', 'borg1', '--log-json', '--repo', 'repo')
     )
+    insert_logging_mock(logging.WARNING)
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment=None,
+            timestamp=None,
+            match_archives=None,
+        ),
+        global_arguments=flexmock(dry_run=False),
+        local_path='borg',
+        remote_path='borg1',
+        patterns=None,
+    )
+
+
+def test_recreate_with_feature_available_omits_remote_path():
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.borgmatic.borg.feature).should_receive('available').with_args(
+        module.borgmatic.borg.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, object
+    ).and_return(True)
+    flexmock(module.borgmatic.borg.feature).should_receive('available').with_args(
+        module.borgmatic.borg.feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, object
+    ).and_return(True)
+    flexmock(module.borgmatic.borg.flags).should_receive(
+        'make_repository_archive_flags',
+    ).and_return(
+        (
+            '--repo',
+            'repo',
+        ),
+    )
+    insert_execute_command_mock(('borg', 'recreate', '--log-json', '--repo', 'repo'))
     insert_logging_mock(logging.WARNING)
 
     module.recreate_archive(

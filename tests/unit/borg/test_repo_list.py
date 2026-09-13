@@ -300,6 +300,42 @@ def test_get_latest_archive_with_remote_path_calls_borg_with_remote_path_flags()
     )
 
 
+def test_get_latest_archive_with_remote_path_and_feature_available_calls_borg_without_remote_path_flags():
+    expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.feature).should_receive('available').with_args(
+        module.feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, object
+    ).and_return(True)
+    flexmock(module.flags).should_receive('make_flags').with_args('remote-path', 'borg1').never()
+    flexmock(module.flags).should_receive('make_flags').with_args('last', 1).and_return(
+        ('--last', '1')
+    )
+    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        ('borg', 'list', '--log-json', *BORG_LIST_LATEST_ARGUMENTS),
+        environment=None,
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ).and_yield(json.dumps({'archives': [expected_archive]}))
+    insert_logging_mock(logging.WARNING)
+
+    assert (
+        module.get_latest_archive(
+            'repo',
+            config={},
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            remote_path='borg1',
+        )
+        == expected_archive
+    )
+
+
 def test_get_latest_archive_with_umask_calls_borg_with_umask_flags():
     expected_archive = {'name': 'archive-name', 'id': 'd34db33f'}
     flexmock(module.feature).should_receive('available').and_return(False)
@@ -913,6 +949,42 @@ def test_make_repo_list_command_includes_remote_path():
     )
 
     assert command == ('borg', 'list', '--remote-path', 'borg2', '--log-json', 'repo')
+
+
+def test_make_repo_list_with_feature_available_command_omits_remote_path():
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.feature).should_receive('available').with_args(
+        module.feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, object
+    ).and_return(True)
+    flexmock(module.flags).should_receive('make_flags').replace_with(
+        lambda name, value: (f'--{name}', value) if value else (),
+    )
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None,
+        None,
+        '1.2.3',
+    ).and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_logging_mock(logging.WARNING)
+
+    command = module.make_repo_list_command(
+        repository_path='repo',
+        config={},
+        local_borg_version='1.2.3',
+        repo_list_arguments=flexmock(
+            archive=None,
+            paths=None,
+            format=None,
+            json=False,
+            prefix=None,
+            match_archives=None,
+        ),
+        global_arguments=flexmock(),
+        remote_path='borg2',
+    )
+
+    assert command == ('borg', 'list', '--log-json', 'repo')
 
 
 def test_make_repo_list_command_includes_umask():

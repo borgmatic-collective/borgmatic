@@ -234,6 +234,42 @@ def test_compact_segments_with_zero_threshold_calls_borg_with_threshold_flag():
     )
 
 
+def test_compact_segments_with_remote_path_calls_borg_with_remote_path_flags():
+    config = {'remote_path': 'borg7'}
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.feature).should_receive('available').and_return(False)
+    insert_execute_command_mock(
+        (*COMPACT_COMMAND, '--remote-path', 'borg7', '--log-json', 'repo'), logging.INFO
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.compact_segments(
+        dry_run=False,
+        repository_path='repo',
+        config=config,
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        remote_path='borg7',
+    )
+
+
+def test_compact_segments_with_remote_path_and_feature_available_calls_borg_without_remote_path_flags():
+    config = {'remote_path': 'borg7'}
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.feature).should_receive('available').and_return(True)
+    insert_execute_command_mock((*COMPACT_COMMAND, '--log-json', 'repo'), logging.INFO)
+    insert_logging_mock(logging.WARNING)
+
+    module.compact_segments(
+        dry_run=False,
+        repository_path='repo',
+        config=config,
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        remote_path='borg7',
+    )
+
+
 def test_compact_segments_with_umask_calls_borg_with_umask_flags():
     config = {'umask': '077'}
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))

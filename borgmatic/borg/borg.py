@@ -4,7 +4,7 @@ import shlex
 import borgmatic.commands.arguments
 import borgmatic.config.paths
 import borgmatic.logger
-from borgmatic.borg import environment, flags
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,13 @@ def run_arbitrary_borg(
         + borg_command
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
-        + flags.make_flags('remote-path', remote_path)
+        + (
+            flags.make_flags('remote-path', remote_path)
+            if not feature.available(
+                feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, local_borg_version
+            )
+            else ()
+        )
         + flags.make_flags('lock-wait', config.get('lock_wait'))
         + command_options
     )

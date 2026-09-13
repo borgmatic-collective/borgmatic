@@ -19,6 +19,7 @@ class Feature(Enum):
     ARCHIVE_SERIES = 13
     NO_PRUNE_STATS = 14
     DRY_RUN_COMPACT = 15
+    REMOTE_PATH_ENVIRONMENT_VARIABLE = 16
 
 
 FEATURE_TO_MINIMUM_BORG_VERSION = {
@@ -37,6 +38,7 @@ FEATURE_TO_MINIMUM_BORG_VERSION = {
     Feature.ARCHIVE_SERIES: parse('2.0.0b11'),  # identically named archives form a series
     Feature.NO_PRUNE_STATS: parse('2.0.0b10'),  # prune --stats is not available
     Feature.DRY_RUN_COMPACT: parse('1.2.9'),  # borg compact --dry-run support
+    Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE: parse('2.0.0b23'),  # BORG_REMOTE_PATH and no flag
 }
 
 

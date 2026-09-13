@@ -13,6 +13,7 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
     'borg_security_directory': 'BORG_SECURITY_DIR',
     'borg_keys_directory': 'BORG_KEYS_DIR',
     'borg_key_file': 'BORG_KEY_FILE',
+    'remote_path': 'BORG_REMOTE_PATH',  # Consumed by Borg 2 only.
     'ssh_command': 'BORG_RSH',
     'temporary_directory': 'TMPDIR',
 }

@@ -67,6 +67,17 @@ def test_make_environment_with_credential_tag_passphrase_should_load_it_and_set_
     assert environment.get('BORG_PASSPHRASE_FD') == '3'
 
 
+def test_make_environment_with_remote_path_should_set_environment():
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).and_return(None)
+    flexmock(module.os).should_receive('pipe').never()
+    environment = module.make_environment({'remote_path': 'borg7'})
+
+    assert environment.get('BORG_REMOTE_PATH') == 'borg7'
+
+
 def test_make_environment_with_ssh_command_should_set_environment():
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(

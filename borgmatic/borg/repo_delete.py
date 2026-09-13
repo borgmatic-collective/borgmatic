@@ -51,7 +51,13 @@ def make_repo_delete_command(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + borgmatic.borg.flags.make_flags('dry-run', global_arguments.dry_run)
-        + borgmatic.borg.flags.make_flags('remote-path', remote_path)
+        + (
+            borgmatic.borg.flags.make_flags('remote-path', remote_path)
+            if not borgmatic.borg.feature.available(
+                borgmatic.borg.feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, local_borg_version
+            )
+            else ()
+        )
         + borgmatic.borg.flags.make_flags('umask', config.get('umask'))
         + (('--log-json',) if output_file is None else ())
         + borgmatic.borg.flags.make_flags('lock-wait', config.get('lock_wait'))

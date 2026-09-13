@@ -176,7 +176,14 @@ def check_archives(
                 else ()
             )
             + make_check_name_flags(checks_subset, archive_filter_flags)
-            + (('--remote-path', remote_path) if remote_path else ())
+            + (
+                ('--remote-path', remote_path)
+                if remote_path
+                and not feature.available(
+                    feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, local_borg_version
+                )
+                else ()
+            )
             + (('--umask', str(umask)) if umask else ())
             + (
                 ('--log-json',)

@@ -9,6 +9,7 @@ from ..test_verbosity import insert_logging_mock
 
 
 def test_transfer_archives_calls_borg_with_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -44,6 +45,7 @@ def test_transfer_archives_calls_borg_with_flags():
 
 
 def test_transfer_archives_with_dry_run_calls_borg_with_dry_run_flag():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -82,6 +84,7 @@ def test_transfer_archives_with_dry_run_calls_borg_with_dry_run_flag():
 
 
 def test_transfer_archives_with_log_info_calls_borg_with_info_flag():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -117,6 +120,7 @@ def test_transfer_archives_with_log_info_calls_borg_with_info_flag():
 
 
 def test_transfer_archives_with_log_debug_calls_borg_with_debug_flag():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -152,6 +156,7 @@ def test_transfer_archives_with_log_debug_calls_borg_with_debug_flag():
 
 
 def test_transfer_archives_with_archive_calls_borg_with_match_archives_flag():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -191,6 +196,7 @@ def test_transfer_archives_with_archive_calls_borg_with_match_archives_flag():
 
 
 def test_transfer_archives_with_match_archives_calls_borg_with_match_archives_flag():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -230,6 +236,7 @@ def test_transfer_archives_with_match_archives_calls_borg_with_match_archives_fl
 
 
 def test_transfer_archives_with_archive_name_format_calls_borg_with_match_archives_flag():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -269,6 +276,7 @@ def test_transfer_archives_with_archive_name_format_calls_borg_with_match_archiv
 
 
 def test_transfer_archives_with_local_path_calls_borg_via_local_path():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -305,6 +313,7 @@ def test_transfer_archives_with_local_path_calls_borg_via_local_path():
 
 
 def test_transfer_archives_with_exit_codes_calls_borg_using_them():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -344,6 +353,7 @@ def test_transfer_archives_with_remote_path_calls_borg_with_remote_path_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').with_args(
         'remote-path',
         'borg2',
@@ -380,7 +390,49 @@ def test_transfer_archives_with_remote_path_calls_borg_with_remote_path_flags():
     )
 
 
+def test_transfer_archives_with_remote_path_and_feature_available_calls_borg_without_remote_path_flags():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'remote-path',
+        'borg2',
+    ).never()
+    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'transfer', '--log-json', '--repo', 'repo'),
+        output_log_level=module.borgmatic.logger.ANSWER,
+        output_file=None,
+        environment=None,
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.transfer_archives(
+        dry_run=False,
+        repository_path='repo',
+        config={},
+        local_borg_version='2.3.4',
+        transfer_arguments=flexmock(
+            archive=None,
+            progress=None,
+            match_archives=None,
+            source_repository=None,
+        ),
+        global_arguments=flexmock(),
+        remote_path='borg2',
+    )
+
+
 def test_transfer_archives_with_umask_calls_borg_with_umask_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').replace_with(
@@ -418,6 +470,7 @@ def test_transfer_archives_with_umask_calls_borg_with_umask_flags():
 
 
 def test_transfer_archives_with_lock_wait_calls_borg_with_lock_wait_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -457,6 +510,7 @@ def test_transfer_archives_with_lock_wait_calls_borg_with_lock_wait_flags():
 
 
 def test_transfer_archives_calls_borg_with_extra_borg_options():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -493,6 +547,7 @@ def test_transfer_archives_calls_borg_with_extra_borg_options():
 
 
 def test_transfer_archives_with_progress_calls_borg_with_progress_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -531,6 +586,7 @@ def test_transfer_archives_with_progress_calls_borg_with_progress_flags():
 
 
 def test_transfer_archives_with_log_json_and_progress_calls_borg_with_both_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -570,6 +626,7 @@ def test_transfer_archives_with_log_json_and_progress_calls_borg_with_both_flags
 
 @pytest.mark.parametrize('argument_name', ('from_borg1', 'upgrader', 'sort_by', 'first', 'last'))
 def test_transfer_archives_passes_through_arguments_to_borg(argument_name):
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flag_name = f"--{argument_name.replace('_', '-')}"
@@ -609,6 +666,7 @@ def test_transfer_archives_passes_through_arguments_to_borg(argument_name):
 
 
 def test_transfer_archives_with_source_repository_calls_borg_with_other_repo_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('other-repo', 'other').and_return(
@@ -646,6 +704,7 @@ def test_transfer_archives_with_source_repository_calls_borg_with_other_repo_fla
 
 
 def test_transfer_archives_with_date_based_matching_calls_borg_with_date_based_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
@@ -699,6 +758,7 @@ def test_transfer_archives_with_date_based_matching_calls_borg_with_date_based_f
 
 
 def test_transfer_archives_calls_borg_with_working_directory():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())

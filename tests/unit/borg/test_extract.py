@@ -163,8 +163,30 @@ def test_extract_last_archive_dry_run_calls_borg_using_exit_codes():
 
 def test_extract_last_archive_dry_run_calls_borg_with_remote_path_flags():
     flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_execute_command_mock(
         ('borg', 'extract', '--dry-run', '--remote-path', 'borg1', '--log-json', 'repo::archive'),
+    )
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',),
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.extract_last_archive_dry_run(
+        config={},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        repository_path='repo',
+        lock_wait=None,
+        remote_path='borg1',
+    )
+
+
+def test_extract_last_archive_dry_run_with_feature_available_calls_borg_without_remote_path_flags():
+    flexmock(module.repo_list).should_receive('resolve_archive_name').and_return('archive')
+    flexmock(module.feature).should_receive('available').and_return(True)
+    insert_execute_command_mock(
+        ('borg', 'extract', '--dry-run', '--log-json', 'repo::archive'),
     )
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         ('repo::archive',),

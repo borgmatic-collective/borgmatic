@@ -4,7 +4,7 @@ import shlex
 import borgmatic.config.paths
 import borgmatic.execute
 import borgmatic.logger
-from borgmatic.borg import environment, flags
+from borgmatic.borg import environment, feature, flags
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,14 @@ def change_passphrase(
 
     full_command = (
         (local_path, 'key', 'change-passphrase')
-        + (('--remote-path', remote_path) if remote_path else ())
+        + (
+            ('--remote-path', remote_path)
+            if remote_path
+            and not feature.available(
+                feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, local_borg_version
+            )
+            else ()
+        )
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())

@@ -3,7 +3,7 @@ import shlex
 
 import borgmatic.config.paths
 import borgmatic.logger
-from borgmatic.borg import environment, flags
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,14 @@ def export_tar_archive(
 
     full_command = (
         (local_path, 'export-tar')
-        + (('--remote-path', remote_path) if remote_path else ())
+        + (
+            ('--remote-path', remote_path)
+            if remote_path
+            and not feature.available(
+                feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, local_borg_version
+            )
+            else ()
+        )
         + (('--umask', str(umask)) if umask else ())
         + (('--log-json',) if destination_path != '-' else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())

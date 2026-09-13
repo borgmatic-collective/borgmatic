@@ -125,6 +125,9 @@ def test_diff_with_remote_path_calls_borg_with_it():
         flexmock(name='test')
     )
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
+    flexmock(module.borgmatic.borg.feature).should_receive('available').with_args(
+        module.borgmatic.borg.feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, object
+    ).and_return(False)
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('--repo', 'repo')
     )
@@ -139,6 +142,60 @@ def test_diff_with_remote_path_calls_borg_with_it():
             'diff',
             '--remote-path',
             'borg7',
+            '--log-json',
+            '--repo',
+            'repo',
+            'archive',
+            'archive2',
+        ),
+        output_log_level=LOGGING_ANSWER,
+        environment=environment,
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ).once()
+    insert_logging_mock(logging.WARNING)
+
+    module.borgmatic.borg.diff.diff(
+        repository='repo',
+        archive='archive',
+        second_archive='archive2',
+        config={},
+        local_borg_version=None,
+        diff_arguments=flexmock(
+            same_chunker_params=False,
+            sort_keys=[],
+            content_only=False,
+            second_archive='archive2',
+            only_patterns=False,
+        ),
+        global_arguments=flexmock(),
+        local_path='borg',
+        remote_path='borg7',
+        patterns=[],
+    )
+
+
+def test_diff_with_remote_and_feature_available_path_calls_borg_without_remote_path():
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(
+        flexmock(name='test')
+    )
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
+        ('--repo', 'repo')
+    )
+    flexmock(module.borgmatic.borg.flags).should_receive('make_repository_archive_flags').never()
+    environment = flexmock()
+    flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
+        environment
+    )
+    flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
+        full_command=(
+            'borg',
+            'diff',
             '--log-json',
             '--repo',
             'repo',

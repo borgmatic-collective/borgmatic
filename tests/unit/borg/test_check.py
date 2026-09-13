@@ -900,7 +900,36 @@ def test_check_archives_with_remote_path_passes_through_to_borg():
     config = {}
     flexmock(module).should_receive('make_check_name_flags').with_args(checks, ()).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_execute_command_mock(('borg', 'check', '--remote-path', 'borg1', '--log-json', 'repo'))
+    insert_logging_mock(logging.WARNING)
+
+    module.check_archives(
+        repository_path='repo',
+        config=config,
+        local_borg_version='1.2.3',
+        check_arguments=flexmock(
+            progress=None,
+            repair=None,
+            only_checks=None,
+            force=None,
+            match_archives=None,
+            max_duration=None,
+        ),
+        global_arguments=flexmock(),
+        checks=checks,
+        archive_filter_flags=(),
+        remote_path='borg1',
+    )
+
+
+def test_check_archives_with_remote_path_and_feature_available_omits_remote_path_flags():
+    checks = {'repository'}
+    config = {}
+    flexmock(module).should_receive('make_check_name_flags').with_args(checks, ()).and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.feature).should_receive('available').and_return(True)
+    insert_execute_command_mock(('borg', 'check', '--log-json', 'repo'))
     insert_logging_mock(logging.WARNING)
 
     module.check_archives(

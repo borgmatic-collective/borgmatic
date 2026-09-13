@@ -8,6 +8,7 @@ from ..test_verbosity import insert_logging_mock
 
 
 def test_run_arbitrary_borg_calls_borg_with_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -33,6 +34,7 @@ def test_run_arbitrary_borg_calls_borg_with_flags():
 
 
 def test_run_arbitrary_borg_with_log_info_calls_borg_with_info_flag():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -58,6 +60,7 @@ def test_run_arbitrary_borg_with_log_info_calls_borg_with_info_flag():
 
 
 def test_run_arbitrary_borg_with_log_debug_calls_borg_with_debug_flag():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -83,6 +86,7 @@ def test_run_arbitrary_borg_with_log_debug_calls_borg_with_debug_flag():
 
 
 def test_run_arbitrary_borg_with_lock_wait_calls_borg_with_lock_wait_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     config = {'lock_wait': 5}
@@ -111,6 +115,7 @@ def test_run_arbitrary_borg_with_lock_wait_calls_borg_with_lock_wait_flags():
 
 
 def test_run_arbitrary_borg_with_archive_calls_borg_with_archive_flag():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -137,6 +142,7 @@ def test_run_arbitrary_borg_with_archive_calls_borg_with_archive_flag():
 
 
 def test_run_arbitrary_borg_with_local_path_calls_borg_via_local_path():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -163,6 +169,7 @@ def test_run_arbitrary_borg_with_local_path_calls_borg_via_local_path():
 
 
 def test_run_arbitrary_borg_with_exit_codes_calls_borg_using_them():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -192,6 +199,7 @@ def test_run_arbitrary_borg_with_remote_path_calls_borg_with_remote_path_flags()
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').with_args(
         'remote-path', 'borg1'
     ).and_return(
@@ -219,7 +227,36 @@ def test_run_arbitrary_borg_with_remote_path_calls_borg_with_remote_path_flags()
     )
 
 
+def test_run_arbitrary_borg_with_remote_path_and_feature_available_calls_borg_without_remote_path_flags():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_flags').with_args('remote-path', 'borg1').never()
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'break-lock', '::'),
+        output_file=module.borgmatic.execute.DO_NOT_CAPTURE,
+        shell=True,
+        environment={'BORG_REPO': 'repo', 'ARCHIVE': ''},
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.run_arbitrary_borg(
+        repository_path='repo',
+        config={},
+        local_borg_version='1.2.3',
+        options=['break-lock', '::'],
+        remote_path='borg1',
+    )
+
+
 def test_run_arbitrary_borg_with_remote_path_injection_attack_gets_escaped():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -251,6 +288,7 @@ def test_run_arbitrary_borg_with_remote_path_injection_attack_gets_escaped():
 
 
 def test_run_arbitrary_borg_passes_borg_specific_flags_to_borg():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -276,6 +314,7 @@ def test_run_arbitrary_borg_passes_borg_specific_flags_to_borg():
 
 
 def test_run_arbitrary_borg_omits_dash_dash_in_flags_passed_to_borg():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -301,6 +340,7 @@ def test_run_arbitrary_borg_omits_dash_dash_in_flags_passed_to_borg():
 
 
 def test_run_arbitrary_borg_without_borg_specific_flags_does_not_raise():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -326,6 +366,7 @@ def test_run_arbitrary_borg_without_borg_specific_flags_does_not_raise():
 
 
 def test_run_arbitrary_borg_passes_key_sub_command_to_borg_before_injected_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -351,6 +392,7 @@ def test_run_arbitrary_borg_passes_key_sub_command_to_borg_before_injected_flags
 
 
 def test_run_arbitrary_borg_passes_debug_sub_command_to_borg_before_injected_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -376,6 +418,7 @@ def test_run_arbitrary_borg_passes_debug_sub_command_to_borg_before_injected_fla
 
 
 def test_run_arbitrary_borg_calls_borg_with_working_directory():
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())

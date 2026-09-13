@@ -48,7 +48,14 @@ def extract_last_archive_dry_run(
     list_flag = ('--list',) if logger.isEnabledFor(logging.DEBUG) else ()
     full_extract_command = (
         (local_path, 'extract', '--dry-run')
-        + (('--remote-path', remote_path) if remote_path else ())
+        + (
+            ('--remote-path', remote_path)
+            if remote_path
+            and not feature.available(
+                feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, local_borg_version
+            )
+            else ()
+        )
         + (('--log-json',) if not config.get('progress') else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + verbosity_flags

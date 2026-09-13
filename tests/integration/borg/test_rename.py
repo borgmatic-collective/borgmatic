@@ -15,6 +15,7 @@ def insert_logging_mock(log_level):
 
 
 def test_make_rename_command_includes_log_info():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.INFO)
 
     command = module.make_rename_command(
@@ -32,6 +33,7 @@ def test_make_rename_command_includes_log_info():
 
 
 def test_make_rename_command_includes_log_debug():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.DEBUG)
 
     command = module.make_rename_command(
@@ -57,6 +59,7 @@ def test_make_rename_command_includes_log_debug():
 
 
 def test_make_rename_command_includes_dry_run():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
 
     command = module.make_rename_command(
@@ -82,6 +85,7 @@ def test_make_rename_command_includes_dry_run():
 
 def test_make_rename_command_includes_remote_path():
     insert_logging_mock(logging.WARNING)
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
 
     command = module.make_rename_command(
         dry_run=False,
@@ -105,7 +109,35 @@ def test_make_rename_command_includes_remote_path():
     )
 
 
+def test_make_rename_command_with_feature_available_omits_remote_path():
+    insert_logging_mock(logging.WARNING)
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
+    flexmock(module.borgmatic.borg.feature).should_receive('available').with_args(
+        module.borgmatic.borg.feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, object
+    ).and_return(True)
+
+    command = module.make_rename_command(
+        dry_run=False,
+        repository_name='repo',
+        old_archive_name='old_archive',
+        new_archive_name='new_archive',
+        config={},
+        local_borg_version='1.2.3',
+        local_path='borg',
+        remote_path='borg1',
+    )
+
+    assert command == (
+        'borg',
+        'rename',
+        '--log-json',
+        'repo::old_archive',
+        'new_archive',
+    )
+
+
 def test_make_rename_command_includes_umask():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
 
     command = module.make_rename_command(
@@ -131,6 +163,7 @@ def test_make_rename_command_includes_umask():
 
 
 def test_make_rename_command_includes_log_json():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
 
     command = module.make_rename_command(
@@ -148,6 +181,7 @@ def test_make_rename_command_includes_log_json():
 
 
 def test_make_rename_command_includes_lock_wait():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
 
     command = module.make_rename_command(
@@ -173,6 +207,7 @@ def test_make_rename_command_includes_lock_wait():
 
 
 def test_make_rename_command_includes_extra_borg_options():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
 
     command = module.make_rename_command(

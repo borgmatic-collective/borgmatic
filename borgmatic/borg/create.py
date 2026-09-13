@@ -250,7 +250,14 @@ def make_base_create_command(  # noqa: PLR0912
         + noflags_flags
         + (('--files-changed', files_changed) if files_changed else ())
         + (('--files-cache', files_cache) if files_cache else ())
-        + (('--remote-path', remote_path) if remote_path else ())
+        + (
+            ('--remote-path', remote_path)
+            if remote_path
+            and not feature.available(
+                feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, local_borg_version
+            )
+            else ()
+        )
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--log-json',) if (config.get('log_json') or not config.get('progress')) else ())

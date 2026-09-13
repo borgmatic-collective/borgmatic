@@ -172,6 +172,31 @@ def test_mount_archive_calls_borg_with_remote_path_flags():
     )
 
 
+def test_mount_archive_with_feature_available_calls_borg_without_remote_path_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',),
+    )
+    flexmock(module.feature).should_receive('available').with_args(
+        module.feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, object
+    ).and_return(True)
+    insert_execute_command_mock(
+        ('borg', 'mount', '--log-json', 'repo::archive', '/mnt'),
+    )
+    insert_logging_mock(logging.WARNING)
+
+    mount_arguments = flexmock(mount_point='/mnt', options=None, paths=None, foreground=False)
+    module.mount_archive(
+        repository_path='repo',
+        archive='archive',
+        mount_arguments=mount_arguments,
+        config={},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        remote_path='borg1',
+    )
+
+
 def test_mount_archive_calls_borg_with_umask_flags():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(

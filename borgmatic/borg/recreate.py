@@ -45,7 +45,14 @@ def recreate_archive(
 
     recreate_command = (
         (local_path, 'recreate')
-        + (('--remote-path', remote_path) if remote_path else ())
+        + (
+            ('--remote-path', remote_path)
+            if remote_path
+            and not borgmatic.borg.feature.available(
+                borgmatic.borg.feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, local_borg_version
+            )
+            else ()
+        )
         + ('--log-json',)
         + (('--lock-wait', str(lock_wait)) if lock_wait is not None else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())

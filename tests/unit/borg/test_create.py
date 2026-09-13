@@ -744,6 +744,9 @@ def test_make_base_create_command_includes_remote_path_in_borg_command():
         '{hostname}',
     )
     flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.feature).should_receive('available').with_args(
+        module.feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, object
+    ).and_return(False)
     flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',),
@@ -765,6 +768,40 @@ def test_make_base_create_command_includes_remote_path_in_borg_command():
     )
 
     assert create_flags == ('borg', 'create', '--remote-path', 'borg1', '--log-json')
+    assert create_positional_arguments == REPO_ARCHIVE
+    assert not pattern_file
+
+
+def test_make_base_create_command_with_feature_available_omits_remote_path_in_borg_command():
+    flexmock(module.borgmatic.borg.pattern).should_receive('check_all_root_patterns_exist')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}',
+    )
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',),
+    )
+    flexmock(module).should_receive('validate_planned_backup_paths').and_return(())
+
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        borgmatic_runtime_directory='/run/borgmatic',
+        remote_path='borg1',
+    )
+
+    assert create_flags == ('borg', 'create', '--log-json')
     assert create_positional_arguments == REPO_ARCHIVE
     assert not pattern_file
 

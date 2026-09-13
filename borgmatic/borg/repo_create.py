@@ -111,7 +111,14 @@ def create_repository(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug',) if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--remote-path', remote_path) if remote_path else ())
+        + (
+            ('--remote-path', remote_path)
+            if remote_path
+            and not feature.available(
+                feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, local_borg_version
+            )
+            else ()
+        )
         + (('--umask', str(umask)) if umask else ())
         + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + (tuple(shlex.split(extra_borg_options_from_init)) if extra_borg_options_from_init else ())

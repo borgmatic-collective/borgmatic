@@ -27,6 +27,7 @@ def test_make_list_command_includes_log_info():
 
 
 def test_make_list_command_includes_json_lines_but_not_info():
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.INFO)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json-lines',))
@@ -44,6 +45,7 @@ def test_make_list_command_includes_json_lines_but_not_info():
 
 
 def test_make_list_command_includes_log_debug():
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.DEBUG)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
@@ -61,6 +63,7 @@ def test_make_list_command_includes_log_debug():
 
 
 def test_make_list_command_includes_json_but_not_debug():
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.DEBUG)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
@@ -78,6 +81,7 @@ def test_make_list_command_includes_json_but_not_debug():
 
 
 def test_make_list_command_includes_json():
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
@@ -95,6 +99,7 @@ def test_make_list_command_includes_json():
 
 
 def test_make_list_command_includes_lock_wait():
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('lock-wait', 5).and_return(
@@ -115,6 +120,7 @@ def test_make_list_command_includes_lock_wait():
 
 
 def test_make_list_command_includes_format():
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
         ()
@@ -134,6 +140,7 @@ def test_make_list_command_includes_format():
 
 
 def test_make_list_command_includes_extra_borg_options():
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
@@ -151,6 +158,7 @@ def test_make_list_command_includes_extra_borg_options():
 
 
 def test_make_list_command_includes_archive():
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
@@ -170,6 +178,7 @@ def test_make_list_command_includes_archive():
 
 
 def test_make_list_command_includes_archive_and_path():
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
@@ -189,6 +198,7 @@ def test_make_list_command_includes_archive_and_path():
 
 
 def test_make_list_command_includes_local_path():
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
@@ -209,6 +219,7 @@ def test_make_list_command_includes_local_path():
 def test_make_list_command_includes_remote_path():
     insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').with_args(
         'remote-path',
         'borg2',
@@ -231,7 +242,34 @@ def test_make_list_command_includes_remote_path():
     assert command == ('borg', 'list', '--remote-path', 'borg2', '--log-json', 'repo')
 
 
+def test_make_list_command_with_feature_available_omits_remote_path():
+    insert_logging_mock(logging.WARNING)
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'remote-path',
+        'borg2',
+    ).never()
+    flexmock(module.flags).should_receive('make_flags').with_args('log-json', True).and_return(
+        ('--log-json'),
+    )
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+
+    command = module.make_list_command(
+        repository_path='repo',
+        config={},
+        local_borg_version='1.2.3',
+        list_arguments=flexmock(archive=None, paths=None, format=None, json=False),
+        global_arguments=flexmock(),
+        remote_path='borg2',
+    )
+
+    assert command == ('borg', 'list', '--log-json', 'repo')
+
+
 def test_make_list_command_includes_umask():
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').replace_with(
         lambda name, value: (f'--{name}', value) if value else (),
@@ -251,6 +289,7 @@ def test_make_list_command_includes_umask():
 
 
 def test_make_list_command_includes_short():
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--short',))
@@ -282,6 +321,7 @@ def test_make_list_command_includes_short():
     ),
 )
 def test_make_list_command_includes_additional_flags(argument_name):
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_logging_mock(logging.WARNING)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(

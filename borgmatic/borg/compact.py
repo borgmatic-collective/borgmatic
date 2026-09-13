@@ -29,7 +29,14 @@ def compact_segments(
 
     full_command = (
         (local_path, 'compact')
-        + (('--remote-path', remote_path) if remote_path else ())
+        + (
+            ('--remote-path', remote_path)
+            if remote_path
+            and not feature.available(
+                feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, local_borg_version
+            )
+            else ()
+        )
         + (('--umask', str(umask)) if umask else ())
         + (('--log-json',) if (config.get('log_json') or not config.get('progress')) else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())

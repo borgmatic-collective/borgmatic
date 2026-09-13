@@ -9,6 +9,7 @@ from ..test_verbosity import insert_logging_mock
 
 
 def test_make_info_command_constructs_borg_info_command():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None,
@@ -34,6 +35,7 @@ def test_make_info_command_constructs_borg_info_command():
 
 
 def test_make_info_command_with_log_info_passes_through_to_command():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None,
@@ -59,6 +61,7 @@ def test_make_info_command_with_log_info_passes_through_to_command():
 
 
 def test_make_info_command_with_log_info_and_json_omits_borg_logging_flags():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None,
@@ -84,6 +87,7 @@ def test_make_info_command_with_log_info_and_json_omits_borg_logging_flags():
 
 
 def test_make_info_command_with_log_debug_passes_through_to_command():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None,
@@ -109,6 +113,7 @@ def test_make_info_command_with_log_debug_passes_through_to_command():
 
 
 def test_make_info_command_with_log_debug_and_json_omits_borg_logging_flags():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None,
@@ -134,6 +139,7 @@ def test_make_info_command_with_log_debug_and_json_omits_borg_logging_flags():
 
 
 def test_make_info_command_with_json_passes_through_to_command_with_forced_match_archives_flag():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None,
@@ -159,6 +165,7 @@ def test_make_info_command_with_json_passes_through_to_command_with_forced_match
 
 
 def test_make_info_command_with_archive_uses_match_archives_flags():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         'archive',
@@ -192,6 +199,7 @@ def test_make_info_command_with_archive_uses_match_archives_flags():
 
 
 def test_make_info_command_with_local_path_passes_through_to_command():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None,
@@ -218,6 +226,7 @@ def test_make_info_command_with_local_path_passes_through_to_command():
 
 def test_make_info_command_with_remote_path_passes_through_to_command():
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').with_args(
         'remote-path',
         'borg1',
@@ -245,7 +254,38 @@ def test_make_info_command_with_remote_path_passes_through_to_command():
     assert command == ('borg', 'info', '--remote-path', 'borg1', '--log-json', '--repo', 'repo')
 
 
+def test_make_info_command_with_remote_path_and_feature_available_omits_remote_path_flag():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_flags').with_args(
+        'remote-path',
+        'borg1',
+    ).never()
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None,
+        None,
+        '2.3.4',
+        force_flags_even_for_globs=False,
+    ).and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    insert_logging_mock(logging.WARNING)
+
+    command = module.make_info_command(
+        repository_path='repo',
+        config={},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(),
+        info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives=None),
+        local_path='borg',
+        remote_path='borg1',
+    )
+
+    assert command == ('borg', 'info', '--log-json', '--repo', 'repo')
+
+
 def test_make_info_command_with_umask_passes_through_to_command():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').replace_with(
         lambda name, value: (f'--{name}', value) if value else (),
     )
@@ -273,6 +313,7 @@ def test_make_info_command_with_umask_passes_through_to_command():
 
 
 def test_make_info_command_with_lock_wait_passes_through_to_command():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args('lock-wait', 5).and_return(
         ('--lock-wait', '5'),
@@ -302,6 +343,7 @@ def test_make_info_command_with_lock_wait_passes_through_to_command():
 
 
 def test_make_info_command_with_extra_borg_options_passes_through_to_command():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None,
@@ -336,6 +378,7 @@ def test_make_info_command_with_extra_borg_options_passes_through_to_command():
 
 
 def test_make_info_command_transforms_prefix_into_match_archives_flags():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(
         'match-archives',
@@ -373,6 +416,7 @@ def test_make_info_command_transforms_prefix_into_match_archives_flags():
 
 
 def test_make_info_command_prefers_prefix_over_archive_name_format():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(
         'match-archives',
@@ -410,6 +454,7 @@ def test_make_info_command_prefers_prefix_over_archive_name_format():
 
 
 def test_make_info_command_transforms_archive_name_format_into_match_archives_flags():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None,
@@ -443,6 +488,7 @@ def test_make_info_command_transforms_archive_name_format_into_match_archives_fl
 
 
 def test_make_info_command_with_match_archives_option_passes_through_to_command():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         'sh:foo-*',
@@ -480,6 +526,7 @@ def test_make_info_command_with_match_archives_option_passes_through_to_command(
 
 
 def test_make_info_command_with_match_archives_flag_passes_through_to_command():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         'sh:foo-*',
@@ -515,6 +562,7 @@ def test_make_info_command_with_match_archives_flag_passes_through_to_command():
 
 @pytest.mark.parametrize('argument_name', ('sort_by', 'first', 'last'))
 def test_make_info_command_passes_arguments_through_to_command(argument_name):
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flag_name = f"--{argument_name.replace('_', ' ')}"
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
@@ -550,6 +598,7 @@ def test_make_info_command_passes_arguments_through_to_command(argument_name):
 
 
 def test_make_info_command_with_date_based_matching_passes_through_to_command():
+    flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None,

@@ -47,7 +47,13 @@ def display_repository_info(
             if logger.isEnabledFor(logging.DEBUG) and not repo_info_arguments.json
             else ()
         )
-        + flags.make_flags('remote-path', remote_path)
+        + (
+            flags.make_flags('remote-path', remote_path)
+            if not feature.available(
+                feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, local_borg_version
+            )
+            else ()
+        )
         + flags.make_flags('umask', config.get('umask'))
         + flags.make_flags('lock-wait', lock_wait)
         + ('--log-json',)

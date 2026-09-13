@@ -2,7 +2,7 @@ import logging
 import shlex
 
 import borgmatic.config.paths
-from borgmatic.borg import environment, flags
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,14 @@ def break_lock(
 
     full_command = (
         (local_path, 'break-lock')
-        + (('--remote-path', remote_path) if remote_path else ())
+        + (
+            ('--remote-path', remote_path)
+            if remote_path
+            and not feature.available(
+                feature.Feature.REMOTE_PATH_ENVIRONMENT_VARIABLE, local_borg_version
+            )
+            else ()
+        )
         + (('--umask', str(umask)) if umask else ())
         + ('--log-json',)
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())

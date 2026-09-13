@@ -82,7 +82,25 @@ def test_export_key_calls_borg_using_exit_codes():
 def test_export_key_calls_borg_with_remote_path_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
+    flexmock(module.feature).should_receive('available').and_return(False)
     insert_execute_command_mock(('borg', 'key', 'export', '--remote-path', 'borg1', 'repo'))
+    insert_logging_mock(logging.WARNING)
+
+    module.export_key(
+        repository_path='repo',
+        config={},
+        local_borg_version='1.2.3',
+        export_arguments=flexmock(paper=False, qr_html=False, path=None),
+        global_arguments=flexmock(dry_run=False),
+        remote_path='borg1',
+    )
+
+
+def test_export_key_with_feature_available_calls_borg_without_remote_path_flags():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.os.path).should_receive('exists').never()
+    flexmock(module.feature).should_receive('available').and_return(True)
+    insert_execute_command_mock(('borg', 'key', 'export', 'repo'))
     insert_logging_mock(logging.WARNING)
 
     module.export_key(
