@@ -117,6 +117,7 @@ def remove_data_source_dumps(dump_path, data_source_type_name, dry_run):
 
     for path in glob.glob(dump_paths_glob):
         if not dry_run:
+            logger.debug(f'Removing {path}')
             shutil.rmtree(path, ignore_errors=True)
 
 
