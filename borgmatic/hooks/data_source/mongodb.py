@@ -103,7 +103,8 @@ def make_password_config_file(database, password, borgmatic_runtime_directory):
 
     if password_transport == 'pipe':
         return make_password_config_file_pipe(password)
-    elif password_transport == 'file':
+
+    if password_transport == 'file':
         return make_password_temporary_config_file(password, borgmatic_runtime_directory)
 
     raise ValueError(f'Invalid password transport: {password_transport}')

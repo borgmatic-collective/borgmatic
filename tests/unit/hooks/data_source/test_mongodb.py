@@ -1,5 +1,6 @@
 import logging
 
+import pytest
 from flexmock import flexmock
 
 from borgmatic.hooks.data_source import mongodb as module
@@ -40,6 +41,65 @@ def test_make_password_config_file_pipe_writes_password_to_pipe():
     assert module.make_password_config_file_pipe('trustsome1') == '/dev/fd/99'
 
 
+def test_make_password_temporary_config_file_writes_password_to_file():
+    flexmock(module).should_receive('make_password_config_file_path').and_return(
+        '/path/to/password-config'
+    )
+    flexmock(module.os).should_receive('makedirs')
+    password_config_file = flexmock(name='/path/to/password-config')
+    flexmock(module.tempfile).should_receive('NamedTemporaryFile').and_return(password_config_file)
+    password_config_file.should_receive('write').with_args('password: trustsome1').once()
+    password_config_file.should_receive('close')
+
+    assert (
+        module.make_password_temporary_config_file('trustsome1', '/run/borgmatic')
+        == '/path/to/password-config'
+    )
+
+
+def test_make_password_config_file_defaults_to_config_file_pipe():
+    flexmock(module).should_receive('make_password_config_file_pipe').once()
+    flexmock(module).should_receive('make_password_temporary_config_file').never()
+
+    module.make_password_config_file(
+        database={}, password='pass', borgmatic_runtime_directory='/run/borgmatic'
+    )
+
+
+def test_make_password_config_file_with_pipe_password_transport_makes_config_file_pipe():
+    flexmock(module).should_receive('make_password_config_file_pipe').once()
+    flexmock(module).should_receive('make_password_temporary_config_file').never()
+
+    module.make_password_config_file(
+        database={'password_transport': 'pipe'},
+        password='pass',
+        borgmatic_runtime_directory='/run/borgmatic',
+    )
+
+
+def test_make_password_config_file_with_file_password_transport_makes_temporary_config_file():
+    flexmock(module).should_receive('make_password_config_file_pipe').never()
+    flexmock(module).should_receive('make_password_temporary_config_file').once()
+
+    module.make_password_config_file(
+        database={'password_transport': 'file'},
+        password='pass',
+        borgmatic_runtime_directory='/run/borgmatic',
+    )
+
+
+def test_make_password_config_file_with_invalid_password_transport_raises():
+    flexmock(module).should_receive('make_password_config_file_pipe').never()
+    flexmock(module).should_receive('make_password_temporary_config_file').never()
+
+    with pytest.raises(ValueError):
+        module.make_password_config_file(
+            database={'password_transport': 'pigeon'},
+            password='pass',
+            borgmatic_runtime_directory='/run/borgmatic',
+        )
+
+
 def test_dump_data_sources_runs_mongodump_for_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     processes = [flexmock(), flexmock()]
@@ -61,10 +121,9 @@ def test_dump_data_sources_runs_mongodump_for_each_database():
     )
 
     for (
-        name,
         process,
         dump_command,
-    ) in zip(('foo', 'bar'), processes, dump_commands):
+    ) in zip(processes, dump_commands):
         flexmock(module).should_receive('execute_command').with_args(
             dump_command,
             shell=True,
@@ -607,6 +666,8 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential',
     ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive('make_password_config_file').and_return(flexmock())
+    flexmock(module).should_receive('build_restore_command').and_return(flexmock())
     flexmock(module).should_receive('execute_command_with_processes').never()
 
     module.restore_data_source_dump(
@@ -643,7 +704,7 @@ def test_build_restore_command_uses_custom_mongorestore_command():
         'username': None,
         'password': None,
     }
-    extract_process = None
+    extract_process = flexmock()
     flexmock(module.database_config).should_receive('resolve_database_option').with_args(
         'hostname', object, object, True
     ).and_return('localhost')
@@ -668,8 +729,7 @@ def test_build_restore_command_uses_custom_mongorestore_command():
 
     assert command == [
         'custom_mongorestore',
-        '--dir',
-        '/path/to/dump',
+        '--archive',
         '--drop',
         '--host',
         'localhost',
