@@ -1,6 +1,7 @@
 import logging
 import os
 import shlex
+import tempfile
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
@@ -20,6 +21,13 @@ def make_dump_path(base_directory):  # pragma: no cover
     return dump.make_data_source_dump_path(base_directory, 'mongodb_databases')
 
 
+def make_password_config_file_path(base_directory):  # pragma: no cover
+    '''
+    Given a base directory, make the corresponding dump path.
+    '''
+    return os.path.join(base_directory, 'mongodb_config')
+
+
 def get_default_port(databases, config):  # pragma: no cover
     return 27017
 
@@ -30,6 +38,76 @@ def use_streaming(databases, config):
     whether streaming will be using during dumps.
     '''
     return any(database.get('format') != 'directory' for database in databases)
+
+
+def make_password_config_file_pipe(password):
+    '''
+    Given a database password, write it as a MongoDB configuration file to an anonymous pipe and
+    return its filename. The idea is that this is a more secure way to transmit a password to
+    MongoDB than providing it directly on the command-line.
+
+    Do not use the returned value for multiple different command invocations. That will not work
+    because each pipe is "used up" once read.
+    '''
+    logger.debug('Writing MongoDB password to configuration file pipe')
+
+    read_file_descriptor, write_file_descriptor = os.pipe()
+    os.write(write_file_descriptor, f'password: {password}'.encode())
+    os.close(write_file_descriptor)
+
+    # This plus subprocess.Popen(..., close_fds=False) in execute.py is necessary for the database
+    # client child process to inherit the file descriptor.
+    os.set_inheritable(read_file_descriptor, True)
+
+    return f'/dev/fd/{read_file_descriptor}'
+
+
+def make_password_temporary_config_file(password, borgmatic_runtime_directory):
+    '''
+    Given a database password and the runtime directory, write the password as a MongoDB
+    configuration file to a temporary file and return its path. This is a somewhat secure way to
+    transmit to MongoDB, at least more secure than passing it directly on the command-line.
+
+    Note that the temporary file isn't cleaned up here, but rather in remove_data_source_dumps()
+    below. The intent is that it's available for the full scope of the dump process (which extends
+    beyond the dump_data_sources() call).
+
+    The returned path can be used for multiple different command invocations.
+    '''
+    config_file_path = make_password_config_file_path(borgmatic_runtime_directory)
+    os.makedirs(config_file_path, mode=0o700, exist_ok=True)
+    password_config_file = tempfile.NamedTemporaryFile(
+        'w',
+        dir=config_file_path,
+        encoding='utf-8',
+        delete=False,
+    )
+    logger.debug(
+        f'Writing MongoDB password to temporary configuration file to {password_config_file.name}'
+    )
+
+    password_config_file.write(f'password: {password}')
+    password_config_file.close()
+
+    return password_config_file.name
+
+
+def make_password_config_file(database, password, borgmatic_runtime_directory):
+    '''
+    Given a database configuration dict, a resolved password for that database, and the borgmatic
+    runtime directory, write out a password config file for transmitting the password to the MongoDB
+    client. Use either a named pipe or a temporary file, depending on the configured password
+    transport in the database configuration dict. Defaults to using a named pipe.
+    '''
+    password_transport = database.get('password_transport', 'pipe')
+
+    if password_transport == 'pipe':
+        return make_password_config_file_pipe(password)
+
+    if password_transport == 'file':
+        return make_password_temporary_config_file(password, borgmatic_runtime_directory)
+
+    raise ValueError(f'Invalid password transport: {password_transport}')
 
 
 def dump_data_sources(
@@ -86,7 +164,17 @@ def dump_data_sources(
         if dry_run:
             continue
 
-        command = build_dump_command(database, config, dump_filename, dump_format)
+        password = borgmatic.hooks.credential.parse.resolve_credential(
+            database.get('password'), config
+        )
+
+        command = build_dump_command(
+            database,
+            config,
+            make_password_config_file(database, password, borgmatic_runtime_directory),
+            dump_filename,
+            dump_format,
+        )
 
         if dump_format == 'directory':
             dump.create_parent_directory_for_dump(dump_filename)
@@ -121,35 +209,13 @@ def dump_data_sources(
     return processes
 
 
-def make_password_config_file(password):
+def build_dump_command(database, config, password_config_file_path, dump_filename, dump_format):
     '''
-    Given a database password, write it as a MongoDB configuration file to an anonymous pipe and
-    return its filename. The idea is that this is a more secure way to transmit a password to
-    MongoDB than providing it directly on the command-line.
-
-    Do not use the returned value for multiple different command invocations. That will not work
-    because each pipe is "used up" once read.
-    '''
-    logger.debug('Writing MongoDB password to configuration file pipe')
-
-    read_file_descriptor, write_file_descriptor = os.pipe()
-    os.write(write_file_descriptor, f'password: {password}'.encode())
-    os.close(write_file_descriptor)
-
-    # This plus subprocess.Popen(..., close_fds=False) in execute.py is necessary for the database
-    # client child process to inherit the file descriptor.
-    os.set_inheritable(read_file_descriptor, True)
-
-    return f'/dev/fd/{read_file_descriptor}'
-
-
-def build_dump_command(database, config, dump_filename, dump_format):
-    '''
-    Return the custom mongodump_command from a single database configuration.
+    Given a database configuration dict, a configuration dict, the path of a password config file, a
+    dump filename, and a dump format to use, return the custom MongoDB dump command for the given
+    database.
     '''
     all_databases = database['name'] == 'all'
-
-    password = borgmatic.hooks.credential.parse.resolve_credential(database.get('password'), config)
 
     dump_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mongodump_command') or 'mongodump')
@@ -173,7 +239,11 @@ def build_dump_command(database, config, dump_filename, dump_format):
             if 'username' in database
             else ()
         )
-        + (('--config', make_password_config_file(password)) if password else ())
+        + (
+            ('--config', shlex.quote(password_config_file_path))
+            if password_config_file_path
+            else ()
+        )
         + (
             (
                 '--authenticationDatabase',
@@ -205,6 +275,11 @@ def remove_data_source_dumps(
     actually remove anything.
     '''
     dump.remove_data_source_dumps(make_dump_path(borgmatic_runtime_directory), 'MongoDB', dry_run)
+    dump.remove_data_source_dumps(
+        make_password_config_file_path(borgmatic_runtime_directory),
+        'MongoDB password config files for',
+        dry_run,
+    )
 
 
 def make_data_source_dump_patterns(
@@ -305,10 +380,18 @@ def restore_data_source_dump(
         container=data_source.get('container'),
         label=data_source.get('label'),
     )
+    password = borgmatic.hooks.credential.parse.resolve_credential(
+        database_config.resolve_database_option(
+            'password', data_source, connection_params, restore=True
+        ),
+        config,
+    )
+
     restore_command = build_restore_command(
         extract_process,
         data_source,
         config,
+        make_password_config_file(data_source, password, borgmatic_runtime_directory),
         dump_filename,
         connection_params,
     )
@@ -331,9 +414,13 @@ def restore_data_source_dump(
     )
 
 
-def build_restore_command(extract_process, database, config, dump_filename, connection_params):
+def build_restore_command(
+    extract_process, database, config, password_config_file_path, dump_filename, connection_params
+):
     '''
-    Return the custom mongorestore_command from a single database configuration.
+    Given an active Borg extract process (if streaming the restore), a database configuration dict,
+    a configuration dict, the path of a password config file, a dump filename, and any database
+    connection parameters, return the custom MongoDB restore command for the given database.
     '''
     hostname = database_config.resolve_database_option(
         'hostname', database, connection_params, restore=True
@@ -344,12 +431,6 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
     username = borgmatic.hooks.credential.parse.resolve_credential(
         database_config.resolve_database_option(
             'username', database, connection_params, restore=True
-        ),
-        config,
-    )
-    password = borgmatic.hooks.credential.parse.resolve_credential(
-        database_config.resolve_database_option(
-            'password', database, connection_params, restore=True
         ),
         config,
     )
@@ -376,8 +457,8 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
     if username:
         command.extend(('--username', username))
 
-    if password:
-        command.extend(('--config', make_password_config_file(password)))
+    if password_config_file_path:
+        command.extend(('--config', password_config_file_path))
 
     if 'authentication_database' in database:
         command.extend(('--authenticationDatabase', database['authentication_database']))
