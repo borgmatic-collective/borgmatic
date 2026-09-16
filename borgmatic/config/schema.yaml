@@ -2469,6 +2469,7 @@ properties:
                            is configured to "exec" into a container and run a
                            client there. (In that case though, you will need to
                            mount the runtime directory into the container.)
+                    example: file
                 authentication_database:
                     type: string
                     description: |

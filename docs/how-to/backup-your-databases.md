@@ -267,6 +267,28 @@ Note: With MariaDB and MySQL, use `options`, `list_options`, and/or
 `restore_options` to override command-line flags rather than putting flags into
 `mariadb_dump_command`, `mysql_dump_command`, etc.
 
+With MongoDB, there's a `password_transport: file` option that tells borgmatic
+to transmit the password to the `mongodump` client via a temporary file instead
+of a named pipe. The temporary file is potentially less secure than the pipe,
+but it's necessary when the database client is running in a container separate
+from borgmatic. For instance:
+
+
+```yaml
+mongodb_databases:
+    - name: projects
+      hostname: 127.0.0.1
+      username: example
+      password: trustsome1
+      password_transport: file
+      mongodump_command: docker exec my_mongo_container mongodump
+```
+
+For this to work, you first need to volume mount the <a
+href="https://torsion.org/borgmatic/reference/configuration/runtime-directory/">borgmatic
+runtime directory</a> into your MongoDB container so it can actually read the
+temporary file there.
+
 
 #### Database client in a temporary container
 
