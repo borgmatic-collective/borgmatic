@@ -3,7 +3,8 @@
    documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/data-sources/influxdb/
  * #1332: For the MongoDB hook, add a "password_transport" option for customizing how borgmatic
-   transmits passwords to the database client.
+   transmits passwords to the database client. See the documentation for more information:
+   https://torsion.org/borgmatic/reference/configuration/data-sources/mongodb/
  * #1345: Add a 1Password credential hook for loading credentials from the 1Password CLI. See the
    documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/credentials/onepassword/
