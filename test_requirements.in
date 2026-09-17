@@ -15,6 +15,7 @@ markdown
 oauthlib
 packaging
 pluggy
+psutil
 pygments
 pytest
 pytest-asyncio

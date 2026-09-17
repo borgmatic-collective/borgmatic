@@ -20,6 +20,7 @@ classifiers=[
 dependencies = [
     "jsonschema",
     "packaging",
+    "psutil",
     "requests",
     "ruamel.yaml>0.15.0",
 ]

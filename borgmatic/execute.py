@@ -10,6 +10,8 @@ import subprocess
 import textwrap
 import time
 
+import psutil
+
 import borgmatic.logger
 
 logger = logging.getLogger(__name__)
@@ -409,6 +411,12 @@ def raise_for_process_errors(
         for other_process in process_metadatas:
             if other_process.poll() is None:
                 other_process.stdout.read(0)
+
+                # Also kill child processes so they don't hang onto shared file descriptors and
+                # cause the draining below to hang.
+                for child in psutil.Process(other_process.pid).children(recursive=True):
+                    child.kill()
+
                 other_process.kill()
 
         if exit_status == Exit_status.WARNING:
@@ -778,10 +786,14 @@ def execute_command_with_processes(
         )
     except (subprocess.CalledProcessError, OSError):
         # Something has gone wrong. So vent each process' output buffer to prevent it from hanging.
-        # And then kill the process.
+        # And then kill the process and its children.
         for process in processes:
             if process.poll() is None:
                 process.stdout.read(0)
+
+                for child in psutil.Process(process.pid).children(recursive=True):
+                    child.kill()
+
                 process.kill()
 
         raise

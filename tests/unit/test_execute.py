@@ -992,7 +992,10 @@ def test_raise_for_process_errors_with_warning_process_and_error_process_raises(
 def test_raise_for_process_errors_with_warning_process_and_running_process_kills_and_returns_warning_status():
     process = flexmock(poll=lambda: 1, args=flexmock())
     other_process = flexmock(
-        poll=lambda: None, stdout=flexmock(read=lambda size: None), args=flexmock()
+        poll=lambda: None, stdout=flexmock(read=lambda size: None), args=flexmock(), pid=999
+    )
+    flexmock(module.psutil).should_receive('Process').with_args(999).and_return(
+        flexmock(children=lambda recursive: [flexmock(kill=lambda: None)])
     )
     other_process.should_receive('kill').once()
     buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=process)}
@@ -1022,7 +1025,10 @@ def test_raise_for_process_errors_with_warning_process_and_running_process_kills
 def test_raise_for_process_errors_with_error_process_and_running_process_kills_and_raises():
     process = flexmock(poll=lambda: 3, args=flexmock())
     other_process = flexmock(
-        poll=lambda: None, stdout=flexmock(read=lambda size: None), args=flexmock()
+        poll=lambda: None, stdout=flexmock(read=lambda size: None), args=flexmock(), pid=999
+    )
+    flexmock(module.psutil).should_receive('Process').with_args(999).and_return(
+        flexmock(children=lambda recursive: [flexmock(kill=lambda: None)])
     )
     other_process.should_receive('kill').once()
     buffer_readers = {flexmock(): module.Buffer_reader(lines=flexmock(), process=process)}
@@ -1984,8 +1990,11 @@ def test_execute_command_with_processes_calls_full_command_with_working_director
 def test_execute_command_with_processes_kills_processes_on_error():
     full_command = ['foo', 'bar']
     flexmock(module).should_receive('log_command')
-    process = flexmock(stdout=flexmock(read=lambda count: None))
+    process = flexmock(stdout=flexmock(read=lambda count: None), pid=999)
     process.should_receive('poll')
+    flexmock(module.psutil).should_receive('Process').with_args(999).and_return(
+        flexmock(children=lambda recursive: [flexmock(kill=lambda: None)])
+    )
     process.should_receive('kill').once()
     processes = (process,)
     flexmock(module.subprocess).should_receive('Popen').with_args(
