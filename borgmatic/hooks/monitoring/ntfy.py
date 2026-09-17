@@ -68,7 +68,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         base_url = hook_config.get('server', 'https://ntfy.sh')
         topic = hook_config.get('topic')
 
-        logger.info(f'Pinging ntfy topic {topic}{dry_run_label}')
+        logger.info(f'Pinging ntfy topic {topic} with {state.name.lower()}{dry_run_label}')
         logger.debug(f'Using ntfy ping URL {base_url}')
 
         headers = {
