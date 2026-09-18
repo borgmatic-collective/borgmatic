@@ -93,5 +93,5 @@ curl --silent --request POST \
     --header "Accept: application/json" \
     --form attachment=@"$standalone_minimal_binary_path"
 
-github-release create --token="$github_token" --owner=witten --repo=borgmatic --tag="$version" --target_commit="main" \
-    --name="borgmatic $version" --body="$release_changelog"
+github-release release --security-token "$github_token" --user witten --repo borgmatic --tag "$version" --target "main" \
+    --name "borgmatic $version" --description "$release_changelog"
