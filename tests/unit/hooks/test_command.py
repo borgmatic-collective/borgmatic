@@ -421,7 +421,7 @@ def test_before_after_hooks_with_before_error_runs_after_hook_and_raises():
         raise AssertionError()  # This should never get called.
 
 
-def test_before_after_hooks_with_before_soft_failure_raises():
+def test_before_after_hooks_with_before_soft_failure_does_not_error():
     commands = [
         {'before': 'repository', 'run': ['foo', 'bar']},
         {'after': 'repository', 'run': ['baz']},
@@ -436,22 +436,19 @@ def test_before_after_hooks_with_before_soft_failure_raises():
         after='action',
         action_names=['create'],
         state_names=['finish'],
-    ).never()
+    ).once()
     flexmock(module).should_receive('execute_hooks').and_raise(OSError)
     flexmock(module).should_receive('considered_soft_failure').and_return(True)
 
-    with (
-        pytest.raises(OSError),
-        module.Before_after_hooks(
-            command_hooks=commands,
-            before_after='action',
-            umask=1234,
-            working_directory='/working',
-            dry_run=False,
-            action_names=['create'],
-            context1='stuff',
-            context2='such',
-        ),
+    with module.Before_after_hooks(
+        command_hooks=commands,
+        before_after='action',
+        umask=1234,
+        working_directory='/working',
+        dry_run=False,
+        action_names=['create'],
+        context1='stuff',
+        context2='such',
     ):
         pass
 
@@ -525,7 +522,7 @@ def test_before_after_hooks_with_after_error_raises():
         pass
 
 
-def test_before_after_hooks_with_after_soft_failure_raises():
+def test_before_after_hooks_with_after_soft_failure_does_not_error():
     commands = [
         {'before': 'repository', 'run': ['foo', 'bar']},
         {'after': 'repository', 'run': ['baz']},
@@ -544,18 +541,15 @@ def test_before_after_hooks_with_after_soft_failure_raises():
     flexmock(module).should_receive('execute_hooks').and_return(None).and_raise(OSError)
     flexmock(module).should_receive('considered_soft_failure').and_return(True)
 
-    with (
-        pytest.raises(OSError),
-        module.Before_after_hooks(
-            command_hooks=commands,
-            before_after='action',
-            umask=1234,
-            working_directory='/working',
-            dry_run=False,
-            action_names=['create'],
-            context1='stuff',
-            context2='such',
-        ),
+    with module.Before_after_hooks(
+        command_hooks=commands,
+        before_after='action',
+        umask=1234,
+        working_directory='/working',
+        dry_run=False,
+        action_names=['create'],
+        context1='stuff',
+        context2='such',
     ):
         pass
 

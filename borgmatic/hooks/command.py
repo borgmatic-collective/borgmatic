@@ -249,7 +249,7 @@ class Before_after_hooks:
             )
         except (OSError, subprocess.CalledProcessError) as error:
             if considered_soft_failure(error):
-                raise
+                return
 
             # Trigger the after hook manually, since raising here will prevent it from being run
             # otherwise.
@@ -276,7 +276,7 @@ class Before_after_hooks:
             )
         except (OSError, subprocess.CalledProcessError) as error:
             if considered_soft_failure(error):
-                raise
+                return
 
             raise ValueError(f'Error running after {self.before_after} hook: {error}')
 

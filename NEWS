@@ -23,7 +23,8 @@
    any check frequency/days configuration and skip recording check timestamps.
  * #1352: Fix a hang in which PostgreSQL child processes prevented borgmatic from exiting when Borg
    errored out.
- * #1353: For the ntfy monitoring hook, log the state (finish, fail, etc.) for each ping.
+ * #1353: Fix for soft failures in command hooks incorrectly being treated as hard failures,
+   resulting in monitoring ping fails.
  * For the "user_runtime_directory" option and the "XDG_RUNTIME_DIR" environment variable, create a
    temporary directory for borgmatic within the given runtime directory. This makes cleanup easier
    and prevents unintentional runtime file reuse across borgmatic runs.
