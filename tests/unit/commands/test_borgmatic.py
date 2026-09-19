@@ -360,6 +360,73 @@ def test_monitoring_hooks_with_wrapped_code_error_pings_fail():
         raise OSError()
 
 
+def test_monitoring_hooks_with_wrapped_code_soft_failure_pings_finish():
+    flexmock(module).should_receive('get_verbosity').and_return(module.logging.INFO)
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'initialize_monitor',
+        object,
+        object,
+        object,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.START,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.LOG,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.FINISH,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.FAIL,
+        object,
+        object,
+    ).never()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'destroy_monitor',
+        object,
+        object,
+        object,
+        object,
+    ).once()
+
+    with (
+        pytest.raises(subprocess.CalledProcessError),
+        module.Monitoring_hooks(
+            config_filename='test.yaml',
+            config={},
+            arguments={'create': flexmock()},
+            global_arguments=flexmock(monitoring_verbosity=99, dry_run=False),
+        ),
+    ):
+        raise subprocess.CalledProcessError(returncode=75, cmd=['ls'])
+
+
 def test_monitoring_hooks_with_fail_ping_error_raise_original_error():
     flexmock(module).should_receive('get_verbosity').and_return(module.logging.INFO)
     flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())

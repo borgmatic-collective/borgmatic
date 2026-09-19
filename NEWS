@@ -1,3 +1,7 @@
+2.1.9.dev0
+ * #1354, #1353: Fix a regression in which soft failure exit codes in command hooks were not
+   respected.
+
 2.1.8
  * #450: Add an InfluxDB database hook for dumping and restoring InfluxDB 1 and 2 databases. See the
    documentation for more information:

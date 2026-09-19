@@ -249,7 +249,7 @@ class Before_after_hooks:
             )
         except (OSError, subprocess.CalledProcessError) as error:
             if considered_soft_failure(error):
-                return
+                raise
 
             # Trigger the after hook manually, since raising here will prevent it from being run
             # otherwise.
@@ -276,7 +276,7 @@ class Before_after_hooks:
             )
         except (OSError, subprocess.CalledProcessError) as error:
             if considered_soft_failure(error):
-                return
+                raise
 
             raise ValueError(f'Error running after {self.before_after} hook: {error}')
 
@@ -284,9 +284,9 @@ class Before_after_hooks:
 @functools.cache
 def considered_soft_failure(error):
     '''
-    Given a configuration filename and an exception object, return whether the exception object
-    represents a subprocess.CalledProcessError with a return code of SOFT_FAIL_EXIT_CODE. If so,
-    that indicates that the error is a "soft failure", and should not result in an error.
+    Given an exception object, return whether the exception object represents a
+    subprocess.CalledProcessError with a return code of SOFT_FAIL_EXIT_CODE. If so, that indicates
+    that the error is a "soft failure", and should not result in an error.
 
     The results of this function are cached so that it can be called multiple times without logging
     multiple times.

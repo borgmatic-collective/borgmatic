@@ -164,7 +164,9 @@ class Monitoring_hooks:
                 self.config,
                 dispatch.Hook_type.MONITORING,
                 self.config_filename,
-                monitor.State.FAIL if exception else monitor.State.FINISH,
+                monitor.State.FAIL
+                if exception and not command.considered_soft_failure(exception)
+                else monitor.State.FINISH,
                 self.monitoring_log_level,
                 self.dry_run,
             )
@@ -297,6 +299,9 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
                 raise encountered_error
 
     except (OSError, CalledProcessError, ValueError) as error:
+        if command.considered_soft_failure(error):
+            return
+
         yield from log_error_records('Error running configuration')
 
         encountered_error = error

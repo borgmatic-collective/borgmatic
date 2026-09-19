@@ -65,7 +65,7 @@ def test_run_configuration_with_borg_version_error_pings_after_command_hook_with
     list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
 
 
-def test_run_configuration_with_action_error_pings_monioring_hooks_start_and_fail():
+def test_run_configuration_with_action_error_pings_monitoring_hooks_start_and_fail():
     config = {'repositories': [{'path': 'foo'}]}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
@@ -89,5 +89,113 @@ def test_run_configuration_with_action_error_pings_monioring_hooks_start_and_fai
         object,
         object,
     ).once()
+
+    list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
+
+
+def test_run_configuration_with_before_configuration_command_error_pings_monitoring_hooks_start_and_fail():
+    config = {'repositories': [{'path': 'foo'}]}
+    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+
+    def filter_hooks(command_hooks, before=None, after=None, action_names=None, state_names=None):
+        if before == 'configuration':
+            raise OSError()
+
+        return ()
+
+    flexmock(borgmatic.hooks.command).should_receive('filter_hooks').replace_with(filter_hooks)
+    flexmock(module.borg_version).should_receive('local_borg_version').never()
+    flexmock(module).should_receive('run_actions').never()
+    flexmock(module.dispatch).should_receive('call_hooks')
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        config,
+        module.dispatch.Hook_type.MONITORING,
+        'test.yaml',
+        module.monitor.State.START,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        config,
+        module.dispatch.Hook_type.MONITORING,
+        'test.yaml',
+        module.monitor.State.FAIL,
+        object,
+        object,
+    ).once()
+
+    list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
+
+
+def test_run_configuration_with_after_configuration_command_error_pings_monitoring_hooks_start_and_fail():
+    config = {'repositories': [{'path': 'foo'}]}
+    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
+
+    def filter_hooks(command_hooks, before=None, after=None, action_names=None, state_names=None):
+        if after == 'configuration':
+            raise OSError()
+
+        return ()
+
+    flexmock(borgmatic.hooks.command).should_receive('filter_hooks').replace_with(filter_hooks)
+    flexmock(module).should_receive('run_actions').once()
+    flexmock(module.dispatch).should_receive('call_hooks')
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        config,
+        module.dispatch.Hook_type.MONITORING,
+        'test.yaml',
+        module.monitor.State.START,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        config,
+        module.dispatch.Hook_type.MONITORING,
+        'test.yaml',
+        module.monitor.State.FAIL,
+        object,
+        object,
+    ).once()
+
+    list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
+
+
+def test_run_configuration_with_before_configuration_command_soft_failure_pings_monitoring_hooks_start_only():
+    config = {'repositories': [{'path': 'foo'}]}
+    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+
+    def filter_hooks(command_hooks, before=None, after=None, action_names=None, state_names=None):
+        if before == 'configuration':
+            raise subprocess.CalledProcessError(returncode=75, cmd=['ls'])
+
+        return ()
+
+    flexmock(borgmatic.hooks.command).should_receive('filter_hooks').replace_with(filter_hooks)
+    flexmock(module.borg_version).should_receive('local_borg_version').never()
+    flexmock(module).should_receive('run_actions').never()
+    flexmock(module.dispatch).should_receive('call_hooks')
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        config,
+        module.dispatch.Hook_type.MONITORING,
+        'test.yaml',
+        module.monitor.State.START,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        config,
+        module.dispatch.Hook_type.MONITORING,
+        'test.yaml',
+        module.monitor.State.FAIL,
+        object,
+        object,
+    ).never()
 
     list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
