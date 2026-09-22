@@ -98,7 +98,14 @@ def make_password_config_file(database, password, borgmatic_runtime_directory):
     runtime directory, write out a password config file for transmitting the password to the MongoDB
     client. Use either a named pipe or a temporary file, depending on the configured password
     transport in the database configuration dict. Defaults to using a named pipe.
+
+    Return None if no password is set.
+
+    Raise ValueError if the password transport is invalid.
     '''
+    if not password:
+        return None
+
     password_transport = database.get('password_transport', 'pipe')
 
     if password_transport == 'pipe':
@@ -211,9 +218,9 @@ def dump_data_sources(
 
 def build_dump_command(database, config, password_config_file_path, dump_filename, dump_format):
     '''
-    Given a database configuration dict, a configuration dict, the path of a password config file, a
-    dump filename, and a dump format to use, return the custom MongoDB dump command for the given
-    database.
+    Given a database configuration dict, a configuration dict, the path of a password config file
+    (or None), a dump filename, and a dump format to use, return the custom MongoDB dump command for
+    the given database.
     '''
     all_databases = database['name'] == 'all'
 
@@ -419,8 +426,9 @@ def build_restore_command(
 ):
     '''
     Given an active Borg extract process (if streaming the restore), a database configuration dict,
-    a configuration dict, the path of a password config file, a dump filename, and any database
-    connection parameters, return the custom MongoDB restore command for the given database.
+    a configuration dict, the path of a password config file (or None), a dump filename, and any
+    database connection parameters, return the custom MongoDB restore command for the given
+    database.
     '''
     hostname = database_config.resolve_database_option(
         'hostname', database, connection_params, restore=True

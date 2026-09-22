@@ -100,6 +100,15 @@ def test_make_password_config_file_with_invalid_password_transport_raises():
         )
 
 
+def test_make_password_config_file_without_password_makes_nothing():
+    flexmock(module).should_receive('make_password_config_file_pipe').never()
+    flexmock(module).should_receive('make_password_temporary_config_file').never()
+
+    module.make_password_config_file(
+        database={}, password=None, borgmatic_runtime_directory='/run/borgmatic'
+    )
+
+
 def test_dump_data_sources_runs_mongodump_for_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     processes = [flexmock(), flexmock()]
