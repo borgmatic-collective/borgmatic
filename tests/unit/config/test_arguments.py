@@ -72,46 +72,40 @@ def test_set_values_with_final_list_index_key_adds_it_to_config():
     assert config == {'foo': {'bar': [1, 5]}}
 
 
-def test_type_for_option_with_option_finds_type():
+def test_types_for_option_with_option_finds_type():
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
         lambda sub_schema: sub_schema['properties'],
     )
 
-    assert (
-        module.type_for_option(
-            schema={'type': 'object', 'properties': {'foo': {'type': 'integer'}}},
-            option_keys=('foo',),
-        )
-        == 'integer'
-    )
+    assert module.types_for_option(
+        schema={'type': 'object', 'properties': {'foo': {'type': 'integer'}}},
+        option_keys=('foo',),
+    ) == ('integer',)
 
 
-def test_type_for_option_with_nested_option_finds_type():
+def test_types_for_option_with_nested_option_finds_type():
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
         lambda sub_schema: sub_schema['properties'],
     )
 
-    assert (
-        module.type_for_option(
-            schema={
-                'type': 'object',
-                'properties': {
-                    'foo': {'type': 'object', 'properties': {'bar': {'type': 'boolean'}}},
-                },
+    assert module.types_for_option(
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {'type': 'object', 'properties': {'bar': {'type': 'boolean'}}},
             },
-            option_keys=('foo', 'bar'),
-        )
-        == 'boolean'
-    )
+        },
+        option_keys=('foo', 'bar'),
+    ) == ('boolean',)
 
 
-def test_type_for_option_with_missing_nested_option_finds_nothing():
+def test_types_for_option_with_missing_nested_option_finds_nothing():
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
         lambda sub_schema: sub_schema['properties'],
     )
 
     assert (
-        module.type_for_option(
+        module.types_for_option(
             schema={
                 'type': 'object',
                 'properties': {
@@ -120,64 +114,74 @@ def test_type_for_option_with_missing_nested_option_finds_nothing():
             },
             option_keys=('foo', 'bar'),
         )
-        is None
+        == ()
     )
 
 
-def test_type_for_option_with_typeless_nested_option_finds_nothing():
+def test_types_for_option_with_typeless_nested_option_finds_nothing():
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
         lambda sub_schema: sub_schema['properties'],
     )
 
     assert (
-        module.type_for_option(
+        module.types_for_option(
             schema={
                 'type': 'object',
                 'properties': {'foo': {'type': 'object', 'properties': {'bar': {'example': 5}}}},
             },
             option_keys=('foo', 'bar'),
         )
-        is None
+        == ()
     )
 
 
-def test_type_for_option_with_list_index_option_finds_type():
+def test_types_for_option_with_multi_type_option_finds_all_types():
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
         lambda sub_schema: sub_schema['properties'],
     )
 
-    assert (
-        module.type_for_option(
-            schema={
-                'type': 'object',
-                'properties': {'foo': {'type': 'array', 'items': {'type': 'integer'}}},
+    assert module.types_for_option(
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {'type': 'object', 'properties': {'bar': {'type': ['string', 'boolean']}}},
             },
-            option_keys=('foo[0]',),
-        )
-        == 'integer'
-    )
+        },
+        option_keys=('foo', 'bar'),
+    ) == ('string', 'boolean')
 
 
-def test_type_for_option_with_nested_list_index_option_finds_type():
+def test_types_for_option_with_list_index_option_finds_type():
     flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
         lambda sub_schema: sub_schema['properties'],
     )
 
-    assert (
-        module.type_for_option(
-            schema={
-                'type': 'object',
-                'properties': {
-                    'foo': {
-                        'type': 'array',
-                        'items': {'type': 'object', 'properties': {'bar': {'type': 'integer'}}},
-                    },
+    assert module.types_for_option(
+        schema={
+            'type': 'object',
+            'properties': {'foo': {'type': 'array', 'items': {'type': 'integer'}}},
+        },
+        option_keys=('foo[0]',),
+    ) == ('integer',)
+
+
+def test_types_for_option_with_nested_list_index_option_finds_type():
+    flexmock(module.borgmatic.config.schema).should_receive('get_properties').replace_with(
+        lambda sub_schema: sub_schema['properties'],
+    )
+
+    assert module.types_for_option(
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': 'array',
+                    'items': {'type': 'object', 'properties': {'bar': {'type': 'integer'}}},
                 },
             },
-            option_keys=('foo[0]', 'bar'),
-        )
-        == 'integer'
-    )
+        },
+        option_keys=('foo[0]', 'bar'),
+    ) == ('integer',)
 
 
 def test_prepare_arguments_for_config_converts_arguments_to_keys():
@@ -194,6 +198,21 @@ def test_prepare_arguments_for_config_converts_arguments_to_keys():
         (('my_option', 'sub_option'), 'value1'),
         (('other_option',), 'value2'),
     )
+
+
+def test_prepare_arguments_for_config_converts_multi_type_arguments_to_keys():
+    assert module.prepare_arguments_for_config(
+        global_arguments=flexmock(**{'my_option.sub_option': 'value1', 'other_option': 'value2'}),
+        schema={
+            'type': 'object',
+            'properties': {
+                'my_option': {
+                    'type': 'object',
+                    'properties': {'sub_option': {'type': ['string', 'boolean']}},
+                },
+            },
+        },
+    ) == ((('my_option', 'sub_option'), 'value1'),)
 
 
 def test_prepare_arguments_for_config_skips_option_with_none_value():

@@ -239,6 +239,31 @@ def test_normalize_commands_moves_individual_command_hooks_to_unified_commands(
             False,
         ),
         (
+            {'statistics': True},
+            {'statistics': 'standard'},
+            True,
+        ),
+        (
+            {'statistics': False},
+            {'statistics': 'none'},
+            True,
+        ),
+        (
+            {'quick_statistics': True},
+            {'statistics': 'quick'},
+            True,
+        ),
+        (
+            {'quick_statistics': False},
+            {'statistics': 'none'},
+            True,
+        ),
+        (
+            {'statistics': True, 'quick_statistics': True},
+            {'statistics': 'quick'},
+            True,
+        ),
+        (
             {'store_config_files': False},
             {'bootstrap': {'store_config_files': False}},
             True,

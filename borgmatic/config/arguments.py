@@ -62,13 +62,13 @@ def set_values(config, keys, value):
     set_values(config[first_key], keys[1:], value)
 
 
-def type_for_option(schema, option_keys):
+def types_for_option(schema, option_keys):
     '''
     Given a configuration schema dict and a sequence of keys identifying a potentially nested
-    option, e.g. ('extra_borg_options', 'create'), return the schema type of that option as a
-    string.
+    option, e.g. ('extra_borg_options', 'create'), return the schema types of that option as a
+    tuple of strings.
 
-    Return None if the option or its type cannot be found in the schema.
+    Return an empty tuple if the option or its type cannot be found in the schema.
     '''
     option_schema = schema
 
@@ -83,12 +83,17 @@ def type_for_option(schema, option_keys):
             else:
                 option_schema = properties[key]
         except KeyError:
-            return None
+            return ()
 
     try:
-        return option_schema['type']
+        option_types = option_schema['type']
     except KeyError:
-        return None
+        return ()
+
+    if isinstance(option_types, list):
+        return tuple(option_types)
+
+    return (option_types,)
 
 
 def convert_value_type(value, option_type):
@@ -144,17 +149,19 @@ def prepare_arguments_for_config(global_arguments, schema):
             continue
 
         keys = tuple(argument_name.split('.'))
-        option_type = type_for_option(schema, keys)
+        option_types = types_for_option(schema, keys)
 
-        # The argument doesn't correspond to any option in the schema, or it is a complex argument, so ignore it.
-        # It's probably a flag that borgmatic has on the command-line but not in configuration.
-        if option_type in {'object', None}:
+        # If the argument doesn't correspond to any option in the schema or it is a complex
+        # argument, ignore it. It's probably a flag that borgmatic has on the command-line but not
+        # in configuration.
+        if not option_types or any(option_type == 'object' for option_type in option_types):
             continue
 
         prepared_values.append(
             (
                 keys,
-                convert_value_type(value, option_type),
+                # Arbitrarily select the first type if there are multiple.
+                convert_value_type(value, option_types[0]),
             ),
         )
 

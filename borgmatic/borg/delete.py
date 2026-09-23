@@ -63,7 +63,7 @@ def make_delete_command(
             local_borg_version=local_borg_version,
             default_archive_name_format='*',
         )
-        + (('--stats',) if config.get('statistics') else ())
+        + (('--stats',) if config.get('statistics') == 'standard' else ())
         + borgmatic.borg.flags.make_flags_from_arguments(
             delete_arguments,
             excludes=(

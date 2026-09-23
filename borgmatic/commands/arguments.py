@@ -819,18 +819,21 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         metavar='PATTERN',
         help='When pruning, only consider archives with names, hashes, or series matching this pattern',
     )
-    prune_group.add_argument(
+    prune_stats_group = prune_group.add_mutually_exclusive_group()
+    prune_stats_group.add_argument(
         '--stats',
         dest='statistics',
         default=None,
-        action='store_true',
+        action='store_const',
+        const='standard',
         help='Display statistics of the pruned archive [Borg 1 only]',
     )
-    prune_group.add_argument(
+    prune_stats_group.add_argument(
         '--quick-stats',
-        dest='quick_statistics',
+        dest='statistics',
         default=None,
-        action='store_true',
+        action='store_const',
+        const='quick',
         help='Display statistics of the pruned archive, skipping repository-wide "All archives" and chunk index statistics [Borg >= 1.4.5 and < 2 only]',
     )
     prune_group.add_argument(
@@ -903,18 +906,21 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         action='store_true',
         help='Display progress for each file as it is backed up',
     )
-    create_group.add_argument(
+    create_stats_group = create_group.add_mutually_exclusive_group()
+    create_stats_group.add_argument(
         '--stats',
         dest='statistics',
         default=None,
-        action='store_true',
+        action='store_const',
+        const='standard',
         help='Display statistics of archive',
     )
-    create_group.add_argument(
+    create_stats_group.add_argument(
         '--quick-stats',
-        dest='quick_statistics',
+        dest='statistics',
         default=None,
-        action='store_true',
+        action='store_const',
+        const='quick',
         help='Display statistics of archive, skipping repository-wide "All archives" and chunk index statistics [Borg 1.4.5+ only]',
     )
     create_group.add_argument(
@@ -1019,7 +1025,8 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         '--stats',
         dest='statistics',
         default=None,
-        action='store_true',
+        action='store_const',
+        const='standard',
         help='Display statistics for the deleted archives',
     )
     delete_group.add_argument(

@@ -85,14 +85,14 @@ def prune_archives(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (
             ('--stats',)
-            if config.get('statistics')
+            if config.get('statistics') == 'standard'
             and not dry_run
             and not feature.available(feature.Feature.NO_PRUNE_STATS, local_borg_version)
             else ()
         )
         + (
             ('--quick-stats',)
-            if config.get('quick_statistics')
+            if config.get('statistics') == 'quick'
             and not dry_run
             and not feature.available(feature.Feature.NO_PRUNE_STATS, local_borg_version)
             else ()
@@ -115,7 +115,7 @@ def prune_archives(
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    if config.get('statistics') or config.get('quick_statistics') or config.get('list_details'):
+    if config.get('statistics') in ('standard', 'quick') or config.get('list_details'):
         output_log_level = logging.ANSWER
     else:
         output_log_level = logging.INFO

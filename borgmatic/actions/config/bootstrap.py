@@ -64,7 +64,8 @@ def load_config_paths_from_archive(
         )
 
         extract_process = borgmatic.borg.extract.extract_archive(
-            global_arguments.dry_run,
+            # Don't do a dry run on the extract, because that prevents reading of the manifest.
+            False,
             repository_path,
             archive_name,
             [borgmatic_manifest_path],

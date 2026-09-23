@@ -450,7 +450,7 @@ def test_prune_archives_with_stats_config_calls_borg_with_stats_flag():
     module.prune_archives(
         dry_run=False,
         repository_path='repo',
-        config={'statistics': True},
+        config={'statistics': 'standard'},
         local_borg_version='1.2.3',
         global_arguments=flexmock(),
         prune_arguments=prune_arguments,
@@ -475,7 +475,7 @@ def test_prune_archives_with_quick_stats_config_calls_borg_with_quick_stats_flag
     module.prune_archives(
         dry_run=False,
         repository_path='repo',
-        config={'quick_statistics': True},
+        config={'statistics': 'quick'},
         local_borg_version='1.2.3',
         global_arguments=flexmock(),
         prune_arguments=prune_arguments,
@@ -685,7 +685,7 @@ def test_prune_archives_calls_borg_without_stats_when_feature_is_not_available()
     module.prune_archives(
         dry_run=False,
         repository_path='repo',
-        config={'statistics': True},
+        config={'statistics': 'standard'},
         local_borg_version='2.0.0b10',
         global_arguments=flexmock(),
         prune_arguments=prune_arguments,
@@ -708,7 +708,7 @@ def test_prune_archives_calls_borg_without_quick_stats_when_feature_is_not_avail
     module.prune_archives(
         dry_run=False,
         repository_path='repo',
-        config={'quick_statistics': True},
+        config={'statistics': 'quick'},
         local_borg_version='2.0.0b10',
         global_arguments=flexmock(),
         prune_arguments=prune_arguments,

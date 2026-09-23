@@ -1,4 +1,7 @@
 2.1.9.dev0
+ * #1316: Deprecate "statistics" and "quick_statistics" true/false options, replacing them with a
+   single combined "statistics" option that expects a named value.
+ * #1316: Enforce that "--stats" and "--quick-stats" flags aren't used together.
  * #1354, #1353: Fix a regression in which soft failure exit codes in command hooks were not
    respected.
  * #1355: Fix a regression in which the MongoDB hook no longer worked with passwordless database

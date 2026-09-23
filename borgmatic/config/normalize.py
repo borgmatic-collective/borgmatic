@@ -178,6 +178,33 @@ def normalize(config_filename, config):  # noqa: PLR0912, PLR0915
         )
         config['exclude_if_present'] = [exclude_if_present]
 
+    statistics = config.get('statistics')
+    if statistics in (True, False):
+        config['statistics'] = {True: 'standard', False: 'none'}.get(statistics)
+        logs.append(
+            logging.makeLogRecord(
+                dict(
+                    levelno=logging.WARNING,
+                    levelname='WARNING',
+                    msg=f'{config_filename}: The statistics option now expects a string value. True/false values for this option are deprecated and support will be removed from a future release.',
+                ),
+            ),
+        )
+
+    quick_statistics = config.get('quick_statistics')
+    if quick_statistics in (True, False):
+        del config['quick_statistics']
+        config['statistics'] = {True: 'quick', False: 'none'}.get(quick_statistics)
+        logs.append(
+            logging.makeLogRecord(
+                dict(
+                    levelno=logging.WARNING,
+                    levelname='WARNING',
+                    msg=f'{config_filename}: The quick_statistics option has been deprecated and support will be removed from a future release. Use the statistics option instead.',
+                ),
+            ),
+        )
+
     # Unconditionally set the bootstrap hook so that it's enabled by default and config files get
     # stored in each Borg archive.
     config.setdefault('bootstrap', {})
