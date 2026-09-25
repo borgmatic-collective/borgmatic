@@ -1,4 +1,4 @@
-2.1.9.dev0
+2.1.9
  * #951: For the PostgreSQL, MariaDB, and MySQL database hooks, support globs in configured database
    names (e.g. "users_*"), so borgmatic can dump multiple matching databases without needing each
    one defined in configuration.
