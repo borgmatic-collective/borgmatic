@@ -20,6 +20,24 @@ import borgmatic.actions.restore as module
             False,
         ),
         (
+            module.Dump('postgresql_databases', 'foo*'),
+            module.Dump('postgresql_databases', 'food'),
+            None,
+            True,
+        ),
+        (
+            module.Dump('postgresql_databases', 'food'),
+            module.Dump('postgresql_databases', 'foo*'),
+            None,
+            True,
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo*'),
+            module.Dump('postgresql_databases', 'foo*'),
+            None,
+            True,
+        ),
+        (
             module.Dump('postgresql_databases', 'foo'),
             module.Dump('mariadb_databases', 'foo'),
             None,
@@ -937,12 +955,16 @@ def test_get_dumps_to_restore_with_all_in_requested_dumps_plus_additional_reques
     )
 
 
-def test_get_dumps_to_restore_raises_for_multiple_matching_dumps_in_archive():
+def test_get_dumps_to_restore_with_glob_returns_multiple_matching_dumps_in_archive():
+    dumps_from_archive = (
+        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('mariadb_databases', 'food'),
+    )
     flexmock(module).should_receive('dumps_match').and_return(False)
     flexmock(module).should_receive('dumps_match').with_args(
         module.Dump(
             module.UNSPECIFIED,
-            'foo',
+            'fo*',
             hostname=module.UNSPECIFIED,
             label=module.UNSPECIFIED,
             container=module.UNSPECIFIED,
@@ -952,31 +974,29 @@ def test_get_dumps_to_restore_raises_for_multiple_matching_dumps_in_archive():
     flexmock(module).should_receive('dumps_match').with_args(
         module.Dump(
             module.UNSPECIFIED,
-            'foo',
+            'fo*',
             hostname=module.UNSPECIFIED,
             label=module.UNSPECIFIED,
             container=module.UNSPECIFIED,
         ),
-        module.Dump('mariadb_databases', 'foo'),
+        module.Dump('mariadb_databases', 'food'),
     ).and_return(True)
-    flexmock(module).should_receive('render_dump_metadata').and_return('test')
+    flexmock(module).should_receive('render_dump_metadata').and_return('foo').and_return('food')
 
-    with pytest.raises(ValueError) as exc_info:
+    assert (
         module.get_dumps_to_restore(
             restore_arguments=flexmock(
                 hook=None,
-                data_sources=['foo'],
+                data_sources=['fo*'],
                 original_hostname=None,
                 original_port=None,
                 original_label=None,
                 original_container=None,
             ),
-            dumps_from_archive=(
-                module.Dump('postgresql_databases', 'foo'),
-                module.Dump('mariadb_databases', 'foo'),
-            ),
+            dumps_from_archive=dumps_from_archive,
         )
-    assert 'Try adding flags to disambiguate.' in str(exc_info.value)
+        == dumps_from_archive
+    )
 
 
 def test_get_dumps_to_restore_raises_for_all_in_requested_dumps_and_requested_dumps_missing_from_archive():
@@ -1229,6 +1249,81 @@ def test_run_restore_restores_each_data_source():
             repository='repo',
             archive='archive',
             data_sources=flexmock(),
+            schemas=None,
+            hostname=None,
+            port=None,
+            username=None,
+            password=None,
+            restore_path=None,
+            container=None,
+        ),
+        global_arguments=flexmock(dry_run=False),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+    )
+
+
+def test_run_restore_restores_glob_data_source():
+    dumps_to_restore = {
+        module.Dump(hook_name='postgresql_databases', data_source_name='foo'),
+        module.Dump(hook_name='postgresql_databases', data_source_name='food'),
+    }
+
+    borgmatic_runtime_directory = flexmock()
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
+        borgmatic_runtime_directory,
+    )
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'make_runtime_directory_glob',
+    ).replace_with(lambda path: path)
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
+    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
+        flexmock(),
+    )
+    flexmock(module).should_receive('collect_dumps_from_archive').and_return(flexmock())
+    flexmock(module).should_receive('get_dumps_to_restore').and_return(dumps_to_restore)
+    flexmock(module).should_receive('get_configured_data_source').and_return(
+        {'name': 'foo'},
+    ).and_return({'name': 'food'})
+    flexmock(module).should_receive('restore_single_dump').with_args(
+        repository=object,
+        config=object,
+        local_borg_version=object,
+        global_arguments=object,
+        local_path=object,
+        remote_path=object,
+        archive_name=object,
+        hook_name='postgresql_databases',
+        data_source={'name': 'foo', 'schemas': None},
+        connection_params=object,
+        borgmatic_runtime_directory=borgmatic_runtime_directory,
+    ).once()
+    flexmock(module).should_receive('restore_single_dump').with_args(
+        repository=object,
+        config=object,
+        local_borg_version=object,
+        global_arguments=object,
+        local_path=object,
+        remote_path=object,
+        archive_name=object,
+        hook_name='postgresql_databases',
+        data_source={'name': 'food', 'schemas': None},
+        connection_params=object,
+        borgmatic_runtime_directory=borgmatic_runtime_directory,
+    ).once()
+    flexmock(module).should_receive('ensure_requested_dumps_restored')
+
+    module.run_restore(
+        repository={'path': 'repo'},
+        config=flexmock(),
+        local_borg_version=flexmock(),
+        restore_arguments=flexmock(
+            repository='repo',
+            archive='archive',
+            data_sources=['foo*'],
             schemas=None,
             hostname=None,
             port=None,
@@ -1524,7 +1619,7 @@ def test_run_restore_restores_data_sources_from_different_hooks():
         remote_path=object,
         archive_name=object,
         hook_name='mysql_databases',
-        data_source={'name': 'bar', 'schemas': None},
+        data_source={'name': 'foo', 'schemas': None},
         connection_params=object,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     ).once()

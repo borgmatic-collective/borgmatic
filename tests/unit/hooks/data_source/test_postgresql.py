@@ -113,6 +113,37 @@ def test_database_names_to_dump_with_all_and_format_lists_databases():
     )
 
 
+def test_database_names_to_dump_with_glob_lists_and_filters_databases():
+    database = {'name': 'foo*', 'format': 'custom'}
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield(
+        'foo,test,',
+        'food,test,',
+        'bar,test,"stuff and such"',
+    )
+
+    assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
+        'foo',
+        'food',
+    )
+
+
+def test_database_names_to_dump_with_non_matching_glob_list_no_databases():
+    database = {'name': 'nope*', 'format': 'custom'}
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive('execute_command_and_capture_output').and_yield(
+        'foo,test,',
+        'food,test,',
+        'bar,test,"stuff and such"',
+    )
+
+    assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == ()
+
+
 def test_database_names_to_dump_with_all_and_format_lists_databases_with_hostname_and_port():
     database = {'name': 'all', 'format': 'custom', 'hostname': 'localhost', 'port': 1234}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(

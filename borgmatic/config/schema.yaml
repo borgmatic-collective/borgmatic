@@ -1658,12 +1658,12 @@ properties:
                 name:
                     type: string
                     description: |
-                        Database name (required if using this hook). Or "all" to
-                        dump all databases on the host. (Also set the "format"
-                        to dump each database to a separate file instead of one
-                        combined file.) Note that using this database hook
-                        implicitly enables read_special (see above) to support
-                        dump and restore streaming.
+                        Database name (required if using this hook). Globs are
+                        supported. Or "all" to dump all databases on the host.
+                        (Also set the "format" to dump each database to a
+                        separate file instead of one combined file.) Note that
+                        using this database hook implicitly enables read_special
+                        (see above) to support dump and restore streaming.
                     example: users
                 label:
                     type: string
@@ -1878,18 +1878,19 @@ properties:
                 name:
                     type: string
                     description: |
-                        Database name (required if using this hook). Or "all" to
-                        dump all databases on the host. Note that using this
-                        database hook implicitly enables read_special (see
-                        above) to support dump and restore streaming.
+                        Database name (required if using this hook). Globs are
+                        supported. Or "all" to dump all databases on the host.
+                        Note that using this database hook implicitly enables
+                        read_special (see above) to support dump and restore
+                        streaming.
                     example: users
                 skip_names:
                     type: array
                     items:
                         type: string
                     description: |
-                        Database names to skip when dumping "all" databases.
-                        Ignored when the database name is not "all".
+                        Database names to skip when dumping "all" databases or
+                        using a glob in the database name. Ignored otherwise.
                     example:
                         - cache
                 label:
@@ -2051,12 +2052,13 @@ properties:
                     enum: ['sql']
                     description: |
                         Database dump output format. Currently only "sql" is
-                        supported. Defaults to "sql" for a single database. Or,
-                        when database name is "all" and format is blank, dumps
-                        all databases to a single file. But if a format is
-                        specified with an "all" database name, dumps each
-                        database to a separate file of that format, allowing
-                        more convenient restores of individual databases.
+                        supported. Defaults to "sql" for a single database or
+                        when using a glob in the database name. Or, when
+                        database name is "all" and format is blank, dumps all
+                        databases to a single file. But if a format is specified
+                        with an "all" database name, dumps each database to a
+                        separate file of that format, allowing more convenient
+                        restores of individual databases.
                     example: directory
                 add_drop_database:
                     type: boolean
@@ -2107,18 +2109,19 @@ properties:
                 name:
                     type: string
                     description: |
-                        Database name (required if using this hook). Or "all" to
-                        dump all databases on the host. Note that using this
-                        database hook implicitly enables read_special (see
-                        above) to support dump and restore streaming.
+                        Database name (required if using this hook). Globs are
+                        supported. Or "all" to dump all databases on the host.
+                        Note that using this database hook implicitly enables
+                        read_special (see above) to support dump and restore
+                        streaming.
                     example: users
                 skip_names:
                     type: array
                     items:
                         type: string
                     description: |
-                        Database names to skip when dumping "all" databases.
-                        Ignored when the database name is not "all".
+                        Database names to skip when dumping "all" databases or
+                        using a glob in the database name. Ignored otherwise.
                     example:
                         - cache
                 label:

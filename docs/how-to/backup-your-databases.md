@@ -148,6 +148,25 @@ mysql_databases:
       format: sql
 ```
 
+
+### Matching multiple databases
+
+<span class="minilink minilink-addedin">New in version 2.1.9</span> With
+PostgreSQL, MariaDB, and MySQL, you can optionally use globs (`*`) within
+configured database names to match multiple databases for dumping. This makes it
+easier to backup multiple databases without having to define borgmatic
+configuration for each one. Examples:
+
+```yaml
+postgresql_databases:
+    - name: "users_*"
+mariadb_databases:
+    - name: "*sessions"
+mysql_databases:
+    - name: "beta*db"
+```
+
+
 ### Database containers
 
 If your database server is running within a container and borgmatic is too, no
@@ -458,10 +477,15 @@ databases. For instance:
 borgmatic restore --archive latest --database users --database orders
 ```
 
+<span class="minilink minilink-addedin">New in version 2.1.9</span> The
+`--database` flag supports globs (`*`) to restore multiple matching databases at
+once, e.g. `--database users_*`.
+
 <span class="minilink minilink-addedin">New in version 1.7.6</span> You can
 also restore individual databases even if you dumped them as "all"—as long as
 you dumped them into separate files via use of the "format" option. See above
 for more information.
+
 
 ### Restore databases sharing a name
 

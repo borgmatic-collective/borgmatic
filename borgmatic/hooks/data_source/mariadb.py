@@ -1,3 +1,4 @@
+import fnmatch
 import logging
 import os
 import re
@@ -120,10 +121,10 @@ def database_names_to_dump(database, config, username, password, environment, dr
     '''
     skip_names = database.get('skip_names')
 
-    if database['name'] != 'all':
+    if database['name'] != 'all' and '*' not in database['name']:
         if skip_names:
             logger.warning(
-                f'For MariaDB database {database["name"]}, ignoring the "skip_names" option, which is only supported for database "all"'
+                f'For MariaDB database {database["name"]}, ignoring the "skip_names" option, which is only supported for databases with name "all" or containing globs'
             )
 
         return (database['name'],)
@@ -158,7 +159,7 @@ def database_names_to_dump(database, config, username, password, environment, dr
         + ('--execute', 'show schemas')
     )
 
-    logger.debug('Querying for "all" MariaDB databases to dump')
+    logger.debug(f'Querying for MariaDB databases matching "{database["name"]}" to dump')
 
     if skip_names:
         logger.debug(f'Skipping database names: {", ".join(skip_names)}')
@@ -177,6 +178,7 @@ def database_names_to_dump(database, config, username, password, environment, dr
         show_name.strip()
         for show_name in show_lines
         if show_name not in EXCLUDED_SYSTEM_DATABASE_NAMES
+        if database['name'] == 'all' or fnmatch.fnmatch(show_name, database['name'])
         if not skip_names or show_name not in skip_names
     )
 
@@ -331,10 +333,12 @@ def dump_data_sources(
             if dry_run:
                 continue
 
-            raise ValueError('Cannot find any MariaDB databases to dump.')
+            raise ValueError(
+                f'Cannot find any MariaDB databases matching "{database["name"]}" to dump.'
+            )
 
         # Database dumps to individual files.
-        if database['name'] == 'all' and database.get('format'):
+        if (database['name'] == 'all' and database.get('format')) or '*' in database['name']:
             for database_name in dump_database_names:
                 dumps_metadata.append(
                     borgmatic.actions.restore.Dump(

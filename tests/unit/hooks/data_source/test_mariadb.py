@@ -159,7 +159,7 @@ def test_database_names_to_dump_passes_through_name():
     assert names == ('foo',)
 
 
-def test_database_names_to_dump_with_non_all_name_and_skip_names_warns():
+def test_database_names_to_dump_with_non_all_non_glob_name_and_skip_names_warns():
     environment = flexmock()
 
     flexmock(module.logger).should_receive('warning').once()
@@ -268,6 +268,82 @@ def test_database_names_to_dump_with_database_name_all_and_skip_names_filters_ou
     )
 
     assert names == ('baz',)
+
+
+def test_database_names_to_dump_with_glob_database_name_filters_databases_to_match_glob():
+    environment = flexmock()
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive('parse_extra_options').and_return((), None)
+    flexmock(module.database_config).should_receive('resolve_database_option').and_return(None)
+    flexmock(module).should_receive('make_defaults_file_options').with_args(
+        'root',
+        'trustsome1',
+        None,
+    ).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        (
+            'mariadb',
+            '--defaults-extra-file=/dev/fd/99',
+            '--skip-column-names',
+            '--batch',
+            '--execute',
+            'show schemas',
+        ),
+        environment=environment,
+        working_directory=None,
+    ).and_yield('foo', 'food', 'baz').once()
+
+    names = module.database_names_to_dump(
+        {'name': 'foo*'},
+        {},
+        'root',
+        'trustsome1',
+        environment,
+        dry_run=False,
+    )
+
+    assert names == ('foo', 'food')
+
+
+def test_database_names_to_dump_with_non_matching_glob_database_name_lists_no_databases():
+    environment = flexmock()
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive('parse_extra_options').and_return((), None)
+    flexmock(module.database_config).should_receive('resolve_database_option').and_return(None)
+    flexmock(module).should_receive('make_defaults_file_options').with_args(
+        'root',
+        'trustsome1',
+        None,
+    ).and_return(('--defaults-extra-file=/dev/fd/99',))
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        (
+            'mariadb',
+            '--defaults-extra-file=/dev/fd/99',
+            '--skip-column-names',
+            '--batch',
+            '--execute',
+            'show schemas',
+        ),
+        environment=environment,
+        working_directory=None,
+    ).and_yield('foo', 'food', 'baz').once()
+
+    names = module.database_names_to_dump(
+        {'name': 'nope*'},
+        {},
+        'root',
+        'trustsome1',
+        environment,
+        dry_run=False,
+    )
+
+    assert names == ()
 
 
 def test_database_names_to_dump_runs_mariadb_with_socket_path():
@@ -689,6 +765,58 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
         [
             module.borgmatic.actions.restore.Dump('mariadb_databases', 'foo'),
             module.borgmatic.actions.restore.Dump('mariadb_databases', 'bar'),
+        ],
+    ).once()
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(
+        object,
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/mariadb_databases',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    ).once()
+
+    assert (
+        module.dump_data_sources(
+            databases,
+            {},
+            config_paths=('test.yaml',),
+            borgmatic_runtime_directory='/run/borgmatic',
+            patterns=[],
+            dry_run=False,
+        )
+        == processes
+    )
+
+
+def test_dump_data_sources_dumps_glob_databases_separately():
+    databases = [{'name': 'foo*'}]
+    processes = [flexmock(), flexmock()]
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential',
+    ).and_return(None)
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module).should_receive('database_names_to_dump').and_return(('foo', 'food'))
+
+    for name, process in zip(('foo', 'food'), processes):
+        flexmock(module).should_receive('execute_dump_command').with_args(
+            database={'name': name},
+            config={},
+            username=None,
+            password=None,
+            dump_path=object,
+            database_names=(name,),
+            environment={'USER': 'root'},
+            dry_run=object,
+            dry_run_label=object,
+        ).and_return(process).once()
+
+    flexmock(module.dump).should_receive('write_data_source_dumps_metadata').with_args(
+        '/run/borgmatic',
+        'mariadb_databases',
+        [
+            module.borgmatic.actions.restore.Dump('mariadb_databases', 'foo'),
+            module.borgmatic.actions.restore.Dump('mariadb_databases', 'food'),
         ],
     ).once()
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('inject_pattern').with_args(

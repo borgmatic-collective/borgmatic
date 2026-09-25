@@ -1,4 +1,5 @@
 import collections
+import fnmatch
 import locale
 import logging
 import os
@@ -33,6 +34,8 @@ def dumps_match(first, second, default_port=None):
     Compare two Dump instances for equality while supporting a field value of UNSPECIFIED, which
     indicates that the field should match any value. If a default port is given, then consider any
     dump having that port to match with a dump having a None port.
+
+    Globs are supported in dump names.
     '''
     # label kinda counts as an unique id, if they match ignore host/container/port
     if first.label not in {None, UNSPECIFIED} and first.label == second.label:
@@ -52,6 +55,17 @@ def dumps_match(first, second, default_port=None):
                 continue
 
         if first_value == UNSPECIFIED or second_value == UNSPECIFIED:  # noqa: PLR1714
+            continue
+
+        if (
+            field_name == 'data_source_name'
+            and first_value
+            and second_value
+            and (
+                fnmatch.fnmatch(first_value, second_value)
+                or fnmatch.fnmatch(second_value, first_value)
+            )
+        ):
             continue
 
         if first_value != second_value:
@@ -478,12 +492,9 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
 
         if len(matching_dumps) == 0:
             missing_dumps.add(requested_dump)
-        elif len(matching_dumps) == 1:
-            dumps_to_restore[matching_dumps[0]] = None
-        else:
-            raise ValueError(
-                f'Cannot restore data source {render_dump_metadata(requested_dump)} because there are multiple matching dumps in the archive. Try adding flags to disambiguate.',
-            )
+
+        for matching_dump in matching_dumps:
+            dumps_to_restore[matching_dump] = None
 
     if missing_dumps:
         rendered_dumps = ', '.join(
@@ -602,8 +613,11 @@ def run_restore(
                     if not found_data_source:
                         continue
 
-                    found_data_source = dict(found_data_source)
-                    found_data_source['name'] = restore_dump.data_source_name
+                # Replace the data source name with that of the dump. This handles the case where
+                # the configured matching data source name is "all" or contains a glob, but there's
+                # a concrete data source name in the archive.
+                found_data_source = dict(found_data_source)
+                found_data_source['name'] = restore_dump.data_source_name
 
                 dumps_actually_restored.add(restore_dump)
 

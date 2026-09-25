@@ -1,4 +1,5 @@
 import csv
+import fnmatch
 import itertools
 import logging
 import os
@@ -74,10 +75,10 @@ def database_names_to_dump(database, config, environment, dry_run):
     '''
     requested_name = database['name']
 
-    if requested_name != 'all':
+    if database['name'] != 'all' and '*' not in database['name']:
         return (requested_name,)
 
-    if not database.get('format'):
+    if database['name'] == 'all' and not database.get('format'):
         return ('all',)
 
     if dry_run:
@@ -106,7 +107,7 @@ def database_names_to_dump(database, config, environment, dry_run):
             else ()
         )
     )
-    logger.debug('Querying for "all" PostgreSQL databases to dump')
+    logger.debug(f'Querying for PostgreSQL databases matching "{database["name"]}" to dump')
     list_lines = execute_command_and_capture_output(
         list_command,
         environment=environment,
@@ -117,6 +118,7 @@ def database_names_to_dump(database, config, environment, dry_run):
         row[0]
         for row in csv.reader(list_lines, delimiter=',', quotechar='"')
         if row[0] not in EXCLUDED_DATABASE_NAMES
+        if database['name'] == 'all' or fnmatch.fnmatch(row[0], database['name'])
     )
 
 

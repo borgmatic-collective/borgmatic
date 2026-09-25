@@ -1521,7 +1521,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         metavar='NAME',
         dest='data_sources',
         action='append',
-        help="Name of data source (e.g. database) to restore from the archive, must be defined in borgmatic's configuration, can specify the flag multiple times, defaults to all data sources in the archive",
+        help="Name of data source (e.g. database) to restore from the archive, must be defined in borgmatic's configuration, globs supported, can specify the flag multiple times, defaults to all data sources in the archive",
     )
     restore_group.add_argument(
         '--schema',
