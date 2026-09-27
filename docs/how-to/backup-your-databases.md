@@ -334,6 +334,43 @@ reference](https://torsion.org/borgmatic/reference/configuration/) for
 details.
 
 
+#### Database disk dump
+
+Some database dump formats cannot be streamed directly to Borg and therefore
+require temporary disk storage. This applies to PostgreSQL and MongoDB when
+using the `directory` dump format, as well as InfluxDB backups.
+
+In these cases, configure a `user_runtime_directory` and mount it into the
+database container using the same path on both the host and in the container.
+This 1:1 volume mapping allows both borgmatic and the database container to
+access the temporary dump files during backup and restore operations.
+
+Example borgmatic configuration:
+
+```yaml
+user_runtime_directory: /tmp/backup-tmp
+```
+
+Example docker-compose configuration:
+
+```yaml
+services:
+  influxdb:
+    volumes:
+      # Runtime directory used by borgmatic for temporary database dumps
+      - /tmp/backup-tmp:/tmp/backup-tmp
+```
+
+When running borgmatic as a systemd service, be aware that systemd security
+settings can affect access to `user_runtime_directory`. Ensure that the
+directory is accessible for both reading and writing.
+
+For example, the `PrivateTmp=yes` setting changes the `/tmp` path inside the
+service, making the host's original `/tmp` directory invisible to the service.
+If `user_runtime_directory` is configured under `/tmp`, it must be added to the
+service's `BindPaths` settings so that it is mapped into the service.
+
+
 ### No source directories
 
 <span class="minilink minilink-addedin">New in version 1.7.1</span> If you
