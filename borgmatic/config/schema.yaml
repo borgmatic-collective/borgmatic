@@ -2334,7 +2334,7 @@ properties:
         type: array
         items:
             type: object
-            required: ['path','name']
+            required: ['path', 'name']
             additionalProperties: false
             properties:
                 name:
