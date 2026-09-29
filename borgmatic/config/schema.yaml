@@ -40,11 +40,13 @@ properties:
             type: object
             required:
                 - path
-            additionalProperties: false
+            additionalProperties: true
             properties:
                 path:
                     type: string
-                    description: The local path or Borg URL of the repository.
+                    description: |
+                        The local path or Borg URL of the repository. Tildes are
+                        expanded.
                     example: ssh://user@backupserver/./sourcehostname.borg
                 label:
                     type: string
@@ -98,12 +100,12 @@ properties:
         description: |
             A required list of local or remote repositories with paths and
             optional labels (which can be used with the --repository flag to
-            select a repository). Tildes are expanded. Multiple repositories are
-            backed up to in sequence. Borg placeholders can be used. See the
-            output of "borg help placeholders" for details. See ssh_command for
-            SSH options like identity file or port. If systemd service is used,
-            then add local repository paths in the systemd service file to the
-            ReadWritePaths list.
+            select a repository). Multiple repositories are backed up to in
+            sequence. See ssh_command for SSH options like identity file or
+            port. You can even specify (many) top-level borgmatic options under
+            specific repositories if you only want them to apply to those
+            repositories. If you're using systemd, then add any local
+            repository paths to the ReadWritePaths in your systemd service file.
         example:
             - path: ssh://user@backupserver/./sourcehostname.borg
               label: backupserver

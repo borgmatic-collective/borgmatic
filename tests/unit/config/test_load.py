@@ -46,3 +46,17 @@ def test_probe_and_include_file_with_relative_path_and_missing_files_raises():
 
     with pytest.raises(FileNotFoundError):
         module.probe_and_include_file('include.yaml', ['/etc', '/var'], config_paths=set())
+
+
+def test_merge_repository_configuration_skips_repository_specific_options():
+    assert module.merge_repository_configuration(
+        repository_config={'path': '/foo', 'label': 'foo', 'remote_path': 'borg2'},
+        config={'stuff': 'such'},
+    ) == {'stuff': 'such', 'remote_path': 'borg2'}
+
+
+def test_merge_repository_configuration_overwrites_config_options():
+    assert module.merge_repository_configuration(
+        repository_config={'remote_path': 'borg2'},
+        config={'stuff': 'such', 'remote_path': 'borg1'},
+    ) == {'stuff': 'such', 'remote_path': 'borg2'}

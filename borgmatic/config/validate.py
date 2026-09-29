@@ -5,6 +5,7 @@ import jsonschema
 import ruamel.yaml
 
 import borgmatic.config.arguments
+import borgmatic.config.load
 from borgmatic.config import constants, environment, load, normalize, override
 
 
@@ -131,6 +132,7 @@ def parse_configuration(
     have permissions to read the file, or Validation_error if the config does not match the schema.
     '''
     config_paths = set()
+    logs = None
 
     try:
         config = (
@@ -142,30 +144,47 @@ def parse_configuration(
     except (ruamel.yaml.error.YAMLError, RecursionError) as error:
         raise Validation_error(config_filename, (str(error),))
 
-    borgmatic.config.arguments.apply_arguments_to_config(config, schema, arguments)
-    override.apply_overrides(config, schema, overrides)
-    constants.apply_constants(config, config.get('constants') if config else {})
-
-    if resolve_env:
-        environment.resolve_env_variables(config)
-
-    logs = normalize.normalize(config_filename, config)
-
-    try:
-        validator = jsonschema.Draft7Validator(schema)
-    except AttributeError:  # pragma: no cover
-        validator = jsonschema.Draft4Validator(schema)
-
-    validation_errors = tuple(validator.iter_errors(config))
-
-    if validation_errors:
-        raise Validation_error(
-            config_filename,
-            tuple(format_json_error(error) for error in validation_errors),
+    for single_config in (
+        config,
+        *(
+            # For purposes of validation, hoist any top-level options that are specified under a
+            # particular repository to be at the top level. That way, users can specify options like
+            # "remote_path" per repository, but we can still validate them against the global
+            # schema.
+            borgmatic.config.load.merge_repository_configuration(repository_config, config)
+            for repository_config in config.get('repositories', ())
+        ),
+    ):
+        borgmatic.config.arguments.apply_arguments_to_config(single_config, schema, arguments)
+        override.apply_overrides(single_config, schema, overrides)
+        constants.apply_constants(
+            single_config, single_config.get('constants') if single_config else {}
         )
 
-    apply_logical_validation(config_filename, config)
-    normalize.post_validation_normalize(config)
+        if resolve_env:
+            environment.resolve_env_variables(single_config)
+
+        normalize_logs = normalize.normalize(config_filename, single_config)
+
+        # Only save the first round of normalize logs to avoid duplicates.
+        if logs is None:
+            logs = normalize_logs
+
+        try:
+            validator = jsonschema.Draft7Validator(schema)
+        except AttributeError:  # pragma: no cover
+            validator = jsonschema.Draft4Validator(schema)
+
+        validation_errors = tuple(validator.iter_errors(single_config))
+
+        if validation_errors:
+            raise Validation_error(
+                config_filename,
+                tuple(format_json_error(error) for error in validation_errors),
+            )
+
+        apply_logical_validation(config_filename, single_config)
+        normalize.post_validation_normalize(single_config)
 
     return config, config_paths, logs
 

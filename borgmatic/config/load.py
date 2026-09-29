@@ -387,3 +387,40 @@ def deep_merge_nodes(nodes):
         merged_nodes.append((last_node_key, last_node_value))
 
     return merged_nodes
+
+
+REPOSITORY_SPECIFIC_OPTION_NAMES = {
+    'append_only',
+    'encryption',
+    'id_hash',
+    'key_location',
+    'label',
+    'make_parent_directories',
+    'path',
+    'storage_quota',
+}
+
+
+def merge_repository_configuration(repository_config, config):
+    '''
+    Given a repository configuration snippet, and a full configuration dict, copy any unknown
+    options from the repository-specific configuration into the global configuration dict. The idea
+    is that the user can stuff any general borgmatic options (e.g.  "remote_path") under a
+    particular repository to make them apply only to that repository. And we're copying them to the
+    global scope here just for ease of validation and access.
+
+    Note that this is only a shallow merge of top-level keys—not the kind of fancy deep merge you
+    get with real includes.
+
+    Return the merged configuration as a dict without modifying the given configurations.
+    '''
+    merged_config = dict(config)
+    merged_config.update(
+        {
+            option_name: value
+            for option_name, value in repository_config.items()
+            if option_name not in REPOSITORY_SPECIFIC_OPTION_NAMES
+        }
+    )
+
+    return merged_config

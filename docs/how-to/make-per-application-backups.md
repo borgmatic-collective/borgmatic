@@ -30,6 +30,8 @@ sudo borgmatic config generate --destination /etc/borgmatic.d/repo1.yaml
 sudo borgmatic config generate --destination /etc/borgmatic.d/repo2.yaml
 ```
 
+Also see [repository-specific configuration](https://torsion.org/borgmatic/reference/configuration/repositories/#repository-specific-configuration).
+
 <span class="minilink minilink-addedin">Prior to version 1.7.15</span> The
 command to generate configuration files was `generate-borgmatic-config`
 instead of `borgmatic config generate`.

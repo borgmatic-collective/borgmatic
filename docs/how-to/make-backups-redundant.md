@@ -47,10 +47,11 @@ for more information on how to specify local and remote repository paths.
 
 ### Different options per repository
 
-What if you want borgmatic to backup to multiple repositories—while also
-setting different options for each one? In that case, you'll need to use
-[a separate borgmatic configuration file for each
+What if you want borgmatic to backup to multiple repositories—while also setting
+different options for each one? There are a couple of approaches. Newer versions
+of borgmatic support [repository-specific
+configuration](https://torsion.org/borgmatic/reference/configuration/repositories/#repository-specific-configuration).
+Another approach though is to use [a separate borgmatic configuration file for
+each
 repository](https://torsion.org/borgmatic/how-to/make-per-application-backups/)
-instead of the multiple repositories in one configuration file as described
-above. That's because all of the repositories in a particular configuration
-file get the same options applied.
+instead of the multiple repositories in one configuration file.

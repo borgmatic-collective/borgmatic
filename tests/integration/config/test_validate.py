@@ -298,6 +298,59 @@ def test_parse_configuration_raises_for_validation_error():
         )
 
 
+def test_parse_configuration_raises_for_repository_specific_validation_error():
+    mock_config_and_schema(
+        '''
+        source_directories:
+            - /tmp
+        repositories:
+            - path: hostname.borg
+              source_directories: yes
+        ''',
+    )
+
+    with pytest.raises(module.Validation_error):
+        module.parse_configuration(
+            '/tmp/config.yaml',
+            '/tmp/schema.yaml',
+            arguments={'global': flexmock()},
+        )
+
+
+def test_parse_configuration_raises_for_unknown_option():
+    mock_config_and_schema(
+        '''
+        unknown: option
+        repositories:
+            - path: hostname.borg
+        ''',
+    )
+
+    with pytest.raises(module.Validation_error):
+        module.parse_configuration(
+            '/tmp/config.yaml',
+            '/tmp/schema.yaml',
+            arguments={'global': flexmock()},
+        )
+
+
+def test_parse_configuration_raises_for_unknown_repository_specific_option():
+    mock_config_and_schema(
+        '''
+        repositories:
+            - path: hostname.borg
+              unknown: option
+        ''',
+    )
+
+    with pytest.raises(module.Validation_error):
+        module.parse_configuration(
+            '/tmp/config.yaml',
+            '/tmp/schema.yaml',
+            arguments={'global': flexmock()},
+        )
+
+
 def test_parse_configuration_applies_overrides():
     mock_config_and_schema(
         '''

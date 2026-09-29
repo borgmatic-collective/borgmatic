@@ -35,6 +35,43 @@ archive containing all of your [source
 directories](https://torsion.org/borgmatic/reference/configuration/patterns-and-excludes/).
 
 
+## Repository-specific configuration
+
+<span class="minilink minilink-addedin">New in version 2.1.10</span> If you want
+certain borgmatic [configuration
+options](https://torsion.org/borgmatic/reference/configuration/) to apply only
+to particular repositories (and you don't want to mess with [separate
+configuration
+files](https://torsion.org/borgmatic/how-to/make-per-application-backups/)), you
+can specify many top-level configuration options directly under particular
+repositories. For example:
+
+```yaml
+repositories:
+    - path: /path/to/repo1.borg
+      local_path: borg1
+      remote_path: borg1
+    - path: /path/to/repo2.borg
+      local_path: borg2
+      remote_path: borg2
+```
+
+This example demonstrates how you can specify options like `local_path` and
+`remote_path` to be repository specific, even though they are typically
+top-level configuration options that apply for all repositories.
+
+Under the hood, borgmatic merges these values into the top-level configuration
+when determining the configuration to use for a particular
+repository—overwriting any top-level configuration options that may already
+exist (but just for that repository). This is performed as a shallow merge, so
+use [includes](https://torsion.org/borgmatic/reference/configuration/includes/)
+and multiple configuration files if you need deep merging.
+
+Note that this feature doesn't make sense for every configuration option. For
+instance, borgmatic consumes options like `verbosity` before any per-repository
+logic, so in that case per-repository `verbosity` values get silently ignored.
+
+
 ## SSH
 
 Backing up to a remote server via

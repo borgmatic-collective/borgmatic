@@ -4,6 +4,7 @@ import sys
 import pytest
 from flexmock import flexmock
 
+import borgmatic.config.validate
 from borgmatic.config import load as module
 
 
@@ -1267,3 +1268,11 @@ def test_deep_merge_nodes_skips_sequence_values_tagged_with_omit():
     assert len(options) == 1
     assert options[0][0].value == 'before_backup'
     assert [item.value for item in options[0][1].value] == ['echo 1', 'echo 3']
+
+
+def test_repository_specific_option_names_match_schema():
+    schema = borgmatic.config.validate.load_schema(borgmatic.config.validate.schema_filename())
+
+    assert set(module.REPOSITORY_SPECIFIC_OPTION_NAMES) == set(
+        schema['properties']['repositories']['items']['properties'].keys()
+    )

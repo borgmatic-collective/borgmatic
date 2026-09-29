@@ -199,11 +199,6 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
       * logging.LogRecord instances containing errors from any actions or backup hooks that fail
     '''
     global_arguments = arguments['global']
-
-    local_path = config.get('local_path', 'borg')
-    remote_path = config.get('remote_path')
-    retries = config.get('retries', 0)
-    retry_wait = config.get('retry_wait', 0)
     repo_queue = Queue()
     encountered_error = None
     error_repository = None
@@ -228,16 +223,6 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
                 log_file=config.get('log_file', ''),
             ),
         ):
-            try:
-                local_borg_version = borg_version.local_borg_version(config, local_path)
-                logger.debug(f'Borg {local_borg_version}')
-            except (OSError, CalledProcessError, ValueError) as error:
-                yield from log_error_records(
-                    f'{config_filename}: Error getting local Borg version',
-                    error,
-                )
-                raise
-
             for repo in config['repositories']:
                 repo_queue.put(
                     (repo, 0),
@@ -248,7 +233,30 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
 
                 with Log_prefix(repository.get('label', repository['path'])):
                     logger.debug('Running actions for repository')
+
+                    # Hoist any top-level options that are specified under a particular repository
+                    # to be at the top level. That way, users can specify options like "remote_path"
+                    # per repository, but downstream code still access them at the global scope.
+                    merged_config = borgmatic.config.load.merge_repository_configuration(
+                        repository, config
+                    )
+                    local_path = merged_config.get('local_path', 'borg')
+                    remote_path = merged_config.get('remote_path')
+                    retries = merged_config.get('retries', 0)
+                    retry_wait = merged_config.get('retry_wait', 0)
                     timeout = retry_num * retry_wait
+
+                    try:
+                        local_borg_version = borg_version.local_borg_version(
+                            merged_config, merged_config.get('local_path', 'borg')
+                        )
+                        logger.debug(f'Borg {local_borg_version}')
+                    except (OSError, CalledProcessError, ValueError) as error:
+                        yield from log_error_records(
+                            f'{config_filename}: Error getting local Borg version',
+                            error,
+                        )
+                        raise
 
                     if timeout:
                         logger.warning(f'Sleeping {timeout}s before next retry')
@@ -258,7 +266,7 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
                         yield from run_actions(
                             arguments=arguments,
                             config_filename=config_filename,
-                            config=config,
+                            config=merged_config,
                             config_paths=config_paths,
                             local_path=local_path,
                             remote_path=remote_path,
