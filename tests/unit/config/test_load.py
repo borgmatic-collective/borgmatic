@@ -60,3 +60,16 @@ def test_merge_repository_configuration_overwrites_config_options():
         repository_config={'remote_path': 'borg2'},
         config={'stuff': 'such', 'remote_path': 'borg1'},
     ) == {'stuff': 'such', 'remote_path': 'borg2'}
+
+
+def test_merge_repository_configuration_deep_copies_configuration():
+    config = {'stuff': {'nested': 'data'}}
+    merged_config = module.merge_repository_configuration(
+        repository_config={'path': '/foo', 'label': 'foo'},
+        config=config,
+    )
+
+    assert merged_config == {'stuff': {'nested': 'data'}}
+    merged_config['stuff']['nested'] = 'changed'
+    assert merged_config == {'stuff': {'nested': 'changed'}}
+    assert config == {'stuff': {'nested': 'data'}}

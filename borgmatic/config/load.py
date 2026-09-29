@@ -1,3 +1,4 @@
+import copy
 import functools
 import itertools
 import logging
@@ -414,7 +415,9 @@ def merge_repository_configuration(repository_config, config):
 
     Return the merged configuration as a dict without modifying the given configurations.
     '''
-    merged_config = dict(config)
+    # Deep copy the original configuration so as not to share any nested structures, as downstream
+    # code may want to modify the merged configuration without affecting the original.
+    merged_config = copy.deepcopy(config)
     merged_config.update(
         {
             option_name: value
