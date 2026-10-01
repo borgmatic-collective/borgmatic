@@ -67,6 +67,14 @@ def test_add_arguments_from_schema_with_nested_object_adds_flag_for_each_option(
     parser = module.ArgumentParser(allow_abbrev=False, add_help=False)
     arguments_group = parser.add_argument_group('arguments')
     flexmock(arguments_group).should_receive('add_argument').with_args(
+        '--no-foo',
+        dest='foo',
+        action='store_const',
+        const=module.borgmatic.config.arguments.UNSET,
+        default=None,
+        help='Disable foo.',
+    ).once()
+    flexmock(arguments_group).should_receive('add_argument').with_args(
         '--foo.bar',
         type=int,
         metavar='BAR',

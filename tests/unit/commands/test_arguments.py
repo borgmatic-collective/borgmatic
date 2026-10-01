@@ -1021,6 +1021,14 @@ def test_add_arguments_from_schema_with_nested_object_adds_flag_for_each_option(
         int,
     ).and_return(str)
     arguments_group.should_receive('add_argument').with_args(
+        '--no-foo',
+        dest='foo',
+        action='store_const',
+        const=module.borgmatic.config.arguments.UNSET,
+        default=None,
+        help='Disable foo.',
+    ).once()
+    arguments_group.should_receive('add_argument').with_args(
         '--foo.bar',
         type=int,
         metavar='BAR',
@@ -1056,6 +1064,14 @@ def test_add_arguments_from_schema_uses_first_non_null_type_from_multi_type_obje
     arguments_group = flexmock()
     flexmock(module).should_receive('make_argument_description').and_return('help 1')
     flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(int)
+    arguments_group.should_receive('add_argument').with_args(
+        '--no-foo',
+        dest='foo',
+        action='store_const',
+        const=module.borgmatic.config.arguments.UNSET,
+        default=None,
+        help='Disable foo.',
+    ).once()
     arguments_group.should_receive('add_argument').with_args(
         '--foo.bar',
         type=int,
@@ -1106,10 +1122,19 @@ def test_add_arguments_from_schema_with_empty_multi_type_raises():
         )
 
 
-def test_add_arguments_from_schema_with_propertyless_option_adds_flag():
+def test_add_arguments_from_schema_with_propertyless_option_adds_flag_and_no_flag():
     arguments_group = flexmock()
     flexmock(module).should_receive('make_argument_description').and_return('help')
     flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(str)
+    arguments_group.should_receive('add_argument').with_args(
+        '--no-foo',
+        dest='foo',
+        action='store_const',
+        const=module.borgmatic.config.arguments.UNSET,
+        default=None,
+        help='Disable foo.',
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
     arguments_group.should_receive('add_argument').with_args(
         '--foo',
         type=str,

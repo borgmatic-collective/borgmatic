@@ -24,7 +24,8 @@ def set_values(config, keys, value):
         config[first_key] = value
         return
 
-    if first_key not in config:
+    # If either the key is missing or its value is None, set its value to an empty dict.
+    if config.get(first_key) is None:
         config[first_key] = {}
 
     set_values(config[first_key], keys[1:], value)

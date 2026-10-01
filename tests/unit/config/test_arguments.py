@@ -35,6 +35,14 @@ def test_set_values_with_two_existing_keys_adds_others_to_config():
     assert config == {'foo': {'bar': {'other': 'value', 'baz': 5}}}
 
 
+def test_set_values_with_existing_none_value_replaces_it():
+    config = {'foo': None}
+
+    module.set_values(config=config, keys=('foo', 'bar', 'baz'), value=5)
+
+    assert config == {'foo': {'bar': {'baz': 5}}}
+
+
 def test_set_values_with_list_index_key_adds_it_to_config():
     config = {'foo': {'bar': [{'option': 'value'}, {'other': 'thing'}]}}
 
@@ -70,6 +78,22 @@ def test_set_values_with_final_list_index_key_adds_it_to_config():
     module.set_values(config=config, keys=('foo', 'bar[1]'), value=5)
 
     assert config == {'foo': {'bar': [1, 5]}}
+
+
+def test_set_values_with_unset_value_removes_key_from_config():
+    config = {'option': 'value', 'foo': 'bar'}
+
+    module.set_values(config=config, keys=('foo',), value=module.UNSET)
+
+    assert config == {'option': 'value'}
+
+
+def test_set_values_with_unset_value_and_missing_key_in_config_does_nothing():
+    config = {'option': 'value'}
+
+    module.set_values(config=config, keys=('foo',), value=module.UNSET)
+
+    assert config == {'option': 'value'}
 
 
 def test_types_for_option_with_option_finds_type():
@@ -239,6 +263,22 @@ def test_prepare_arguments_for_config_skips_option_with_complex_schema():
             },
         },
     ) == ((('other_option',), 'value2'),)
+
+
+def test_prepare_arguments_for_config_converts_option_with_complex_schema_and_unset_value():
+    assert module.prepare_arguments_for_config(
+        global_arguments=flexmock(my_option=module.UNSET, other_option='value2'),
+        schema={
+            'type': 'object',
+            'properties': {
+                'my_option': {'type': 'object', 'properties': {'sub_option': {'type': 'string'}}},
+                'other_option': {'type': 'string'},
+            },
+        },
+    ) == (
+        (('my_option',), module.UNSET),
+        (('other_option',), 'value2'),
+    )
 
 
 def test_prepare_arguments_for_config_skips_option_missing_from_schema():

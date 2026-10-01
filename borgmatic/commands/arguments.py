@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 
 import ruamel.yaml
 
+import borgmatic.config.arguments
 import borgmatic.config.schema
 from borgmatic.config import collect
 
@@ -467,6 +468,7 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
         return
 
     schema_type = schema.get('type')
+    flag_name = '.'.join(names).replace('_', '-')
 
     # If this option has multiple types, just use the first one (that isn't "null").
     if isinstance(schema_type, list):
@@ -478,6 +480,18 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
     # If this is an "object" type, recurse for each child option ("property").
     if schema_type == 'object':
         properties = schema.get('properties')
+
+        # For top-level "object"s, add a corresponding "--no-flag-name" to disable it.
+        if len(names) == 1:
+            no_flag_name = f'no-{names[0]}'.replace('_', '-')
+            arguments_group.add_argument(
+                f'--{no_flag_name}',
+                dest=flag_name.replace('-', '_'),
+                action='store_const',
+                const=borgmatic.config.arguments.UNSET,
+                default=None,
+                help=f'Disable {names[0]}.',
+            )
 
         # If there are child properties, recurse for each one. But if there are no child properties,
         # fall through so that a flag gets added below for the (empty) object.
@@ -514,8 +528,6 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
                 unparsed_arguments,
                 (*names[:-1], f'{names[-1]}[0]'),
             )
-
-    flag_name = '.'.join(names).replace('_', '-')
 
     # Certain options already have corresponding flags on individual actions (like "create
     # --progress"), so don't bother adding them to the global flags.

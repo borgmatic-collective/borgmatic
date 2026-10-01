@@ -44,6 +44,13 @@ def test_set_values_with_multiple_keys_updates_hierarchy():
     assert config == {'option': {'key': 'value', 'other': 'other_value'}}
 
 
+def test_set_values_with_multiple_keys_and_existing_none_value_replaces_it():
+    config = {'option': None}
+    module.set_values(config, ('option', 'key'), 'value')
+
+    assert config == {'option': {'key': 'value'}}
+
+
 def test_set_values_with_key_when_list_index_expected_errors():
     config = {'option': ['foo', 'bar', 'baz']}
 

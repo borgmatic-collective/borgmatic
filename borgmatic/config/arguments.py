@@ -3,9 +3,15 @@ import re
 
 import ruamel.yaml
 
+import borgmatic.commands.arguments
 import borgmatic.config.schema
 
 LIST_INDEX_KEY_PATTERN = re.compile(r'^(?P<list_name>[a-zA-z-]+)\[(?P<index>\d+)\]$')
+
+
+# An argument with this value indicates that the corresponding configuration option should be
+# removed/unset.
+UNSET = object()
 
 
 def set_values(config, keys, value):
@@ -52,11 +58,15 @@ def set_values(config, keys, value):
         return
 
     if len(keys) == 1:
-        config[first_key] = value
+        if value == UNSET:
+            config.pop(first_key, None)
+        else:
+            config[first_key] = value
 
         return
 
-    if first_key not in config:
+    # If either the key is missing or its value is None, set its value to an empty dict.
+    if config.get(first_key) is None:
         config[first_key] = {}
 
     set_values(config[first_key], keys[1:], value)
@@ -154,7 +164,9 @@ def prepare_arguments_for_config(global_arguments, schema):
         # If the argument doesn't correspond to any option in the schema or it is a complex
         # argument, ignore it. It's probably a flag that borgmatic has on the command-line but not
         # in configuration.
-        if not option_types or any(option_type == 'object' for option_type in option_types):
+        if not option_types or (
+            any(option_type == 'object' for option_type in option_types) and value is not UNSET
+        ):
             continue
 
         prepared_values.append(
