@@ -320,7 +320,8 @@ def collect_dumps_from_archive(
 
         for dump in borgmatic.hooks.data_source.dump.parse_data_source_dumps_metadata(
             borgmatic.borg.extract.extract_archive(
-                global_arguments.dry_run,
+                # Don't do a dry run on the extract, because that prevents reading of the metadata.
+                False,
                 repository,
                 archive,
                 [dumps_metadata_entry['path']],
