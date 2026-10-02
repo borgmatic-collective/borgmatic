@@ -114,19 +114,24 @@ def get_containing_subvolume_path(btrfs_command, path):
     return None
 
 
-def get_all_subvolume_paths(btrfs_command, patterns):
+def get_all_subvolume_paths(btrfs_command, patterns, working_directory):
     '''
-    Given a btrfs command and a sequence of patterns, get the sorted paths for all Btrfs subvolumes
-    containing those patterns.
+    Given a btrfs command, a sequence of patterns, and a working directory, get the sorted paths for
+    all Btrfs subvolumes containing those patterns.
     '''
     return tuple(
         sorted(
             {
-                subvolume_path
+                os.path.normpath(subvolume_path)
                 for pattern in patterns
                 if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
                 if pattern.source == borgmatic.borg.pattern.Pattern_source.CONFIG
-                for subvolume_path in (get_containing_subvolume_path(btrfs_command, pattern.path),)
+                for subvolume_path in (
+                    get_containing_subvolume_path(
+                        btrfs_command,
+                        os.path.normpath(os.path.join(working_directory or '', pattern.path)),
+                    ),
+                )
                 if subvolume_path
             }
         ),
@@ -136,11 +141,11 @@ def get_all_subvolume_paths(btrfs_command, patterns):
 Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_patterns'), defaults=((),))
 
 
-def get_subvolumes(btrfs_command, patterns):
+def get_subvolumes(btrfs_command, patterns, working_directory):
     '''
-    Given a Btrfs command to run and a sequence of configured patterns, find the intersection
-    between the current Btrfs filesystem/subvolume paths and the paths of any patterns. The idea is
-    that these pattern paths represent the requested subvolumes to snapshot.
+    Given a Btrfs command to run, a sequence of configured patterns, and a working directory, find
+    the intersection between the current Btrfs filesystem/subvolume paths and the paths of any
+    patterns. The idea is that these pattern paths represent the requested subvolumes to snapshot.
 
     Only include subvolumes that contain at least one root pattern sourced from borgmatic
     configuration (as opposed to generated elsewhere in borgmatic).
@@ -154,13 +159,16 @@ def get_subvolumes(btrfs_command, patterns):
     # backup. Sort the subvolumes from longest to shortest mount points, so longer subvolumes get
     # a whack at the candidate pattern piñata before their parents do. (Patterns are consumed during
     # this process, so no two subvolumes end up with the same contained patterns.)
-    for subvolume_path in reversed(get_all_subvolume_paths(btrfs_command, patterns)):
+    for subvolume_path in reversed(
+        get_all_subvolume_paths(btrfs_command, patterns, working_directory)
+    ):
         subvolumes.extend(
             Subvolume(subvolume_path, contained_patterns)
             for contained_patterns in (
                 borgmatic.hooks.data_source.snapshot.get_contained_patterns(
                     subvolume_path,
                     candidate_patterns,
+                    working_directory,
                 ),
             )
             if any(
@@ -241,7 +249,12 @@ def make_borg_snapshot_pattern(subvolume_path, pattern):
         # Use the Borg 1.4+ "slashdot" hack to prevent the snapshot path prefix from getting
         # included in the archive—but only if there's not already a slashdot hack present in the
         # pattern.
-        ('' if f'{os.path.sep}.{os.path.sep}' in pattern.path else '.'),
+        (
+            ''
+            if f'{os.path.sep}.{os.path.sep}' in pattern.path
+            or pattern.path.startswith(f'.{os.path.sep}')
+            else '.'
+        ),
         # Included so that the source directory ends up in the Borg archive at its "original" path.
         pattern.path.lstrip('^').lstrip(os.path.sep),
     )
@@ -305,7 +318,9 @@ def dump_data_sources(
     # Based on the configured patterns, determine Btrfs subvolumes to backup. Only consider those
     # patterns that came from actual user configuration (as opposed to, say, other hooks).
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')
-    subvolumes = get_subvolumes(btrfs_command, patterns)
+    subvolumes = get_subvolumes(
+        btrfs_command, patterns, borgmatic.config.paths.get_working_directory(config)
+    )
 
     if not subvolumes:
         logger.warning(f'No Btrfs subvolumes found to snapshot{dry_run_label}')
@@ -363,7 +378,9 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, p
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')
 
     try:
-        all_subvolumes = get_subvolumes(btrfs_command, patterns)
+        all_subvolumes = get_subvolumes(
+            btrfs_command, patterns, borgmatic.config.paths.get_working_directory(config)
+        )
     except FileNotFoundError as error:
         logger.debug(f'Could not find "{error.filename}" command')
         return

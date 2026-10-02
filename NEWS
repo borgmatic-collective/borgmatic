@@ -7,6 +7,7 @@
    "--no-btrfs" to temporarily disable the Btrfs hook.
  * #1361: Fix a traceback (TypeError) in command-line overrides when setting a sub-option of an
    option without a configured value.
+ * #1362: For the Btrfs hook, support relative source paths with a configured working directory.
  * #1363: For the "restore" action, fix an invalid JSON error when running with the "--dry-run"
    flag.
 

@@ -323,6 +323,7 @@ def process_patterns(
                     working_directory=working_directory,
                     skip_paths=skip_paths,
                 ),
+                working_directory=working_directory,
             ),
             config,
             borgmatic_runtime_directory,

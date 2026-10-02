@@ -4,13 +4,13 @@ import pathlib
 IS_A_HOOK = False
 
 
-def get_contained_patterns(parent_directory, candidate_patterns):
+def get_contained_patterns(parent_directory, candidate_patterns, working_directory=None):
     '''
-    Given a parent directory and a set of candidate patterns potentially inside it, get the subset
-    of contained patterns for which the parent directory is actually the parent, a grandparent, the
-    very same directory, etc. The idea is if, say, "/var/log" and "/var/lib" are candidate pattern
-    paths, but there's a parent directory (logical volume, dataset, subvolume, etc.) at "/var", then
-    "/var" is what we want to snapshot.
+    Given a parent directory, a set of candidate patterns potentially inside it, and a working
+    directory, get the subset of contained patterns for which the parent directory is actually the
+    parent, a grandparent, the very same directory, etc. The idea is if, say, "/var/log" and
+    "/var/lib" are candidate pattern paths, but there's a parent directory (logical volume, dataset,
+    subvolume, etc.) at "/var", then "/var" is what we want to snapshot.
 
     If a parent directory and a candidate pattern are on different devices, skip the pattern. That's
     because any snapshot of a parent directory won't actually include "contained" directories if
@@ -37,7 +37,11 @@ def get_contained_patterns(parent_directory, candidate_patterns):
     contained_patterns = tuple(
         candidate
         for candidate in candidate_patterns
-        for candidate_path in (pathlib.PurePath(candidate.path.lstrip('^')),)
+        for candidate_path in (
+            pathlib.PurePath(working_directory or '').joinpath(
+                pathlib.PurePath(candidate.path.lstrip('^'))
+            ),
+        )
         if (
             pathlib.PurePath(parent_directory) == candidate_path
             or pathlib.PurePath(parent_directory) in candidate_path.parents

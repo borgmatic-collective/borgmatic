@@ -106,3 +106,19 @@ def test_get_contained_patterns_with_non_existent_parent_directory_ignores_child
         Pattern('/mnt/subdir', device=device),
         Pattern('/bar', device=device),
     }
+
+
+def test_get_contained_patterns_with_relative_child_candidate_and_working_directory_returns_child():
+    device = flexmock()
+    flexmock(module.os).should_receive('stat').and_return(flexmock(st_dev=device))
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    candidates = {
+        Pattern('/foo', device=device),
+        Pattern('subdir', device=device),
+        Pattern('/bar', device=device),
+    }
+
+    assert module.get_contained_patterns('/mnt', candidates, working_directory='/mnt/dir') == (
+        Pattern('subdir', device=device),
+    )
+    assert candidates == {Pattern('/foo', device=device), Pattern('/bar', device=device)}
