@@ -30,11 +30,12 @@ Logical_volume = collections.namedtuple(
 )
 
 
-def get_logical_volumes(lsblk_command, patterns=None):
+def get_logical_volumes(lsblk_command, working_directory, patterns=None):
     '''
-    Given an lsblk command to run and a sequence of configured patterns, find the intersection
-    between the current LVM logical volume mount points and the paths of any patterns. The idea is
-    that these pattern paths represent the requested logical volumes to snapshot.
+    Given an lsblk command to run, a working directory, and a sequence of configured patterns, find
+    the intersection between the current LVM logical volume mount points and the paths of any
+    patterns. The idea is that these pattern paths represent the requested logical volumes to
+    snapshot.
 
     Only include logical volumes that contain at least one root pattern sourced from borgmatic
     configuration (as opposed to generated elsewhere in borgmatic). But if patterns is None, include
@@ -79,6 +80,7 @@ def get_logical_volumes(lsblk_command, patterns=None):
                 borgmatic.hooks.data_source.snapshot.get_contained_patterns(
                     device['mountpoint'],
                     candidate_patterns,
+                    working_directory,
                 ),
             )
             if not patterns
@@ -172,7 +174,12 @@ def make_borg_snapshot_pattern(pattern, logical_volume, normalized_runtime_direc
         # Use the Borg 1.4+ "slashdot" hack to prevent the snapshot path prefix from getting
         # included in the archive—but only if there's not already a slashdot hack present in the
         # pattern.
-        ('' if f'{os.path.sep}.{os.path.sep}' in pattern.path else '.'),
+        (
+            ''
+            if f'{os.path.sep}.{os.path.sep}' in pattern.path
+            or pattern.path.startswith(f'.{os.path.sep}')
+            else '.'
+        ),
         # Included so that the source directory ends up in the Borg archive at its "original" path.
         pattern.path.lstrip('^').lstrip(os.path.sep),
     )
@@ -214,7 +221,9 @@ def dump_data_sources(
     # List logical volumes to get their mount points, but only consider those patterns that came
     # from actual user configuration (as opposed to, say, other hooks).
     lsblk_command = hook_config.get('lsblk_command', 'lsblk')
-    requested_logical_volumes = get_logical_volumes(lsblk_command, patterns)
+    requested_logical_volumes = get_logical_volumes(
+        lsblk_command, borgmatic.config.paths.get_working_directory(config), patterns
+    )
 
     # Snapshot each logical volume, rewriting source directories to use the snapshot paths.
     snapshot_suffix = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
@@ -368,7 +377,10 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, p
 
     # Unmount snapshots.
     try:
-        logical_volumes = get_logical_volumes(hook_config.get('lsblk_command', 'lsblk'))
+        logical_volumes = get_logical_volumes(
+            hook_config.get('lsblk_command', 'lsblk'),
+            borgmatic.config.paths.get_working_directory(config),
+        )
     except FileNotFoundError as error:
         logger.debug(f'Could not find "{error.filename}" command')
         return

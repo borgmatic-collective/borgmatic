@@ -43,10 +43,10 @@ def test_get_logical_volumes_filters_by_patterns():
     }
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args(None, contained).never()
+    ).with_args(None, contained, None).never()
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/mnt/lvolume', contained).and_return(
+    ).with_args('/mnt/lvolume', contained, None).and_return(
         (
             Pattern('/mnt/lvolume', source=Pattern_source.CONFIG),
             Pattern('/mnt/lvolume/subdir', source=Pattern_source.CONFIG),
@@ -54,10 +54,10 @@ def test_get_logical_volumes_filters_by_patterns():
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/mnt/other', contained).and_return(())
+    ).with_args('/mnt/other', contained, None).and_return(())
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/mnt/notlvm', contained).never()
+    ).with_args('/mnt/notlvm', contained, None).never()
 
     assert module.get_logical_volumes(
         'lsblk',
@@ -65,6 +65,7 @@ def test_get_logical_volumes_filters_by_patterns():
             Pattern('/mnt/lvolume', source=Pattern_source.CONFIG),
             Pattern('/mnt/lvolume/subdir', source=Pattern_source.CONFIG),
         ),
+        working_directory=None,
     ) == (
         module.Logical_volume(
             name='vgroup-lvolume',
@@ -101,10 +102,10 @@ def test_get_logical_volumes_skips_non_root_patterns():
     }
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args(None, contained).never()
+    ).with_args(None, contained, None).never()
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/mnt/lvolume', contained).and_return(
+    ).with_args('/mnt/lvolume', contained, None).and_return(
         (
             Pattern('/mnt/lvolume', type=Pattern_type.EXCLUDE, source=Pattern_source.CONFIG),
             Pattern('/mnt/lvolume/subdir', type=Pattern_type.EXCLUDE, source=Pattern_source.CONFIG),
@@ -122,6 +123,7 @@ def test_get_logical_volumes_skips_non_root_patterns():
                     source=Pattern_source.CONFIG,
                 ),
             ),
+            working_directory=None,
         )
         == ()
     )
@@ -150,10 +152,10 @@ def test_get_logical_volumes_skips_non_config_patterns():
     }
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args(None, contained).never()
+    ).with_args(None, contained, None).never()
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/mnt/lvolume', contained).and_return(
+    ).with_args('/mnt/lvolume', contained, None).and_return(
         (
             Pattern('/mnt/lvolume', source=Pattern_source.HOOK),
             Pattern('/mnt/lvolume/subdir', source=Pattern_source.HOOK),
@@ -167,6 +169,7 @@ def test_get_logical_volumes_skips_non_config_patterns():
                 Pattern('/mnt/lvolume', source=Pattern_source.HOOK),
                 Pattern('/mnt/lvolume/subdir', source=Pattern_source.HOOK),
             ),
+            working_directory=None,
         )
         == ()
     )
@@ -185,6 +188,7 @@ def test_get_logical_volumes_with_invalid_lsblk_json_errors():
         module.get_logical_volumes(
             'lsblk',
             patterns=(Pattern('/mnt/lvolume'), Pattern('/mnt/lvolume/subdir')),
+            working_directory=None,
         )
 
 
@@ -201,6 +205,7 @@ def test_get_logical_volumes_with_lsblk_json_missing_keys_errors():
         module.get_logical_volumes(
             'lsblk',
             patterns=(Pattern('/mnt/lvolume'), Pattern('/mnt/lvolume/subdir')),
+            working_directory=None,
         )
 
 
@@ -274,6 +279,8 @@ def test_snapshot_logical_volume_with_non_percentage_snapshot_name_uses_lvcreate
             Pattern('/foo/./bar/baz'),
             Pattern('/run/borgmatic/lvm_snapshots/b33f/foo/./bar/baz'),
         ),
+        (Pattern('/./'), Pattern('/run/borgmatic/lvm_snapshots/b33f/./')),
+        (Pattern('./'), Pattern('/run/borgmatic/lvm_snapshots/b33f/./')),
     ),
 )
 def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_path(
