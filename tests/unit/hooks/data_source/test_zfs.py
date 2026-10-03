@@ -14,7 +14,7 @@ def test_get_datasets_to_backup_filters_datasets_by_patterns():
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/dataset', object).and_return(
+    ).with_args('/dataset', object, None).and_return(
         (
             Pattern(
                 '/dataset',
@@ -25,7 +25,7 @@ def test_get_datasets_to_backup_filters_datasets_by_patterns():
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/other', object).and_return(())
+    ).with_args('/other', object, None).and_return(())
 
     assert module.get_datasets_to_backup(
         'zfs',
@@ -46,6 +46,7 @@ def test_get_datasets_to_backup_filters_datasets_by_patterns():
                 source=Pattern_source.CONFIG,
             ),
         ),
+        working_directory=None,
     ) == (
         module.Dataset(
             name='dataset',
@@ -70,7 +71,7 @@ def test_get_datasets_to_backup_skips_non_root_patterns():
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/dataset', object).and_return(
+    ).with_args('/dataset', object, None).and_return(
         (
             Pattern(
                 '/dataset',
@@ -81,7 +82,7 @@ def test_get_datasets_to_backup_skips_non_root_patterns():
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/other', object).and_return(())
+    ).with_args('/other', object, None).and_return(())
 
     assert (
         module.get_datasets_to_backup(
@@ -103,6 +104,7 @@ def test_get_datasets_to_backup_skips_non_root_patterns():
                     source=Pattern_source.CONFIG,
                 ),
             ),
+            working_directory=None,
         )
         == ()
     )
@@ -117,7 +119,7 @@ def test_get_datasets_to_backup_skips_non_config_patterns():
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/dataset', object).and_return(
+    ).with_args('/dataset', object, None).and_return(
         (
             Pattern(
                 '/dataset',
@@ -128,7 +130,7 @@ def test_get_datasets_to_backup_skips_non_config_patterns():
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/other', object).and_return(())
+    ).with_args('/other', object, None).and_return(())
 
     assert (
         module.get_datasets_to_backup(
@@ -150,6 +152,7 @@ def test_get_datasets_to_backup_skips_non_config_patterns():
                     source=Pattern_source.CONFIG,
                 ),
             ),
+            working_directory=None,
         )
         == ()
     )
@@ -164,14 +167,15 @@ def test_get_datasets_to_backup_filters_datasets_by_user_property():
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/dataset', object).and_return(())
+    ).with_args('/dataset', object, None).and_return(())
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/other', object).and_return(())
+    ).with_args('/other', object, None).and_return(())
 
     assert module.get_datasets_to_backup(
         'zfs',
         patterns=(Pattern('/foo'), Pattern('/bar')),
+        working_directory=None,
     ) == (
         module.Dataset(
             name='dataset',
@@ -191,10 +195,10 @@ def test_get_datasets_to_backup_filters_datasets_by_canmount_property():
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/dataset', object).and_return((Pattern('/dataset'),))
+    ).with_args('/dataset', object, None).and_return((Pattern('/dataset'),))
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns',
-    ).with_args('/other', object).and_return(())
+    ).with_args('/other', object, None).and_return(())
 
     assert (
         module.get_datasets_to_backup(
@@ -204,6 +208,7 @@ def test_get_datasets_to_backup_filters_datasets_by_canmount_property():
                 Pattern('/dataset'),
                 Pattern('/bar'),
             ),
+            working_directory=None,
         )
         == ()
     )
@@ -220,7 +225,9 @@ def test_get_datasets_to_backup_with_invalid_list_output_raises():
     ).never()
 
     with pytest.raises(ValueError, match='zfs'):
-        module.get_datasets_to_backup('zfs', patterns=(Pattern('/foo'), Pattern('/bar')))
+        module.get_datasets_to_backup(
+            'zfs', patterns=(Pattern('/foo'), Pattern('/bar')), working_directory=None
+        )
 
 
 def test_get_all_dataset_mount_points_omits_none_and_reverse_orders_by_mount_path():
@@ -284,6 +291,8 @@ def test_get_all_dataset_mount_points_omits_duplicates_and_reverse_orders_by_mou
             Pattern('/foo/./bar/baz'),
             Pattern('/run/borgmatic/zfs_snapshots/b33f/foo/./bar/baz'),
         ),
+        (Pattern('/./'), Pattern('/run/borgmatic/zfs_snapshots/b33f/./')),
+        (Pattern('./'), Pattern('/run/borgmatic/zfs_snapshots/b33f/./')),
     ),
 )
 def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_path(

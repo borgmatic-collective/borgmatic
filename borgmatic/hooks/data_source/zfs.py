@@ -34,7 +34,7 @@ Dataset = collections.namedtuple(
 )
 
 
-def get_datasets_to_backup(zfs_command, patterns):
+def get_datasets_to_backup(zfs_command, patterns, working_directory):
     '''
     Given a ZFS command to run and a sequence of configured patterns, find the intersection between
     the current ZFS dataset mount points and the paths of any patterns. The idea is that these
@@ -107,6 +107,7 @@ def get_datasets_to_backup(zfs_command, patterns):
                         + borgmatic.hooks.data_source.snapshot.get_contained_patterns(
                             dataset.mount_point,
                             candidate_patterns,
+                            working_directory,
                         )
                     ),
                 )
@@ -224,7 +225,12 @@ def make_borg_snapshot_pattern(pattern, dataset, normalized_runtime_directory):
         # Use the Borg 1.4+ "slashdot" hack to prevent the snapshot path prefix from getting
         # included in the archive—but only if there's not already a slashdot hack present in the
         # pattern.
-        ('' if f'{os.path.sep}.{os.path.sep}' in pattern.path else '.'),
+        (
+            ''
+            if f'{os.path.sep}.{os.path.sep}' in pattern.path
+            or pattern.path.startswith(f'.{os.path.sep}')
+            else '.'
+        ),
         # Included so that the source directory ends up in the Borg archive at its "original" path.
         pattern.path.lstrip('^').lstrip(os.path.sep),
     )
@@ -264,7 +270,9 @@ def dump_data_sources(
     # List ZFS datasets to get their mount points, but only consider those patterns that came from
     # actual user configuration (as opposed to, say, other hooks).
     zfs_command = hook_config.get('zfs_command', 'zfs')
-    requested_datasets = get_datasets_to_backup(zfs_command, patterns)
+    requested_datasets = get_datasets_to_backup(
+        zfs_command, patterns, borgmatic.config.paths.get_working_directory(config)
+    )
 
     # Snapshot each dataset, rewriting patterns to use the snapshot paths.
     snapshot_name = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
