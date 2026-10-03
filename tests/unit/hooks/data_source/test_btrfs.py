@@ -361,17 +361,22 @@ def test_get_subvolumes_skips_non_config_patterns():
 
 
 @pytest.mark.parametrize(
-    'subvolume_path,expected_snapshot_path',
+    'subvolume_path,working_directory,expected_snapshot_path',
     (
-        ('/foo/bar', '/foo/bar/.borgmatic-snapshot/foo/bar'),
-        ('/', '/.borgmatic-snapshot'),
+        ('/foo/bar', None, '/foo/bar/.borgmatic-snapshot/foo/bar'),
+        ('/foo/bar', '/foo/bar', '/foo/bar/.borgmatic-snapshot'),
+        ('/foo/bar', '/foo/b', '/foo/bar/.borgmatic-snapshot/foo/bar'),
+        ('/foo/bar', '/foo', '/foo/bar/.borgmatic-snapshot/bar'),
+        ('/foo/bar', '/other', '/foo/bar/.borgmatic-snapshot/foo/bar'),
+        ('/', None, '/.borgmatic-snapshot'),
     ),
 )
 def test_make_snapshot_path_includes_stripped_subvolume_path(
     subvolume_path,
+    working_directory,
     expected_snapshot_path,
 ):
-    assert module.make_snapshot_path(subvolume_path) == expected_snapshot_path
+    assert module.make_snapshot_path(subvolume_path, working_directory) == expected_snapshot_path
 
 
 @pytest.mark.parametrize(
@@ -430,10 +435,14 @@ def test_dump_data_sources_snapshots_each_subvolume_and_replaces_patterns():
             module.Subvolume('/mnt/subvol2', contained_patterns=(Pattern('/mnt/subvol2'),)),
         ),
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol1', None
+    ).and_return(
         '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol2').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol2', None
+    ).and_return(
         '/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2',
     )
     flexmock(module).should_receive('snapshot_subvolume').with_args(
@@ -447,7 +456,7 @@ def test_dump_data_sources_snapshots_each_subvolume_and_replaces_patterns():
         '/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2',
     ).once()
     flexmock(module).should_receive('make_snapshot_exclude_pattern').with_args(
-        '/mnt/subvol1',
+        '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
     ).and_return(
         Pattern(
             '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1/.borgmatic-snapshot',
@@ -456,7 +465,7 @@ def test_dump_data_sources_snapshots_each_subvolume_and_replaces_patterns():
         ),
     )
     flexmock(module).should_receive('make_snapshot_exclude_pattern').with_args(
-        '/mnt/subvol2',
+        '/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2',
     ).and_return(
         Pattern(
             '/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2/.borgmatic-snapshot',
@@ -529,7 +538,9 @@ def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
     flexmock(module).should_receive('get_subvolumes').and_return(
         (module.Subvolume('/mnt/subvol1', contained_patterns=(Pattern('/mnt/subvol1'),)),),
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol1', None
+    ).and_return(
         '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
     )
     flexmock(module).should_receive('snapshot_subvolume').with_args(
@@ -538,7 +549,7 @@ def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
         '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
     ).once()
     flexmock(module).should_receive('make_snapshot_exclude_pattern').with_args(
-        '/mnt/subvol1',
+        '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
     ).and_return(
         Pattern(
             '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1/.borgmatic-snapshot',
@@ -598,7 +609,9 @@ def test_dump_data_sources_with_findmnt_command_warns():
     ).and_return(
         (module.Subvolume('/mnt/subvol1', contained_patterns=(Pattern('/mnt/subvol1'),)),),
     ).once()
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol1', None
+    ).and_return(
         '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
     )
     flexmock(module).should_receive('snapshot_subvolume').with_args(
@@ -607,7 +620,7 @@ def test_dump_data_sources_with_findmnt_command_warns():
         '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
     ).once()
     flexmock(module).should_receive('make_snapshot_exclude_pattern').with_args(
-        '/mnt/subvol1',
+        '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
     ).and_return(
         Pattern(
             '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1/.borgmatic-snapshot',
@@ -662,7 +675,9 @@ def test_dump_data_sources_with_dry_run_skips_snapshot_and_patterns_update():
     flexmock(module).should_receive('get_subvolumes').and_return(
         (module.Subvolume('/mnt/subvol1', contained_patterns=(Pattern('/mnt/subvol1'),)),),
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol1', None
+    ).and_return(
         '/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1',
     )
     flexmock(module).should_receive('snapshot_subvolume').never()
@@ -720,10 +735,14 @@ def test_remove_data_source_dumps_deletes_snapshots():
             module.Subvolume('/mnt/subvol2', contained_patterns=(Pattern('/mnt/subvol2'),)),
         ),
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol1', None
+    ).and_return(
         '/mnt/subvol1/.borgmatic-snapshot/./mnt/subvol1',
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol2').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol2', None
+    ).and_return(
         '/mnt/subvol2/.borgmatic-snapshot/./mnt/subvol2',
     )
     flexmock(module.borgmatic.config.paths).should_receive(
@@ -854,10 +873,14 @@ def test_remove_data_source_dumps_with_dry_run_skips_deletes():
             module.Subvolume('/mnt/subvol2', contained_patterns=(Pattern('/mnt/subvol2'),)),
         ),
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol1', None
+    ).and_return(
         '/mnt/subvol1/.borgmatic-snapshot/./mnt/subvol1',
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol2').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol2', None
+    ).and_return(
         '/mnt/subvol2/.borgmatic-snapshot/./mnt/subvol2',
     )
     flexmock(module.borgmatic.config.paths).should_receive(
@@ -941,10 +964,14 @@ def test_remove_data_source_without_snapshots_skips_deletes():
             module.Subvolume('/mnt/subvol2', contained_patterns=(Pattern('/mnt/subvol2'),)),
         ),
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol1', None
+    ).and_return(
         '/mnt/subvol1/.borgmatic-snapshot/./mnt/subvol1',
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol2').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol2', None
+    ).and_return(
         '/mnt/subvol2/.borgmatic-snapshot/./mnt/subvol2',
     )
     flexmock(module.borgmatic.config.paths).should_receive(
@@ -982,10 +1009,14 @@ def test_remove_data_source_dumps_with_delete_snapshot_file_not_found_error_bail
             module.Subvolume('/mnt/subvol2', contained_patterns=(Pattern('/mnt/subvol2'),)),
         ),
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol1', None
+    ).and_return(
         '/mnt/subvol1/.borgmatic-snapshot/./mnt/subvol1',
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol2').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol2', None
+    ).and_return(
         '/mnt/subvol2/.borgmatic-snapshot/./mnt/subvol2',
     )
     flexmock(module.borgmatic.config.paths).should_receive(
@@ -1049,10 +1080,14 @@ def test_remove_data_source_dumps_with_delete_snapshot_called_process_error_bail
             module.Subvolume('/mnt/subvol2', contained_patterns=(Pattern('/mnt/subvol2'),)),
         ),
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol1', None
+    ).and_return(
         '/mnt/subvol1/.borgmatic-snapshot/./mnt/subvol1',
     )
-    flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol2').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args(
+        '/mnt/subvol2', None
+    ).and_return(
         '/mnt/subvol2/.borgmatic-snapshot/./mnt/subvol2',
     )
     flexmock(module.borgmatic.config.paths).should_receive(
@@ -1116,7 +1151,7 @@ def test_remove_data_source_dumps_with_root_subvolume_skips_duplicate_removal():
         (module.Subvolume('/', contained_patterns=(Pattern('/etc'),)),),
     )
 
-    flexmock(module).should_receive('make_snapshot_path').with_args('/').and_return(
+    flexmock(module).should_receive('make_snapshot_path').with_args('/', None).and_return(
         '/.borgmatic-snapshot',
     )
 

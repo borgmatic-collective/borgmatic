@@ -184,24 +184,36 @@ def get_subvolumes(btrfs_command, patterns, working_directory):
 BORGMATIC_SNAPSHOT_PREFIX = '.borgmatic-snapshot'
 
 
-def make_snapshot_path(subvolume_path):
+def make_snapshot_path(subvolume_path, working_directory):
     '''
-    Given the path to a subvolume, make a corresponding snapshot path for it.
+    Given the path to a subvolume and the working directory, make a corresponding snapshot path for
+    the subvolume.
     '''
     return os.path.join(
         subvolume_path,
         f'{BORGMATIC_SNAPSHOT_PREFIX}',
-        # Included so that the snapshot ends up in the Borg archive at the "original" subvolume path.
-    ) + subvolume_path.rstrip(os.path.sep)
+        # Included so that the snapshot ends up in the Borg archive at the "original" subvolume
+        # path. But if needed, trim the working directory off the start of the subvolume path so
+        # that paths in the Borg archive remain relative to the working directory.
+        (
+            subvolume_path[len(working_directory) :]
+            if working_directory
+            and (
+                subvolume_path == working_directory
+                or subvolume_path.startswith(working_directory + os.path.sep)
+            )
+            else subvolume_path
+        ).lstrip(os.path.sep),
+    ).rstrip(os.path.sep)
 
 
-def make_snapshot_exclude_pattern(subvolume_path):  # pragma: no cover
+def make_snapshot_exclude_pattern(snapshot_path):  # pragma: no cover
     '''
-    Given the path to a subvolume, make a corresponding exclude pattern for its embedded snapshot
-    path. This is to work around a quirk of Btrfs: If you make a snapshot path as a child directory
-    of a subvolume, then the snapshot's own initial directory component shows up as an empty
-    directory within the snapshot itself. For instance, if you have a Btrfs subvolume at /mnt and
-    make a snapshot of it at:
+    Given a snapshot path, make a corresponding exclude pattern for its embedded snapshot path. This
+    is to work around a quirk of Btrfs: If you make a snapshot path as a child directory of a
+    subvolume, then the snapshot's own initial directory component shows up as an empty directory
+    within the snapshot itself. For instance, if you have a Btrfs subvolume at /mnt and make a
+    snapshot of it at:
 
         /mnt/.borgmatic-snapshot/mnt
 
@@ -212,14 +224,10 @@ def make_snapshot_exclude_pattern(subvolume_path):  # pragma: no cover
     So to prevent that from ending up in the Borg archive, this function produces an exclude pattern
     to exclude that path.
     '''
-    snapshot_directory = f'{BORGMATIC_SNAPSHOT_PREFIX}'
-
     return borgmatic.borg.pattern.Pattern(
         os.path.join(
-            subvolume_path,
-            snapshot_directory,
-            subvolume_path.lstrip(os.path.sep),
-            snapshot_directory,
+            snapshot_path,
+            BORGMATIC_SNAPSHOT_PREFIX,
         ),
         borgmatic.borg.pattern.Pattern_type.NO_RECURSE,
         borgmatic.borg.pattern.Pattern_style.FNMATCH,
@@ -318,9 +326,8 @@ def dump_data_sources(
     # Based on the configured patterns, determine Btrfs subvolumes to backup. Only consider those
     # patterns that came from actual user configuration (as opposed to, say, other hooks).
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')
-    subvolumes = get_subvolumes(
-        btrfs_command, patterns, borgmatic.config.paths.get_working_directory(config)
-    )
+    working_directory = borgmatic.config.paths.get_working_directory(config)
+    subvolumes = get_subvolumes(btrfs_command, patterns, working_directory)
 
     if not subvolumes:
         logger.warning(f'No Btrfs subvolumes found to snapshot{dry_run_label}')
@@ -329,7 +336,7 @@ def dump_data_sources(
     for subvolume in subvolumes:
         logger.debug(f'Creating Btrfs snapshot for {subvolume.path} subvolume')
 
-        snapshot_path = make_snapshot_path(subvolume.path)
+        snapshot_path = make_snapshot_path(subvolume.path, working_directory)
 
         if dry_run:
             continue
@@ -341,7 +348,7 @@ def dump_data_sources(
             borgmatic.hooks.data_source.config.replace_pattern(patterns, pattern, snapshot_pattern)
 
         borgmatic.hooks.data_source.config.inject_pattern(
-            patterns, make_snapshot_exclude_pattern(subvolume.path)
+            patterns, make_snapshot_exclude_pattern(snapshot_path)
         )
 
     return []
@@ -376,11 +383,10 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, p
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     try:
-        all_subvolumes = get_subvolumes(
-            btrfs_command, patterns, borgmatic.config.paths.get_working_directory(config)
-        )
+        all_subvolumes = get_subvolumes(btrfs_command, patterns, working_directory)
     except FileNotFoundError as error:
         logger.debug(f'Could not find "{error.filename}" command')
         return
@@ -392,7 +398,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, p
     # the shorter paths of parent subvolumes.
     for subvolume in reversed(all_subvolumes):
         subvolume_snapshots_glob = borgmatic.config.paths.replace_temporary_subdirectory_with_glob(
-            os.path.normpath(make_snapshot_path(subvolume.path)),
+            os.path.normpath(make_snapshot_path(subvolume.path, working_directory)),
             temporary_directory_prefix=BORGMATIC_SNAPSHOT_PREFIX,
         )
 
