@@ -199,11 +199,12 @@ def mount_snapshot(mount_command, full_snapshot_name, snapshot_mount_path):  # p
 MOUNT_POINT_HASH_LENGTH = 10
 
 
-def make_borg_snapshot_pattern(pattern, dataset, normalized_runtime_directory):
+def make_borg_snapshot_pattern(pattern, dataset, normalized_runtime_directory, working_directory):
     '''
     Given a Borg pattern as a borgmatic.borg.pattern.Pattern instance and the Dataset containing it,
     return a new Pattern with its path rewritten to be in a snapshot directory based on both the
-    given runtime directory and the given Dataset's mount point.
+    given runtime directory and the given Dataset's mount point. Use the given working directory in
+    the rewritten path if the pattern's path is relative.
 
     Move any initial caret in a regular expression pattern path to the beginning, so as not to break
     the regular expression.
@@ -222,6 +223,11 @@ def make_borg_snapshot_pattern(pattern, dataset, normalized_runtime_directory):
         # For instance, without this, snapshotting a dataset at /var and another at /var/spool would
         # result in overlapping snapshot patterns and therefore colliding mount attempts.
         hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(MOUNT_POINT_HASH_LENGTH),
+        (
+            working_directory.lstrip(os.path.sep)
+            if working_directory and not os.path.isabs(pattern.path)
+            else ''
+        ),
         # Use the Borg 1.4+ "slashdot" hack to prevent the snapshot path prefix from getting
         # included in the archive—but only if there's not already a slashdot hack present in the
         # pattern.
@@ -270,9 +276,8 @@ def dump_data_sources(
     # List ZFS datasets to get their mount points, but only consider those patterns that came from
     # actual user configuration (as opposed to, say, other hooks).
     zfs_command = hook_config.get('zfs_command', 'zfs')
-    requested_datasets = get_datasets_to_backup(
-        zfs_command, patterns, borgmatic.config.paths.get_working_directory(config)
-    )
+    working_directory = borgmatic.config.paths.get_working_directory(config)
+    requested_datasets = get_datasets_to_backup(zfs_command, patterns, working_directory)
 
     # Snapshot each dataset, rewriting patterns to use the snapshot paths.
     snapshot_name = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
@@ -319,6 +324,7 @@ def dump_data_sources(
                 pattern,
                 dataset,
                 normalized_runtime_directory,
+                working_directory,
             )
 
             borgmatic.hooks.data_source.config.replace_pattern(patterns, pattern, snapshot_pattern)
