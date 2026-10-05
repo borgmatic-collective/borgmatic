@@ -145,11 +145,14 @@ def mount_snapshot(mount_command, snapshot_device, snapshot_mount_path):  # prag
 MOUNT_POINT_HASH_LENGTH = 10
 
 
-def make_borg_snapshot_pattern(pattern, logical_volume, normalized_runtime_directory):
+def make_borg_snapshot_pattern(
+    pattern, logical_volume, normalized_runtime_directory, working_directory
+):
     '''
     Given a Borg pattern as a borgmatic.borg.pattern.Pattern instance and a Logical_volume
     containing it, return a new Pattern with its path rewritten to be in a snapshot directory based
-    on both the given runtime directory and the given Logical_volume's mount point.
+    on both the given runtime directory and the given Logical_volume's mount point. Use the given
+    working directory in the rewritten path if the pattern's path is relative.
 
     Move any initial caret in a regular expression pattern path to the beginning, so as not to break
     the regular expression.
@@ -170,6 +173,11 @@ def make_borg_snapshot_pattern(pattern, logical_volume, normalized_runtime_direc
         # attempts.
         hashlib.shake_256(logical_volume.mount_point.encode('utf-8')).hexdigest(
             MOUNT_POINT_HASH_LENGTH,
+        ),
+        (
+            working_directory.lstrip(os.path.sep)
+            if working_directory and not os.path.isabs(pattern.path)
+            else ''
         ),
         # Use the Borg 1.4+ "slashdot" hack to prevent the snapshot path prefix from getting
         # included in the archive—but only if there's not already a slashdot hack present in the
@@ -221,9 +229,8 @@ def dump_data_sources(
     # List logical volumes to get their mount points, but only consider those patterns that came
     # from actual user configuration (as opposed to, say, other hooks).
     lsblk_command = hook_config.get('lsblk_command', 'lsblk')
-    requested_logical_volumes = get_logical_volumes(
-        lsblk_command, borgmatic.config.paths.get_working_directory(config), patterns
-    )
+    working_directory = borgmatic.config.paths.get_working_directory(config)
+    requested_logical_volumes = get_logical_volumes(lsblk_command, working_directory, patterns)
 
     # Snapshot each logical volume, rewriting source directories to use the snapshot paths.
     snapshot_suffix = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
@@ -285,6 +292,7 @@ def dump_data_sources(
                 pattern,
                 logical_volume,
                 normalized_runtime_directory,
+                working_directory,
             )
 
             borgmatic.hooks.data_source.config.replace_pattern(patterns, pattern, snapshot_pattern)

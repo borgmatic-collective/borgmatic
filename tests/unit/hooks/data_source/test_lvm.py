@@ -250,15 +250,17 @@ def test_snapshot_logical_volume_with_non_percentage_snapshot_name_uses_lvcreate
 
 
 @pytest.mark.parametrize(
-    'pattern,expected_pattern',
+    'pattern,working_directory,expected_pattern',
     (
         (
             Pattern('/foo/bar/baz'),
+            None,
             Pattern('/run/borgmatic/lvm_snapshots/b33f/./foo/bar/baz'),
         ),
-        (Pattern('/foo/bar'), Pattern('/run/borgmatic/lvm_snapshots/b33f/./foo/bar')),
+        (Pattern('/foo/bar'), None, Pattern('/run/borgmatic/lvm_snapshots/b33f/./foo/bar')),
         (
             Pattern('^/foo/bar', Pattern_type.INCLUDE, Pattern_style.REGULAR_EXPRESSION),
+            None,
             Pattern(
                 '^/run/borgmatic/lvm_snapshots/b33f/./foo/bar',
                 Pattern_type.INCLUDE,
@@ -267,24 +269,30 @@ def test_snapshot_logical_volume_with_non_percentage_snapshot_name_uses_lvcreate
         ),
         (
             Pattern('/foo/bar', Pattern_type.INCLUDE, Pattern_style.REGULAR_EXPRESSION),
+            None,
             Pattern(
                 '/run/borgmatic/lvm_snapshots/b33f/./foo/bar',
                 Pattern_type.INCLUDE,
                 Pattern_style.REGULAR_EXPRESSION,
             ),
         ),
-        (Pattern('/foo'), Pattern('/run/borgmatic/lvm_snapshots/b33f/./foo')),
-        (Pattern('/'), Pattern('/run/borgmatic/lvm_snapshots/b33f/./')),
+        (Pattern('/foo'), None, Pattern('/run/borgmatic/lvm_snapshots/b33f/./foo')),
+        (Pattern('/'), None, Pattern('/run/borgmatic/lvm_snapshots/b33f/./')),
         (
             Pattern('/foo/./bar/baz'),
+            None,
             Pattern('/run/borgmatic/lvm_snapshots/b33f/foo/./bar/baz'),
         ),
-        (Pattern('/./'), Pattern('/run/borgmatic/lvm_snapshots/b33f/./')),
-        (Pattern('./'), Pattern('/run/borgmatic/lvm_snapshots/b33f/./')),
+        (Pattern('/./'), None, Pattern('/run/borgmatic/lvm_snapshots/b33f/./')),
+        (Pattern('./'), None, Pattern('/run/borgmatic/lvm_snapshots/b33f/./')),
+        (Pattern('foo'), '/mnt', Pattern('/run/borgmatic/lvm_snapshots/b33f/mnt/./foo')),
+        (Pattern('/foo/bar'), '/mnt', Pattern('/run/borgmatic/lvm_snapshots/b33f/./foo/bar')),
+        (Pattern('/mnt/bar'), '/mnt', Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/bar')),
     ),
 )
 def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_path(
     pattern,
+    working_directory,
     expected_pattern,
 ):
     flexmock(module.hashlib).should_receive('shake_256').and_return(
@@ -296,6 +304,7 @@ def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_
             pattern,
             flexmock(mount_point='/something'),
             '/run/borgmatic',
+            working_directory=working_directory,
         )
         == expected_pattern
     )
@@ -304,6 +313,7 @@ def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_
 def test_dump_data_sources_snapshots_and_mounts_and_replaces_patterns():
     config = {'lvm': {}}
     patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     logical_volumes = (
         module.Logical_volume(
             name='lvolume1',
@@ -361,11 +371,13 @@ def test_dump_data_sources_snapshots_and_mounts_and_replaces_patterns():
         Pattern('/mnt/lvolume1/subdir'),
         logical_volumes[0],
         '/run/borgmatic',
+        working_directory=None,
     ).and_return(Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume1/subdir'))
     flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
         Pattern('/mnt/lvolume2'),
         logical_volumes[1],
         '/run/borgmatic',
+        working_directory=None,
     ).and_return(Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume2'))
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
@@ -421,6 +433,7 @@ def test_dump_data_sources_with_no_logical_volumes_skips_snapshots():
 def test_dump_data_sources_uses_snapshot_size_for_snapshot():
     config = {'lvm': {'snapshot_size': '1000PB'}}
     patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     logical_volumes = (
         module.Logical_volume(
             name='lvolume1',
@@ -478,11 +491,13 @@ def test_dump_data_sources_uses_snapshot_size_for_snapshot():
         Pattern('/mnt/lvolume1/subdir'),
         logical_volumes[0],
         '/run/borgmatic',
+        working_directory=None,
     ).and_return(Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume1/subdir'))
     flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
         Pattern('/mnt/lvolume2'),
         logical_volumes[1],
         '/run/borgmatic',
+        working_directory=None,
     ).and_return(Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume2'))
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
@@ -524,6 +539,7 @@ def test_dump_data_sources_uses_custom_commands():
         },
     }
     patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     logical_volumes = (
         module.Logical_volume(
             name='lvolume1',
@@ -581,11 +597,13 @@ def test_dump_data_sources_uses_custom_commands():
         Pattern('/mnt/lvolume1/subdir'),
         logical_volumes[0],
         '/run/borgmatic',
+        working_directory=None,
     ).and_return(Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume1/subdir'))
     flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
         Pattern('/mnt/lvolume2'),
         logical_volumes[1],
         '/run/borgmatic',
+        working_directory=None,
     ).and_return(Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume2'))
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
@@ -658,6 +676,7 @@ def test_dump_data_sources_with_dry_run_skips_snapshots_and_does_not_touch_patte
 def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained_patterns():
     config = {'lvm': {}}
     patterns = [Pattern('/hmm')]
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     logical_volumes = (
         module.Logical_volume(
             name='lvolume1',
@@ -715,11 +734,13 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
         Pattern('/mnt/lvolume1/subdir'),
         logical_volumes[0],
         '/run/borgmatic',
+        working_directory=None,
     ).and_return(Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume1/subdir'))
     flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
         Pattern('/mnt/lvolume2'),
         logical_volumes[1],
         '/run/borgmatic',
+        working_directory=None,
     ).and_return(Pattern('/run/borgmatic/lvm_snapshots/b33f/./mnt/lvolume2'))
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
