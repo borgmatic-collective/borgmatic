@@ -1,4 +1,4 @@
-2.1.10.dev0
+2.1.10
  * #1185: Add support for setting top-level configuration options under each repository, making
    those options repository-specific. See the documentation for more information:
    https://torsion.org/borgmatic/reference/configuration/repositories/
