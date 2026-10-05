@@ -375,17 +375,19 @@ def test_make_snapshot_path_includes_stripped_subvolume_path(
 
 
 @pytest.mark.parametrize(
-    'subvolume_path,pattern,expected_pattern',
+    'subvolume_path,pattern,working_directory,expected_pattern',
     (
         (
             '/foo/bar',
             Pattern('/foo/bar/baz'),
+            None,
             Pattern('/foo/bar/.borgmatic-snapshot/./foo/bar/baz'),
         ),
-        ('/foo/bar', Pattern('/foo/bar'), Pattern('/foo/bar/.borgmatic-snapshot/./foo/bar')),
+        ('/foo/bar', Pattern('/foo/bar'), None, Pattern('/foo/bar/.borgmatic-snapshot/./foo/bar')),
         (
             '/foo/bar',
             Pattern('^/foo/bar', Pattern_type.INCLUDE, Pattern_style.REGULAR_EXPRESSION),
+            None,
             Pattern(
                 '^/foo/bar/.borgmatic-snapshot/./foo/bar',
                 Pattern_type.INCLUDE,
@@ -395,29 +397,38 @@ def test_make_snapshot_path_includes_stripped_subvolume_path(
         (
             '/foo/bar',
             Pattern('/foo/bar', Pattern_type.INCLUDE, Pattern_style.REGULAR_EXPRESSION),
+            None,
             Pattern(
                 '/foo/bar/.borgmatic-snapshot/./foo/bar',
                 Pattern_type.INCLUDE,
                 Pattern_style.REGULAR_EXPRESSION,
             ),
         ),
-        ('/', Pattern('/foo'), Pattern('/.borgmatic-snapshot/./foo')),
-        ('/', Pattern('/'), Pattern('/.borgmatic-snapshot/./')),
+        ('/', Pattern('/foo'), None, Pattern('/.borgmatic-snapshot/./foo')),
+        ('/', Pattern('/'), None, Pattern('/.borgmatic-snapshot/./')),
         (
             '/foo/bar',
             Pattern('/foo/bar/./baz'),
+            None,
             Pattern('/foo/bar/.borgmatic-snapshot/foo/bar/./baz'),
         ),
-        ('/', Pattern('/./'), Pattern('/.borgmatic-snapshot/./')),
-        ('/', Pattern('./'), Pattern('/.borgmatic-snapshot/./')),
+        ('/', Pattern('/./'), None, Pattern('/.borgmatic-snapshot/./')),
+        ('/', Pattern('./'), None, Pattern('/.borgmatic-snapshot/./')),
+        ('/', Pattern('foo'), '/mnt', Pattern('/.borgmatic-snapshot/mnt/./foo')),
+        ('/', Pattern('/foo/bar'), '/mnt', Pattern('/.borgmatic-snapshot/./foo/bar')),
+        ('/', Pattern('/mnt/bar'), '/mnt', Pattern('/.borgmatic-snapshot/./mnt/bar')),
     ),
 )
 def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_path(
     subvolume_path,
     pattern,
+    working_directory,
     expected_pattern,
 ):
-    assert module.make_borg_snapshot_pattern(subvolume_path, pattern) == expected_pattern
+    assert (
+        module.make_borg_snapshot_pattern(subvolume_path, pattern, working_directory)
+        == expected_pattern
+    )
 
 
 def test_dump_data_sources_snapshots_each_subvolume_and_replaces_patterns():
@@ -467,10 +478,12 @@ def test_dump_data_sources_snapshots_each_subvolume_and_replaces_patterns():
     flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
         '/mnt/subvol1',
         object,
+        working_directory=None,
     ).and_return(Pattern('/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1'))
     flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
         '/mnt/subvol2',
         object,
+        working_directory=None,
     ).and_return(Pattern('/mnt/subvol2/.borgmatic-snapshot/mnt/subvol2'))
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
@@ -549,6 +562,7 @@ def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
     flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
         '/mnt/subvol1',
         object,
+        working_directory=None,
     ).and_return(Pattern('/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1'))
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,
@@ -618,6 +632,7 @@ def test_dump_data_sources_with_findmnt_command_warns():
     flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
         '/mnt/subvol1',
         object,
+        working_directory=None,
     ).and_return(Pattern('/mnt/subvol1/.borgmatic-snapshot/mnt/subvol1'))
     flexmock(module.borgmatic.hooks.data_source.config).should_receive('replace_pattern').with_args(
         object,

@@ -227,11 +227,12 @@ def make_snapshot_exclude_pattern(subvolume_path):  # pragma: no cover
     )
 
 
-def make_borg_snapshot_pattern(subvolume_path, pattern):
+def make_borg_snapshot_pattern(subvolume_path, pattern, working_directory):
     '''
     Given the path to a subvolume and a pattern as a borgmatic.borg.pattern.Pattern instance whose
     path is inside the subvolume, return a new Pattern with its path rewritten to be in a snapshot
-    path intended for giving to Borg.
+    path intended for giving to Borg. Use the given working directory in the rewritten path if the
+    pattern's path is relative.
 
     Move any initial caret in a regular expression pattern path to the beginning, so as not to break
     the regular expression.
@@ -246,6 +247,11 @@ def make_borg_snapshot_pattern(subvolume_path, pattern):
     rewritten_path = initial_caret + os.path.join(
         subvolume_path,
         f'{BORGMATIC_SNAPSHOT_PREFIX}',
+        (
+            working_directory.lstrip(os.path.sep)
+            if working_directory and not os.path.isabs(pattern.path)
+            else ''
+        ),
         # Use the Borg 1.4+ "slashdot" hack to prevent the snapshot path prefix from getting
         # included in the archive—but only if there's not already a slashdot hack present in the
         # pattern.
@@ -318,9 +324,8 @@ def dump_data_sources(
     # Based on the configured patterns, determine Btrfs subvolumes to backup. Only consider those
     # patterns that came from actual user configuration (as opposed to, say, other hooks).
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')
-    subvolumes = get_subvolumes(
-        btrfs_command, patterns, borgmatic.config.paths.get_working_directory(config)
-    )
+    working_directory = borgmatic.config.paths.get_working_directory(config)
+    subvolumes = get_subvolumes(btrfs_command, patterns, working_directory)
 
     if not subvolumes:
         logger.warning(f'No Btrfs subvolumes found to snapshot{dry_run_label}')
@@ -337,7 +342,9 @@ def dump_data_sources(
         snapshot_subvolume(btrfs_command, subvolume.path, snapshot_path)
 
         for pattern in subvolume.contained_patterns:
-            snapshot_pattern = make_borg_snapshot_pattern(subvolume.path, pattern)
+            snapshot_pattern = make_borg_snapshot_pattern(
+                subvolume.path, pattern, working_directory
+            )
             borgmatic.hooks.data_source.config.replace_pattern(patterns, pattern, snapshot_pattern)
 
         borgmatic.hooks.data_source.config.inject_pattern(
