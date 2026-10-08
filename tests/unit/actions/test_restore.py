@@ -162,6 +162,18 @@ import borgmatic.actions.restore as module
             5432,
             True,
         ),
+        (
+            module.Dump('postgresql', 'foo'),
+            module.Dump('postgresql_databases', 'foo'),
+            None,
+            True,
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo'),
+            module.Dump('postgresql', 'foo'),
+            None,
+            True,
+        ),
     ),
 )
 def test_dumps_match_compares_two_dumps_while_respecting_unspecified_values(
@@ -323,7 +335,9 @@ def test_strip_path_prefix_from_extracted_dump_destination_renames_first_matchin
         '/run/user/0/borgmatic/mariadb_databases',
     ).never()
 
-    module.strip_path_prefix_from_extracted_dump_destination('/foo', '/run/user/0/borgmatic')
+    module.strip_path_prefix_from_extracted_dump_destination(
+        '/foo', 'postgresql_databases', '/run/user/0/borgmatic'
+    )
 
 
 def test_restore_single_dump_extracts_and_restores_single_file_dump():
@@ -1049,37 +1063,6 @@ def test_get_dumps_to_restore_with_requested_hook_name_filters_dumps_found_in_ar
     assert module.get_dumps_to_restore(
         restore_arguments=flexmock(
             hook='postgresql_databases',
-            data_sources=['foo'],
-            original_hostname=None,
-            original_port=None,
-            original_label=None,
-            original_container=None,
-        ),
-        dumps_from_archive=dumps_from_archive,
-    ) == (module.Dump('postgresql_databases', 'foo'),)
-
-
-def test_get_dumps_to_restore_with_requested_shortened_hook_name_filters_dumps_found_in_archive():
-    dumps_from_archive = (
-        module.Dump('mariadb_databases', 'foo'),
-        module.Dump('postgresql_databases', 'foo'),
-        module.Dump('sqlite_databases', 'bar'),
-    )
-    flexmock(module).should_receive('dumps_match').and_return(False)
-    flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump(
-            'postgresql_databases',
-            'foo',
-            hostname=module.UNSPECIFIED,
-            label=module.UNSPECIFIED,
-            container=module.UNSPECIFIED,
-        ),
-        module.Dump('postgresql_databases', 'foo'),
-    ).and_return(True)
-
-    assert module.get_dumps_to_restore(
-        restore_arguments=flexmock(
-            hook='postgresql',
             data_sources=['foo'],
             original_hostname=None,
             original_port=None,

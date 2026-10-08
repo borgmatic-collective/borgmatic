@@ -68,6 +68,10 @@ def dumps_match(first, second, default_port=None):
         ):
             continue
 
+        if field_name == 'hook_name':
+            first_value = first_value.split('_databases')[0]
+            second_value = second_value.split('_databases')[0]
+
         if first_value != second_value:
             return False
 
@@ -146,13 +150,14 @@ def get_configured_data_source(config, restore_dump):
 
 def strip_path_prefix_from_extracted_dump_destination(
     extract_path,
+    hook_name,
     borgmatic_runtime_directory,
 ):
     '''
     Directory-format dump files get extracted into a temporary directory containing a path prefix
     that depends how the files were stored in the archive. So, given the path where the dump was
-    extracted and the borgmatic runtime directory, move the dump files such that the restore doesn't
-    have to deal with that varying path prefix.
+    extracted, the data source hook name, and the borgmatic runtime directory, move the dump files
+    such that the restore doesn't have to deal with that varying path prefix.
 
     For instance, if the dump was extracted to:
 
@@ -167,12 +172,12 @@ def strip_path_prefix_from_extracted_dump_destination(
       /run/user/0/borgmatic/postgresql_databases/test/...
     '''
     for subdirectory_path, _, _ in os.walk(extract_path):
-        databases_directory = os.path.basename(subdirectory_path)
+        hook_directory = os.path.basename(subdirectory_path)
 
-        if not databases_directory.endswith('_databases'):
+        if hook_directory != hook_name:
             continue
 
-        destination_path = os.path.join(borgmatic_runtime_directory, databases_directory)
+        destination_path = os.path.join(borgmatic_runtime_directory, hook_directory)
         shutil.rmtree(destination_path, ignore_errors=True)
         shutil.move(subdirectory_path, destination_path)
 
@@ -254,6 +259,7 @@ def restore_single_dump(
         if destination_path and not global_arguments.dry_run:
             strip_path_prefix_from_extracted_dump_destination(
                 destination_path,
+                hook_name,
                 borgmatic_runtime_directory,
             )
     finally:
@@ -302,10 +308,10 @@ def collect_dumps_from_archive(
             'sh:'
             + borgmatic.hooks.data_source.dump.make_data_source_dump_path(
                 base_directory,
-                '*_databases/dumps.json',
+                '*/dumps.json',
             )
             # Probe for dump metadata files in multiple locations, as the default location is
-            # "/borgmatic/*_databases/dumps.json" with Borg 1.4+, but instead begins with the
+            # "/borgmatic/*/dumps.json" with Borg 1.4+, but instead begins with the
             # borgmatic runtime directory for older versions of Borg.
             for base_directory in (
                 'borgmatic',
@@ -364,7 +370,7 @@ def collect_dumps_from_archive(
             'sh:'
             + borgmatic.hooks.data_source.dump.make_data_source_dump_path(
                 base_directory,
-                '*_databases/*/*',
+                '*/*/*',
             )
             for base_directory in (
                 'borgmatic',
@@ -438,15 +444,7 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
         # Use a dict comprehension as an ordered set.
         {
             Dump(
-                hook_name=(
-                    (
-                        restore_arguments.hook
-                        if restore_arguments.hook.endswith('_databases')
-                        else f'{restore_arguments.hook}_databases'
-                    )
-                    if restore_arguments.hook
-                    else UNSPECIFIED
-                ),
+                hook_name=(restore_arguments.hook if restore_arguments.hook else UNSPECIFIED),
                 data_source_name=name,
                 hostname=restore_arguments.original_hostname or UNSPECIFIED,
                 port=restore_arguments.original_port,
