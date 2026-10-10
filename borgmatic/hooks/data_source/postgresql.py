@@ -373,6 +373,52 @@ def make_data_source_dump_patterns(
     )
 
 
+def extract_data_source_dump(
+    hook_config,
+    config,
+    repository,
+    local_borg_version,
+    global_arguments,
+    local_path,
+    remote_path,
+    archive_name,
+    data_source,
+    borgmatic_runtime_directory,
+):  # pragma: no cover
+    '''
+    Given a hook configuration dict, a top-level configuration dict, a repository dict, the local
+    Borg version, global arguments as an argparse.Namespace instance, the local Borg path, the
+    remote Borg path, the archive name to extract from, a data source dict, and the borgmatic
+    runtime directory, calculate the dump patterns to look for in the archive and then extract the
+    corresponding dump—either streaming via an extract process or, for directory format, written
+    into the runtime directory.
+
+    Return the extract process (or None for directory format).
+    '''
+    return dump.extract_dump(
+        repository,
+        config,
+        local_borg_version,
+        global_arguments,
+        local_path,
+        remote_path,
+        archive_name,
+        'postgresql_databases',
+        data_source,
+        borgmatic_runtime_directory,
+        dump_patterns=make_data_source_dump_patterns(
+            hook_config,
+            config,
+            borgmatic_runtime_directory,
+            data_source['name'],
+            data_source.get('hostname'),
+            data_source.get('port'),
+            data_source.get('container'),
+            data_source.get('label'),
+        ),
+    )
+
+
 def restore_data_source_dump(
     hook_config,
     config,

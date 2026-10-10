@@ -172,3 +172,150 @@ def test_convert_glob_patterns_to_borg_pattern_makes_multipart_regular_expressio
         module.convert_glob_patterns_to_borg_pattern(('/etc/foo/bar', '/bar/baz/quux'))
         == 're:(?s:etc/foo/bar)$|(?s:etc/foo/bar/.*)$|(?s:bar/baz/quux)$|(?s:bar/baz/quux/.*)$'
     )
+
+
+def test_strip_path_prefix_from_extracted_dump_destination_renames_first_matching_databases_subdirectory():
+    flexmock(module.os).should_receive('walk').and_return(
+        [
+            ('/foo', flexmock(), flexmock()),
+            ('/foo/bar', flexmock(), flexmock()),
+            ('/foo/bar/postgresql_databases', flexmock(), flexmock()),
+            ('/foo/bar/mariadb_databases', flexmock(), flexmock()),
+        ],
+    )
+
+    flexmock(module.shutil).should_receive('rmtree')
+    flexmock(module.shutil).should_receive('move').with_args(
+        '/foo/bar/postgresql_databases',
+        '/run/user/0/borgmatic/postgresql_databases',
+    ).once()
+    flexmock(module.shutil).should_receive('move').with_args(
+        '/foo/bar/mariadb_databases',
+        '/run/user/0/borgmatic/mariadb_databases',
+    ).never()
+
+    module.strip_path_prefix_from_extracted_dump_destination(
+        '/foo', 'postgresql_databases', '/run/user/0/borgmatic'
+    )
+
+
+def test_extract_dump_returns_extract_process():
+    flexmock(module.tempfile).should_receive('mkdtemp').never()
+    flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
+        'convert_glob_patterns_to_borg_pattern',
+    ).and_return(flexmock())
+    extract_process = flexmock()
+    flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
+        extract_process,
+    ).once()
+    flexmock(module).should_receive('strip_path_prefix_from_extracted_dump_destination').never()
+    flexmock(module.shutil).should_receive('rmtree').never()
+
+    assert (
+        module.extract_dump(
+            repository={'path': 'repo.borg'},
+            config=flexmock(),
+            local_borg_version=flexmock(),
+            global_arguments=flexmock(dry_run=False),
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            archive_name=flexmock(),
+            hook_name=flexmock(),
+            data_source={'name': 'foo'},
+            borgmatic_runtime_directory='/run/borgmatic',
+            dump_patterns=flexmock(),
+        )
+        == extract_process
+    )
+
+
+def test_extract_dump_with_directory_format_cleans_up_destination_path():
+    flexmock(module.tempfile).should_receive('mkdtemp').once().and_return(
+        '/run/user/0/borgmatic/tmp1234',
+    )
+    flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
+        'convert_glob_patterns_to_borg_pattern',
+    ).and_return(flexmock())
+    flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
+        None,
+    ).once()
+    flexmock(module).should_receive('strip_path_prefix_from_extracted_dump_destination').once()
+    flexmock(module.shutil).should_receive('rmtree').once()
+
+    assert (
+        module.extract_dump(
+            repository={'path': 'repo.borg'},
+            config=flexmock(),
+            local_borg_version=flexmock(),
+            global_arguments=flexmock(dry_run=False),
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            archive_name=flexmock(),
+            hook_name=flexmock(),
+            data_source={'name': 'foo', 'format': 'directory'},
+            borgmatic_runtime_directory='/run/borgmatic',
+            dump_patterns=flexmock(),
+        )
+        is None
+    )
+
+
+def test_extract_dump_with_directory_format_dump_error_cleans_up_destination_path():
+    flexmock(module.tempfile).should_receive('mkdtemp').once().and_return(
+        '/run/user/0/borgmatic/tmp1234',
+    )
+    flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
+        'convert_glob_patterns_to_borg_pattern',
+    ).and_return(flexmock())
+    flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_raise(
+        ValueError,
+    ).once()
+    flexmock(module).should_receive('strip_path_prefix_from_extracted_dump_destination').never()
+    flexmock(module.shutil).should_receive('rmtree').once()
+
+    with pytest.raises(ValueError):
+        assert (
+            module.extract_dump(
+                repository={'path': 'repo.borg'},
+                config=flexmock(),
+                local_borg_version=flexmock(),
+                global_arguments=flexmock(dry_run=False),
+                local_path=flexmock(),
+                remote_path=flexmock(),
+                archive_name=flexmock(),
+                hook_name=flexmock(),
+                data_source={'name': 'foo', 'format': 'directory'},
+                borgmatic_runtime_directory='/run/borgmatic',
+                dump_patterns=flexmock(),
+            )
+            is None
+        )
+
+
+def test_extract_dump_with_directory_format_and_dry_run_skips_directory_move_and_cleanup():
+    flexmock(module.tempfile).should_receive('mkdtemp').once().and_return('/run/borgmatic/tmp1234')
+    flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
+        'convert_glob_patterns_to_borg_pattern',
+    ).and_return(flexmock())
+    flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
+        None,
+    ).once()
+    flexmock(module).should_receive('strip_path_prefix_from_extracted_dump_destination').never()
+    flexmock(module.shutil).should_receive('rmtree').never()
+
+    assert (
+        module.extract_dump(
+            repository={'path': 'repo.borg'},
+            config=flexmock(),
+            local_borg_version=flexmock(),
+            global_arguments=flexmock(dry_run=True),
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            archive_name=flexmock(),
+            hook_name=flexmock(),
+            data_source={'name': 'foo', 'format': 'directory'},
+            borgmatic_runtime_directory='/run/borgmatic',
+            dump_patterns=flexmock(),
+        )
+        is None
+    )

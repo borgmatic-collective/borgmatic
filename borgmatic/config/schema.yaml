@@ -2061,7 +2061,7 @@ properties:
                         with an "all" database name, dumps each database to a
                         separate file of that format, allowing more convenient
                         restores of individual databases.
-                    example: directory
+                    example: sql
                 add_drop_database:
                     type: boolean
                     description: |
@@ -2291,7 +2291,7 @@ properties:
                         specified with an "all" database name, dumps each
                         database to a separate file of that format, allowing
                         more convenient restores of individual databases.
-                    example: directory
+                    example: sql
                 add_drop_database:
                     type: boolean
                     description: |

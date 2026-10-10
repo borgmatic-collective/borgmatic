@@ -4,8 +4,6 @@ import locale
 import logging
 import os
 import pathlib
-import shutil
-import tempfile
 
 import borgmatic.actions.dump
 import borgmatic.actions.pattern
@@ -148,42 +146,6 @@ def get_configured_data_source(config, restore_dump):
     return matching_dumps[0]
 
 
-def strip_path_prefix_from_extracted_dump_destination(
-    extract_path,
-    hook_name,
-    borgmatic_runtime_directory,
-):
-    '''
-    Directory-format dump files get extracted into a temporary directory containing a path prefix
-    that depends how the files were stored in the archive. So, given the path where the dump was
-    extracted, the data source hook name, and the borgmatic runtime directory, move the dump files
-    such that the restore doesn't have to deal with that varying path prefix.
-
-    For instance, if the dump was extracted to:
-
-      /run/user/0/borgmatic/tmp1234/borgmatic/postgresql_databases/test/...
-
-    or:
-
-      /run/user/0/borgmatic/tmp1234/root/.borgmatic/postgresql_databases/test/...
-
-    then this function moves it to:
-
-      /run/user/0/borgmatic/postgresql_databases/test/...
-    '''
-    for subdirectory_path, _, _ in os.walk(extract_path):
-        hook_directory = os.path.basename(subdirectory_path)
-
-        if hook_directory != hook_name:
-            continue
-
-        destination_path = os.path.join(borgmatic_runtime_directory, hook_directory)
-        shutil.rmtree(destination_path, ignore_errors=True)
-        shutil.move(subdirectory_path, destination_path)
-
-        break
-
-
 def restore_single_dump(
     repository,
     config,
@@ -215,56 +177,19 @@ def restore_single_dump(
 
     logger.info(f'Restoring data source {dump_metadata}')
 
-    dump_patterns = borgmatic.hooks.dispatch.call_hooks(
-        'make_data_source_dump_patterns',
-        config,
-        borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
-        borgmatic_runtime_directory,
-        data_source['name'],
-        data_source.get('hostname'),
-        data_source.get('port'),
-        data_source.get('container'),
-        data_source.get('label'),
-    )[hook_name.split('_databases', 1)[0]]
-
-    destination_path = (
-        tempfile.mkdtemp(dir=borgmatic_runtime_directory)
-        if data_source.get('format') == 'directory'
-        else None
+    extract_process = borgmatic.hooks.dispatch.call_hook(
+        function_name='extract_data_source_dump',
+        config=config,
+        hook_name=hook_name,
+        repository=repository,
+        local_borg_version=local_borg_version,
+        global_arguments=global_arguments,
+        local_path=local_path,
+        remote_path=remote_path,
+        archive_name=archive_name,
+        data_source=data_source,
+        borgmatic_runtime_directory=borgmatic_runtime_directory,
     )
-
-    try:
-        # Kick off a single data source extract. If using a directory format, extract to a temporary
-        # directory. Otherwise extract the single dump file to stdout.
-        extract_process = borgmatic.borg.extract.extract_archive(
-            dry_run=global_arguments.dry_run,
-            repository=repository['path'],
-            archive=archive_name,
-            paths=[
-                borgmatic.hooks.data_source.dump.convert_glob_patterns_to_borg_pattern(
-                    dump_patterns,
-                ),
-            ],
-            config=config,
-            local_borg_version=local_borg_version,
-            global_arguments=global_arguments,
-            local_path=local_path,
-            remote_path=remote_path,
-            destination_path=destination_path,
-            # A directory format dump isn't a single file, and therefore can't extract
-            # to stdout. In this case, the extract_process return value is None.
-            extract_to_stdout=bool(data_source.get('format') != 'directory'),
-        )
-
-        if destination_path and not global_arguments.dry_run:
-            strip_path_prefix_from_extracted_dump_destination(
-                destination_path,
-                hook_name,
-                borgmatic_runtime_directory,
-            )
-    finally:
-        if destination_path and not global_arguments.dry_run:
-            shutil.rmtree(destination_path, ignore_errors=True)
 
     # Run a single data source restore, consuming the extract stdout (if any).
     borgmatic.hooks.dispatch.call_hook(

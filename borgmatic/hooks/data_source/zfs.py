@@ -500,6 +500,24 @@ def make_data_source_dump_patterns(
     return ()
 
 
+def extract_data_source_dump(
+    hook_config,
+    config,
+    repository,
+    local_borg_version,
+    global_arguments,
+    local_path,
+    remote_path,
+    archive_name,
+    data_source,
+    borgmatic_runtime_directory,
+):  # pragma: no cover
+    '''
+    Restores aren't implemented, because stored files can be extracted directly with "extract".
+    '''
+    raise NotImplementedError()
+
+
 def restore_data_source_dump(
     hook_config,
     config,

@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import shutil
+import tempfile
 
 import borgmatic.actions.restore
 import borgmatic.config.paths
@@ -151,3 +152,103 @@ def convert_glob_patterns_to_borg_pattern(patterns):
         for pattern in patterns
         for stripped in (pattern.lstrip('/'),)
     )
+
+
+def strip_path_prefix_from_extracted_dump_destination(
+    extract_path,
+    hook_name,
+    borgmatic_runtime_directory,
+):
+    '''
+    Directory-format dump files get extracted into a temporary directory containing a path prefix
+    that depends how the files were stored in the archive. So, given the path where the dump was
+    extracted, the data source hook name, and the borgmatic runtime directory, move the dump files
+    such that the restore doesn't have to deal with that varying path prefix.
+
+    For instance, if the dump was extracted to:
+
+      /run/user/0/borgmatic/tmp1234/borgmatic/postgresql_databases/test/...
+
+    or:
+
+      /run/user/0/borgmatic/tmp1234/root/.borgmatic/postgresql_databases/test/...
+
+    then this function moves it to:
+
+      /run/user/0/borgmatic/postgresql_databases/test/...
+    '''
+    for subdirectory_path, _, _ in os.walk(extract_path):
+        hook_directory = os.path.basename(subdirectory_path)
+
+        if hook_directory != hook_name:
+            continue
+
+        destination_path = os.path.join(borgmatic_runtime_directory, hook_directory)
+        shutil.rmtree(destination_path, ignore_errors=True)
+        shutil.move(subdirectory_path, destination_path)
+
+        break
+
+
+def extract_dump(
+    repository,
+    config,
+    local_borg_version,
+    global_arguments,
+    local_path,
+    remote_path,
+    archive_name,
+    hook_name,
+    data_source,
+    borgmatic_runtime_directory,
+    dump_patterns,
+):
+    '''
+    Given a repository dict, a configuration dict, the local Borg version, global arguments as an
+    argparse.Namespace instance, the local Borg path, the remote Borg path, the archive name to
+    extract from, the data source hook name, a data source dict, the borgmatic runtime directory,
+    and the dump patterns to match against in the archive, extract the corresponding dump—either
+    streaming via an extract process or, for directory format, written into the runtime directory.
+
+    Return the extract process (or None for directory format).
+    '''
+    destination_path = (
+        tempfile.mkdtemp(dir=borgmatic_runtime_directory)
+        if data_source.get('format') == 'directory'
+        else None
+    )
+
+    try:
+        # Kick off a single data source extract. If using a directory format, extract to a temporary
+        # directory. Otherwise extract the single dump file to stdout.
+        extract_process = borgmatic.borg.extract.extract_archive(
+            dry_run=global_arguments.dry_run,
+            repository=repository['path'],
+            archive=archive_name,
+            paths=[
+                borgmatic.hooks.data_source.dump.convert_glob_patterns_to_borg_pattern(
+                    dump_patterns,
+                ),
+            ],
+            config=config,
+            local_borg_version=local_borg_version,
+            global_arguments=global_arguments,
+            local_path=local_path,
+            remote_path=remote_path,
+            destination_path=destination_path,
+            # A directory format dump isn't a single file, and therefore can't extract
+            # to stdout. In this case, the extract_process return value is None.
+            extract_to_stdout=bool(data_source.get('format') != 'directory'),
+        )
+
+        if destination_path and not global_arguments.dry_run:
+            strip_path_prefix_from_extracted_dump_destination(
+                destination_path,
+                hook_name,
+                borgmatic_runtime_directory,
+            )
+    finally:
+        if destination_path and not global_arguments.dry_run:
+            shutil.rmtree(destination_path, ignore_errors=True)
+
+    return extract_process
