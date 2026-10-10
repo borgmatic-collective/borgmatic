@@ -413,8 +413,10 @@ def restore_data_source_dump(
     dump_filename = dump.make_data_source_dump_filename(
         make_dump_path(borgmatic_runtime_directory),
         data_source['name'],
-        hostname=hostname,
-        port=port,
+        # Don't use the resolved hostname and port from above, because they're for connecting to the
+        # database, not computing the dump file path.
+        hostname=data_source.get('hostname'),
+        port=data_source.get('port'),
         container=data_source.get('container'),
         label=data_source.get('label'),
     )

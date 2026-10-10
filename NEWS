@@ -1,3 +1,7 @@
+2.1.11.dev0
+ * Fix a Postgresql hook error when restoring a directory format database with an overridden
+   hostname or port.
+
 2.1.10
  * #1185: Add support for setting top-level configuration options under each repository, making
    those options repository-specific. See the documentation for more information:
