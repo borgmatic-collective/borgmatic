@@ -279,7 +279,7 @@ def extract_data_source_dump(
         remote_path,
         archive_name,
         'influxdb_databases',
-        data_source,
+        data_source | {'format': 'directory'},
         borgmatic_runtime_directory,
         dump_patterns=make_data_source_dump_patterns(
             hook_config,

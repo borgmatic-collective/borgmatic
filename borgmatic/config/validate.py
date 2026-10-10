@@ -184,7 +184,6 @@ def parse_configuration(
             )
 
         apply_logical_validation(config_filename, single_config)
-        normalize.post_validation_normalize(single_config)
 
     return config, config_paths, logs
 
