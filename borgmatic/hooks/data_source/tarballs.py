@@ -191,7 +191,7 @@ def stream_tarballs():
         )
         read_lock = threading.Lock()
 
-        for member in tar_file.getmembers():
+        for member in tar_file:
             if not member.isdir():
                 threads.append(
                     threading.Thread(
