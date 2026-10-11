@@ -191,6 +191,20 @@ def restore_single_dump(
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     )
 
+    manifest = borgmatic.hooks.dispatch.call_hook(
+        function_name='load_data_source_dump_manifest',
+        config=config,
+        hook_name=hook_name,
+        repository=repository,
+        local_borg_version=local_borg_version,
+        global_arguments=global_arguments,
+        local_path=local_path,
+        remote_path=remote_path,
+        archive_name=archive_name,
+        data_source=data_source,
+        borgmatic_runtime_directory=borgmatic_runtime_directory,
+    )
+
     # Run a single data source restore, consuming the extract stdout (if any).
     borgmatic.hooks.dispatch.call_hook(
         function_name='restore_data_source_dump',
@@ -199,6 +213,8 @@ def restore_single_dump(
         data_source=data_source,
         dry_run=global_arguments.dry_run,
         extract_process=extract_process,
+        # TODO: Need to update all other data source hooks accordingly.
+        manifest=manifest,
         connection_params=connection_params,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     )

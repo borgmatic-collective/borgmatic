@@ -189,7 +189,6 @@ def extract_archive(
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
-        return None
 
     # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
     # if the restore paths don't exist in the archive.

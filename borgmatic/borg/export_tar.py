@@ -1,5 +1,6 @@
 import logging
 import shlex
+import subprocess
 
 import borgmatic.config.paths
 import borgmatic.logger
@@ -22,15 +23,20 @@ def export_tar_archive(
     remote_path=None,
     tar_filter=None,
     strip_components=None,
+    capture_stdout=False,
 ):
     '''
     Given a dry-run flag, a local or remote repository path, an archive name, zero or more paths to
     export from the archive, a destination path to export to, a configuration dict, the local Borg
-    version, optional local and remote Borg paths, an optional filter program, whether to include
-    per-file details, and an optional number of path components to strip, export the archive into
-    the given destination path as a tar-formatted file.
+    version, optional local and remote Borg paths, an optional filter program, an optional number of
+    path components to strip, and whether to capture and pipe stdout to another process (instead of
+    just letting it stream to borgmatic's own stdout), export the archive into the given destination
+    path as a tar-formatted file.
 
-    If the destination path is "-", then stream the output to stdout instead of to a file.
+    If the destination path is "-", then stream the output to stdout instead of to a file. This is
+    required when capture_stdout is True.
+
+    Return the export process when capture_stdout is True. Otherwise, return None.
     '''
     borgmatic.logger.add_custom_log_levels()
     umask = config.get('umask')
@@ -72,9 +78,15 @@ def export_tar_archive(
         logger.info('Skipping export to tar file (dry run)')
         return
 
-    execute_command(
+    if destination_path == '-':
+        output_file = subprocess.PIPE if capture_stdout else DO_NOT_CAPTURE
+    else:
+        output_file = None
+
+    return execute_command(
         full_command,
-        output_file=DO_NOT_CAPTURE if destination_path == '-' else None,
+        output_file=output_file,
+        run_to_completion=not capture_stdout,
         output_log_level=output_log_level,
         environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),

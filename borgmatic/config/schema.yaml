@@ -1537,119 +1537,6 @@ properties:
         description: |
             Support for the "borgmatic bootstrap" action, used to extract
             borgmatic configuration files from a backup archive.
-    influxdb_databases:
-        type: array
-        items:
-            type: object
-            required:
-                - name
-            additionalProperties: false
-            properties:
-                name:
-                    type: string
-                    description: |
-                        Bucket name to dump (required if using this hook). Or
-                        "all" to dump all buckets on the host. Ignored for
-                        dumping purposes if "bucket_id" is given, but still
-                        used to identify the dump in the backup.
-                    example: mybucket
-                bucket_id:
-                    type: string
-                    description: |
-                        The ID of the bucket to backup. Takes precedence over
-                        the bucket named by the "name" option.
-                    example: 3c9bb0c293be4658
-                label:
-                    type: string
-                    description: |
-                        Label to identify the database dump in the backup.
-                    example: my_backup_label
-                influx_command:
-                    type: string
-                    description: |
-                        The InfluxDB executable to use, from InfluxDB 2.x.
-                        InfluxDB 3 is not supported. Defaults to "influx".
-                    example: /usr/local/bin/influx
-                password:
-                    type: string
-                    description: |
-                        InfluxDB API token used to authenticate requests. This
-                        option is named "password" rather than "token" (which
-                        would better suit InfluxDB terminology) so that
-                        borgmatic's native password handling applies. Omit it
-                        when the token comes from the influx CLI configuration
-                        selected by "active_configuration". Supports the
-                        "{credential ...}" syntax.
-                    example: trustsome1
-                tls:
-                    type: boolean
-                    description: |
-                        Selects if using HTTP (false) or HTTPS (true).
-                        Defaults to true.
-                    example: false
-                hostname:
-                    type: string
-                    description: |
-                        InfluxDB hostname/IP to connect to.
-                        Defaults to localhost.
-                    example: localhost
-                port:
-                    type: integer
-                    description: |
-                        Port to connect to. Defaults to 8086.
-                    example: 8086
-                organization_id:
-                    type: string
-                    description: |
-                        The ID of the organization.
-                    example: ccf6258c1e195e27
-                organization_name:
-                    type: string
-                    description: |
-                        The name of the organization. Ignored if
-                        "organization_id" is also provided.
-                    example: my-org
-                configurations_path:
-                    type: string
-                    description: |
-                        Path to the influx CLI configurations.
-                    example: /root/.influxdbv2/configs
-                active_configuration:
-                    type: string
-                    description: |
-                        Config name to use for command.
-                    example: default
-                restore_bucket:
-                    type: string
-                    description: |
-                        New name to use for the restored bucket.
-                    example: mybucket-restored
-                restore_organization:
-                    type: string
-                    description: |
-                        New name to use for the restored organization.
-                    example: my-org-restored
-                verify_tls:
-                    type: boolean
-                    description: |
-                        Verify the TLS certificate chain and host name of the
-                        InfluxDB host. Defaults to true.
-                    example: false
-                full_replace:
-                    type: boolean
-                    description: |
-                        Fully restore and replace all data on server.
-                        Defaults to false.
-                    example: true
-                compression:
-                    type: string
-                    description: |
-                        Compression to use for local backup files, either
-                        "none" or "gzip". Defaults to "gzip".
-                    enum:
-                        - none
-                        - gzip
-                    example: none
     postgresql_databases:
         type: array
         items:
@@ -2554,6 +2441,119 @@ properties:
         example:
             - name: users
               hostname: database.example.org
+    influxdb_databases:
+        type: array
+        items:
+            type: object
+            required:
+                - name
+            additionalProperties: false
+            properties:
+                name:
+                    type: string
+                    description: |
+                        Bucket name to dump (required if using this hook). Or
+                        "all" to dump all buckets on the host. Ignored for
+                        dumping purposes if "bucket_id" is given, but still
+                        used to identify the dump in the backup.
+                    example: mybucket
+                bucket_id:
+                    type: string
+                    description: |
+                        The ID of the bucket to backup. Takes precedence over
+                        the bucket named by the "name" option.
+                    example: 3c9bb0c293be4658
+                label:
+                    type: string
+                    description: |
+                        Label to identify the database dump in the backup.
+                    example: my_backup_label
+                influx_command:
+                    type: string
+                    description: |
+                        The InfluxDB executable to use, from InfluxDB 2.x.
+                        InfluxDB 3 is not supported. Defaults to "influx".
+                    example: /usr/local/bin/influx
+                password:
+                    type: string
+                    description: |
+                        InfluxDB API token used to authenticate requests. This
+                        option is named "password" rather than "token" (which
+                        would better suit InfluxDB terminology) so that
+                        borgmatic's native password handling applies. Omit it
+                        when the token comes from the influx CLI configuration
+                        selected by "active_configuration". Supports the
+                        "{credential ...}" syntax.
+                    example: trustsome1
+                tls:
+                    type: boolean
+                    description: |
+                        Selects if using HTTP (false) or HTTPS (true).
+                        Defaults to true.
+                    example: false
+                hostname:
+                    type: string
+                    description: |
+                        InfluxDB hostname/IP to connect to.
+                        Defaults to localhost.
+                    example: localhost
+                port:
+                    type: integer
+                    description: |
+                        Port to connect to. Defaults to 8086.
+                    example: 8086
+                organization_id:
+                    type: string
+                    description: |
+                        The ID of the organization.
+                    example: ccf6258c1e195e27
+                organization_name:
+                    type: string
+                    description: |
+                        The name of the organization. Ignored if
+                        "organization_id" is also provided.
+                    example: my-org
+                configurations_path:
+                    type: string
+                    description: |
+                        Path to the influx CLI configurations.
+                    example: /root/.influxdbv2/configs
+                active_configuration:
+                    type: string
+                    description: |
+                        Config name to use for command.
+                    example: default
+                restore_bucket:
+                    type: string
+                    description: |
+                        New name to use for the restored bucket.
+                    example: mybucket-restored
+                restore_organization:
+                    type: string
+                    description: |
+                        New name to use for the restored organization.
+                    example: my-org-restored
+                verify_tls:
+                    type: boolean
+                    description: |
+                        Verify the TLS certificate chain and host name of the
+                        InfluxDB host. Defaults to true.
+                    example: false
+                full_replace:
+                    type: boolean
+                    description: |
+                        Fully restore and replace all data on server.
+                        Defaults to false.
+                    example: true
+                compression:
+                    type: string
+                    description: |
+                        Compression to use for local backup files, either
+                        "none" or "gzip". Defaults to "gzip".
+                    enum:
+                        - none
+                        - gzip
+                    example: none
     openldap_databases:
         type: array
         items:
@@ -2604,6 +2604,47 @@ properties:
             https://www.openldap.org/software/man.cgi?query=slapadd for details.
         example:
             - name: dc=example,dc=com
+    tarballs:
+        type: array
+        items:
+            type: object
+            required: ['path', 'name']
+            additionalProperties: false
+            properties:
+                name:
+                    type: string
+                    description: |
+                        This is used to tag the tarball with a name. It is not
+                        the path to the tarball itself. The name "all" has no
+                        special meaning for tarballs.
+                    example: source_code
+                path:
+                    type: string
+                    description: |
+                        Path to the tarball file to backup. If relative, it is
+                        relative to the current working directory.
+                    example: /var/lib/sqlite/users.db
+                label:
+                    type: string
+                    description: |
+                        Label to identify the tarball in the backup.
+                    example: my_backup_label
+                restore_path:
+                    type: string
+                    description: |
+                        Path to the tarball file to restore to. Defaults to the
+                        "path" option.
+                    example: /var/lib/sqlite/users.db
+        description: |
+            List of one or more tarballs to include in backups. borgmatic adds
+            such a tarball to your source directories at runtime and streams it
+            directly to Borg as the individual files it contains—thereby
+            allowing Borg to effectively deduplicate your file data across
+            archives. In your configured source directories, you can omit or
+            exclude any tarballs that you specify here.
+        example:
+            - name: source_code
+              path: /home/user/source.tar.gz
     ntfy:
         type: object
         required: ['topic']
