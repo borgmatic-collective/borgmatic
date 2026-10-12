@@ -1,3 +1,7 @@
+2.1.11.dev0
+ * #1368: Fix a hang in which a database dump command spewing lots of output could send borgmatic
+   into a loop. This was most prevalent with MongoDB.
+
 2.1.10
  * #1185: Add support for setting top-level configuration options under each repository, making
    those options repository-specific. See the documentation for more information:
@@ -10,8 +14,6 @@
    working directory.
  * #1363: For the "restore" action, fix an invalid JSON error when running with the "--dry-run"
    flag.
- * #1368: Fix a hang in which a database dump command spewing lots of output could send borgmatic
-   into a loop. This was most prevalent with MongoDB.
  * Remove support for "rest://" repository URLs, which Borg 2.0.0b25 renamed back to "ssh://".
 
 2.1.9
