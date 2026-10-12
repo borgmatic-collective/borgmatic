@@ -91,6 +91,7 @@ def test_build_dump_command_includes_debug_flags():
 
 
 def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'dc=example,dc=com'}]
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
@@ -130,6 +131,7 @@ def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
 
 
 def test_dump_data_sources_dumps_each_database():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'dc=example,dc=com'}, {'name': 'dc=other,dc=com'}]
     processes = [flexmock(), flexmock()]
 
@@ -184,6 +186,7 @@ def test_dump_data_sources_dumps_each_database():
 
 
 def test_dump_data_sources_with_label_passes_it_through():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'dc=example,dc=com', 'label': 'ldap1'}]
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
@@ -221,6 +224,7 @@ def test_dump_data_sources_with_label_passes_it_through():
 
 
 def test_dump_data_sources_with_dry_run_skips_dump():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'dc=example,dc=com'}]
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')

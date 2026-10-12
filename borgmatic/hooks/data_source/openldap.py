@@ -94,6 +94,7 @@ def dump_data_sources(
     dumps_metadata = []
 
     logger.info(f'Dumping OpenLDAP databases{dry_run_label}')
+    dump.raise_number_of_files_resource_limit()
 
     for database in databases:
         name = database['name']

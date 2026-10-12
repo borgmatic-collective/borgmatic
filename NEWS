@@ -1,7 +1,8 @@
 2.1.11.dev0
  * #1368: Fix a hang in which a database dump command spewing lots of output could send borgmatic
    into a loop. This was most prevalent with MongoDB.
- * #1370: Fix a "filedescriptor out of range in select()" error when dumping hundreds of databases.
+ * #1370: Fix "Too many open files" and "filedescriptor out of range in select()" errors when
+   dumping hundreds of databases.
 
 2.1.10
  * #1185: Add support for setting top-level configuration options under each repository, making

@@ -138,6 +138,7 @@ def dump_data_sources(
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
 
     logger.info(f'Dumping MongoDB databases{dry_run_label}')
+    dump.raise_number_of_files_resource_limit()
 
     processes = []
     dumps_metadata = []

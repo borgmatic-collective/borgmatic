@@ -292,6 +292,7 @@ def test_use_streaming_false_for_no_databases():
 
 
 def test_dump_data_sources_runs_pg_dump_for_each_database():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     processes = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
@@ -357,6 +358,7 @@ def test_dump_data_sources_runs_pg_dump_for_each_database():
 
 
 def test_dump_data_sources_raises_when_no_database_names_to_dump():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -375,6 +377,7 @@ def test_dump_data_sources_raises_when_no_database_names_to_dump():
 
 
 def test_dump_data_sources_does_not_raise_when_no_database_names_to_dump():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -395,6 +398,7 @@ def test_dump_data_sources_does_not_raise_when_no_database_names_to_dump():
 
 
 def test_dump_data_sources_with_duplicate_dump_skips_pg_dump():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -437,6 +441,7 @@ def test_dump_data_sources_with_duplicate_dump_skips_pg_dump():
 
 
 def test_dump_data_sources_with_dry_run_skips_pg_dump():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -469,6 +474,7 @@ def test_dump_data_sources_with_dry_run_skips_pg_dump():
 
 
 def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
     process = flexmock()
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
@@ -533,6 +539,7 @@ def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
 
 
 def test_dump_data_sources_runs_pg_dump_with_username_and_password():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo', 'username': 'postgres', 'password': 'trustsome1'}]
     process = flexmock()
     flexmock(module).should_receive('make_environment').and_return(
@@ -595,6 +602,7 @@ def test_dump_data_sources_runs_pg_dump_with_username_and_password():
 
 
 def test_dump_data_sources_with_username_injection_attack_gets_escaped():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo', 'username': 'postgres; naughty-command', 'password': 'trustsome1'}]
     process = flexmock()
     flexmock(module).should_receive('make_environment').and_return(
@@ -657,6 +665,7 @@ def test_dump_data_sources_with_username_injection_attack_gets_escaped():
 
 
 def test_dump_data_sources_runs_pg_dump_with_directory_format():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo', 'format': 'directory'}]
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -717,6 +726,7 @@ def test_dump_data_sources_runs_pg_dump_with_directory_format():
 
 
 def test_dump_data_sources_runs_pg_dump_with_string_compression():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo', 'compression': 'winrar'}]
     processes = [flexmock()]
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
@@ -780,6 +790,7 @@ def test_dump_data_sources_runs_pg_dump_with_string_compression():
 
 
 def test_dump_data_sources_runs_pg_dump_with_integer_compression():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo', 'compression': 0}]
     processes = [flexmock()]
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
@@ -843,6 +854,7 @@ def test_dump_data_sources_runs_pg_dump_with_integer_compression():
 
 
 def test_dump_data_sources_runs_pg_dump_with_options():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo', 'options': '--stuff "foo bar"'}]
     process = flexmock()
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
@@ -903,6 +915,7 @@ def test_dump_data_sources_runs_pg_dump_with_options():
 
 
 def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'all'}]
     process = flexmock()
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
@@ -951,6 +964,7 @@ def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
 
 
 def test_dump_data_sources_runs_non_default_pg_dump():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo', 'pg_dump_command': 'special_pg_dump --compress *'}]
     process = flexmock()
     flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})

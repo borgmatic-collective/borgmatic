@@ -172,3 +172,19 @@ def test_convert_glob_patterns_to_borg_pattern_makes_multipart_regular_expressio
         module.convert_glob_patterns_to_borg_pattern(('/etc/foo/bar', '/bar/baz/quux'))
         == 're:(?s:etc/foo/bar)$|(?s:etc/foo/bar/.*)$|(?s:bar/baz/quux)$|(?s:bar/baz/quux/.*)$'
     )
+
+
+def test_raise_number_of_files_resource_limit_raises_soft_limit_to_hard_limit():
+    flexmock(module.resource).should_receive('getrlimit').and_return(5, 10)
+    flexmock(module.resource).should_receive('setrlimit').with_args(
+        module.resource.RLIMIT_NOFILE, (10, 10)
+    ).once()
+
+    module.raise_number_of_files_resource_limit()
+
+
+def test_raise_number_of_files_resource_limit_with_already_raised_soft_limit_does_nothing():
+    flexmock(module.resource).should_receive('getrlimit').and_return(10, 10)
+    flexmock(module.resource).should_receive('setrlimit').never()
+
+    module.raise_number_of_files_resource_limit()

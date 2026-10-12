@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import re
+import resource
 import shutil
 
 import borgmatic.actions.restore
@@ -151,3 +152,15 @@ def convert_glob_patterns_to_borg_pattern(patterns):
         for pattern in patterns
         for stripped in (pattern.lstrip('/'),)
     )
+
+
+def raise_number_of_files_resource_limit():
+    '''
+    Several borgmatic data source hooks use many file handles simultaneously, which can hit resource
+    limits with large volumes of source data (many databases, etc.). So this function raises the
+    soft file limit to the maximum.
+    '''
+    soft_limit, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)
+
+    if soft_limit < hard_limit:
+        resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))

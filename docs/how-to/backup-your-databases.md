@@ -778,3 +778,18 @@ option will not be active when backing up special files.
 <span class="minilink minilink-addedin">New in version 1.7.3</span> See
 Limitations above about borgmatic's automatic exclusion of special files to
 prevent Borg hangs.
+
+
+### Too many open files errors
+
+borgmatic's data source hooks open many named pipes simultaneously when sending
+database dumps to Borg, which can be more than your system resource limits
+allow. This often happens when you have hundreds of databases and you dump
+`all`.
+
+<span class="minilink minilink-addedin">New in version 2.1.11</span> borgmatic
+automatically raises its own soft limit for open file descriptors, which should
+solve the "Too many open files" issue for most use cases. However, if you've
+given borgmatic a too-low hard limit (e.g. in
+[`limits.conf`](https://wiki.archlinux.org/title/Limits.conf) or via `ulimit`),
+that can prevent borgmatic from raising its own resource limit.
