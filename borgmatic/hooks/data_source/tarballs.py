@@ -35,17 +35,6 @@ def use_streaming(databases, config):
     return False
 
 
-def write_manifest(dump_directory, members_metadata):
-    '''
-    TODO
-    '''
-    with open(f'{dump_directory}_manifest.json', 'w') as metadata_file:
-        metadata_file.write(json.dumps(members_metadata))
-
-
-STREAM_BLOCK_SIZE = 4096
-
-
 def dump_data_sources(
     tarballs,
     config,
@@ -55,13 +44,14 @@ def dump_data_sources(
     dry_run,
 ):
     '''
-    Extract the given tarballs to a temporary directory on disk. The tarballs are supplied as a
-    sequence of configuration dicts, as per the configuration schema. Use the given borgmatic
-    runtime directory to construct the destination path.
+    Given a sequence of tarballs configuration dicts, a top-level configuration dict, a sequence of
+    configuration file paths (ignored), the borgmatic runtime directory, a patterns list, and
+    whether this is a dry run, stream all the members of the given tarballs to named pipes so that
+    Borg can ingest them. Use the given borgmatic runtime directory to construct the destination
+    path for the pipes.
 
-    Return an empty sequence, since there are no ongoing dump processes from this hook. Also append
-    the path of the temporary directory to the given patterns list, so the extracted tarballs
-    actually get backed up.
+    Return a sequence containing the ongoing untarring process. Also append the path of the pipe
+    directory to the given patterns list, so the extracted tarballs actually get backed up.
     '''
     dry_run_label = ' (dry run; not actually extracting anything)' if dry_run else ''
     processes = []
@@ -97,7 +87,7 @@ def dump_data_sources(
         tar = tarfile.open(tarball_path)
         members_metadata = {}
 
-        # Create a named pipe per member for streaming directory to Borg.
+        # Create a named pipe per member for streaming directly to Borg.
         for member in tar:
             member_extract_path = os.path.join(dump_directory, member.name)
             member_metadata = member.get_info()
@@ -110,11 +100,16 @@ def dump_data_sources(
 
             dump.create_named_pipe_for_dump(member_extract_path)
 
-        write_manifest(dump_directory, members_metadata)
+        with open(f'{dump_directory}_manifest.json', 'w') as metadata_file:
+            metadata_file.write(json.dumps(members_metadata))
 
     if dry_run:
         return ()
 
+    # Start untarring by using Python to invoke this script file itself, which calls
+    # stream_tarballs() in a new process. It works this way so that it adheres to the same model as
+    # all the database-oriented hooks, which also spin up a new process to stream data directly to
+    # Borg.
     stream_process = execute_command(
         (sys.executable, '-m', 'borgmatic.hooks.data_source.tarballs'),
         run_to_completion=False,
@@ -137,17 +132,24 @@ def dump_data_sources(
     return (stream_process,)
 
 
+STREAM_BLOCK_SIZE = 4096
+
+
 def stream_member(tar_file, dump_directory, member, read_lock):
     '''
-    TODO
+    Given an open tarball as a as a tarfile.TarFile instance, a dump directory path containing
+    member named pipes, a member of the tarball as a tarfile.TarInfo instance, and a threading.Lock
+    instance to use for reading from the tarball, stream the given member's data to the
+    corresponding named pipe.
+
+    Borg can't include symlinks/hardlinks properly—because "--read-special" (which is required for
+    the whole pipe scheme to work) dereferences them. So just leave links (and other special files)
+    as empty files and rely on the per-member metadata we include elsewhere to allow borgmatic to
+    recreate such members properly upon restore.
     '''
     extract_path = os.path.join(dump_directory, member.name)
     pipe = open(extract_path, 'wb')
 
-    # Borg can't include symlinks/hardlinks properly because "--read-special" (which is required for
-    # the whole pipe scheme to work) dereferences them. So just leave links (and other special
-    # files) as empty files and rely on the per-member metadata we include to allow borgmatic to
-    # recreate them properly upon restore.
     if not member.isfile():
         pipe.close()
         return
@@ -168,12 +170,22 @@ def stream_member(tar_file, dump_directory, member, read_lock):
 
 def stream_tarballs():
     '''
-    TODO
+    Given a BORGMATIC_TARBALLS_CONFIG environment variable containing a tarballs configuration dict
+    encoded as JSON and a BORGMATIC_RUNTIME_DIRECTORY environment variable containing the borgmatic
+    runtime directory, stream each member of each tarball through its own named pipe in the runtime
+    directory to Borg. It is assumed that these named pipes have already been created.
+
+    This function expects environment variables rather than standard arguments, because it expects
+    to be called across a process boundary rather than as a normal function.
     '''
     try:
         tarballs = json.loads(os.environ['BORGMATIC_TARBALLS_CONFIG'])
     except KeyError:
         raise ValueError('Expected BORGMATIC_TARBALLS_CONFIG environment variable is missing')
+    except json.JSONDecodeError as error:
+        raise ValueError(
+            f'Cannot read BORGMATIC_TARBALLS_CONFIG environment variable due to invalid JSON: {error}',
+        )
 
     try:
         borgmatic_runtime_directory = os.environ['BORGMATIC_RUNTIME_DIRECTORY']
@@ -189,10 +201,17 @@ def stream_tarballs():
         dump_directory = dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory), tarball_name, label=tarball.get('label')
         )
+
+        # Use a shared lock around reads of the source tar file, because such reads aren't thread
+        # safe.
         read_lock = threading.Lock()
 
         for member in tar_file:
             if not member.isdir():
+                # Use a separate thread per tar member, because writing to a named pipe necessarily
+                # blocks on Borg's reads, and Borg consumes each pipe sequentially, one at a time.
+                # So if we didn't use a separate thread per member, we'd have to somehow match
+                # Borg's exact pipe read order to avoid deadlocks.
                 threads.append(
                     threading.Thread(
                         target=stream_member, args=(tar_file, dump_directory, member, read_lock)
@@ -299,7 +318,6 @@ def extract_data_source_dump(
     )
 
 
-# TODO: Need to update all other data source hooks accordingly.
 def load_data_source_dump_manifest(
     hook_config,
     config,
@@ -313,7 +331,14 @@ def load_data_source_dump_manifest(
     borgmatic_runtime_directory,
 ):
     '''
-    TODO
+    Given a hook configuration dict, a top-level configuration dict, a repository dict, the local
+    Borg version, global arguments as an argparse.Namespace instance, the local Borg path, the
+    remote Borg path, the archive name containing the manifest, a data source dict, and the
+    borgmatic runtime directory, extract the manifest for the given data source from the archive,
+    parse it as JSON, and return the resulting dict.
+
+    The returned manifest is a map from the path of a file in an archive to the original source
+    tarball's TarInfo attributes for this member (as a dict).
     '''
     extract_process = borgmatic.borg.extract.extract_archive(
         dry_run=False,
@@ -341,7 +366,12 @@ def load_data_source_dump_manifest(
         extract_to_stdout=True,
     )
 
-    return json.load(extract_process.stdout)
+    try:
+        return json.load(extract_process.stdout)
+    except json.JSONDecodeError as error:
+        raise ValueError(
+            f'Cannot read tarball manifest from archive due to invalid JSON: {error}',
+        )
 
 
 MARKER_PATH_COMPONENTS = ['borgmatic', 'tarballs']
@@ -350,14 +380,32 @@ HOSTNAME_AND_DATA_SOURCE_NAME_PATH_COMPONENTS_COUNT = 2
 
 def strip_member_path_prefix(member_path):
     '''
-    TODO
+    Given a tar member path, strip off the portion of its path prefix that's stored in the Borg
+    archive but isn't in the original tarball. Return the resulting path or None if no prefix is
+    found.
+
+    For instance, let's say you've got a tarball containing the member path:
+
+       foo/bar/baz.txt
+
+    Which might get stored in the Borg archive at the path:
+
+       borgmatic/tarballs/localhost/example/foo/bar/baz.txt
+
+    This function strips off the "borgmatic/tarballs/localhost/example/" portion of that path,
+    leaving just the original tarball member path.
     '''
     path_components = member_path.split(os.path.sep)
 
-    # TODO: Handle the case of no match here.
     for index in range(len(path_components) - len(MARKER_PATH_COMPONENTS)):
-        if path_components[index: index + len(MARKER_PATH_COMPONENTS)] == MARKER_PATH_COMPONENTS:
-            return os.path.sep.join(path_components[index + len(MARKER_PATH_COMPONENTS) + HOSTNAME_AND_DATA_SOURCE_NAME_PATH_COMPONENTS_COUNT:])
+        if path_components[index : index + len(MARKER_PATH_COMPONENTS)] == MARKER_PATH_COMPONENTS:
+            return os.path.sep.join(
+                path_components[
+                    index
+                    + len(MARKER_PATH_COMPONENTS)
+                    + HOSTNAME_AND_DATA_SOURCE_NAME_PATH_COMPONENTS_COUNT :
+                ]
+            )
 
     return None
 
@@ -400,7 +448,10 @@ def restore_data_source_dump(
     # TODO: Somehow handle the dry run case.
     # Stream the "export-tar" from the Borg archive, rewrite it on-the-fly to add missing manifest
     # metadata, and write it out to a destination tarball on disk.
-    with tarfile.open(mode='r|', fileobj=extract_process.stdout) as source_tar, tarfile.open(destination_path, mode=f'x:{compression}') as destination_tar:
+    with (
+        tarfile.open(mode='r|', fileobj=extract_process.stdout) as source_tar,
+        tarfile.open(destination_path, mode=f'x:{compression}') as destination_tar,
+    ):
         for member in source_tar:
             member.name = strip_member_path_prefix(member.name)
             manifest_entry = manifest.get(member.name)
@@ -420,9 +471,13 @@ def restore_data_source_dump(
             for key, value in manifest_entry.items():
                 setattr(member, key, bytes([value]) if key == 'type' else value)
 
-            destination_tar.addfile(member, source_tar.extractfile(member) if member.isfile() else None)
+            destination_tar.addfile(
+                member, source_tar.extractfile(member) if member.isfile() else None
+            )
 
 
+# This is the entry point that data_source_dumps() uses when it spins up a new process to stream
+# tarballs to Borg.
 if __name__ == '__main__':  # pragma: no cover
     borgmatic.logger.configure_logging(logging.INFO, color_enabled=False)
     stream_tarballs()

@@ -535,12 +535,31 @@ def make_data_source_dump_patterns(
     )
 
 
+def load_data_source_dump_manifest(
+    hook_config,
+    config,
+    repository,
+    local_borg_version,
+    global_arguments,
+    local_path,
+    remote_path,
+    archive_name,
+    data_source,
+    borgmatic_runtime_directory,
+):  # pragma: no cover
+    '''
+    This hook doesn't use a per-dump manifest.
+    '''
+    return None
+
+
 def restore_data_source_dump(
     hook_config,
     config,
     data_source,
     dry_run,
     extract_process,
+    manifest,
     connection_params,
     borgmatic_runtime_directory,
 ):

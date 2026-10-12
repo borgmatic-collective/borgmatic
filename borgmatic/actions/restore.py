@@ -213,7 +213,6 @@ def restore_single_dump(
         data_source=data_source,
         dry_run=global_arguments.dry_run,
         extract_process=extract_process,
-        # TODO: Need to update all other data source hooks accordingly.
         manifest=manifest,
         connection_params=connection_params,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
