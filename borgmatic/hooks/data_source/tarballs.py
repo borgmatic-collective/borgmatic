@@ -58,6 +58,7 @@ def dump_data_sources(
     dumps_metadata = []
 
     logger.info(f'Extracting tarballs{dry_run_label}')
+    dump.raise_number_of_files_resource_limit()
 
     for tarball in tarballs:
         tarball_name = tarball.get('label', tarball['name'])
