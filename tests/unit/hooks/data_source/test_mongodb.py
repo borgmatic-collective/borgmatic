@@ -110,6 +110,7 @@ def test_make_password_config_file_without_password_makes_nothing():
 
 
 def test_dump_data_sources_runs_mongodump_for_each_database():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     processes = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -170,6 +171,7 @@ def test_dump_data_sources_runs_mongodump_for_each_database():
 
 
 def test_dump_data_sources_with_dry_run_skips_mongodump():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -198,6 +200,7 @@ def test_dump_data_sources_with_dry_run_skips_mongodump():
 
 
 def test_dump_data_sources_runs_mongodump_with_directory_format():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'foo', 'format': 'directory'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -247,6 +250,7 @@ def test_dump_data_sources_runs_mongodump_with_directory_format():
 
 
 def test_dump_data_sources_dumps_all_databases():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
     databases = [{'name': 'all'}]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')

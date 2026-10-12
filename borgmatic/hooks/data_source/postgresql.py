@@ -159,6 +159,7 @@ def dump_data_sources(
     dumps_metadata = []
 
     logger.info(f'Dumping PostgreSQL databases{dry_run_label}')
+    dump.raise_number_of_files_resource_limit()
     dump_path = make_dump_path(borgmatic_runtime_directory)
 
     for database in databases:

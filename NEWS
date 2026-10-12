@@ -5,6 +5,8 @@
    https://torsion.org/borgmatic/reference/configuration/data-sources/tarballs/
  * #1368: Fix a hang in which a database dump command spewing lots of output could send borgmatic
    into a loop. This was most prevalent with MongoDB.
+ * #1370: Fix "Too many open files" and "filedescriptor out of range in select()" errors when
+   dumping hundreds of databases.
  * Fix a Postgresql hook error when restoring a directory format database with an overridden
    hostname or port.
 

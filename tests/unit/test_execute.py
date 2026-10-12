@@ -397,7 +397,7 @@ def test_handle_log_record_without_last_lines_just_handles():
 
 
 def test_log_buffer_lines_without_buffer_readers_bails():
-    flexmock(module.select).should_receive('select').never()
+    flexmock(module.select).should_receive('poll').never()
 
     assert (
         tuple(
@@ -413,10 +413,11 @@ def test_log_buffer_lines_without_buffer_readers_bails():
 
 
 def test_log_buffer_lines_without_ready_buffers_bails():
-    buffer_readers = {flexmock(): flexmock()}
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return([], [], []).once()
+    buffer_readers = {flexmock(fileno=lambda: 5): flexmock()}
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(()).once()
 
     assert (
         tuple(
@@ -434,12 +435,15 @@ def test_log_buffer_lines_without_ready_buffers_bails():
 def test_log_buffer_lines_with_ready_buffer_and_running_process_handles_each_log_line():
     process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
     buffer_readers = {
-        flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
+        flexmock(fileno=lambda: 5): module.Buffer_reader(
+            lines=iter((('hi', 'there'),)), process=process
+        )
     }
     process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
     flexmock(module).should_receive('parse_log_line').and_return(flexmock())
     flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).twice()
 
@@ -459,12 +463,15 @@ def test_log_buffer_lines_with_ready_buffer_and_running_process_handles_each_log
 def test_log_buffer_lines_with_ready_buffer_and_capture_process_yields_each_line():
     process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
     buffer_readers = {
-        flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
+        flexmock(fileno=lambda: 5): module.Buffer_reader(
+            lines=iter((('hi', 'there'),)), process=process
+        )
     }
     process_metadatas = {process: module.Process_metadata(last_lines=[], capture=True)}
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
     flexmock(module).should_receive('parse_log_line').and_return(flexmock())
     flexmock(module).should_receive('handle_log_record').and_return(
         flexmock(levelno=None, getMessage=lambda: 'message')
@@ -483,12 +490,15 @@ def test_log_buffer_lines_with_ready_buffer_and_capture_process_yields_each_line
 def test_log_buffer_lines_with_ready_buffer_and_same_log_level_and_capture_process_yields_each_line():
     process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
     buffer_readers = {
-        flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
+        flexmock(fileno=lambda: 5): module.Buffer_reader(
+            lines=iter((('hi', 'there'),)), process=process
+        )
     }
     process_metadatas = {process: module.Process_metadata(last_lines=[], capture=True)}
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
     flexmock(module).should_receive('parse_log_line').and_return(flexmock())
     flexmock(module).should_receive('handle_log_record').and_return(
         flexmock(levelno=module.logging.INFO, getMessage=lambda: 'message')
@@ -507,12 +517,15 @@ def test_log_buffer_lines_with_ready_buffer_and_same_log_level_and_capture_proce
 def test_log_buffer_lines_with_ready_buffer_and_higher_log_level_and_capture_process_does_not_yield_each_line():
     process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
     buffer_readers = {
-        flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
+        flexmock(fileno=lambda: 5): module.Buffer_reader(
+            lines=iter((('hi', 'there'),)), process=process
+        )
     }
     process_metadatas = {process: module.Process_metadata(last_lines=[], capture=True)}
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
     flexmock(module).should_receive('parse_log_line').and_return(flexmock())
     flexmock(module).should_receive('handle_log_record').and_return(
         flexmock(levelno=module.logging.DEBUG, getMessage=lambda: 'message')
@@ -534,12 +547,15 @@ def test_log_buffer_lines_with_ready_buffer_and_higher_log_level_and_capture_pro
 def test_log_buffer_lines_with_ready_buffer_and_log_level_equal_to_output_log_level_and_capture_process_yields_each_line():
     process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
     buffer_readers = {
-        flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
+        flexmock(fileno=lambda: 5): module.Buffer_reader(
+            lines=iter((('hi', 'there'),)), process=process
+        )
     }
     process_metadatas = {process: module.Process_metadata(last_lines=[], capture=True)}
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
     flexmock(module).should_receive('parse_log_line').and_return(flexmock())
     flexmock(module).should_receive('handle_log_record').and_return(
         flexmock(levelno=module.logging.INFO, getMessage=lambda: 'message')
@@ -556,7 +572,7 @@ def test_log_buffer_lines_with_ready_buffer_and_log_level_equal_to_output_log_le
 
 
 def test_log_buffer_lines_with_ready_buffer_and_finished_process_vents_other_processes():
-    process_stdout = flexmock()
+    process_stdout = flexmock(fileno=lambda: 5)
     process = flexmock(poll=lambda: 0, stdout=process_stdout, stderr=flexmock(), args=flexmock())
     other_process = flexmock(
         poll=lambda: None, stdout=flexmock(), stderr=flexmock(), args=flexmock()
@@ -566,9 +582,10 @@ def test_log_buffer_lines_with_ready_buffer_and_finished_process_vents_other_pro
         process: module.Process_metadata(last_lines=[], capture=False),
         other_process: module.Process_metadata(last_lines=[], capture=False),
     }
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
     flexmock(module).should_receive('read_lines').and_return(iter((('there',),))).once()
     flexmock(module).should_receive('parse_log_line').and_return(flexmock())
     flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).once()
@@ -595,7 +612,7 @@ def test_log_buffer_lines_with_ready_buffer_and_finished_process_vents_other_pro
 
 
 def test_log_buffer_lines_with_ready_buffer_and_finished_process_does_not_vent_other_finished_processes():
-    process_stdout = flexmock()
+    process_stdout = flexmock(fileno=lambda: 5)
     process = flexmock(poll=lambda: 0, stdout=process_stdout, stderr=flexmock(), args=flexmock())
     other_process = flexmock(poll=lambda: 0, stdout=flexmock(), stderr=flexmock(), args=flexmock())
     buffer_readers = {process_stdout: module.Buffer_reader(lines=iter((('hi',),)), process=process)}
@@ -603,9 +620,10 @@ def test_log_buffer_lines_with_ready_buffer_and_finished_process_does_not_vent_o
         process: module.Process_metadata(last_lines=[], capture=False),
         other_process: module.Process_metadata(last_lines=[], capture=False),
     }
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
     flexmock(module).should_receive('read_lines').never()
     flexmock(module).should_receive('parse_log_line').and_return(flexmock())
     flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).once()
@@ -628,11 +646,14 @@ def test_log_buffer_lines_with_ready_buffer_and_finished_process_does_not_vent_o
 
 def test_log_buffer_lines_with_ready_eof_buffer_and_running_process_removes_it():
     process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
-    buffer_readers = {flexmock(): module.Buffer_reader(lines=iter(()), process=process)}
+    buffer_readers = {
+        flexmock(fileno=lambda: 5): module.Buffer_reader(lines=iter(()), process=process)
+    }
     process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
     flexmock(module).should_receive('parse_log_line').never()
     flexmock(module).should_receive('handle_log_record').never()
 
@@ -652,11 +673,14 @@ def test_log_buffer_lines_with_ready_eof_buffer_and_running_process_removes_it()
 
 def test_log_buffer_lines_with_ready_buffer_with_empty_line_skips_it():
     process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
-    buffer_readers = {flexmock(): module.Buffer_reader(lines=iter((('',),)), process=process)}
+    buffer_readers = {
+        flexmock(fileno=lambda: 5): module.Buffer_reader(lines=iter((('',),)), process=process)
+    }
     process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
     flexmock(module).should_receive('parse_log_line').never()
     flexmock(module).should_receive('handle_log_record').never()
 
@@ -677,16 +701,24 @@ def test_log_buffer_lines_with_multiple_ready_buffers_and_running_processes_hand
     process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
     other_process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
     buffer_readers = {
-        flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process),
-        flexmock(): module.Buffer_reader(lines=iter((('foo', 'bar'),)), process=other_process),
+        flexmock(fileno=lambda: 5): module.Buffer_reader(
+            lines=iter((('hi', 'there'),)), process=process
+        ),
+        flexmock(fileno=lambda: 6): module.Buffer_reader(
+            lines=iter((('foo', 'bar'),)), process=other_process
+        ),
     }
     process_metadatas = {
         process: module.Process_metadata(last_lines=[], capture=False),
         other_process: module.Process_metadata(last_lines=[], capture=False),
     }
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('register').with_args(6, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(
+        ((5, module.select.POLLIN), (6, module.select.POLLIN))
+    ).once()
     flexmock(module).should_receive('parse_log_line').and_return(flexmock())
     flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).times(4)
 
@@ -706,15 +738,23 @@ def test_log_buffer_lines_with_multiple_ready_buffers_and_running_processes_hand
 def test_log_buffer_lines_with_multiple_ready_buffers_from_same_running_process_handles_all_log_lines():
     process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
     buffer_readers = {
-        flexmock(): module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process),
-        flexmock(): module.Buffer_reader(lines=iter((('foo', 'bar'),)), process=process),
+        flexmock(fileno=lambda: 5): module.Buffer_reader(
+            lines=iter((('hi', 'there'),)), process=process
+        ),
+        flexmock(fileno=lambda: 6): module.Buffer_reader(
+            lines=iter((('foo', 'bar'),)), process=process
+        ),
     }
     process_metadatas = {
         process: module.Process_metadata(last_lines=[], capture=False),
     }
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('register').with_args(6, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(
+        ((5, module.select.POLLIN), (6, module.select.POLLIN))
+    ).once()
     flexmock(module).should_receive('parse_log_line').and_return(flexmock())
     flexmock(module).should_receive('handle_log_record').and_return(flexmock(levelno=10)).times(4)
 
@@ -732,15 +772,16 @@ def test_log_buffer_lines_with_multiple_ready_buffers_from_same_running_process_
 
 
 def test_log_buffer_lines_with_ready_stderr_buffer_and_running_process_elevates_stderr():
-    process_stderr = flexmock()
+    process_stderr = flexmock(fileno=lambda: 5)
     process = flexmock(poll=lambda: None, stderr=process_stderr, args=flexmock())
     buffer_readers = {
         process_stderr: module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
     }
     process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
     flexmock(module).should_receive('parse_log_line').with_args(
         line=str, log_level=object, elevate_stderr=True, borg_local_path=object, command=object
     ).and_return(flexmock()).twice()
@@ -760,15 +801,16 @@ def test_log_buffer_lines_with_ready_stderr_buffer_and_running_process_elevates_
 
 
 def test_log_buffer_lines_with_ready_stdout_buffer_and_running_process_does_not_elevate_stderr():
-    process_stdout = flexmock()
+    process_stdout = flexmock(fileno=lambda: 5)
     process = flexmock(poll=lambda: None, stdout=process_stdout, stderr=flexmock(), args=flexmock())
     buffer_readers = {
         process_stdout: module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
     }
     process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
     flexmock(module).should_receive('parse_log_line').with_args(
         line=str, log_level=object, elevate_stderr=False, borg_local_path=object, command=object
     ).and_return(flexmock()).twice()
@@ -788,15 +830,16 @@ def test_log_buffer_lines_with_ready_stdout_buffer_and_running_process_does_not_
 
 
 def test_log_buffer_lines_with_ready_stderr_buffer_and_capture_stderr_does_not_elevate_stderr():
-    process_stderr = flexmock()
+    process_stderr = flexmock(fileno=lambda: 5)
     process = flexmock(poll=lambda: None, stderr=process_stderr, args=flexmock())
     buffer_readers = {
         process_stderr: module.Buffer_reader(lines=iter((('hi', 'there'),)), process=process)
     }
     process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
-    flexmock(module.select).should_receive('select').with_args(
-        buffer_readers.keys(), [], []
-    ).and_return(list(buffer_readers.keys()), [], [])
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
     flexmock(module).should_receive('parse_log_line').with_args(
         line=str, log_level=object, elevate_stderr=False, borg_local_path=object, command=object
     ).and_return(flexmock()).twice()

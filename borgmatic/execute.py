@@ -261,9 +261,9 @@ def read_lines(buffer, process, line_separator='\n'):
     Given a Python buffer (like stdout) ready for reading, its process, and a line separator,
     repeatedly yield a tuple of (decoded) lines from the buffer until it reaches EOF.
 
-    It is assumed that this function's generator is used in conjunction with an external select()
-    call to know when to read more lines. Otherwise, the generator will busywait if it's called in a
-    tight loop.
+    It is assumed that this function's generator is used in conjunction with an external
+    select.poll() call to know when to read more lines. Otherwise, the generator will busywait if
+    it's called in a tight loop.
     '''
     data = b''
     encoded_separator = line_separator.encode()
@@ -326,9 +326,15 @@ def log_buffer_lines(
     if not buffer_readers:
         return
 
-    (ready_buffers, _, _) = select.select(buffer_readers.keys(), [], [])
+    poll = select.poll()
+    file_descriptor_to_buffer = {buffer.fileno(): buffer for buffer in buffer_readers}
 
-    for ready_buffer in ready_buffers:
+    for file_descriptor in file_descriptor_to_buffer:
+        poll.register(file_descriptor, select.POLLIN)
+
+    for ready_buffer in (
+        file_descriptor_to_buffer[file_descriptor] for file_descriptor, _ in poll.poll()
+    ):
         reader = buffer_readers[ready_buffer]
 
         # The "ready" process has exited, but it might be a pipe destination with other
