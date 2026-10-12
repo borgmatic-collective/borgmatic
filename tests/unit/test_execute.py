@@ -626,7 +626,7 @@ def test_log_buffer_lines_with_ready_buffer_and_finished_process_does_not_vent_o
     assert tuple(buffer_readers[process_stdout].lines) == ()
 
 
-def test_log_buffer_lines_with_ready_eof_buffer_and_running_process_skips_it():
+def test_log_buffer_lines_with_ready_eof_buffer_and_running_process_removes_it():
     process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
     buffer_readers = {flexmock(): module.Buffer_reader(lines=iter(()), process=process)}
     process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
@@ -647,6 +647,7 @@ def test_log_buffer_lines_with_ready_eof_buffer_and_running_process_skips_it():
         )
         == ()
     )
+    assert buffer_readers == {}
 
 
 def test_log_buffer_lines_with_ready_buffer_with_empty_line_skips_it():
