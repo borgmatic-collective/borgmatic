@@ -259,7 +259,7 @@ READ_CHUNK_SIZE = 4096
 def read_lines(buffer, process, line_separator='\n'):
     '''
     Given a Python buffer (like stdout) ready for reading, its process, and a line separator,
-    repeatedly yield a tuple of (decoded) lines from the buffer until the process has exited.
+    repeatedly yield a tuple of (decoded) lines from the buffer until it reaches EOF.
 
     It is assumed that this function's generator is used in conjunction with an external select()
     call to know when to read more lines. Otherwise, the generator will busywait if it's called in a
@@ -273,11 +273,8 @@ def read_lines(buffer, process, line_separator='\n'):
     while True:
         chunk = os.read(buffer.fileno(), READ_CHUNK_SIZE)
 
-        if not chunk:  # EOF
-            # The process is still running, so we keep running too.
-            if process.poll() is None:  # pragma: no cover
-                continue
-
+        # If we've reached EOF, there will never be anything more to read.
+        if not chunk:
             break
 
         data += chunk
@@ -352,6 +349,8 @@ def log_buffer_lines(
         try:
             lines = next(reader.lines)
         except StopIteration:
+            # This buffer has reached EOF, so now it's dead to us.
+            del buffer_readers[ready_buffer]
             continue
 
         for line in lines:
@@ -410,7 +409,8 @@ def raise_for_process_errors(
         # hanging. And then kill the process.
         for other_process in process_metadatas:
             if other_process.poll() is None:
-                other_process.stdout.read(0)
+                if other_process.stdout:
+                    other_process.stdout.read(0)
 
                 # Also kill child processes so they don't hang onto shared file descriptors and
                 # cause the draining below to hang.
@@ -789,7 +789,8 @@ def execute_command_with_processes(
         # And then kill the process and its children.
         for process in processes:
             if process.poll() is None:
-                process.stdout.read(0)
+                if process.stdout:
+                    process.stdout.read(0)
 
                 for child in psutil.Process(process.pid).children(recursive=True):
                     child.kill()

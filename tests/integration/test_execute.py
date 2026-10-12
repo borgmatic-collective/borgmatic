@@ -535,12 +535,12 @@ def test_log_outputs_with_no_output_logs_nothing():
     )
 
 
-def test_log_outputs_with_unfinished_process_re_polls():
+def test_log_outputs_with_unfinished_process_waits_for_it():
     flexmock(module.logger).should_receive('log').never()
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
 
     process = subprocess.Popen(['sleep', '0.001'], stdout=subprocess.PIPE)
-    flexmock(process).should_call('poll').at_least().times(3)
+    flexmock(process).should_call('poll').at_least().once()
     flexmock(module).should_receive('output_buffers_for_process').and_return((process.stdout,))
 
     assert (
