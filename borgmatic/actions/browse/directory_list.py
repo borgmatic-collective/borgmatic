@@ -67,7 +67,12 @@ def add_archive_paths(
 
     After all of this reshuffling, make sure the original highlighted option remains highlighted.
     '''
-    highlighted_option = directory_list.highlighted_option
+    # Textual 6.0.0+ has self.highlighted_option for this, but we want to support older versions.
+    highlighted_option = (
+        directory_list.options[directory_list.highlighted]
+        if directory_list.highlighted is not None
+        else None
+    )
     original_options_count = len(directory_list.options)
 
     sorted_options = sorted(
@@ -95,7 +100,8 @@ def add_archive_paths(
         return
 
     # Retain the highlighted option position even as other options load around it.
-    directory_list.set_options(sorted_options)
+    directory_list.clear_options()
+    directory_list.add_options(sorted_options)
     directory_list.highlighted = (
         directory_list.get_option_index(highlighted_option.id)
         if highlighted_option and directory_list.highlighted_option_changed
