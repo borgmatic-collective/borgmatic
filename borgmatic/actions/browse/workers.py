@@ -75,18 +75,23 @@ def record_path(archive_path, hierarchy, path_components):
 
     Note that the hierarchy is modified in place, so any existing paths there are retained.
     '''
-    if len(path_components) == 1:
-        if archive_path.path_type == borgmatic.actions.browse.archive.Path_type.DIRECTORY.value:
-            hierarchy.setdefault(path_components[0], Directory())
-            return
+    directory = hierarchy
 
-        hierarchy[path_components[0]] = archive_path
-        return
+    for component in path_components[:-1]:
+        child = directory.get(component)
 
-    directory = hierarchy.setdefault(path_components[0], Directory())
-    directory.size += archive_path.size
+        if child is None:
+            child = directory[component] = Directory()
 
-    record_path(archive_path, directory, path_components[1:])
+        child.size += archive_path.size
+        directory = child
+
+    leaf = path_components[-1]
+
+    if archive_path.path_type == borgmatic.actions.browse.archive.Path_type.DIRECTORY.value:
+        directory.setdefault(leaf, Directory())
+    else:
+        directory[leaf] = archive_path
 
 
 def get_paths(hierarchy, path_components, full_path_components=None):
