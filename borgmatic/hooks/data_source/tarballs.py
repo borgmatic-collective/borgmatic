@@ -423,6 +423,7 @@ EXTENSION_TO_TARFILE_COMPRESSION = {
     'zstd': 'zst',
     'zst': 'zst',
     'tzst': 'zst',
+    'tar': '',
 }
 
 
@@ -457,7 +458,7 @@ def restore_data_source_dump(
     try:
         compression = EXTENSION_TO_TARFILE_COMPRESSION[file_extension]
     except KeyError:
-        raise ValueError('Unknown tarball compression for {destination_path}')
+        raise ValueError(f'Unknown tarball compression for {destination_path}')
 
     # During a dry run, just write the resulting tarball to memory and then throw it away.
     if dry_run:

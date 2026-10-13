@@ -2623,7 +2623,7 @@ properties:
                     description: |
                         Path to the tarball file to backup. If relative, it is
                         relative to the current working directory.
-                    example: /var/lib/sqlite/users.db
+                    example: /var/lib/vz/dump/vzdump-vm.tar
                 label:
                     type: string
                     description: |
@@ -2634,7 +2634,7 @@ properties:
                     description: |
                         Path to the tarball file to restore to. Defaults to the
                         "path" option.
-                    example: /var/lib/sqlite/users.db
+                    example: /var/lib/vz/dump/vzdump-vm.tar
         description: |
             List of one or more tarballs to include in backups. borgmatic adds
             such a tarball to your source directories at runtime and streams it
