@@ -86,7 +86,7 @@ def export_tar_archive(
     return execute_command(
         full_command,
         output_file=output_file,
-        run_to_completion=not capture_stdout,
+        run_to_completion=bool(output_file != subprocess.PIPE),
         output_log_level=output_log_level,
         environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),

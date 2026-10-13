@@ -331,12 +331,26 @@ def test_restore_single_dump_extracts_and_restores_single_file_dump():
         borgmatic_runtime_directory=object,
     ).once()
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').with_args(
+        function_name='load_data_source_dump_manifest',
+        config=object,
+        hook_name=object,
+        repository=object,
+        local_borg_version=object,
+        global_arguments=object,
+        local_path=object,
+        remote_path=object,
+        archive_name=object,
+        data_source=object,
+        borgmatic_runtime_directory=object,
+    ).once()
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').with_args(
         function_name='restore_data_source_dump',
         config=object,
         hook_name=object,
         data_source=object,
         dry_run=object,
         extract_process=object,
+        manifest=object,
         connection_params=object,
         borgmatic_runtime_directory=object,
     ).once()

@@ -511,6 +511,7 @@ def test_restore_data_source_dump_executes_restore_command():
         data_source=data_source,
         dry_run=False,
         extract_process=None,
+        manifest=None,
         connection_params=connection_params,
         borgmatic_runtime_directory='/tmp',
     )
@@ -535,6 +536,7 @@ def test_restore_data_source_dump_with_dry_run_skips_command_execution():
         data_source=data_source,
         dry_run=True,
         extract_process=None,
+        manifest=None,
         connection_params=connection_params,
         borgmatic_runtime_directory='/tmp',
     )

@@ -529,6 +529,7 @@ def restore_data_source_dump(
     data_source,
     dry_run,
     extract_process,
+    manifest,
     connection_params,
     borgmatic_runtime_directory,
 ):  # pragma: no cover

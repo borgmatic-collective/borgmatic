@@ -1827,6 +1827,7 @@ def test_restore_data_source_dump_runs_mariadb_to_restore():
         data_source={'name': 'foo'},
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,
@@ -1869,6 +1870,7 @@ def test_restore_data_source_dump_runs_mariadb_with_options():
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,
@@ -1913,6 +1915,7 @@ def test_restore_data_source_dump_runs_non_default_mariadb_with_options():
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,
@@ -1966,6 +1969,7 @@ def test_restore_data_source_dump_runs_mariadb_with_hostname_and_port():
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,
@@ -2015,6 +2019,7 @@ def test_restore_data_source_dump_runs_mariadb_with_socket_path():
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,
@@ -2063,6 +2068,7 @@ def test_restore_data_source_dump_runs_mariadb_with_tls():
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,
@@ -2111,6 +2117,7 @@ def test_restore_data_source_dump_runs_mariadb_without_tls():
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,
@@ -2155,6 +2162,7 @@ def test_restore_data_source_dump_runs_mariadb_with_username_and_password():
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,
@@ -2204,6 +2212,7 @@ def test_restore_data_source_with_environment_password_transport_skips_defaults_
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,
@@ -2270,6 +2279,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': 'clihost',
             'port': 'cliport',
@@ -2341,6 +2351,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,
@@ -2373,6 +2384,7 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
         data_source={'name': 'foo'},
         dry_run=True,
         extract_process=flexmock(),
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,

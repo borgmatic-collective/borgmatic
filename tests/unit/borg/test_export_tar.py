@@ -13,7 +13,7 @@ def insert_execute_command_mock(
     working_directory=None,
     borg_local_path='borg',
     borg_exit_codes=None,
-    capture=True,
+    output_file=None,
 ):
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
@@ -21,7 +21,8 @@ def insert_execute_command_mock(
     )
     flexmock(module).should_receive('execute_command').with_args(
         command,
-        output_file=None if capture else module.DO_NOT_CAPTURE,
+        output_file=output_file,
+        run_to_completion=bool(output_file != module.subprocess.PIPE),
         output_log_level=output_log_level,
         environment=None,
         working_directory=working_directory,
@@ -405,7 +406,9 @@ def test_export_tar_archive_calls_borg_with_stdout_destination_path():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         ('repo::archive',),
     )
-    insert_execute_command_mock(('borg', 'export-tar', 'repo::archive', '-'), capture=False)
+    insert_execute_command_mock(
+        ('borg', 'export-tar', 'repo::archive', '-'), output_file=module.DO_NOT_CAPTURE
+    )
     insert_logging_mock(logging.WARNING)
 
     module.export_tar_archive(
@@ -417,6 +420,30 @@ def test_export_tar_archive_calls_borg_with_stdout_destination_path():
         config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(),
+    )
+
+
+def test_export_tar_archive_with_capture_stdout_calls_borg_with_stdout_destination_path_and_captures_output():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',),
+    )
+    insert_execute_command_mock(
+        ('borg', 'export-tar', 'repo::archive', '-'), output_file=module.subprocess.PIPE
+    )
+    insert_logging_mock(logging.WARNING)
+
+    module.export_tar_archive(
+        dry_run=False,
+        repository_path='repo',
+        archive='archive',
+        paths=None,
+        destination_path='-',
+        config={},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        capture_stdout=True,
     )
 
 

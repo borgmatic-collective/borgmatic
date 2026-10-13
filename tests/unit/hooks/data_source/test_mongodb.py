@@ -623,6 +623,7 @@ def test_restore_data_source_dump_runs_mongorestore():
         data_source={'name': 'foo'},
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,
@@ -661,6 +662,7 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,
@@ -689,6 +691,7 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
         data_source={'name': 'foo'},
         dry_run=True,
         extract_process=flexmock(),
+        manifest=None,
         connection_params={
             'hostname': None,
             'port': None,

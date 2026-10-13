@@ -359,6 +359,7 @@ def test_restore_data_source_dump_restores_database():
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={'restore_path': None},
         borgmatic_runtime_directory='/run/borgmatic',
     )
@@ -398,6 +399,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_restores_database():
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={'restore_path': None},
         borgmatic_runtime_directory='/run/borgmatic',
     )
@@ -435,6 +437,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         data_source={'name': 'database'},
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={'restore_path': 'cli/path/to/database'},
         borgmatic_runtime_directory='/run/borgmatic',
     )
@@ -475,6 +478,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_with_connection_params
         },
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={'restore_path': 'cli/path/to/database'},
         borgmatic_runtime_directory='/run/borgmatic',
     )
@@ -511,6 +515,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={'restore_path': None},
         borgmatic_runtime_directory='/run/borgmatic',
     )
@@ -549,6 +554,7 @@ def test_restore_data_source_dump_runs_non_default_sqlite_without_connection_par
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={'restore_path': None},
         borgmatic_runtime_directory='/run/borgmatic',
     )
@@ -567,6 +573,7 @@ def test_restore_data_source_dump_does_not_restore_database_if_dry_run():
         data_source={'name': 'database'},
         dry_run=True,
         extract_process=extract_process,
+        manifest=None,
         connection_params={'restore_path': None},
         borgmatic_runtime_directory='/run/borgmatic',
     )
