@@ -32,9 +32,9 @@ def get_default_port(databases, config):  # pragma: no cover
 
 def use_streaming(databases, config):
     '''
-    Return whether dump streaming is used for this hook. (Spoiler: It isn't.)
+    Return whether dump streaming is used for this hook.
     '''
-    return False
+    return True
 
 
 def dump_data_sources(
