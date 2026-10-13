@@ -5,6 +5,8 @@
    dumping hundreds of databases.
  * #1371: Fix an attribute error when running the experimental "browse" action with older versions
    of the Textual library.
+ * In the browse action, show a size for every file and directory, with directory sizes summed from
+   the sizes of the files beneath them.
 
 2.1.10
  * #1185: Add support for setting top-level configuration options under each repository, making

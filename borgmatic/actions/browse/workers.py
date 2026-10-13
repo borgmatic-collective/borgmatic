@@ -12,6 +12,15 @@ logger = logging.getLogger('__name__')
 LOADING_DONE = object()
 
 
+class Directory(dict):
+    '''
+    A dict subclass for a directory in an archive path hierarchy, with a "size" attribute holding
+    the cumulative size of the files beneath it.
+    '''
+
+    size = 0
+
+
 class Archive_loaded(textual.signal.Signal):
     '''
     A signal that publishes when each subsequent archive is loaded from a repository, intended for
@@ -48,19 +57,33 @@ def record_path(archive_path, hierarchy, path_components):
     '''
     Given an Archive_path instance, a dict capturing a filesystem hierarchy of paths, and a tuple of
     path components for the archive path, set the archive path into the hierarchy data structure.
+    Also add the archive path's size to the cumulative size of each directory containing it.
 
-    For instance, if given an archive path and path components representing "foo/bar/baz.txt",
-    produce a hierarchy that looks like:
+    For instance, if given an Archive_path of 3 bytes and path components representing
+    "foo/bar/baz.txt", produce a hierarchy that looks like:
 
-        {'foo': {'bar': {'baz.txt': Archive_path('-', 'foo/bar/baz.txt', '')}}}
+        {
+            'foo': Directory({
+                'bar': Directory({'baz.txt': Archive_path('-', 'foo/bar/baz.txt', '', 3)})
+            })
+        }
+
+    ... with the cumulative size of each containing directory incremented by 3.
 
     Note that the hierarchy is modified in place, so any existing paths there are retained.
     '''
     if len(path_components) == 1:
-        hierarchy[path_components[0]] = {} if archive_path.path_type == 'd' else archive_path
+        if archive_path.path_type == borgmatic.actions.browse.archive.Path_type.DIRECTORY.value:
+            hierarchy.setdefault(path_components[0], Directory())
+            return
+
+        hierarchy[path_components[0]] = archive_path
         return
 
-    record_path(archive_path, hierarchy.setdefault(path_components[0], {}), path_components[1:])
+    directory = hierarchy.setdefault(path_components[0], Directory())
+    directory.size += archive_path.size
+
+    record_path(archive_path, directory, path_components[1:])
 
 
 def get_paths(hierarchy, path_components, full_path_components=None):
@@ -68,16 +91,17 @@ def get_paths(hierarchy, path_components, full_path_components=None):
     Given a dict capturing a filesystem hierarchy of paths (or a subset thereof), a tuple of path
     components for a directory path relative to the hierarchy root, and an optional tuple of
     *absolute* path components for the same path (if different), return a generator of the
-    contained file and directory Archive_path instances from the hierarchy.
+    contained file and directory Archive_path instances from the hierarchy. Directory archive paths
+    carry the cumulative size of the files beneath them.
 
     For instance, given the following hierarchy:
 
-        {'foo': {'bar': {'baz.txt': Archive_path('-', 'foo/bar/baz.txt', ''), 'quux': {}}}}
+        {'foo': {'bar': {'baz.txt': Archive_path('-', 'foo/bar/baz.txt', '', 3), 'quux': {}}}}
 
     ... and path components of ('foo', 'bar'), return a generator with the following:
 
-        * Archive_path('-', 'foo/bar/baz.txt', '')
-        * Archive_path('d', 'foo/bar/quux', '')
+        * Archive_path('-', 'foo/bar/baz.txt', '', 3)
+        * Archive_path('d', 'foo/bar/quux', '', 0)
 
     The given absolute path components are use to construct directory paths like that last archive
     path.
@@ -91,7 +115,10 @@ def get_paths(hierarchy, path_components, full_path_components=None):
                 archive_path
                 if isinstance(archive_path, borgmatic.actions.browse.archive.Archive_path)
                 else borgmatic.actions.browse.archive.Archive_path(
-                    'd', os.path.join(*full_path_components, component), ''
+                    'd',
+                    os.path.join(*full_path_components, component),
+                    '',
+                    archive_path.size,
                 )
                 for component, archive_path in hierarchy[path_components[0]].items()
             )
@@ -102,6 +129,27 @@ def get_paths(hierarchy, path_components, full_path_components=None):
         return get_paths(hierarchy[path_components[0]], path_components[1:], full_path_components)
     except KeyError:
         raise ValueError(f'Unknown directory: {path_components[0]}')
+
+
+def get_path_size(hierarchy, path_components):
+    '''
+    Given a dict capturing a filesystem hierarchy of paths (or a subset thereof) and a tuple of path
+    components for a directory or file within it, return the cumulative size of that path—the sum
+    of the file sizes beneath it for a directory. If no path components are given, return the
+    cumulative size of the entire hierarchy. Return 0 if the given path can't be found.
+    '''
+    if not path_components:
+        return sum(node.size for node in hierarchy.values())
+
+    node = hierarchy
+
+    for component in path_components:
+        if not isinstance(node, dict) or component not in node:
+            return 0
+
+        node = node[component]
+
+    return node.size
 
 
 class Archive_path_loaded(textual.signal.Signal):
@@ -126,16 +174,17 @@ class Archive_path_loaded(textual.signal.Signal):
     def publish(self, archive_path):
         '''
         Publish the given archive path to subscribers and record its path locally. But if the
-        archive path is actually LOADING_DONE, then record loading as complete.
+        archive path is actually LOADING_DONE, then record loading as complete. Record paths before
+        publishing them so that subscribers see up-to-date directory sizes.
         '''
-        super().publish(archive_path)
-
         if archive_path is LOADING_DONE:
             self.complete = True
         else:
             record_path(
                 archive_path, self.path_hierarchy, archive_path.file_path.split(os.path.sep)
             )
+
+        super().publish(archive_path)
 
 
 @textual.work(thread=True)

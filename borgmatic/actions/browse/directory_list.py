@@ -2,9 +2,11 @@ import os
 
 import textual.widgets
 
+import borgmatic.actions.browse.archive
 import borgmatic.actions.browse.bindings
 import borgmatic.actions.browse.icons
 import borgmatic.actions.browse.loading
+import borgmatic.actions.browse.sizes
 import borgmatic.actions.browse.workers
 
 
@@ -35,11 +37,11 @@ def get_relative_archive_path_components(archive_path, current_directory_path_co
     return archive_path_components[len(current_directory_path_components) :]
 
 
-def make_directory_list_option(archive_path, relative_path_components):
+def make_directory_list_option(archive_path, relative_path_components, size):
     '''
-    Given an Archive_path instance and a tuple of relative path components for it, make a
-    textual.widgets.option_list.Option for the path. Use an the icon based on whether this looks
-    like a terminal filename or a directory.
+    Given an Archive_path instance, a tuple of relative path components for it, and a size in bytes
+    for the path, make a textual.widgets.option_list.Option for the path. Use an the icon based on
+    whether this looks like a terminal filename or a directory, and append a human-readable size.
     '''
     pieces = (
         borgmatic.actions.browse.icons.PATH_TYPE_ICONS.get(
@@ -49,7 +51,8 @@ def make_directory_list_option(archive_path, relative_path_components):
     ) + (('→', archive_path.link_target) if archive_path.link_target else ())
 
     return textual.widgets.option_list.Option(
-        prompt=' '.join(pieces), id=relative_path_components[0]
+        prompt=' '.join((*pieces, borgmatic.actions.browse.sizes.format_size(size))),
+        id=relative_path_components[0],
     )
 
 
@@ -63,7 +66,8 @@ def add_archive_paths(
     '''
     Given a DirectoryList instance, a configuration dict, a repository dict, an archive name, and a
     sequence of ArchivePath instances, add the paths to the directory list as options, sorting and
-    deduplicating the resulting directory list's options.
+    deduplicating the resulting directory list's options. For paths that already have options,
+    instead update their displayed sizes, since directory sizes grow as more archive paths load.
 
     After all of this reshuffling, make sure the original highlighted option remains highlighted.
     '''
@@ -73,31 +77,46 @@ def add_archive_paths(
         if directory_list.highlighted is not None
         else None
     )
-    original_options_count = len(directory_list.options)
+    new_options = []
+
+    for archive_path in archive_paths:
+        relative_path_components = get_relative_archive_path_components(
+            archive_path, directory_list.path_components
+        )
+
+        # If the loaded path doesn't belong to this directory list, we don't care about it.
+        if not relative_path_components:
+            continue
+
+        option_id = relative_path_components[0]
+
+        # A directory's cumulative size lives in the hierarchy rather than in the archive listing,
+        # which reports directories themselves as zero-sized.
+        size = (
+            borgmatic.actions.browse.workers.get_path_size(
+                directory_list.path_loaded.path_hierarchy,
+                (*directory_list.path_components, option_id),
+            )
+            if len(relative_path_components) > 1
+            or archive_path.path_type == borgmatic.actions.browse.archive.Path_type.DIRECTORY.value
+            else archive_path.size
+        )
+        option = make_directory_list_option(archive_path, relative_path_components, size)
+
+        if option_id in directory_list._id_to_option:
+            directory_list.replace_option_prompt(option_id, option.prompt)
+        else:
+            new_options.append(option)
+
+    # If there aren't actually any new options to add, we're done after the size updates above.
+    if not new_options:
+        return
 
     sorted_options = sorted(
-        (
-            *directory_list.options,
-            *(
-                make_directory_list_option(archive_path, relative_path_components)
-                for archive_path in archive_paths
-                for relative_path_components in (
-                    get_relative_archive_path_components(
-                        archive_path,
-                        directory_list.path_components,
-                    ),
-                )
-                if relative_path_components
-                if relative_path_components[0] not in directory_list._id_to_option
-            ),
-        ),
+        (*directory_list.options, *new_options),
         # The loading indicator "option" always goes to the bottom.
         key=lambda option: ((option.id == 'loading-indicator'), option.prompt),
     )
-
-    # If there aren't actually any options to add (due to deduplication), bail.
-    if len(sorted_options) == original_options_count:
-        return
 
     # Retain the highlighted option position even as other options load around it.
     directory_list.clear_options()
@@ -134,15 +153,6 @@ class Directory_list(textual.widgets.OptionList):
 
         super().__init__(classes='panel')
 
-        self.border_title = ' '.join(
-            (
-                '📁',
-                os.path.sep.join(self.path_components)
-                if self.path_components
-                else f'{archive_name}',
-            )
-        )
-
         if self.path_components:
             self.add_option(
                 textual.widgets.option_list.Option(
@@ -154,6 +164,8 @@ class Directory_list(textual.widgets.OptionList):
         self.path_loaded = path_loaded or borgmatic.actions.browse.workers.Archive_path_loaded(
             self, 'archive path loaded'
         )
+
+        self.update_border_title()
 
         if not self.path_loaded.complete:
             self.timer = borgmatic.actions.browse.loading.add_inline_loading_indicator(self)
@@ -189,6 +201,27 @@ class Directory_list(textual.widgets.OptionList):
                 archive_name=self.archive_name,
             )
 
+        self.update_border_title()
+
+    def update_border_title(self):
+        '''
+        Update this directory list's border title with the cumulative size of the directory it
+        displays (or the entire archive, for a root directory list).
+        '''
+        self.border_title = ' '.join(
+            (
+                '📁',
+                os.path.sep.join(self.path_components)
+                if self.path_components
+                else f'{self.archive_name}',
+                borgmatic.actions.browse.sizes.format_size(
+                    borgmatic.actions.browse.workers.get_path_size(
+                        self.path_loaded.path_hierarchy, self.path_components
+                    )
+                ),
+            )
+        )
+
     def on_archive_path_loaded(self, data):
         '''
         When an archive path loads, add it as an option to this directory list. But if we get a
@@ -197,6 +230,7 @@ class Directory_list(textual.widgets.OptionList):
         if data is borgmatic.actions.browse.workers.LOADING_DONE:
             self.timer.stop()
             self.remove_option('loading-indicator')
+            self.update_border_title()
             return
 
         add_archive_paths(
@@ -206,6 +240,8 @@ class Directory_list(textual.widgets.OptionList):
             archive_name=self.archive_name,
             archive_paths=(data,),
         )
+
+        self.update_border_title()
 
     def on_option_list_option_highlighted(self, event):
         '''

@@ -76,7 +76,7 @@ def test_make_next_panel_with_root_directory_list_and_selected_directory_option_
     flexmock(borgmatic.actions.browse.workers).should_receive('Archive_path_loaded').replace_with(
         flexmock(
             path_hierarchy={
-                'etc': {},
+                'etc': borgmatic.actions.browse.workers.Directory(),
             },
             complete=False,
         ),
@@ -105,9 +105,11 @@ def test_make_next_panel_with_non_root_directory_list_and_selected_directory_opt
     flexmock(borgmatic.actions.browse.workers).should_receive('Archive_path_loaded').replace_with(
         flexmock(
             path_hierarchy={
-                'etc': {
-                    'borgmatic': {},
-                },
+                'etc': borgmatic.actions.browse.workers.Directory(
+                    {
+                        'borgmatic': borgmatic.actions.browse.workers.Directory(),
+                    },
+                ),
             },
             complete=False,
         ),
@@ -167,13 +169,17 @@ def test_make_next_panel_with_non_root_directory_list_and_selected_file_option_r
     flexmock(borgmatic.actions.browse.workers).should_receive('Archive_path_loaded').replace_with(
         flexmock(
             path_hierarchy={
-                'etc': {
-                    'borgmatic': {
-                        'config.yaml': borgmatic.actions.browse.archive.Archive_path(
-                            '-', 'config.yaml', ''
+                'etc': borgmatic.actions.browse.workers.Directory(
+                    {
+                        'borgmatic': borgmatic.actions.browse.workers.Directory(
+                            {
+                                'config.yaml': borgmatic.actions.browse.archive.Archive_path(
+                                    '-', 'config.yaml', ''
+                                ),
+                            },
                         ),
                     },
-                },
+                ),
             },
             complete=False,
         ),

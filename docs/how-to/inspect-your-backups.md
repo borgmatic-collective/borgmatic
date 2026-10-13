@@ -173,7 +173,11 @@ borgmatic browse
 
 This launches a console UI where you can select a borgmatic configuration file
 (if there's more than one), select a Borg repository, select an archive in that
-repository, and even browse the backed up files in that archive.
+repository, and even browse the backed up files in that archive. Each file and
+directory is shown with its size, where a directory's size is the cumulative
+size of the files beneath it. These sizes are the apparent sizes of the backed
+up files (as opposed to on-disk usage), so they can differ from those reported
+by `du`.
 
 Use the keyboard or the mouse to navigate the UI. The footer at the bottom of
 the screen shows some of the available keys. Logs show up directly in the UI at

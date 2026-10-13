@@ -17,15 +17,28 @@ def test_get_archive_paths_returns_each_as_archive_path_with_metadata():
     flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module.borgmatic.borg.version).should_receive('local_borg_version').and_return('3.0')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
-        {'path': 'foo.txt', 'type': '-', 'linktarget': ''},
-        {'path': 'bar.txt', 'type': 'l', 'linktarget': 'foo.txt'},
-        {'path': 'etc', 'type': 'd', 'linktarget': ''},
+        {'path': 'foo.txt', 'type': '-', 'linktarget': '', 'size': 3},
+        {'path': 'bar.txt', 'type': 'l', 'linktarget': 'foo.txt', 'size': 0},
+        {'path': 'etc', 'type': 'd', 'linktarget': '', 'size': 0},
     )
 
     assert tuple(module.get_archive_paths(config, config['repositories'][0], 'archive')) == (
-        module.Archive_path('-', 'foo.txt', ''),
-        module.Archive_path('l', 'bar.txt', 'foo.txt'),
-        module.Archive_path('d', 'etc', ''),
+        module.Archive_path('-', 'foo.txt', '', 3),
+        module.Archive_path('l', 'bar.txt', 'foo.txt', 0),
+        module.Archive_path('d', 'etc', '', 0),
+    )
+
+
+def test_get_archive_paths_defaults_missing_size_to_zero():
+    config = {'repositories': [{'path': 'test.borg'}]}
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module.borgmatic.borg.version).should_receive('local_borg_version').and_return('3.0')
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'path': 'foo.txt', 'type': '-', 'linktarget': ''},
+    )
+
+    assert tuple(module.get_archive_paths(config, config['repositories'][0], 'archive')) == (
+        module.Archive_path('-', 'foo.txt', '', 0),
     )
 
 
