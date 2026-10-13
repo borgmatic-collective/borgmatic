@@ -61,7 +61,11 @@ class Archives_list(textual.widgets.OptionList):
         label_pieces = (
             (archive_name, '[dim](latest)[/dim]') if len(self.options) == 1 else (archive_name,)
         )
-        highlighted_option = self.highlighted_option
+
+        # Textual 6.0.0+ has self.highlighted_option, but we want to support older versions.
+        highlighted_option = (
+            self.options[self.highlighted] if self.highlighted is not None else None
+        )
 
         loading_indicator = self.get_option('loading-indicator')
         self.remove_option('loading-indicator')

@@ -7,6 +7,8 @@
    into a loop. This was most prevalent with MongoDB.
  * #1370: Fix "Too many open files" and "filedescriptor out of range in select()" errors when
    dumping hundreds of databases.
+ * #1371: Fix an attribute error when running the experimental "browse" action with older versions
+   of the Textual library.
  * Fix a Postgresql hook error when restoring a directory format database with an overridden
    hostname or port.
 
