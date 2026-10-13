@@ -171,13 +171,30 @@ def test_get_path_size_with_file_in_path_returns_zero():
     assert module.get_path_size({'foo.txt': archive_path}, ('foo.txt', 'bar')) == 0
 
 
-def test_load_archive_paths_publishes_for_each_archive_path():
+def test_load_archive_paths_publishes_a_batch_of_archive_paths():
     flexmock(module.borgmatic.actions.browse.archive).should_receive('get_archive_paths').and_yield(
         'foo.txt', 'bar.txt'
     )
     path_loaded = flexmock()
-    path_loaded.should_receive('publish').with_args('foo.txt').once()
-    path_loaded.should_receive('publish').with_args('bar.txt').once()
+    path_loaded.should_receive('publish').with_args(('foo.txt', 'bar.txt')).once()
+    path_loaded.should_receive('publish').with_args(module.LOADING_DONE).once()
+
+    module.load_archive_paths.__wrapped__(
+        browse_app=flexmock(),
+        path_loaded=path_loaded,
+        config=flexmock(),
+        repository=flexmock(),
+        archive_name='archive',
+    )
+
+
+def test_load_archive_paths_publishes_full_batches():
+    flexmock(module.borgmatic.actions.browse.archive).should_receive('get_archive_paths').and_yield(
+        *range(module.BATCH_SIZE + 1)
+    )
+    path_loaded = flexmock()
+    path_loaded.should_receive('publish').with_args(tuple(range(module.BATCH_SIZE))).once()
+    path_loaded.should_receive('publish').with_args((module.BATCH_SIZE,)).once()
     path_loaded.should_receive('publish').with_args(module.LOADING_DONE).once()
 
     module.load_archive_paths.__wrapped__(

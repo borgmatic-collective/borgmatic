@@ -73,6 +73,10 @@ def add_archive_paths(
     deduplicating the resulting directory list's options. For paths that already have options,
     instead update their displayed sizes, since directory sizes grow as more archive paths load.
 
+    First collapse the paths to a single representative per displayed option, since a batch usually
+    contains many paths beneath the same directory and each directory's size only needs computing
+    once.
+
     After all of this reshuffling, make sure the original highlighted option remains highlighted.
     '''
     # Textual 6.0.0+ has self.highlighted_option for this, but we want to support older versions.
@@ -82,6 +86,10 @@ def add_archive_paths(
         else None
     )
     new_options = []
+
+    # Keep just one path per option. Prefer a direct child of this directory over a nested path,
+    # since the direct child is what defines the option's own type and link target.
+    representatives = {}
 
     for archive_path in archive_paths:
         relative_path_components = get_relative_archive_path_components(
@@ -94,6 +102,10 @@ def add_archive_paths(
 
         option_id = relative_path_components[0]
 
+        if option_id not in representatives or len(relative_path_components) == 1:
+            representatives[option_id] = (archive_path, relative_path_components)
+
+    for option_id, (archive_path, relative_path_components) in representatives.items():
         # A directory's cumulative size lives in the hierarchy rather than in the archive listing,
         # which reports directories themselves as zero-sized.
         size = (
@@ -232,8 +244,8 @@ class Directory_list(textual.widgets.OptionList):
 
     def on_archive_path_loaded(self, data):
         '''
-        When an archive path loads, add it as an option to this directory list. But if we get a
-        signal that all path loading is complete, stop and remove our loading indicator.
+        When a batch of archive paths loads, add them as options to this directory list. But if we
+        get a signal that all path loading is complete, stop and remove our loading indicator.
         '''
         if data is borgmatic.actions.browse.workers.LOADING_DONE:
             self.timer.stop()
@@ -246,7 +258,7 @@ class Directory_list(textual.widgets.OptionList):
             config=self.config,
             repository=self.repository,
             archive_name=self.archive_name,
-            archive_paths=(data,),
+            archive_paths=data,
         )
 
         self.update_border_title()

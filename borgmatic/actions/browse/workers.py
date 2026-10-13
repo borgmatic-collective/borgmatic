@@ -11,6 +11,9 @@ logger = logging.getLogger('__name__')
 
 LOADING_DONE = object()
 
+# How many archive paths to publish (and repaint for) at a time.
+BATCH_SIZE = 200
+
 
 class Directory(dict):
     '''
@@ -160,9 +163,9 @@ class Archive_path_loaded(textual.signal.Signal):
     started can "catch up" with existing known paths. Lastly, this signal publishes and tracks when
     loading is complete.
 
-    Each subscrided callback call includes the loaded path as an Archive_path instance. There is
-    intended to be a separate Archive_path_loaded instance per archive, but that instance should be
-    shared among several different widgets for the same archive for performance reasons.
+    Each subscrided callback call includes a batch of Archive_path instances. There is intended to
+    be a separate Archive_path_loaded instance per archive, but that instance should be shared among
+    several different widgets for the same archive for performance reasons.
     '''
 
     def __init__(self, owner, name):
@@ -171,37 +174,50 @@ class Archive_path_loaded(textual.signal.Signal):
 
         super().__init__(owner, name)
 
-    def publish(self, archive_path):
+    def publish(self, archive_paths):
         '''
-        Publish the given archive path to subscribers and record its path locally. But if the
-        archive path is actually LOADING_DONE, then record loading as complete. Record paths before
-        publishing them so that subscribers see up-to-date directory sizes.
+        Publish the given batch of Archive_path instances to subscribers and record their paths
+        locally. But if the batch is actually LOADING_DONE, then record loading as complete. Record
+        paths before publishing them so that subscribers see up-to-date directory sizes.
         '''
-        if archive_path is LOADING_DONE:
+        if archive_paths is LOADING_DONE:
             self.complete = True
         else:
-            record_path(
-                archive_path, self.path_hierarchy, archive_path.file_path.split(os.path.sep)
-            )
+            for archive_path in archive_paths:
+                record_path(
+                    archive_path, self.path_hierarchy, archive_path.file_path.split(os.path.sep)
+                )
 
-        super().publish(archive_path)
+        super().publish(archive_paths)
 
 
 @textual.work(thread=True)
 def load_archive_paths(browse_app, path_loaded, config, repository, archive_name):
     '''
     Given a running Browse_app instance, an Archive_path_loaded instance, a configuration dict, a
-    repository dict, and an archive name, load the paths in this archive and publish each one via
-    the Archive_path_loaded signal, so interested widgets can subscribe. Also send a "loading done"
-    signal when loading completes.
+    repository dict, and an archive name, load the paths in this archive and publish them in batches
+    via the Archive_path_loaded signal, so interested widgets can subscribe. Also send a "loading
+    done" signal when loading completes.
+
+    Publish in batches rather than one path at a time so that widgets don't have to process (and
+    repaint for) every single path.
 
     This function runs in a separate thread from the main UI. When loading is complete, publish a
     loading done signal.
     '''
+    batch = []
+
     for archive_path in borgmatic.actions.browse.archive.get_archive_paths(
         config, repository, archive_name
     ):
-        path_loaded.publish(archive_path)
+        batch.append(archive_path)
+
+        if len(batch) >= BATCH_SIZE:
+            path_loaded.publish(tuple(batch))
+            batch.clear()
+
+    if batch:
+        path_loaded.publish(tuple(batch))
 
     path_loaded.publish(LOADING_DONE)
 

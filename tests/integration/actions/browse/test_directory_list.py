@@ -150,6 +150,35 @@ def test_add_archive_paths_ignores_link_target_for_directory_row():
     )
 
 
+def test_add_archive_paths_computes_one_size_update_per_directory_for_a_batch():
+    archive_paths = tuple(
+        module.borgmatic.actions.browse.archive.Archive_path('-', f'etc/foo/{name}', '', 100)
+        for name in ('one', 'two', 'three')
+    )
+    hierarchy = {}
+    for archive_path in archive_paths:
+        module.borgmatic.actions.browse.workers.record_path(
+            archive_path, hierarchy, ('etc', 'foo', archive_path.file_path.rsplit('/', 1)[1])
+        )
+    directory_list = textual.widgets.OptionList()
+    directory_list.path_components = ('etc',)
+    directory_list.path_loaded = flexmock(path_hierarchy=hierarchy)
+    directory_list.add_option(textual.widgets.option_list.Option('📁 foo (100 B)', id='foo'))
+    config = {'repositories': [{'path': 'test.borg'}]}
+    flexmock(directory_list).should_receive('replace_option_prompt').with_args(
+        'foo', '📁 foo (300 B)'
+    ).once()
+    flexmock(directory_list).should_receive('set_options').never()
+
+    module.add_archive_paths(
+        directory_list=directory_list,
+        config=config,
+        repository=config['repositories'][0],
+        archive_name='archive',
+        archive_paths=archive_paths,
+    )
+
+
 def test_add_archive_paths_highlights_first_option_if_highlight_has_not_changed():
     directory_list = textual.widgets.OptionList()
     directory_list.path_components = ('etc',)
