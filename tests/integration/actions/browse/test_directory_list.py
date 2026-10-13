@@ -122,6 +122,34 @@ def test_add_archive_paths_does_not_repaint_unchanged_size():
     )
 
 
+def test_add_archive_paths_ignores_link_target_for_directory_row():
+    hierarchy = {}
+    module.borgmatic.actions.browse.workers.record_path(
+        archive_path=module.borgmatic.actions.browse.archive.Archive_path(
+            'l', 'etc/foo/link', '/home/foo/.git', 0
+        ),
+        hierarchy=hierarchy,
+        path_components=('etc', 'foo', 'link'),
+    )
+    directory_list = textual.widgets.OptionList()
+    directory_list.path_components = ('etc',)
+    directory_list.path_loaded = flexmock(path_hierarchy=hierarchy)
+    directory_list.add_option(textual.widgets.option_list.Option('📁 foo (0 B)', id='foo'))
+    config = {'repositories': [{'path': 'test.borg'}]}
+    flexmock(directory_list).should_receive('replace_option_prompt').never()
+    flexmock(directory_list).should_receive('set_options').never()
+
+    module.add_archive_paths(
+        directory_list=directory_list,
+        config=config,
+        repository=config['repositories'][0],
+        archive_name='archive',
+        archive_paths=(
+            flexmock(path_type='l', file_path='etc/foo/link', link_target='/home/foo/.git', size=0),
+        ),
+    )
+
+
 def test_add_archive_paths_highlights_first_option_if_highlight_has_not_changed():
     directory_list = textual.widgets.OptionList()
     directory_list.path_components = ('etc',)

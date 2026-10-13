@@ -42,13 +42,17 @@ def make_directory_list_option(archive_path, relative_path_components, size):
     Given an Archive_path instance, a tuple of relative path components for it, and a size in bytes
     for the path, make a textual.widgets.option_list.Option for the path. Use an the icon based on
     whether this looks like a terminal filename or a directory, and append a human-readable size.
+
+    Only show a link target for an archive path that is actually this option. For a nested path, the
+    option is the directory containing the path, so it has no link target of its own.
     '''
+    is_leaf = len(relative_path_components) == 1
     pieces = (
         borgmatic.actions.browse.icons.PATH_TYPE_ICONS.get(
-            archive_path.path_type if len(relative_path_components) == 1 else 'd', '❓'
+            archive_path.path_type if is_leaf else 'd', '❓'
         ),
         relative_path_components[0],
-    ) + (('→', archive_path.link_target) if archive_path.link_target else ())
+    ) + (('→', archive_path.link_target) if is_leaf and archive_path.link_target else ())
 
     return textual.widgets.option_list.Option(
         prompt=' '.join((*pieces, f'({borgmatic.actions.browse.sizes.format_size(size)})')),

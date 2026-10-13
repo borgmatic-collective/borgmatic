@@ -62,6 +62,22 @@ def test_make_directory_list_option_with_contained_file_path_makes_directory_opt
     assert option.id == 'bar'
 
 
+def test_make_directory_list_option_with_contained_symlink_path_has_no_link_target():
+    flexmock(module.textual.widgets.option_list).should_receive('Option').replace_with(flexmock)
+
+    option = module.make_directory_list_option(
+        flexmock(path_type='l', file_path='mnt/link', link_target='/home/foo/.git'),
+        (
+            'mnt',
+            'link',
+        ),
+        0,
+    )
+
+    assert option.prompt == '📁 mnt (0 B)'
+    assert option.id == 'mnt'
+
+
 def test_make_directory_list_option_with_link_path_makes_link_option():
     flexmock(module.textual.widgets.option_list).should_receive('Option').replace_with(flexmock)
 
