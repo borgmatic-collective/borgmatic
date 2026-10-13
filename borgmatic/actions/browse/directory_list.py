@@ -51,7 +51,7 @@ def make_directory_list_option(archive_path, relative_path_components, size):
     ) + (('→', archive_path.link_target) if archive_path.link_target else ())
 
     return textual.widgets.option_list.Option(
-        prompt=' '.join((*pieces, borgmatic.actions.browse.sizes.format_size(size))),
+        prompt=' '.join((*pieces, f'({borgmatic.actions.browse.sizes.format_size(size)})')),
         id=relative_path_components[0],
     )
 
@@ -102,11 +102,12 @@ def add_archive_paths(
             else archive_path.size
         )
         option = make_directory_list_option(archive_path, relative_path_components, size)
+        existing_option = directory_list._id_to_option.get(option_id)
 
-        if option_id in directory_list._id_to_option:
-            directory_list.replace_option_prompt(option_id, option.prompt)
-        else:
+        if existing_option is None:
             new_options.append(option)
+        elif str(existing_option.prompt) != option.prompt:
+            directory_list.replace_option_prompt(option_id, option.prompt)
 
     # If there aren't actually any new options to add, we're done after the size updates above.
     if not new_options:
@@ -206,21 +207,24 @@ class Directory_list(textual.widgets.OptionList):
     def update_border_title(self):
         '''
         Update this directory list's border title with the cumulative size of the directory it
-        displays (or the entire archive, for a root directory list).
+        displays (or the entire archive, for a root directory list). Skip the update if the title
+        hasn't actually changed, since refreshing the border on every loaded path flickers.
         '''
-        self.border_title = ' '.join(
+        size = borgmatic.actions.browse.workers.get_path_size(
+            self.path_loaded.path_hierarchy, self.path_components
+        )
+        title = ' '.join(
             (
                 '📁',
                 os.path.sep.join(self.path_components)
                 if self.path_components
                 else f'{self.archive_name}',
-                borgmatic.actions.browse.sizes.format_size(
-                    borgmatic.actions.browse.workers.get_path_size(
-                        self.path_loaded.path_hierarchy, self.path_components
-                    )
-                ),
+                f'({borgmatic.actions.browse.sizes.format_size(size)})',
             )
         )
+
+        if title != self.border_title:
+            self.border_title = title
 
     def on_archive_path_loaded(self, data):
         '''

@@ -52,15 +52,15 @@ def test_add_archive_paths_adds_ands_sorts_and_filters_and_deduplicates():
     )
 
     assert len(directory_list.options) == 5
-    assert directory_list.options[0].prompt == '📁 other 0 B'
+    assert directory_list.options[0].prompt == '📁 other (0 B)'
     assert directory_list.options[0].id == 'other'
-    assert directory_list.options[1].prompt == '📁 quux 0 B'
+    assert directory_list.options[1].prompt == '📁 quux (0 B)'
     assert directory_list.options[1].id == 'quux'
     assert directory_list.options[2].prompt == '📄 bar'
     assert directory_list.options[2].id == 'bar'
-    assert directory_list.options[3].prompt == '📄 baz 0 B'
+    assert directory_list.options[3].prompt == '📄 baz (0 B)'
     assert directory_list.options[3].id == 'baz'
-    assert directory_list.options[4].prompt == '📄 foo 0 B'
+    assert directory_list.options[4].prompt == '📄 foo (0 B)'
     assert directory_list.options[4].id == 'foo'
     assert directory_list.highlighted == 2
 
@@ -91,7 +91,35 @@ def test_add_archive_paths_updates_existing_option_size():
         ),
     )
 
-    assert directory_list.options[0].prompt == '📁 foo 2.0 K'
+    assert directory_list.options[0].prompt == '📁 foo (2.05 kB)'
+
+
+def test_add_archive_paths_does_not_repaint_unchanged_size():
+    hierarchy = {}
+    module.borgmatic.actions.browse.workers.record_path(
+        archive_path=module.borgmatic.actions.browse.archive.Archive_path(
+            '-', 'etc/foo/bar.txt', '', 2048
+        ),
+        hierarchy=hierarchy,
+        path_components=('etc', 'foo', 'bar.txt'),
+    )
+    directory_list = textual.widgets.OptionList()
+    directory_list.path_components = ('etc',)
+    directory_list.path_loaded = flexmock(path_hierarchy=hierarchy)
+    directory_list.add_option(textual.widgets.option_list.Option('📁 foo (2.05 kB)', id='foo'))
+    config = {'repositories': [{'path': 'test.borg'}]}
+    flexmock(directory_list).should_receive('replace_option_prompt').never()
+    flexmock(directory_list).should_receive('set_options').never()
+
+    module.add_archive_paths(
+        directory_list=directory_list,
+        config=config,
+        repository=config['repositories'][0],
+        archive_name='archive',
+        archive_paths=(
+            flexmock(path_type='-', file_path='etc/foo/bar.txt', link_target='', size=2048),
+        ),
+    )
 
 
 def test_add_archive_paths_highlights_first_option_if_highlight_has_not_changed():
@@ -115,7 +143,7 @@ def test_add_archive_paths_highlights_first_option_if_highlight_has_not_changed(
     assert len(directory_list.options) == 3
     assert directory_list.options[0].prompt == '📄 bar'
     assert directory_list.options[0].id == 'bar'
-    assert directory_list.options[1].prompt == '📄 baz 0 B'
+    assert directory_list.options[1].prompt == '📄 baz (0 B)'
     assert directory_list.options[1].id == 'baz'
     assert directory_list.options[2].prompt == '📄 foo'
     assert directory_list.options[2].id == 'foo'
@@ -146,7 +174,7 @@ def test_add_archive_paths_retains_loading_indicator_at_bottom():
     assert len(directory_list.options) == 4
     assert directory_list.options[0].prompt == '📄 bar'
     assert directory_list.options[0].id == 'bar'
-    assert directory_list.options[1].prompt == '📄 baz 0 B'
+    assert directory_list.options[1].prompt == '📄 baz (0 B)'
     assert directory_list.options[1].id == 'baz'
     assert directory_list.options[2].prompt == '📄 foo'
     assert directory_list.options[2].id == 'foo'
@@ -163,7 +191,7 @@ def test_directory_list_with_root_directory_adds_loading_indicator():
     directory_list = module.Directory_list(
         config=flexmock(), repository=flexmock(), archive_name='archive'
     )
-    assert directory_list.border_title == '📁 archive 0 B'
+    assert directory_list.border_title == '📁 archive (0 B)'
     assert len(directory_list.options) == 0
     assert not directory_list.path_loaded.complete
 
@@ -184,7 +212,7 @@ def test_directory_list_with_already_complete_loading_skips_loading_indicator():
         path_loaded=flexmock(complete=True, path_hierarchy={}),
         path_components=('etc',),
     )
-    assert directory_list.border_title == '📁 etc 0 B'
+    assert directory_list.border_title == '📁 etc (0 B)'
     assert len(directory_list.options) == 1
     assert directory_list.options[0].prompt == '📁 ..'
     assert directory_list.options[0].id == '..'
@@ -334,7 +362,7 @@ def test_directory_list_update_border_title_shows_directory_size():
 
     directory_list.update_border_title()
 
-    assert directory_list.border_title == '📁 etc 1.0 K'
+    assert directory_list.border_title == '📁 etc (1.02 kB)'
 
 
 def test_directory_list_update_border_title_shows_archive_size():
@@ -352,4 +380,4 @@ def test_directory_list_update_border_title_shows_archive_size():
 
     directory_list.update_border_title()
 
-    assert directory_list.border_title == '📁 archive 1.0 K'
+    assert directory_list.border_title == '📁 archive (1.02 kB)'

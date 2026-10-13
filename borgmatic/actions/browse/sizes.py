@@ -1,21 +1,21 @@
-SIZE_UNITS = ('B', 'K', 'M', 'G', 'T', 'P')
-SIZE_MULTIPLIER = 1024
+SIZE_UNITS = ('B', 'kB', 'MB', 'GB', 'TB', 'PB')
+SIZE_MULTIPLIER = 1000
 
 
 def format_size(size):
     '''
-    Given a size in bytes, return it as a compact, human-readable string like "512 B" or "4.0 K",
-    using powers of 1024 like du does.
+    Given a size in bytes, return it as a human-readable string like "358 B" or "1.48 TB", using
+    decimal units and two decimal places like borg info does.
     '''
     value = float(size)
     unit = SIZE_UNITS[0]
 
     for next_unit in SIZE_UNITS[1:]:
-        # Compare rounded values so that, for instance, 1023.99 K doesn't display as "1024.0 K".
-        if round(value, 1) < SIZE_MULTIPLIER:
+        # Compare rounded values so that, for instance, 999.999 kB doesn't display as "1000.00 kB".
+        if round(value, 2) < SIZE_MULTIPLIER:
             break
 
         value /= SIZE_MULTIPLIER
         unit = next_unit
 
-    return f'{int(size)} B' if unit == 'B' else f'{value:.1f} {unit}'
+    return f'{value:.0f} {unit}' if unit == 'B' else f'{value:.2f} {unit}'
