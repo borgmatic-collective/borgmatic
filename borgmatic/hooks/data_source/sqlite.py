@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import os
 import shlex
@@ -269,11 +270,9 @@ def restore_data_source_dump(
     if dry_run:
         return
 
-    try:
+    with contextlib.suppress(FileNotFoundError):
         os.remove(database_path)
-        logger.warning(f'Removed existing SQLite database at {database_path}')
-    except FileNotFoundError:  # pragma: no cover
-        pass
+        logger.warning(f'Replacing existing SQLite database at {database_path}')
 
     sqlite_restore_command = tuple(
         shlex.quote(part)

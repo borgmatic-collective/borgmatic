@@ -1,3 +1,5 @@
+import contextlib
+import io
 import json
 import logging
 import os
@@ -441,17 +443,35 @@ def restore_data_source_dump(
     tarball from the given extract stream using the given manifest data. If this is a dry run, then
     don't actually restore anything.
     '''
-    # TODO: What to do if the path already exists? See what SQLite hook does?
     destination_path = data_source.get('restore_path', data_source['path'])
-    # TODO: Handle unknown extension / lz4.
-    compression = EXTENSION_TO_TARFILE_COMPRESSION[destination_path.split('.')[-1]]
 
-    # TODO: Somehow handle the dry run case.
+    dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
+    logger.debug(f'Restoring tarball at {destination_path}{dry_run_label}')
+
+    if not dry_run:
+        with contextlib.suppress(FileNotFoundError):
+            os.remove(destination_path)
+            logger.warning(f'Replacing existing tarball at {destination_path}')
+
+    file_extension = destination_path.split('.')[-1]
+    try:
+        compression = EXTENSION_TO_TARFILE_COMPRESSION[file_extension]
+    except KeyError:
+        raise ValueError('Unknown tarball compression for {destination_path}')
+
+    # During a dry run, just write the resulting tarball to memory and then throw it away.
+    if dry_run:
+        write_path = None
+        write_buffer = io.BytesIO()
+    else:
+        write_path = destination_path
+        write_buffer = None
+
     # Stream the "export-tar" from the Borg archive, rewrite it on-the-fly to add missing manifest
     # metadata, and write it out to a destination tarball on disk.
     with (
         tarfile.open(mode='r|', fileobj=extract_process.stdout) as source_tar,
-        tarfile.open(destination_path, mode=f'x:{compression}') as destination_tar,
+        tarfile.open(write_path, mode=f'x:{compression}', fileobj=write_buffer) as destination_tar,
     ):
         for member in source_tar:
             member.name = strip_member_path_prefix(member.name)
@@ -459,8 +479,8 @@ def restore_data_source_dump(
 
             # You can end up with a member that's in the Borg archive but not the manifest when, for
             # instance, everything in the source tarball is in a subdirectory rather than in the
-            # root. For such missing members, simply skip them, as they weren't in the source
-            # tarball to begin with.
+            # root—Borg stores parent directories even if they weren't in the source tarball. For
+            # such missing members, simply skip them.
             if manifest_entry is None:
                 continue
 
