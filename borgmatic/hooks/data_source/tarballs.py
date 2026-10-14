@@ -11,9 +11,9 @@ import threading
 import borgmatic.borg.export_tar
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.execute
 import borgmatic.hooks.data_source.config
 import borgmatic.logger
-from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks.data_source import dump
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ def get_default_port(databases, config):  # pragma: no cover
     return None
 
 
-def use_streaming(databases, config):
+def use_streaming(databases, config):  # pragma: no cover
     '''
     Return whether dump streaming is used for this hook.
     '''
@@ -69,7 +69,7 @@ def dump_data_sources(
             borgmatic.actions.restore.Dump('tarballs', tarball_name, label=tarball.get('label'))
         )
 
-        if tarball_name == 'all':
+        if tarball_name == 'all':  # pragma: no cover
             logger.warning('The "all" name has no meaning for tarballs')
 
         if not os.path.exists(tarball_path):
@@ -78,7 +78,8 @@ def dump_data_sources(
         dump_directory = dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory), tarball_name, label=tarball.get('label')
         )
-        os.makedirs(dump_directory, mode=0o700, exist_ok=True)
+        if not dry_run:
+            os.makedirs(dump_directory, mode=0o700, exist_ok=True)
 
         logger.debug(
             f'Extracting tarball at {tarball_path} to {dump_directory}{dry_run_label}',
@@ -87,21 +88,23 @@ def dump_data_sources(
         if not tarfile.is_tarfile(tarball_path):
             raise ValueError(f'Tarball "{tarball_name}" is not actually a tarball: {tarball_path}')
 
-        tar = tarfile.open(tarball_path)
         members_metadata = {}
 
         # Create a named pipe per member for streaming directly to Borg.
-        for member in tar:
+        for member in tarfile.open(tarball_path):
             member_extract_path = os.path.join(dump_directory, member.name)
-            member_metadata = member.get_info()
+            member_metadata = dict(member.get_info())
             member_metadata['type'] = ord(member_metadata['type'])
             members_metadata[member.name] = member_metadata
 
             if member.isdir():
-                os.makedirs(member_extract_path, mode=0o700, exist_ok=True)
+                if not dry_run:
+                    os.makedirs(member_extract_path, mode=0o700, exist_ok=True)
+
                 continue
 
-            dump.create_named_pipe_for_dump(member_extract_path)
+            if not dry_run:
+                dump.create_named_pipe_for_dump(member_extract_path)
 
         with open(f'{dump_directory}_manifest.json', 'w') as metadata_file:
             metadata_file.write(json.dumps(members_metadata))
@@ -113,7 +116,7 @@ def dump_data_sources(
     # stream_tarballs() in a new process. It works this way so that it adheres to the same model as
     # all the database-oriented hooks, which also spin up a new process to stream data directly to
     # Borg.
-    stream_process = execute_command(
+    stream_process = borgmatic.execute.execute_command(
         (sys.executable, '-m', 'borgmatic.hooks.data_source.tarballs'),
         run_to_completion=False,
         environment=dict(
@@ -151,24 +154,21 @@ def stream_member(tar_file, dump_directory, member, read_lock):
     recreate such members properly upon restore.
     '''
     extract_path = os.path.join(dump_directory, member.name)
-    pipe = open(extract_path, 'wb')
 
-    if not member.isfile():
-        pipe.close()
-        return
+    with open(extract_path, 'wb') as pipe:
+        if not member.isfile():
+            return
 
-    buffer = tar_file.extractfile(member)
+        buffer = tar_file.extractfile(member)
 
-    while True:
-        with read_lock:
-            block = buffer.read(STREAM_BLOCK_SIZE)
+        while True:
+            with read_lock:
+                block = buffer.read(STREAM_BLOCK_SIZE)
 
-        if not block:
-            break
+            if not block:
+                break
 
-        pipe.write(block)
-
-    pipe.close()
+            pipe.write(block)
 
 
 def stream_tarballs():
