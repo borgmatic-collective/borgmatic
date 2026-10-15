@@ -64,6 +64,9 @@ tarball data.
  * When this hook is enabled, borgmatic instructs Borg to consume special files
    (via `--read-special`) to support tarball streaming—regardless of the value
    of your `read_special` configuration option.
+ * Tarballs backed up and restored with this data source hook are not
+   bit-identical to their corresponding original tarballs, even though their
+   contents and file metadata should be the same.
 
 
 ## Full configuration
