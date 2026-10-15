@@ -76,7 +76,7 @@ def export_tar_archive(
 
     if dry_run:
         logger.info('Skipping export to tar file (dry run)')
-        return
+        return None
 
     if destination_path == '-':
         output_file = subprocess.PIPE if capture_stdout else DO_NOT_CAPTURE

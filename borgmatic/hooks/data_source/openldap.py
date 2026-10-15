@@ -264,7 +264,7 @@ def load_data_source_dump_manifest(
     '''
     This hook doesn't use a per-dump manifest.
     '''
-    return None
+    return
 
 
 def restore_data_source_dump(
