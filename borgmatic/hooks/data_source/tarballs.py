@@ -35,6 +35,52 @@ def use_streaming(databases, config):  # pragma: no cover
     return True
 
 
+def normalize_member_path(path):
+    '''
+    Given a member path from a tarball, normalize it, collapsing "." and ".." path components where
+    possible.
+
+    Return the normalized result. Raise if the normalized path is still unsafe, e.g. if it's an
+    absolute path or starts with "."/".." even after normalization. This is unsafe because when
+    joining the member path together with a parent destination path, it effectively creates an
+    "escape" from that parent.
+    '''
+    normalized = os.path.normpath(path)
+
+    if normalized == '.':
+        return normalized
+
+    pieces = normalized.split(os.path.sep)
+
+    if os.path.isabs(normalized) or '.' in pieces or '..' in pieces:
+        raise ValueError(f'Unsafe tarball member path: {path}')
+
+    return normalized
+
+
+def deduplicate_members(tar_file):
+    '''
+    Given an open tar file, deduplicate its members and return them as a dict from normalized member
+    name to TarInfo instance for that member. Last one with a particular normalized member name
+    "wins" and ends up in the resulting dict.
+
+    This is necessary because Borg can't store duplicate paths—and also because we don't want to
+    attempt to create duplicate named pipes at the same path.
+    '''
+    members = {}
+
+    for member in tar_file:
+        member_path = normalize_member_path(member.name)
+
+        # Skip storing the root itself.
+        if member_path == '.':
+            continue
+
+        members[member_path] = member
+
+    return members
+
+
 def dump_data_sources(
     tarballs,
     config,
@@ -55,25 +101,30 @@ def dump_data_sources(
     '''
     dry_run_label = ' (dry run; not actually extracting anything)' if dry_run else ''
     dumps_metadata = []
+    seen_tarball_names = set()
 
     logger.info(f'Extracting tarballs{dry_run_label}')
     dump.raise_number_of_files_resource_limit()
 
     for tarball in tarballs:
-        tarball_name = tarball.get('label', tarball['name'])
+        if tarball['name'] in seen_tarball_names:
+            raise ValueError(f'Multiple configured tarballs have the same name "{tarball['name']}"')
+
+        seen_tarball_names.add(tarball['name'])
+        tarball_label = tarball.get('label', tarball['name'])
         tarball_path = tarball['path']
         dumps_metadata.append(
-            borgmatic.actions.restore.Dump('tarballs', tarball_name, label=tarball.get('label'))
+            borgmatic.actions.restore.Dump('tarballs', tarball['name'], label=tarball.get('label'))
         )
 
-        if tarball_name == 'all':  # pragma: no cover
+        if tarball['name'] == 'all':  # pragma: no cover
             logger.warning('The "all" name has no meaning for tarballs')
 
         if not os.path.exists(tarball_path):
-            raise ValueError(f'Tarball "{tarball_name}" does not exist: {tarball_path}')
+            raise ValueError(f'Tarball "{tarball_label}" does not exist: {tarball_path}')
 
         dump_directory = dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_runtime_directory), tarball_name, label=tarball.get('label')
+            make_dump_path(borgmatic_runtime_directory), tarball['name'], label=tarball.get('label')
         )
         if not dry_run:
             os.makedirs(dump_directory, mode=0o700, exist_ok=True)
@@ -83,28 +134,36 @@ def dump_data_sources(
         )
 
         if not tarfile.is_tarfile(tarball_path):
-            raise ValueError(f'Tarball "{tarball_name}" is not actually a tarball: {tarball_path}')
+            raise ValueError(f'Tarball "{tarball_label}" is not actually a tarball: {tarball_path}')
 
         members_metadata = {}
 
         # Create a named pipe per member for streaming directly to Borg.
-        for member in tarfile.open(tarball_path):
-            member_extract_path = os.path.join(dump_directory, member.name)
+        for member_path, member in deduplicate_members(tarfile.open(tarball_path)).items():
+            member_extract_path = os.path.join(dump_directory, member_path)
             member_metadata = dict(member.get_info())
+            member_metadata['name'] = member_path
             member_metadata['type'] = ord(member_metadata['type'])
-            members_metadata[member.name] = member_metadata
+            members_metadata[member_path] = member_metadata
 
             if member.isdir():
                 if not dry_run:
-                    os.makedirs(member_extract_path, mode=0o700, exist_ok=True)
+                    try:
+                        os.makedirs(member_extract_path, mode=0o700, exist_ok=True)
+                    except FileExistsError:
+                        raise ValueError(f'A file already exists for directory "{member.name}" from tarball "{tarball_label}"')
 
                 continue
 
             if not dry_run:
-                dump.create_named_pipe_for_dump(member_extract_path)
+                try:
+                    dump.create_named_pipe_for_dump(member_extract_path)
+                except FileExistsError:
+                    raise ValueError(f'A named pipe already exists for "{member.name}" from tarball "{tarball_label}"')
 
-        with open(f'{dump_directory}_manifest.json', 'w') as metadata_file:
-            metadata_file.write(json.dumps(members_metadata))
+        if not dry_run:
+            with open(f'{dump_directory}_manifest.json', 'w') as metadata_file:
+                metadata_file.write(json.dumps(members_metadata))
 
     if dry_run:
         return ()
@@ -138,19 +197,19 @@ def dump_data_sources(
 STREAM_BLOCK_SIZE = 4096
 
 
-def stream_member(tar_file, dump_directory, member, read_lock):
+def stream_member(tar_file, dump_directory, member_path, member, read_lock):
     '''
     Given an open tarball as a as a tarfile.TarFile instance, a dump directory path containing
-    member named pipes, a member of the tarball as a tarfile.TarInfo instance, and a threading.Lock
-    instance to use for reading from the tarball, stream the given member's data to the
-    corresponding named pipe.
+    member named pipes, a normalized member path from the tarball, that member as a tarfile.TarInfo
+    instance, and a threading.Lock instance to use for reading from the tarball, stream the given
+    member's data to the corresponding named pipe.
 
     Borg can't include symlinks/hardlinks properly—because "--read-special" (which is required for
     the whole pipe scheme to work) dereferences them. So just leave links (and other special files)
     as empty files and rely on the per-member metadata we include elsewhere to allow borgmatic to
     recreate such members properly upon restore.
     '''
-    with open(os.path.join(dump_directory, member.name), 'wb') as pipe:
+    with open(os.path.join(dump_directory, member_path), 'wb') as pipe:
         # This is done here, after the open() rather than before it, so that the pipe actually gets
         # opened and closed—and Borg doesn't hang forever waiting for data.
         if not member.isfile():
@@ -177,11 +236,11 @@ def stream_tarballs(tarballs, borgmatic_runtime_directory):
     threads = []
 
     for tarball in tarballs:
-        tarball_name = tarball.get('label', tarball['name'])
+        tarball_label = tarball.get('label', tarball['name'])
         tarball_path = tarball['path']
         tar_file = tarfile.open(tarball_path)
         dump_directory = dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_runtime_directory), tarball_name, label=tarball.get('label')
+            make_dump_path(borgmatic_runtime_directory), tarball['name'], label=tarball.get('label')
         )
 
         # Use a shared lock around reads of the source tar file, because such reads aren't thread
@@ -195,14 +254,20 @@ def stream_tarballs(tarballs, borgmatic_runtime_directory):
             # pipe read order to avoid deadlocks. This way, we're ready to feed Borg data on every
             # pipe no matter what order it reads them.
             threading.Thread(
-                target=stream_member, args=(tar_file, dump_directory, member, read_lock)
+                target=stream_member,
+                args=(tar_file, dump_directory, member_path, member, read_lock),
+                daemon=True,
             )
-            for member in tar_file
+            for member_path, member in deduplicate_members(tar_file).items()
             if not member.isdir()
         )
 
     for thread in threads:
-        thread.start()
+        try:
+            thread.start()
+        except RuntimeError as error:
+            raise ValueError(f'Too many files in tarball "{tarball_label}": {error}')
+
     for thread in threads:
         thread.join()
 
@@ -504,7 +569,11 @@ def main():
     except KeyError:
         raise ValueError('Expected BORGMATIC_RUNTIME_DIRECTORY environment variable is missing')
 
-    stream_tarballs(tarballs, borgmatic_runtime_directory)
+    try:
+        stream_tarballs(tarballs, borgmatic_runtime_directory)
+    except ValueError as error:
+        logger.error(error)
+        sys.exit(1)
 
 
 # This is the entry point that data_source_dumps() uses when it spins up a new process to stream

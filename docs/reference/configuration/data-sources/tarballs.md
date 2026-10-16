@@ -67,6 +67,8 @@ tarball data.
  * Tarballs backed up and restored with this data source hook are not
    bit-identical to their corresponding original tarballs, even though their
    contents and file metadata should be the same.
+ * This hook may run into thread or memory resource limits when backing up
+   tarballs containing many files.
 
 
 ## Full configuration
