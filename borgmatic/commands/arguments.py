@@ -2076,6 +2076,13 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
         action='store_true',
         help='Run the diff according to borgmatic configured patterns (ie do not diff entire archives)',
     )
+    diff_group.add_argument(
+        '--json',
+        dest='json',
+        default=False,
+        action='store_true',
+        help='Output results as JSON lines',
+    )
     diff_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     browse_parser = action_parsers.add_parser(
