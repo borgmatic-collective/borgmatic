@@ -1,5 +1,6 @@
 import os
 
+import rich.text
 import textual.widgets
 
 import borgmatic.actions.browse.archive
@@ -8,6 +9,8 @@ import borgmatic.actions.browse.icons
 import borgmatic.actions.browse.loading
 import borgmatic.actions.browse.sizes
 import borgmatic.actions.browse.workers
+
+OPTION_SIZE_COLUMN_WIDTH = 10
 
 
 def get_relative_archive_path_components(archive_path, current_directory_path_components):
@@ -37,27 +40,69 @@ def get_relative_archive_path_components(archive_path, current_directory_path_co
     return archive_path_components[len(current_directory_path_components) :]
 
 
+def make_size_path_prompt(size, path_text):
+    '''
+    Given a size in bytes (or None for a path that has no size), and plain text for a path, return a
+    Rich renderable of the size right-justified in a fixed-width column with the path beside it, so
+    that the paths in a list of options all line up, the way they do in ncdu or ls -l.
+
+    A rich.text.Text rather than a rich.table.Table, even though a table is the more natural fit for
+    columns. Textual measures the height of every option whenever it rebuilds its line cache, and
+    replacing any option's prompt does exactly that. Measuring a table lays out its columns from
+    scratch, which made rebuilding the line cache for 2,000 options about 45x slower than measuring
+    text—dwarfing the cost of actually painting the options. Should more columns arrive, that cost
+    may be worth paying, but it isn't for one.
+    '''
+    size_text = borgmatic.actions.browse.sizes.format_size(size) if size is not None else ''
+
+    return rich.text.Text(f'{size_text:>{OPTION_SIZE_COLUMN_WIDTH}}  {path_text}')
+
+
 def make_directory_list_option(archive_path, relative_path_components, size):
     '''
     Given an Archive_path instance, a tuple of relative path components for it, and a size in bytes
     for the path, make a textual.widgets.option_list.Option for the path. Use an the icon based on
-    whether this looks like a terminal filename or a directory, and append a human-readable size.
+    whether this looks like a terminal filename or a directory, and show a human-readable size in a
+    column beside it.
 
     Only show a link target for an archive path that is actually this option. For a nested path, the
     option is the directory containing the path, so it has no link target of its own.
+
+    Since the option's prompt is a Rich renderable rather than a string, also stash plain text for
+    the same information on the option as prompt_text, plus its path type as path_type. That way,
+    consumers like the sort in add_archive_paths() or the next panel lookup in the carousel don't
+    have to see through the renderable.
     '''
     is_leaf = len(relative_path_components) == 1
+    path_type = (
+        archive_path.path_type
+        if is_leaf
+        else borgmatic.actions.browse.archive.Path_type.DIRECTORY.value
+    )
     pieces = (
-        borgmatic.actions.browse.icons.PATH_TYPE_ICONS.get(
-            archive_path.path_type if is_leaf else 'd', '❓'
-        ),
+        borgmatic.actions.browse.icons.PATH_TYPE_ICONS.get(path_type, '❓'),
         relative_path_components[0],
     ) + (('→', archive_path.link_target) if is_leaf and archive_path.link_target else ())
 
-    return textual.widgets.option_list.Option(
-        prompt=' '.join((*pieces, f'({borgmatic.actions.browse.sizes.format_size(size)})')),
+    option = textual.widgets.option_list.Option(
+        prompt=make_size_path_prompt(size, ' '.join(pieces)),
         id=relative_path_components[0],
     )
+    option.prompt_text = ' '.join(
+        (*pieces, f'({borgmatic.actions.browse.sizes.format_size(size)})')
+    )
+    option.path_type = path_type
+
+    return option
+
+
+def get_prompt_text(option):
+    '''
+    Given a textual.widgets.option_list.Option, return the plain text equivalent of its prompt.
+    Directory list options prompt with a Rich renderable and stash the plain text as prompt_text,
+    while other options (e.g. the loading indicator) prompt with an ordinary string.
+    '''
+    return getattr(option, 'prompt_text', None) or str(option.prompt)
 
 
 def add_archive_paths(
@@ -86,6 +131,9 @@ def add_archive_paths(
         else None
     )
     new_options = []
+
+    # Index the options already displayed, so that we can update them in place below.
+    existing_options = {option.id: option for option in directory_list.options}
 
     # Keep just one path per option. Prefer a direct child of this directory over a nested path,
     # since the direct child is what defines the option's own type and link target.
@@ -118,12 +166,17 @@ def add_archive_paths(
             else archive_path.size
         )
         option = make_directory_list_option(archive_path, relative_path_components, size)
-        existing_option = directory_list._id_to_option.get(option_id)
+        existing_option = existing_options.get(option_id)
 
         if existing_option is None:
             new_options.append(option)
-        elif str(existing_option.prompt) != option.prompt:
+        elif get_prompt_text(existing_option) != option.prompt_text:
             directory_list.replace_option_prompt(option_id, option.prompt)
+
+            # Keep the existing option's plain text and path type in sync with its replaced
+            # renderable, so that the check above still suppresses no-op repaints below.
+            existing_option.prompt_text = option.prompt_text
+            existing_option.path_type = option.path_type
 
     # If there aren't actually any new options to add, we're done after the size updates above.
     if not new_options:
@@ -132,7 +185,7 @@ def add_archive_paths(
     sorted_options = sorted(
         (*directory_list.options, *new_options),
         # The loading indicator "option" always goes to the bottom.
-        key=lambda option: ((option.id == 'loading-indicator'), option.prompt),
+        key=lambda option: ((option.id == 'loading-indicator'), get_prompt_text(option)),
     )
 
     # Retain the highlighted option position even as other options load around it.
@@ -171,12 +224,13 @@ class Directory_list(textual.widgets.OptionList):
         super().__init__(classes='panel')
 
         if self.path_components:
-            self.add_option(
-                textual.widgets.option_list.Option(
-                    '📁 ..',
-                    id='..',
-                ),
+            # Lay ".." out like the other options, even though it has no size of its own.
+            parent_option = textual.widgets.option_list.Option(
+                prompt=make_size_path_prompt(None, '📁 ..'),
+                id='..',
             )
+            parent_option.prompt_text = '📁 ..'
+            self.add_option(parent_option)
 
         self.path_loaded = path_loaded or borgmatic.actions.browse.workers.Archive_path_loaded(
             self, 'archive path loaded'

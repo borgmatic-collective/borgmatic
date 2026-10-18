@@ -8,7 +8,6 @@ import borgmatic.actions.browse.archives_list
 import borgmatic.actions.browse.configuration_files_list
 import borgmatic.actions.browse.directory_list
 import borgmatic.actions.browse.file_preview
-import borgmatic.actions.browse.icons
 import borgmatic.actions.browse.repositories_list
 
 
@@ -40,12 +39,9 @@ def make_next_panel(focused_panel, option_id):
 
     if isinstance(focused_panel, borgmatic.actions.browse.directory_list.Directory_list):
         option = focused_panel.get_option(option_id)
+        path_type = getattr(option, 'path_type', None)
 
-        if option.prompt.startswith(
-            borgmatic.actions.browse.icons.PATH_TYPE_ICONS[
-                borgmatic.actions.browse.archive.Path_type.DIRECTORY.value
-            ]
-        ):
+        if path_type == borgmatic.actions.browse.archive.Path_type.DIRECTORY.value:
             return borgmatic.actions.browse.directory_list.Directory_list(
                 focused_panel.config,
                 focused_panel.repository,
@@ -54,11 +50,7 @@ def make_next_panel(focused_panel, option_id):
                 path_components=(*focused_panel.path_components, option_id),
             )
 
-        if option.prompt.startswith(
-            borgmatic.actions.browse.icons.PATH_TYPE_ICONS[
-                borgmatic.actions.browse.archive.Path_type.FILE.value
-            ]
-        ):
+        if path_type == borgmatic.actions.browse.archive.Path_type.FILE.value:
             return borgmatic.actions.browse.file_preview.File_preview(
                 focused_panel.config,
                 focused_panel.repository,

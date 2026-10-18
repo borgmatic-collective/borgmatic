@@ -87,7 +87,7 @@ def test_make_next_panel_with_root_directory_list_and_selected_directory_option_
     focused_panel = borgmatic.actions.browse.directory_list.Directory_list(
         config, config['repositories'][0], 'archive'
     )
-    flexmock(focused_panel).should_receive('get_option').and_return(flexmock(prompt='📁 etc'))
+    flexmock(focused_panel).should_receive('get_option').and_return(flexmock(path_type='d'))
 
     directory_list = module.make_next_panel(focused_panel=focused_panel, option_id='etc')
 
@@ -123,7 +123,7 @@ def test_make_next_panel_with_non_root_directory_list_and_selected_directory_opt
         'archive',
         path_components=('etc',),
     )
-    flexmock(focused_panel).should_receive('get_option').and_return(flexmock(prompt='📁 borgmatic'))
+    flexmock(focused_panel).should_receive('get_option').and_return(flexmock(path_type='d'))
 
     directory_list = module.make_next_panel(focused_panel=focused_panel, option_id='borgmatic')
 
@@ -148,9 +148,7 @@ def test_make_next_panel_with_root_directory_list_and_selected_file_option_retur
     focused_panel = borgmatic.actions.browse.directory_list.Directory_list(
         config, config['repositories'][0], 'archive'
     )
-    flexmock(focused_panel).should_receive('get_option').and_return(
-        flexmock(prompt='📄 config.yaml')
-    )
+    flexmock(focused_panel).should_receive('get_option').and_return(flexmock(path_type='-'))
 
     directory_list = module.make_next_panel(focused_panel=focused_panel, option_id='config.yaml')
 
@@ -196,9 +194,7 @@ def test_make_next_panel_with_non_root_directory_list_and_selected_file_option_r
         'archive',
         path_components=('etc', 'borgmatic'),
     )
-    flexmock(focused_panel).should_receive('get_option').and_return(
-        flexmock(prompt='📄 config.yaml')
-    )
+    flexmock(focused_panel).should_receive('get_option').and_return(flexmock(path_type='-'))
 
     directory_list = module.make_next_panel(focused_panel=focused_panel, option_id='config.yaml')
 
@@ -213,8 +209,10 @@ def test_make_next_panel_with_unsupported_focused_panel_returns_none():
     assert module.make_next_panel(focused_panel=flexmock(), option_id='hmmm') is None
 
 
-@pytest.mark.parametrize('icon', ('🔗', '🚰', '🐙'))
-def test_make_next_panel_with_directory_list_and_unsupported_selected_option_returns_none(icon):
+@pytest.mark.parametrize('path_type', ('l', 'p', 'wtf', None))
+def test_make_next_panel_with_directory_list_and_unsupported_selected_option_returns_none(
+    path_type,
+):
     config = {'repositories': [{'path': 'test.borg'}]}
     flexmock(borgmatic.actions.browse.loading).should_receive('add_inline_loading_indicator')
     flexmock(borgmatic.actions.browse.workers).should_receive('load_archive_paths')
@@ -224,9 +222,7 @@ def test_make_next_panel_with_directory_list_and_unsupported_selected_option_ret
     focused_panel = borgmatic.actions.browse.directory_list.Directory_list(
         config, config['repositories'][0], 'archive'
     )
-    flexmock(focused_panel).should_receive('get_option').and_return(
-        flexmock(prompt=f'{icon} config.yaml')
-    )
+    flexmock(focused_panel).should_receive('get_option').and_return(flexmock(path_type=path_type))
 
     assert module.make_next_panel(focused_panel=focused_panel, option_id='config.yaml') is None
 
