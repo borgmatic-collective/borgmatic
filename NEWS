@@ -5,6 +5,8 @@
    dumping hundreds of databases.
  * #1371: Fix an attribute error when running the experimental "browse" action with older versions
    of the Textual library.
+ * #1376: Fix a regression in which ZFS/LVM/Btrfs hooks no longer got Borg cache hits due to a
+   random temporary directory created within the borgmatic runtime directory.
  * Add a "--json" flag to the "diff" action for outputting one JSON object per changed path.
 
 2.1.10
