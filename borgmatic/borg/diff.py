@@ -61,9 +61,18 @@ def diff(
             else ()
         )
         + ('--log-json',)
+        + (('--json-lines',) if diff_arguments.json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait is not None else ())
-        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + (
+            ('--info',)
+            if logger.getEffectiveLevel() == logging.INFO and not diff_arguments.json
+            else ()
+        )
+        + (
+            ('--debug', '--show-rc')
+            if logger.isEnabledFor(logging.DEBUG) and not diff_arguments.json
+            else ()
+        )
         + (
             ('--patterns-from', patterns_file.name)
             if patterns_file and diff_arguments.only_patterns

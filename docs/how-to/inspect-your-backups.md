@@ -133,6 +133,15 @@ Note that, by default, `borgmatic diff` compares everything in the archives; tha
 is, patterns are _not_ taken into consideration. If you require this, supply the
 `--only-patterns` flag.
 
+<span class="minilink minilink-addedin">New in borgmatic version
+2.1.11</span>If you'd like the differences in machine-readable form, supply the
+`--json` flag to output one JSON object per changed path (i.e. Borg's
+`--json-lines` output):
+
+```bash
+borgmatic diff --archive latest --second-archive host-2023-01-02T04:06:07.080910 --json
+```
+
 See the [Borg](https://borgbackup.readthedocs.io/en/stable/usage/diff.html)
 documentation for information on output format, what is compared, and more.
 

@@ -3,6 +3,7 @@
    into a loop. This was most prevalent with MongoDB.
  * #1370: Fix "Too many open files" and "filedescriptor out of range in select()" errors when
    dumping hundreds of databases.
+ * Add a "--json" flag to the "diff" action for outputting one JSON object per changed path.
 
 2.1.10
  * #1185: Add support for setting top-level configuration options under each repository, making
