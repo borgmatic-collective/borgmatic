@@ -7,6 +7,8 @@
    of the Textual library.
  * #1376: Fix a regression in which ZFS/LVM/Btrfs hooks no longer got Borg cache hits due to a
    random temporary directory created within the borgmatic runtime directory.
+ * Fix a bug in which borgmatic didn't correctly rename checkpoint archives when database hooks were
+   enabled with Borg 2.
  * Add a "--json" flag to the "diff" action for outputting one JSON object per changed path.
 
 2.1.10
