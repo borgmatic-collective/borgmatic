@@ -871,6 +871,7 @@ class Generator_reader:
     that data regardless of chunk boundaries. This is useful when running a command that produces
     byte output and then sending that byte data to something that expects a file-like object.
     '''
+
     def __init__(self, chunks):
         self.chunks = chunks
         self.buffer = []
@@ -903,5 +904,3 @@ class Generator_reader:
         '''
         for _ in self.chunks:
             pass
-
-

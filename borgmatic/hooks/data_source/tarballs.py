@@ -81,6 +81,124 @@ def deduplicate_members(tar_file):
     return members
 
 
+def inject_tarball_patterns(
+    patterns, members, borgmatic_runtime_directory, dump_directory, manifest_path
+):
+    '''
+    Given a patterns list, a sequence of tarball members as tarfile.TarInfo instances, the borgmatic
+    runtime directory, the current dump directory, and the tarball manifest path within it, inject
+    all the patterns necessary to backup the tarball into the patterns. This includes patterns for:
+
+     * an exclude override for the whole tarballs export directory (to punch through excludes)
+     * the tarballs hook dumps JSON file, containing metadata on all the tarball dumps
+     * the per-tarball manifest, containing metadata on the members of this tarball
+     * every single tarball member path (directories and non-directories separately)
+    '''
+    # Inject an exclude override for the whole tarballs directory, so we don't have to
+    # add it per-member and incur the cost of Borg processing all those additional
+    # include patterns.
+    borgmatic.hooks.data_source.config.inject_pattern(
+        patterns,
+        borgmatic.borg.pattern.Pattern(
+            os.path.join(borgmatic_runtime_directory, 'tarballs'),
+            type=borgmatic.borg.pattern.Pattern_type.INCLUDE,
+            style=borgmatic.borg.pattern.Pattern_style.PATH_PREFIX,
+            source=borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+    )
+
+    # Inject a pattern for the hook dumps manifest.
+    borgmatic.hooks.data_source.config.inject_pattern(
+        patterns,
+        borgmatic.borg.pattern.Pattern(
+            os.path.join(borgmatic_runtime_directory, 'tarballs', 'dumps.json'),
+            source=borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+        override_excludes=False,
+    )
+
+    # Inject a pattern for the tarball manifest.
+    borgmatic.hooks.data_source.config.inject_pattern(
+        patterns,
+        borgmatic.borg.pattern.Pattern(
+            manifest_path,
+            source=borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+        override_excludes=False,
+    )
+
+    # Reversed, because successive inject_pattern() calls do inserts, which effectively
+    # reverse the order as well. So with the double reverse, they end up back in the
+    # expected member order. And do directories first so they end up last. That way,
+    # Borg stores the directories but doesn't try to re-read any pipes in those
+    # directories.
+    for member_path, member in reversed(members.items()):
+        if member.isdir():
+            borgmatic.hooks.data_source.config.inject_pattern(
+                patterns,
+                borgmatic.borg.pattern.Pattern(
+                    os.path.join(dump_directory, member_path),
+                    source=borgmatic.borg.pattern.Pattern_source.HOOK,
+                ),
+                override_excludes=False,
+            )
+
+    for member_path, member in reversed(members.items()):
+        if not member.isdir():
+            borgmatic.hooks.data_source.config.inject_pattern(
+                patterns,
+                borgmatic.borg.pattern.Pattern(
+                    os.path.join(dump_directory, member_path),
+                    source=borgmatic.borg.pattern.Pattern_source.HOOK,
+                ),
+                override_excludes=False,
+            )
+
+
+def make_member_named_pipes(members, dump_directory, tarball_label, dry_run):
+    '''
+    Given a sequences of tarball members as tarfile.TarInfo instances, the current dump directory, a
+    label for this tarball to use is any error messages, and whether this is a dry run, create a
+    named pipe per non-directory member for subsequent streaming directly to Borg, mirroring the
+    directory layout from the tarball. But if this is a dry run, then don't actually create
+    directories or pipes.
+
+    Return a dict from member path to member metadata dict, suitable for serializing as a tarball
+    manifest.
+
+    Raise ValueError if a directory or pipe can't be created due duplicate paths from the tarball.
+    '''
+    members_metadata = {}
+
+    for member_path, member in members.items():
+        member_extract_path = os.path.join(dump_directory, member_path)
+        member_metadata = dict(member.get_info())
+        member_metadata['name'] = member_path
+        member_metadata['type'] = ord(member_metadata['type'])
+        members_metadata[member_path] = member_metadata
+
+        if member.isdir():
+            if not dry_run:
+                try:
+                    os.makedirs(member_extract_path, mode=0o700, exist_ok=True)
+                except FileExistsError:
+                    raise ValueError(
+                        f'A file already exists for directory "{member.name}" from tarball "{tarball_label}"'
+                    )
+
+            continue
+
+        if not dry_run:
+            try:
+                dump.create_named_pipe_for_dump(member_extract_path)
+            except FileExistsError:
+                raise ValueError(
+                    f'Path "{member.name}" exists multiple times in tarball "{tarball_label}" '
+                )
+
+    return members_metadata
+
+
 def dump_data_sources(
     tarballs,
     config,
@@ -140,100 +258,17 @@ def dump_data_sources(
         if not tarfile.is_tarfile(tarball_path):
             raise ValueError(f'Tarball "{tarball_label}" is not actually a tarball: {tarball_path}')
 
-        members_metadata = {}
         manifest_path = f'{dump_directory}_manifest.json'
 
-        # FIXME: Refactor a bit to make this section less unwieldy. Maybe some utility functions.
         with tarfile.open(tarball_path) as tar_file:
             members = deduplicate_members(tar_file)
 
             if not dry_run:
-                # Inject an exclude override for the whole tarballs directory, so we don't have to
-                # add it per-member and incur the cost of Borg processing all those additional
-                # include patterns.
-                borgmatic.hooks.data_source.config.inject_pattern(
-                    patterns,
-                    borgmatic.borg.pattern.Pattern(
-                        os.path.join(borgmatic_runtime_directory, 'tarballs'),
-                        type=borgmatic.borg.pattern.Pattern_type.INCLUDE,
-                        style=borgmatic.borg.pattern.Pattern_style.PATH_PREFIX,
-                        source=borgmatic.borg.pattern.Pattern_source.HOOK,
-                    ),
+                inject_tarball_patterns(
+                    patterns, members, borgmatic_runtime_directory, dump_directory, manifest_path
                 )
 
-                # Inject a pattern for the hook dumps manifest.
-                borgmatic.hooks.data_source.config.inject_pattern(
-                    patterns,
-                    borgmatic.borg.pattern.Pattern(
-                        os.path.join(borgmatic_runtime_directory, 'tarballs', 'dumps.json'),
-                        source=borgmatic.borg.pattern.Pattern_source.HOOK,
-                    ),
-                    override_excludes=False,
-                )
-
-                # Inject a pattern for the tarball manifest.
-                borgmatic.hooks.data_source.config.inject_pattern(
-                    patterns,
-                    borgmatic.borg.pattern.Pattern(
-                        manifest_path,
-                        source=borgmatic.borg.pattern.Pattern_source.HOOK,
-                    ),
-                    override_excludes=False,
-                )
-
-                # Reversed, because successive inject_pattern() calls do inserts, which effectively
-                # reverse the order as well. So with the double reverse, they end up back in the
-                # expected member order. And do directories first so they end up last. That way,
-                # Borg stores the directories but doesn't try to re-read any pipes in those
-                # directories.
-                for member_path, member in reversed(members.items()):
-                    if member.isdir():
-                        borgmatic.hooks.data_source.config.inject_pattern(
-                            patterns,
-                            borgmatic.borg.pattern.Pattern(
-                                os.path.join(dump_directory, member_path),
-                                source=borgmatic.borg.pattern.Pattern_source.HOOK,
-                            ),
-                            override_excludes=False,
-                        )
-
-                for member_path, member in reversed(members.items()):
-                    if not member.isdir():
-                        borgmatic.hooks.data_source.config.inject_pattern(
-                            patterns,
-                            borgmatic.borg.pattern.Pattern(
-                                os.path.join(dump_directory, member_path),
-                                source=borgmatic.borg.pattern.Pattern_source.HOOK,
-                            ),
-                            override_excludes=False,
-                        )
-
-            # Create a named pipe per member for streaming directly to Borg.
-            for member_path, member in members.items():
-                member_extract_path = os.path.join(dump_directory, member_path)
-                member_metadata = dict(member.get_info())
-                member_metadata['name'] = member_path
-                member_metadata['type'] = ord(member_metadata['type'])
-                members_metadata[member_path] = member_metadata
-
-                if member.isdir():
-                    if not dry_run:
-                        try:
-                            os.makedirs(member_extract_path, mode=0o700, exist_ok=True)
-                        except FileExistsError:
-                            raise ValueError(
-                                f'A file already exists for directory "{member.name}" from tarball "{tarball_label}"'
-                            )
-
-                    continue
-
-                if not dry_run:
-                    try:
-                        dump.create_named_pipe_for_dump(member_extract_path)
-                    except FileExistsError:
-                        raise ValueError(
-                            f'Path "{member.name}" exists multiple times in tarball "{tarball_label}" '
-                        )
+            members_metadata = make_member_named_pipes(members, dump_directory, tarball_label, dry_run)
 
         if not dry_run:
             with open(manifest_path, 'w') as manifest_file:
