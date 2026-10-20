@@ -3,7 +3,6 @@ import logging
 
 import textual._context
 import textual.widgets
-import textual.worker
 
 import borgmatic.logger
 
@@ -43,6 +42,20 @@ class Rich_color_formatter(logging.Formatter):
         return f'[{color}]{super().format(record)}[/{color}]'
 
 
+class Log_message(textual.message.Message):
+    '''
+    A log message.
+    '''
+
+    def __init__(self, text):
+        '''
+        Given the text of a log message, save it for use in the consumer of this message.
+        '''
+        self.text = text
+
+        super().__init__()
+
+
 class Browse_log_handler(logging.Handler):
     '''
     A Python log handler that writes any log records to a logging widget.
@@ -61,14 +74,8 @@ class Browse_log_handler(logging.Handler):
         Given a log record, format it and log it to the logs widgets. This works whether or not the
         logging is happening in the main thread.
         '''
-        message = self.format(record)
-
-        try:
-            textual.worker.get_current_worker()
-            self.logs_widget.app.call_from_thread(self.logs_widget.write, message)
-        except (RuntimeError, textual.worker.NoActiveWorker):
-            with contextlib.suppress(textual._context.NoActiveAppError):
-                self.logs_widget.write(message)
+        with contextlib.suppress(textual._context.NoActiveAppError):
+            self.logs_widget.post_message(Log_message(self.format(record)))
 
 
 def log_to_widget(logs_widget):
@@ -100,3 +107,9 @@ class Logs(textual.widgets.RichLog):
     def __init__(self):
         super().__init__(markup=True, id='logs', classes='panel')
         self.border_title = '🪵 logs'
+
+    def on_log_message(self, message):
+        '''
+        Upon receive a log message, add it to this widget.
+        '''
+        self.write(message.text)

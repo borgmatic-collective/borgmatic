@@ -18,7 +18,7 @@ def write_configuration(
 ):
     '''
     Write out borgmatic configuration into a file at the config path. Set the options so as to work
-    for testing. This includes injecting the given repository path, borgmatic runtime directory to
+    for testing. This includes injecting the given repository path, the user runtime directory to
     extract tarballs into, and encryption passphrase.
     '''
     config_yaml = f'''
@@ -32,7 +32,7 @@ encryption_passphrase: "test"
 
 tarballs:
     - name: tarball
-      path: /tmp/test.tar.gz
+      path: {user_runtime_directory}/test.tar.gz
 '''
 
     with open(config_path, 'w') as config_file:
@@ -139,7 +139,7 @@ def check_test_tarballs(config):
             assert found_members == set(TEST_MEMBER_DATA.keys())
 
 
-def test_database_dump_and_restore():
+def test_tarballs_dump_and_restore():
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
     original_working_directory = os.getcwd()

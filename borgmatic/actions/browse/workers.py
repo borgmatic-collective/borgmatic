@@ -93,7 +93,7 @@ def get_paths(hierarchy, path_components, full_path_components=None):
                 else borgmatic.actions.browse.archive.Archive_path(
                     'd', os.path.join(*full_path_components, component), ''
                 )
-                for component, archive_path in hierarchy[path_components[0]].items()
+                for component, archive_path in dict(hierarchy[path_components[0]]).items()
             )
         except KeyError:
             raise ValueError(f'Unknown file or directory: {path_components[0]}')

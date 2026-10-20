@@ -210,7 +210,7 @@ def extract_data_source_dump(
         local_path,
         remote_path,
         archive_name,
-        'postgresql_databases',
+        'sqlite_databases',
         data_source,
         borgmatic_runtime_directory,
         dump_patterns=make_data_source_dump_patterns(

@@ -1,6 +1,5 @@
 import collections
 import fnmatch
-import locale
 import logging
 import os
 import pathlib
@@ -11,6 +10,7 @@ import borgmatic.borg.extract
 import borgmatic.borg.list
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
+import borgmatic.execute
 import borgmatic.hooks.data_source.dump
 import borgmatic.hooks.dispatch
 
@@ -264,22 +264,34 @@ def collect_dumps_from_archive(
         if not dumps_metadata_entry.get('path'):
             continue
 
-        for dump in borgmatic.hooks.data_source.dump.parse_data_source_dumps_metadata(
-            borgmatic.borg.extract.extract_archive(
-                # Don't do a dry run on the extract, because that prevents reading of the metadata.
-                False,
-                repository,
-                archive,
-                [dumps_metadata_entry['path']],
-                config,
-                local_borg_version,
-                global_arguments,
-                local_path=local_path,
-                remote_path=remote_path,
-                extract_to_stdout=True,
+        extract_process = borgmatic.borg.extract.extract_archive(
+            # Don't do a dry run on the extract, because that prevents reading of the metadata.
+            False,
+            repository,
+            archive,
+            [dumps_metadata_entry['path']],
+            config,
+            local_borg_version,
+            global_arguments,
+            local_path=local_path,
+            remote_path=remote_path,
+            extract_to_stdout=True,
+        )
+
+        # Capture stdout while logging stderr.
+        with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
+            extract_output = '\n'.join(
+                borgmatic.execute.log_outputs(
+                    processes=(extract_process,),
+                    exclude_stdouts=(),
+                    output_log_level=None,
+                    borg_local_path=local_path,
+                    borg_exit_codes=config.get('borg_exit_codes'),
+                )
             )
-            .stdout.read()
-            .decode(locale.getpreferredencoding()),
+
+        for dump in borgmatic.hooks.data_source.dump.parse_data_source_dumps_metadata(
+            extract_output,
             dumps_metadata_entry['path'],
         ):
             dumps_from_archive[dump] = None

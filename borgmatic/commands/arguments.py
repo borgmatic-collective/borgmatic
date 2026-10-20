@@ -1564,7 +1564,7 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     )
     restore_group.add_argument(
         '--restore-path',
-        help='Path to restore SQLite database dumps to. Defaults to the "restore_path" option in borgmatic\'s configuration',
+        help='Path to restore SQLite/tarball dumps to. Defaults to the "restore_path" option in borgmatic\'s configuration',
     )
     restore_group.add_argument(
         '--original-label',

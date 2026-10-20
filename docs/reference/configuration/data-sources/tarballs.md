@@ -45,13 +45,13 @@ Both `create` and `restore` operate without using any temporary files for
 tarball data.
 
 
-## Limitmations
+## Limitations
 
  * Within an archive, tarball contents are not stored at their original path.
    Instead, they are stored within `borgmatic/tarballs/` so that the `restore`
    action can find them.
  * Due to the way that borgmatic streams tarballs to Borg via named pipes,
-   per-file information (permissions, ownership, symlink targets, etc.) and
+   per-file information (permissions, ownership, symlink targets, etc.) is
    stored separately in a per-tarball manifest file. This is consumed by the
    `restore` action.
  * During restore, borgmatic attempts to match the compression (if any) of the
@@ -67,8 +67,10 @@ tarball data.
  * Tarballs backed up and restored with this data source hook are not
    bit-identical to their corresponding original tarballs, even though their
    contents and file metadata should be the same.
- * This hook may run into thread or memory resource limits when backing up
-   tarballs containing many files.
+ * During the `restore` action, borgmatic removes any existing tarball already
+   present at the restore path before replacing it with the restored tarball.
+ * Currently, this hook only supports the following compression types on
+   tarballs: gzip, bzip2, xz, and no compression.
 
 
 ## Full configuration

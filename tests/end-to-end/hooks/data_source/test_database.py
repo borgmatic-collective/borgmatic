@@ -22,7 +22,7 @@ def write_configuration(
 ):
     '''
     Write out borgmatic configuration into a file at the config path. Set the options so as to work
-    for testing. This includes injecting the given repository path, borgmatic runtime directory for
+    for testing. This includes injecting the given repository path, the user runtime directory for
     storing database dumps, dump format (for PostgreSQL), and encryption passphrase.
     '''
     postgresql_all_format_option = (

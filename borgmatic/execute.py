@@ -254,6 +254,7 @@ def handle_log_record(log_record, last_lines=None):
 
 
 READ_CHUNK_SIZE = 4096
+READ_RAW_BYTES_CHUNK_SIZE = 65536
 
 
 def read_lines(buffer, process, line_separator='\n'):
@@ -298,9 +299,29 @@ def read_lines(buffer, process, line_separator='\n'):
         yield (data.decode(encoding).rstrip(),)
 
 
+def read_byte_chunks(buffer, process):
+    '''
+    Given a Python buffer (like stdout) ready for reading and its process repeatedly yield a tuple
+    of raw byte chunks from the buffer until it reaches EOF.
+
+    It is assumed that this function's generator is used in conjunction with an external
+    select.poll() call to know when to read more lines. Otherwise, the generator will busywait if
+    it's called in a tight loop.
+    '''
+    while True:
+        chunk = os.read(buffer.fileno(), READ_RAW_BYTES_CHUNK_SIZE)
+
+        # If we've reached EOF, there will never be anything more to read.
+        if not chunk:
+            break
+
+        yield (chunk,)
+
+
 Buffer_reader = collections.namedtuple(
     'Buffer_reader',
-    ('lines', 'process'),
+    ('lines', 'process', 'raw'),
+    defaults=(False,),
 )
 
 
@@ -311,14 +332,18 @@ Process_metadata = collections.namedtuple(
 
 
 def log_buffer_lines(
-    buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr=False
+    buffer_readers,
+    process_metadatas,
+    output_log_level,
+    borg_local_path,
+    capture_stderr=False,
 ):
     '''
     Given a dict from buffer object to Buffer_reader, a dict from subprocess.Popen() instance to
-    Process_metadata instance, a requested output log level for stdout, Borg's local path, and
-    whether to capture stderr, read and log any ready output lines from the buffers. Additionally,
-    for any log records with a log level the same as the output log level, yield those log messages
-    for capture.
+    Process_metadata instance, a requested output log level for stdout, Borg's local path, whether
+    to capture stderr, and a function to read lines or byte chunks, read and log any ready output
+    lines from the buffers. Additionally, for any log records with a log level the same as the
+    output log level, yield those log messages for capture.
 
     This function just does one "turn of the crank" of logging buffer output. It is intended to be
     called repeatedly to continue to process buffers.
@@ -349,7 +374,7 @@ def log_buffer_lines(
                 ):
                     # Add the process's output to buffer_readers to ensure it'll get read.
                     buffer_readers[other_process.stdout] = Buffer_reader(
-                        read_lines(other_process.stdout, other_process), other_process
+                        read_lines(other_process.stdout, other_process), other_process, raw=False
                     )
 
         try:
@@ -361,6 +386,12 @@ def log_buffer_lines(
 
         for line in lines:
             if not line or not reader.process:
+                continue
+
+            # If we're dealing in raw bytes, bypass the logging machinery altogether, because it'll
+            # convert the data to a string.
+            if reader.raw:
+                yield line
                 continue
 
             # Keep the last few lines of output in case the process errors and we need the
@@ -471,6 +502,12 @@ def log_remaining_buffer_lines(
 
         for lines in reader.lines:
             for line in lines:
+                # If we're dealing in raw bytes, bypass the logging machinery altogether, because
+                # it'll convert the data to a string.
+                if reader.raw:
+                    yield line
+                    continue
+
                 log_record = handle_log_record(
                     parse_log_line(
                         line=line.rstrip(),
@@ -497,6 +534,7 @@ def log_outputs(
     borg_local_path,
     borg_exit_codes,
     capture_stderr=False,
+    output_raw_bytes=False,
 ):
     '''
     Given a sequence of subprocess.Popen() instances for multiple processes, log the outputs (stderr
@@ -505,8 +543,9 @@ def log_outputs(
     warning for exit code 1, if that process does not match the Borg local path).
 
     If the output log level is None, then instead of logging, capture the output for the last
-    process given and yield it one line at a time. This includes stderr if capture stderr is set.
-    But if the output log level is not None, don't yield anything.
+    process given and yield it one line at a time (or as raw byte chunks if output raw bytes is
+    True). This includes stderr if capture stderr is set. But if the output log level is not None,
+    don't yield anything.
 
     This yielding means that this function is a generator, and must be consumed in order to execute.
 
@@ -524,7 +563,9 @@ def log_outputs(
 
     # Map from buffer to Buffer_reader instance.
     buffer_readers = {
-        buffer: Buffer_reader(read_lines(buffer, process), process)
+        buffer: Buffer_reader(read_byte_chunks(buffer, process), process, raw=True)
+        if output_raw_bytes and process_metadatas[process].capture and buffer == process.stdout
+        else Buffer_reader(read_lines(buffer, process), process, raw=False)
         for process in processes
         if process.stdout or process.stderr
         for buffer in output_buffers_for_process(process, exclude_stdouts)
@@ -533,7 +574,11 @@ def log_outputs(
     # Log output lines for each process until they all exit or one errors.
     while True:
         yield from log_buffer_lines(
-            buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr
+            buffer_readers,
+            process_metadatas,
+            output_log_level,
+            borg_local_path,
+            capture_stderr,
         )
 
         if (
@@ -637,7 +682,8 @@ def execute_command(
     (regardless of arguments), treat exit code 1 as a warning instead of an error. But if Borg exit
     codes are given as a sequence of exit code configuration dicts, then use that configuration to
     decide what's an error and what's a warning. If run to completion is False, then return the
-    process for the command without executing it to completion.
+    process for the command without executing it to completion. Note that in this case, the caller
+    is responsible for draining both stdout and stderr from the returned process.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
@@ -813,3 +859,49 @@ def execute_command_with_processes(
             borg_local_path,
             borg_exit_codes,
         )
+
+
+NO_MORE_CHUNKS = object()
+
+
+class Generator_reader:
+    '''
+    An adapter that takes as input a generator of chunked byte data, e.g. as yielded by
+    log_outputs(), and exposes a file-like object with a read() function to progressively consume
+    that data regardless of chunk boundaries. This is useful when running a command that produces
+    byte output and then sending that byte data to something that expects a file-like object.
+    '''
+    def __init__(self, chunks):
+        self.chunks = chunks
+        self.buffer = []
+        self.buffer_size = 0
+
+    def read(self, size=-1):
+        # Accumulate chunks from the generator into a buffer until we've got enough data to satisfy
+        # the requested read size.
+        while size < 0 or self.buffer_size < size:
+            chunk = next(self.chunks, NO_MORE_CHUNKS)
+
+            if chunk is NO_MORE_CHUNKS:
+                break
+
+            self.buffer.append(chunk)
+            self.buffer_size += len(self.buffer[-1])
+
+        joined_buffer = b''.join(self.buffer)
+        requested_size = len(joined_buffer) if size < 0 else size
+
+        # Return exactly the requested read size worth of data and save the rest for later.
+        self.buffer = [joined_buffer[requested_size:]]
+        self.buffer_size = len(self.buffer[-1])
+
+        return joined_buffer[:requested_size]
+
+    def close(self):
+        '''
+        On close, drain the rest of the generator.
+        '''
+        for _ in self.chunks:
+            pass
+
+

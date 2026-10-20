@@ -54,7 +54,7 @@ def export_tar_archive(
             else ()
         )
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if destination_path != '-' else ())
+        + (('--log-json',) if destination_path != '-' or capture_stdout else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--list',) if config.get('list_details') else ())
@@ -81,6 +81,9 @@ def export_tar_archive(
     if destination_path == '-':
         output_file = subprocess.PIPE if capture_stdout else DO_NOT_CAPTURE
     else:
+        if capture_stdout:
+            raise ValueError("Capture stdout is set, but the destination path isn't stdout")
+
         output_file = None
 
     return execute_command(

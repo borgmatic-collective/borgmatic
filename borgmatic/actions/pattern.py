@@ -267,7 +267,13 @@ def deduplicate_runtime_directory_patterns(patterns, config, borgmatic_runtime_d
     )
 
     for pattern in patterns:
-        if pattern.type != borgmatic.borg.pattern.Pattern_type.ROOT:
+        # Skip both non-root patterns and hook patterns that aren't parents of the runtime
+        # directory. For the latter, this prevents slow deduplication of hook patterns that will
+        # never match in the below loop anyway.
+        if pattern.type != borgmatic.borg.pattern.Pattern_type.ROOT or (
+            pattern.source == borgmatic.borg.pattern.Pattern_source.HOOK
+            and pathlib.PurePath(pattern.path) not in runtime_directory_parents
+        ):
             deduplicated[pattern] = True
             continue
 
