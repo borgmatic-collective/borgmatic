@@ -237,6 +237,21 @@ def test_parse_arguments_with_list_json_overrides_default():
     assert arguments['list'].json is True
 
 
+def test_parse_arguments_with_diff_json_overrides_default():
+    arguments = module.parse_arguments(
+        {},
+        'diff',
+        '--archive',
+        'archive1',
+        '--second-archive',
+        'archive2',
+        '--json',
+    )
+
+    assert 'diff' in arguments
+    assert arguments['diff'].json is True
+
+
 def test_parse_arguments_with_no_actions_defaults_to_all_actions_enabled():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 

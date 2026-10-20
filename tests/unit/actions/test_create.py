@@ -375,7 +375,18 @@ def test_run_create_with_active_dumps_removes_data_source_dumps_with_original_pa
 
 def test_rename_checkpoint_archive_renames_archive_using_name():
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
-    flexmock(module.borgmatic.borg.repo_list).should_receive('get_latest_archive').and_return(
+    flexmock(module.borgmatic.borg.flags).should_receive(
+        'get_default_archive_name_format'
+    ).and_return('{hostname}')
+    flexmock(module.borgmatic.borg.repo_list).should_receive('get_latest_archive').with_args(
+        repository_path=object,
+        config={'match_archives': None, 'archive_name_format': '{hostname}.checkpoint'},
+        local_borg_version=object,
+        global_arguments=object,
+        local_path=object,
+        remote_path=object,
+        consider_checkpoints=True,
+    ).and_return(
         {'id': 'id1', 'name': 'archive.checkpoint'},
     )
 
@@ -403,6 +414,9 @@ def test_rename_checkpoint_archive_renames_archive_using_name():
 
 def test_rename_checkpoint_with_feature_available_archive_renames_archive_using_id():
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
+    flexmock(module.borgmatic.borg.flags).should_receive(
+        'get_default_archive_name_format'
+    ).and_return('{hostname}')
     flexmock(module.borgmatic.borg.repo_list).should_receive('get_latest_archive').and_return(
         {'id': 'id1', 'name': 'archive.checkpoint'},
     )
@@ -431,6 +445,9 @@ def test_rename_checkpoint_with_feature_available_archive_renames_archive_using_
 
 def test_rename_checkpoint_archive_checks_suffix():
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
+    flexmock(module.borgmatic.borg.flags).should_receive(
+        'get_default_archive_name_format'
+    ).and_return('{hostname}')
     flexmock(module.borgmatic.borg.repo_list).should_receive('get_latest_archive').and_return(
         {'id': 'id1', 'name': 'unexpected-archive'},
     )

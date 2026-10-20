@@ -9,8 +9,13 @@
    dumping hundreds of databases.
  * #1371: Fix an attribute error when running the experimental "browse" action with older versions
    of the Textual library.
+ * #1376: Fix a regression in which ZFS/LVM/Btrfs hooks no longer got Borg cache hits due to a
+   random temporary directory created within the borgmatic runtime directory.
  * Fix a Postgresql hook error when restoring a directory format database with an overridden
    hostname or port.
+ * Fix a bug in which borgmatic didn't correctly rename checkpoint archives when database hooks were
+   enabled with Borg 2.
+ * Add a "--json" flag to the "diff" action for outputting one JSON object per changed path.
 
 2.1.10
  * #1185: Add support for setting top-level configuration options under each repository, making

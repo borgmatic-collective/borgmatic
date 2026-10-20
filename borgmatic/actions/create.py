@@ -4,6 +4,7 @@ import borgmatic.actions.dump
 import borgmatic.actions.json
 import borgmatic.borg.create
 import borgmatic.borg.feature
+import borgmatic.borg.flags
 import borgmatic.borg.rename
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
@@ -153,9 +154,17 @@ def rename_checkpoint_archive(
 
     A similar comment applies to retrieving the ID of the renamed archive.
     '''
+    archive_name_format = config.get(
+        'archive_name_format',
+        borgmatic.borg.flags.get_default_archive_name_format(local_borg_version),
+    )
+
     archive = borgmatic.borg.repo_list.get_latest_archive(
         repository_path,
-        config,
+        # We only want to get the latest checkpoint and not any other archive. Ignore match
+        # archives, so the user's configured preferences on archive fetching don't interfere.
+        config
+        | {'match_archives': None, 'archive_name_format': f'{archive_name_format}.checkpoint'},
         local_borg_version,
         global_arguments,
         local_path,
