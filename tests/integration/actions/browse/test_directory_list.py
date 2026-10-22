@@ -6,12 +6,23 @@ from borgmatic.actions.browse import directory_list as module
 from borgmatic.actions.browse.workers import Directory
 
 
+def make_option(prompt, option_id):
+    '''
+    Make a textual.widgets.option_list.Option with the given prompt and ID, stashing the prompt as
+    prompt_text the way that real directory list and loading indicator options do.
+    '''
+    option = textual.widgets.option_list.Option(prompt, id=option_id)
+    option.prompt_text = prompt
+
+    return option
+
+
 def test_add_archive_paths_with_only_duplicate_paths_bails():
     directory_list = textual.widgets.OptionList()
     directory_list.path_components = ('etc',)
     directory_list.path_loaded = flexmock(path_hierarchy={})
-    directory_list.add_option(textual.widgets.option_list.Option('foo', id='foo'))
-    directory_list.add_option(textual.widgets.option_list.Option('bar', id='bar'))
+    directory_list.add_option(make_option('foo', option_id='foo'))
+    directory_list.add_option(make_option('bar', option_id='bar'))
     config = {'repositories': [{'path': 'test.borg'}]}
     flexmock(directory_list).should_receive('clear_options').never()
     flexmock(directory_list).should_receive('add_options').never()
@@ -32,8 +43,8 @@ def test_add_archive_paths_adds_ands_sorts_and_filters_and_deduplicates():
     directory_list = textual.widgets.OptionList()
     directory_list.path_components = ('etc',)
     directory_list.path_loaded = flexmock(path_hierarchy={})
-    directory_list.add_option(textual.widgets.option_list.Option('📄 foo', id='foo'))
-    directory_list.add_option(textual.widgets.option_list.Option('📄 bar', id='bar'))
+    directory_list.add_option(make_option('📄 foo', option_id='foo'))
+    directory_list.add_option(make_option('📄 bar', option_id='bar'))
     directory_list.highlighted = 1
     directory_list.highlighted_option_changed = True
     config = {'repositories': [{'path': 'test.borg'}]}
@@ -53,15 +64,15 @@ def test_add_archive_paths_adds_ands_sorts_and_filters_and_deduplicates():
     )
 
     assert len(directory_list.options) == 5
-    assert module.get_prompt_text(directory_list.options[0]) == '📁 other (0 B)'
+    assert directory_list.options[0].prompt_text == '📁 other (0 B)'
     assert directory_list.options[0].id == 'other'
-    assert module.get_prompt_text(directory_list.options[1]) == '📁 quux (0 B)'
+    assert directory_list.options[1].prompt_text == '📁 quux (0 B)'
     assert directory_list.options[1].id == 'quux'
-    assert module.get_prompt_text(directory_list.options[2]) == '📄 bar'
+    assert directory_list.options[2].prompt_text == '📄 bar'
     assert directory_list.options[2].id == 'bar'
-    assert module.get_prompt_text(directory_list.options[3]) == '📄 baz (0 B)'
+    assert directory_list.options[3].prompt_text == '📄 baz (0 B)'
     assert directory_list.options[3].id == 'baz'
-    assert module.get_prompt_text(directory_list.options[4]) == '📄 foo (0 B)'
+    assert directory_list.options[4].prompt_text == '📄 foo (0 B)'
     assert directory_list.options[4].id == 'foo'
     assert directory_list.highlighted == 2
 
@@ -78,7 +89,7 @@ def test_add_archive_paths_updates_existing_option_size():
     directory_list = textual.widgets.OptionList()
     directory_list.path_components = ('etc',)
     directory_list.path_loaded = flexmock(path_hierarchy=hierarchy)
-    directory_list.add_option(textual.widgets.option_list.Option('📁 foo', id='foo'))
+    directory_list.add_option(make_option('📁 foo', option_id='foo'))
     config = {'repositories': [{'path': 'test.borg'}]}
     flexmock(directory_list).should_receive('clear_options').never()
     flexmock(directory_list).should_receive('add_options').never()
@@ -93,7 +104,7 @@ def test_add_archive_paths_updates_existing_option_size():
         ),
     )
 
-    assert module.get_prompt_text(directory_list.options[0]) == '📁 foo (2.05 kB)'
+    assert directory_list.options[0].prompt_text == '📁 foo (2.05 kB)'
 
 
 def test_add_archive_paths_does_not_repaint_unchanged_size():
@@ -108,7 +119,7 @@ def test_add_archive_paths_does_not_repaint_unchanged_size():
     directory_list = textual.widgets.OptionList()
     directory_list.path_components = ('etc',)
     directory_list.path_loaded = flexmock(path_hierarchy=hierarchy)
-    directory_list.add_option(textual.widgets.option_list.Option('📁 foo (2.05 kB)', id='foo'))
+    directory_list.add_option(make_option('📁 foo (2.05 kB)', option_id='foo'))
     config = {'repositories': [{'path': 'test.borg'}]}
     flexmock(directory_list).should_receive('replace_option_prompt').never()
     flexmock(directory_list).should_receive('clear_options').never()
@@ -137,7 +148,7 @@ def test_add_archive_paths_ignores_link_target_for_directory_row():
     directory_list = textual.widgets.OptionList()
     directory_list.path_components = ('etc',)
     directory_list.path_loaded = flexmock(path_hierarchy=hierarchy)
-    directory_list.add_option(textual.widgets.option_list.Option('📁 foo (0 B)', id='foo'))
+    directory_list.add_option(make_option('📁 foo (0 B)', option_id='foo'))
     config = {'repositories': [{'path': 'test.borg'}]}
     flexmock(directory_list).should_receive('replace_option_prompt').never()
     flexmock(directory_list).should_receive('clear_options').never()
@@ -167,7 +178,7 @@ def test_add_archive_paths_computes_one_size_update_per_directory_for_a_batch():
     directory_list = textual.widgets.OptionList()
     directory_list.path_components = ('etc',)
     directory_list.path_loaded = flexmock(path_hierarchy=hierarchy)
-    directory_list.add_option(textual.widgets.option_list.Option('📁 foo (100 B)', id='foo'))
+    directory_list.add_option(make_option('📁 foo (100 B)', option_id='foo'))
     config = {'repositories': [{'path': 'test.borg'}]}
     flexmock(directory_list).should_receive('replace_option_prompt').once()
     flexmock(directory_list).should_receive('clear_options').never()
@@ -181,15 +192,15 @@ def test_add_archive_paths_computes_one_size_update_per_directory_for_a_batch():
         archive_paths=archive_paths,
     )
 
-    assert module.get_prompt_text(directory_list.get_option('foo')) == '📁 foo (300 B)'
+    assert directory_list.get_option('foo').prompt_text == '📁 foo (300 B)'
 
 
 def test_add_archive_paths_highlights_first_option_if_highlight_has_not_changed():
     directory_list = textual.widgets.OptionList()
     directory_list.path_components = ('etc',)
     directory_list.path_loaded = flexmock(path_hierarchy={})
-    directory_list.add_option(textual.widgets.option_list.Option('📄 foo', id='foo'))
-    directory_list.add_option(textual.widgets.option_list.Option('📄 bar', id='bar'))
+    directory_list.add_option(make_option('📄 foo', option_id='foo'))
+    directory_list.add_option(make_option('📄 bar', option_id='bar'))
     directory_list.highlighted = None
     directory_list.highlighted_option_changed = False
     config = {'repositories': [{'path': 'test.borg'}]}
@@ -203,11 +214,11 @@ def test_add_archive_paths_highlights_first_option_if_highlight_has_not_changed(
     )
 
     assert len(directory_list.options) == 3
-    assert module.get_prompt_text(directory_list.options[0]) == '📄 bar'
+    assert directory_list.options[0].prompt_text == '📄 bar'
     assert directory_list.options[0].id == 'bar'
-    assert module.get_prompt_text(directory_list.options[1]) == '📄 baz (0 B)'
+    assert directory_list.options[1].prompt_text == '📄 baz (0 B)'
     assert directory_list.options[1].id == 'baz'
-    assert module.get_prompt_text(directory_list.options[2]) == '📄 foo'
+    assert directory_list.options[2].prompt_text == '📄 foo'
     assert directory_list.options[2].id == 'foo'
     assert directory_list.highlighted == 0
 
@@ -216,11 +227,9 @@ def test_add_archive_paths_retains_loading_indicator_at_bottom():
     directory_list = textual.widgets.OptionList()
     directory_list.path_components = ('etc',)
     directory_list.path_loaded = flexmock(path_hierarchy={})
-    directory_list.add_option(textual.widgets.option_list.Option('📄 foo', id='foo'))
-    directory_list.add_option(textual.widgets.option_list.Option('📄 bar', id='bar'))
-    directory_list.add_option(
-        textual.widgets.option_list.Option('loading!!!', id='loading-indicator')
-    )
+    directory_list.add_option(make_option('📄 foo', option_id='foo'))
+    directory_list.add_option(make_option('📄 bar', option_id='bar'))
+    directory_list.add_option(make_option('loading!!!', option_id='loading-indicator'))
     directory_list.highlighted = 0
     directory_list.highlighted_option_changed = True
     config = {'repositories': [{'path': 'test.borg'}]}
@@ -234,13 +243,13 @@ def test_add_archive_paths_retains_loading_indicator_at_bottom():
     )
 
     assert len(directory_list.options) == 4
-    assert module.get_prompt_text(directory_list.options[0]) == '📄 bar'
+    assert directory_list.options[0].prompt_text == '📄 bar'
     assert directory_list.options[0].id == 'bar'
-    assert module.get_prompt_text(directory_list.options[1]) == '📄 baz (0 B)'
+    assert directory_list.options[1].prompt_text == '📄 baz (0 B)'
     assert directory_list.options[1].id == 'baz'
-    assert module.get_prompt_text(directory_list.options[2]) == '📄 foo'
+    assert directory_list.options[2].prompt_text == '📄 foo'
     assert directory_list.options[2].id == 'foo'
-    assert module.get_prompt_text(directory_list.options[3]) == 'loading!!!'
+    assert directory_list.options[3].prompt_text == 'loading!!!'
     assert directory_list.options[3].id == 'loading-indicator'
     assert directory_list.highlighted == 2
 
@@ -276,7 +285,7 @@ def test_directory_list_with_already_complete_loading_skips_loading_indicator():
     )
     assert directory_list.border_title == '📁 etc (0 B)'
     assert len(directory_list.options) == 1
-    assert module.get_prompt_text(directory_list.options[0]) == '📁 ..'
+    assert directory_list.options[0].prompt_text == '📁 ..'
     assert directory_list.options[0].id == '..'
 
 
@@ -382,7 +391,7 @@ def test_directory_list_on_option_list_option_highlighted_with_highlighted_zero_
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': Directory()}),
         path_components=('etc',),
     )
-    directory_list.add_option(textual.widgets.option_list.Option('zero', id='zero'))
+    directory_list.add_option(make_option('zero', option_id='zero'))
     directory_list.highlighted = 0
 
     directory_list.on_option_list_option_highlighted(event=flexmock())
@@ -402,8 +411,8 @@ def test_directory_list_on_option_list_option_highlighted_with_highlighted_non_z
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': Directory()}),
         path_components=('etc',),
     )
-    directory_list.add_option(textual.widgets.option_list.Option('zero', id='zero'))
-    directory_list.add_option(textual.widgets.option_list.Option('one', id='one'))
+    directory_list.add_option(make_option('zero', option_id='zero'))
+    directory_list.add_option(make_option('one', option_id='one'))
     directory_list.highlighted = 1
 
     directory_list.on_option_list_option_highlighted(event=flexmock())

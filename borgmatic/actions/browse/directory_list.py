@@ -96,15 +96,6 @@ def make_directory_list_option(archive_path, relative_path_components, size):
     return option
 
 
-def get_prompt_text(option):
-    '''
-    Given a textual.widgets.option_list.Option, return the plain text equivalent of its prompt.
-    Directory list options prompt with a Rich renderable and stash the plain text as prompt_text,
-    while other options (e.g. the loading indicator) prompt with an ordinary string.
-    '''
-    return getattr(option, 'prompt_text', None) or str(option.prompt)
-
-
 def add_archive_paths(
     directory_list,
     config,
@@ -170,7 +161,7 @@ def add_archive_paths(
 
         if existing_option is None:
             new_options.append(option)
-        elif get_prompt_text(existing_option) != option.prompt_text:
+        elif existing_option.prompt_text != option.prompt_text:
             directory_list.replace_option_prompt(option_id, option.prompt)
 
             # Keep the existing option's plain text and path type in sync with its replaced
@@ -185,7 +176,7 @@ def add_archive_paths(
     sorted_options = sorted(
         (*directory_list.options, *new_options),
         # The loading indicator "option" always goes to the bottom.
-        key=lambda option: ((option.id == 'loading-indicator'), get_prompt_text(option)),
+        key=lambda option: ((option.id == 'loading-indicator'), option.prompt_text),
     )
 
     # Retain the highlighted option position even as other options load around it.

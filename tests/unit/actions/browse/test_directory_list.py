@@ -60,14 +60,6 @@ def test_make_size_path_prompt_aligns_paths_regardless_of_size_length():
     ).index('path')
 
 
-def test_get_prompt_text_with_prompt_text_returns_it():
-    assert module.get_prompt_text(flexmock(prompt_text='📁 baz')) == '📁 baz'
-
-
-def test_get_prompt_text_without_prompt_text_falls_back_to_string_prompt():
-    assert module.get_prompt_text(flexmock(prompt='⏳ loading')) == '⏳ loading'
-
-
 def test_make_directory_list_option_with_file_path_makes_file_option():
     flexmock(module.textual.widgets.option_list).should_receive('Option').replace_with(flexmock)
 
