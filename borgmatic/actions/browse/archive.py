@@ -25,7 +25,8 @@ class Path_type(enum.Enum):
 # A data structure capturing a path stored in a Borg archive.
 Archive_path = collections.namedtuple(
     'Archive_path',
-    ('path_type', 'file_path', 'link_target'),
+    ('path_type', 'file_path', 'link_target', 'size'),
+    defaults=(0,),
 )
 
 
@@ -84,6 +85,7 @@ def get_archive_paths(config, repository, archive_name):
                 path_data['type'],
                 path_data['path'],
                 path_data.get('linktarget'),
+                path_data.get('size', 0),
             )
             for path_data in borgmatic.borg.list.capture_archive_listing(
                 repository['path'],
@@ -91,6 +93,9 @@ def get_archive_paths(config, repository, archive_name):
                 config,
                 local_borg_version,
                 global_arguments,
+                # Explicitly include the size key even if a custom file_list_format is
+                # configured, since sizes are always shown in the browse UI.
+                path_format='{size}',
                 local_path=local_path,
                 remote_path=remote_path,
             )
