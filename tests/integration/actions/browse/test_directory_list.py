@@ -412,8 +412,7 @@ def test_directory_list_on_option_list_option_highlighted_with_highlighted_non_z
 
 
 def test_directory_list_update_border_title_shows_directory_size():
-    hierarchy = {'etc': module.borgmatic.actions.browse.workers.Directory()}
-    hierarchy['etc'].size = 1024
+    hierarchy = {'etc': module.borgmatic.actions.browse.workers.Directory(size=1024)}
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),
@@ -429,10 +428,9 @@ def test_directory_list_update_border_title_shows_directory_size():
 
 def test_directory_list_update_border_title_shows_archive_size():
     hierarchy = {
-        'etc': module.borgmatic.actions.browse.workers.Directory(),
+        'etc': module.borgmatic.actions.browse.workers.Directory(size=512),
         'foo.txt': module.borgmatic.actions.browse.archive.Archive_path('-', 'foo.txt', '', 512),
     }
-    hierarchy['etc'].size = 512
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),

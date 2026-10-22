@@ -21,7 +21,13 @@ class Directory(dict):
     the cumulative size of the files beneath it.
     '''
 
-    size = 0
+    def __init__(self, *args, size=0, **kwargs):
+        '''
+        Given the usual dict constructor arguments and an optional cumulative size in bytes, make a
+        directory with that size.
+        '''
+        super().__init__(*args, **kwargs)
+        self.size = size
 
 
 class Archive_loaded(textual.signal.Signal):

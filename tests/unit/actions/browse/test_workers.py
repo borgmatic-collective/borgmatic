@@ -21,6 +21,27 @@ def test_add_repository_archives_publishes_for_each_archive():
     )
 
 
+def test_directory_defaults_to_zero_size():
+    assert module.Directory().size == 0
+
+
+def test_directory_with_size_and_contents_sets_both():
+    directory = module.Directory({'foo': module.Directory()}, size=3)
+
+    assert directory.size == 3
+    assert directory == {'foo': {}}
+
+
+def test_directory_sizes_are_independent_per_instance():
+    directory = module.Directory()
+    other_directory = module.Directory()
+
+    directory.size += 3
+
+    assert directory.size == 3
+    assert other_directory.size == 0
+
+
 def test_record_path_sets_file_path_in_filesystem_hierarchy():
     archive_path = flexmock(path_type='-', file_path='foo/bar/baz.txt', size=3)
     quux_path = flexmock(size=5)
@@ -130,13 +151,13 @@ def test_get_path_size_returns_cumulative_directory_size():
                         'baz.txt': module.borgmatic.actions.browse.archive.Archive_path(
                             '-', 'foo/bar/baz.txt', '', 3
                         )
-                    }
+                    },
+                    size=3,
                 )
-            }
+            },
+            size=3,
         )
     }
-    hierarchy['foo'].size = 3
-    hierarchy['foo']['bar'].size = 3
 
     assert module.get_path_size(hierarchy, ('foo',)) == 3
     assert module.get_path_size(hierarchy, ('foo', 'bar')) == 3
@@ -152,9 +173,8 @@ def test_get_path_size_returns_file_size():
 def test_get_path_size_with_no_path_components_returns_whole_hierarchy_size():
     hierarchy = {
         'foo.txt': module.borgmatic.actions.browse.archive.Archive_path('-', 'foo.txt', '', 7),
-        'etc': module.Directory(),
+        'etc': module.Directory(size=3),
     }
-    hierarchy['etc'].size = 3
 
     assert module.get_path_size(hierarchy, ()) == 10
 
