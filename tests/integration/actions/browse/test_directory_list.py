@@ -79,18 +79,23 @@ def test_add_archive_paths_adds_ands_sorts_and_filters_and_deduplicates():
 
 def test_add_archive_paths_updates_existing_option_size():
     hierarchy = {}
-    module.borgmatic.actions.browse.workers.record_path(
-        archive_path=module.borgmatic.actions.browse.archive.Archive_path(
-            '-', 'etc/foo/bar.txt', '', 2048
-        ),
-        hierarchy=hierarchy,
-        path_components=('etc', 'foo', 'bar.txt'),
-    )
+
+    for file_name in ('bar.txt', 'baz.txt'):
+        module.borgmatic.actions.browse.workers.record_path(
+            archive_path=module.borgmatic.actions.browse.archive.Archive_path(
+                '-', f'etc/foo/{file_name}', '', 1024
+            ),
+            hierarchy=hierarchy,
+            path_components=('etc', 'foo', file_name),
+        )
+
     directory_list = textual.widgets.OptionList()
     directory_list.path_components = ('etc',)
     directory_list.path_loaded = flexmock(path_hierarchy=hierarchy)
-    directory_list.add_option(make_option('📁 foo', option_id='foo'))
+    # The option's size as of before baz.txt loaded.
+    directory_list.add_option(make_option('📁 foo (1.02 kB)', option_id='foo'))
     config = {'repositories': [{'path': 'test.borg'}]}
+    flexmock(directory_list).should_call('replace_option_prompt').with_args('foo', object).once()
     flexmock(directory_list).should_receive('clear_options').never()
     flexmock(directory_list).should_receive('add_options').never()
 
@@ -100,7 +105,7 @@ def test_add_archive_paths_updates_existing_option_size():
         repository=config['repositories'][0],
         archive_name='archive',
         archive_paths=(
-            flexmock(path_type='-', file_path='etc/foo/bar.txt', link_target='', size=2048),
+            flexmock(path_type='-', file_path='etc/foo/baz.txt', link_target='', size=1024),
         ),
     )
 
@@ -420,8 +425,8 @@ def test_directory_list_on_option_list_option_highlighted_with_highlighted_non_z
     assert directory_list.highlighted_option_changed is True
 
 
-def test_directory_list_update_border_title_shows_directory_size():
-    hierarchy = {'etc': module.borgmatic.actions.browse.workers.Directory(size=1024)}
+def test_directory_list_update_border_title_reflects_newly_loaded_directory_size():
+    hierarchy = {'etc': Directory()}
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),
@@ -429,23 +434,39 @@ def test_directory_list_update_border_title_shows_directory_size():
         path_loaded=flexmock(complete=True, path_hierarchy=hierarchy),
         path_components=('etc',),
     )
+    assert directory_list.border_title == '📁 etc (0 B)'
+
+    module.borgmatic.actions.browse.workers.record_path(
+        archive_path=module.borgmatic.actions.browse.archive.Archive_path(
+            '-', 'etc/bar.txt', '', 1024
+        ),
+        hierarchy=hierarchy,
+        path_components=('etc', 'bar.txt'),
+    )
 
     directory_list.update_border_title()
 
     assert directory_list.border_title == '📁 etc (1.02 kB)'
 
 
-def test_directory_list_update_border_title_shows_archive_size():
-    hierarchy = {
-        'etc': module.borgmatic.actions.browse.workers.Directory(size=512),
-        'foo.txt': module.borgmatic.actions.browse.archive.Archive_path('-', 'foo.txt', '', 512),
-    }
+def test_directory_list_update_border_title_reflects_newly_loaded_archive_size():
+    hierarchy = {'etc': Directory()}
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),
         archive_name='archive',
         path_loaded=flexmock(complete=True, path_hierarchy=hierarchy),
     )
+    assert directory_list.border_title == '📁 archive (0 B)'
+
+    for file_path in ('etc/bar.txt', 'foo.txt'):
+        module.borgmatic.actions.browse.workers.record_path(
+            archive_path=module.borgmatic.actions.browse.archive.Archive_path(
+                '-', file_path, '', 512
+            ),
+            hierarchy=hierarchy,
+            path_components=tuple(file_path.split('/')),
+        )
 
     directory_list.update_border_title()
 
