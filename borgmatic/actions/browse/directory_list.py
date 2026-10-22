@@ -52,8 +52,16 @@ def make_size_path_prompt(size, path_text):
     scratch, which made rebuilding the line cache for 2,000 options about 45x slower than measuring
     text—dwarfing the cost of actually painting the options. Should more columns arrive, that cost
     may be worth paying, but it isn't for one.
+
+    Pad a bytes size with a trailing space, so that its one-character unit lines up with the
+    two-character units of larger sizes, e.g. "358 B " above "1.48 kB". The padding lives here
+    rather than in format_size(), since it's purely for this column's layout, and other sizes (like
+    those in border titles) shouldn't get a trailing space.
     '''
     size_text = borgmatic.actions.browse.sizes.format_size(size) if size is not None else ''
+
+    if size_text.endswith(f' {borgmatic.actions.browse.sizes.SIZE_UNITS[0]}'):
+        size_text += ' '
 
     return rich.text.Text(f'{size_text:>{OPTION_SIZE_COLUMN_WIDTH}}  {path_text}')
 

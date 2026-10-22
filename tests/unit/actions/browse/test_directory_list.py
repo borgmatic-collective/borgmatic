@@ -60,6 +60,17 @@ def test_make_size_path_prompt_aligns_paths_regardless_of_size_length():
     ).index('path')
 
 
+def test_make_size_path_prompt_aligns_bytes_number_with_larger_size_numbers():
+    bytes_text = rendered_text(module.make_size_path_prompt(358, 'path'))
+    kilobytes_text = rendered_text(module.make_size_path_prompt(1024, 'path'))
+
+    assert bytes_text.index('358') + len('358') == kilobytes_text.index('1.02') + len('1.02')
+
+
+def test_make_size_path_prompt_does_not_pad_larger_sizes():
+    assert '1.02 kB  path' in rendered_text(module.make_size_path_prompt(1024, 'path'))
+
+
 def test_make_directory_list_option_with_file_path_makes_file_option():
     flexmock(module.textual.widgets.option_list).should_receive('Option').replace_with(flexmock)
 
