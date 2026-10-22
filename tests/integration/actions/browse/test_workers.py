@@ -10,10 +10,11 @@ def test_archive_path_loaded_publish_records_complete():
     assert signal.complete
 
 
-def test_archive_path_loaded_publish_records_published_path():
-    archive_path = module.borgmatic.actions.browse.archive.Archive_path('-', 'foo/bar.txt', '')
+def test_archive_path_loaded_publish_records_published_paths():
+    archive_path = module.borgmatic.actions.browse.archive.Archive_path('-', 'foo/bar.txt', '', 5)
     signal = module.Archive_path_loaded(owner=flexmock(), name='Bob')
-    signal.publish(archive_path)
+    signal.publish((archive_path,))
 
     assert signal.path_hierarchy == {'foo': {'bar.txt': archive_path}}
+    assert signal.path_hierarchy['foo'].size == 5
     assert not signal.complete

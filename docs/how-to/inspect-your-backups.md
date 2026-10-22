@@ -182,7 +182,13 @@ borgmatic browse
 
 This launches a console UI where you can select a borgmatic configuration file
 (if there's more than one), select a Borg repository, select an archive in that
-repository, and even browse the backed up files in that archive.
+repository, and even browse the backed up files in that archive. Each file and
+directory is shown with its size, where a directory's size is the cumulative
+size of the files beneath it. These are apparent sizes, like those shown by
+`ls -l` or `du --apparent-size`, so they can differ from plain `du`, which
+shows disk usage instead. For instance, sparse files and files on a compressed
+filesystem use less disk space than their apparent sizes, while each small file
+uses at least one whole filesystem block.
 
 Use the keyboard or the mouse to navigate the UI. The footer at the bottom of
 the screen shows some of the available keys. Logs show up directly in the UI at

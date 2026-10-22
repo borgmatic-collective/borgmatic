@@ -14,6 +14,7 @@ def test_update_inline_loading_indicator_with_option_list_adds_a_dot():
 
     assert len(widget.options) == 1
     assert widget.options[0].prompt == 'HOLD..'
+    assert widget.options[0].prompt_text == 'HOLD..'
 
 
 def test_update_inline_loading_indicator_with_option_list_wraps_dots_beyond_three():
@@ -24,6 +25,7 @@ def test_update_inline_loading_indicator_with_option_list_wraps_dots_beyond_thre
 
     assert len(widget.options) == 1
     assert widget.options[0].prompt == 'HOLD'
+    assert widget.options[0].prompt_text == 'HOLD'
 
 
 def test_update_inline_loading_indicator_with_option_list_and_missing_indicator_does_not_raise():
@@ -77,6 +79,7 @@ def test_add_inline_loading_indicator_with_option_list_adds_loading_indicator_op
 
     assert len(widget.options) == 1
     assert widget.options[0].prompt == module.LOADING_MESSAGE
+    assert widget.options[0].prompt_text == module.LOADING_MESSAGE
     assert widget.options[0].id == 'loading-indicator'
     assert widget.highlighted is None
 

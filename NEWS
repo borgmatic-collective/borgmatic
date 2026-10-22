@@ -5,6 +5,8 @@
    dumping hundreds of databases.
  * #1371: Fix an attribute error when running the experimental "browse" action with older versions
    of the Textual library.
+ * #1372: In the browse action, show a size for every file and directory, with directory sizes
+   summed from the sizes of the files beneath them.
  * #1376: Fix a regression in which ZFS/LVM/Btrfs hooks no longer got Borg cache hits due to a
    random temporary directory created within the borgmatic runtime directory.
  * Fix a bug in which borgmatic didn't correctly rename checkpoint archives when database hooks were

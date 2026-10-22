@@ -11,6 +11,24 @@ logger = logging.getLogger('__name__')
 
 LOADING_DONE = object()
 
+# How many archive paths to publish (and repaint for) at a time.
+BATCH_SIZE = 200
+
+
+class Directory(dict):
+    '''
+    A dict subclass for a directory in an archive path hierarchy, with a "size" attribute holding
+    the cumulative size of the files beneath it.
+    '''
+
+    def __init__(self, *args, size=0, **kwargs):
+        '''
+        Given the usual dict constructor arguments and an optional cumulative size in bytes, make a
+        directory with that size.
+        '''
+        super().__init__(*args, **kwargs)
+        self.size = size
+
 
 class Archive_loaded(textual.signal.Signal):
     '''
@@ -48,19 +66,38 @@ def record_path(archive_path, hierarchy, path_components):
     '''
     Given an Archive_path instance, a dict capturing a filesystem hierarchy of paths, and a tuple of
     path components for the archive path, set the archive path into the hierarchy data structure.
+    Also add the archive path's size to the cumulative size of each directory containing it.
 
-    For instance, if given an archive path and path components representing "foo/bar/baz.txt",
-    produce a hierarchy that looks like:
+    For instance, if given an Archive_path of 3 bytes and path components representing
+    "foo/bar/baz.txt", produce a hierarchy that looks like:
 
-        {'foo': {'bar': {'baz.txt': Archive_path('-', 'foo/bar/baz.txt', '')}}}
+        {
+            'foo': Directory({
+                'bar': Directory({'baz.txt': Archive_path('-', 'foo/bar/baz.txt', '', 3)})
+            })
+        }
+
+    ... with the cumulative size of each containing directory incremented by 3.
 
     Note that the hierarchy is modified in place, so any existing paths there are retained.
     '''
-    if len(path_components) == 1:
-        hierarchy[path_components[0]] = {} if archive_path.path_type == 'd' else archive_path
-        return
+    directory = hierarchy
 
-    record_path(archive_path, hierarchy.setdefault(path_components[0], {}), path_components[1:])
+    for component in path_components[:-1]:
+        child = directory.get(component)
+
+        if child is None:
+            child = directory[component] = Directory()
+
+        child.size += archive_path.size
+        directory = child
+
+    leaf = path_components[-1]
+
+    if archive_path.path_type == borgmatic.actions.browse.archive.Path_type.DIRECTORY.value:
+        directory.setdefault(leaf, Directory())
+    else:
+        directory[leaf] = archive_path
 
 
 def get_paths(hierarchy, path_components, full_path_components=None):
@@ -68,16 +105,17 @@ def get_paths(hierarchy, path_components, full_path_components=None):
     Given a dict capturing a filesystem hierarchy of paths (or a subset thereof), a tuple of path
     components for a directory path relative to the hierarchy root, and an optional tuple of
     *absolute* path components for the same path (if different), return a generator of the
-    contained file and directory Archive_path instances from the hierarchy.
+    contained file and directory Archive_path instances from the hierarchy. Directory archive paths
+    carry the cumulative size of the files beneath them.
 
     For instance, given the following hierarchy:
 
-        {'foo': {'bar': {'baz.txt': Archive_path('-', 'foo/bar/baz.txt', ''), 'quux': {}}}}
+        {'foo': {'bar': {'baz.txt': Archive_path('-', 'foo/bar/baz.txt', '', 3), 'quux': {}}}}
 
     ... and path components of ('foo', 'bar'), return a generator with the following:
 
-        * Archive_path('-', 'foo/bar/baz.txt', '')
-        * Archive_path('d', 'foo/bar/quux', '')
+        * Archive_path('-', 'foo/bar/baz.txt', '', 3)
+        * Archive_path('d', 'foo/bar/quux', '', 0)
 
     The given absolute path components are use to construct directory paths like that last archive
     path.
@@ -91,7 +129,10 @@ def get_paths(hierarchy, path_components, full_path_components=None):
                 archive_path
                 if isinstance(archive_path, borgmatic.actions.browse.archive.Archive_path)
                 else borgmatic.actions.browse.archive.Archive_path(
-                    'd', os.path.join(*full_path_components, component), ''
+                    'd',
+                    os.path.join(*full_path_components, component),
+                    '',
+                    archive_path.size,
                 )
                 for component, archive_path in hierarchy[path_components[0]].items()
             )
@@ -104,6 +145,27 @@ def get_paths(hierarchy, path_components, full_path_components=None):
         raise ValueError(f'Unknown directory: {path_components[0]}')
 
 
+def get_path_size(hierarchy, path_components):
+    '''
+    Given a dict capturing a filesystem hierarchy of paths (or a subset thereof) and a tuple of path
+    components for a directory or file within it, return the cumulative size of that path—the sum
+    of the file sizes beneath it for a directory. If no path components are given, return the
+    cumulative size of the entire hierarchy. Return 0 if the given path can't be found.
+    '''
+    if not path_components:
+        return sum(node.size for node in hierarchy.values())
+
+    node = hierarchy
+
+    for component in path_components:
+        if not isinstance(node, dict) or component not in node:
+            return 0
+
+        node = node[component]
+
+    return node.size
+
+
 class Archive_path_loaded(textual.signal.Signal):
     '''
     A signal that publishes when each subsequent path is loaded from an archive, intended for
@@ -112,9 +174,9 @@ class Archive_path_loaded(textual.signal.Signal):
     started can "catch up" with existing known paths. Lastly, this signal publishes and tracks when
     loading is complete.
 
-    Each subscrided callback call includes the loaded path as an Archive_path instance. There is
-    intended to be a separate Archive_path_loaded instance per archive, but that instance should be
-    shared among several different widgets for the same archive for performance reasons.
+    Each subscrided callback call includes a batch of Archive_path instances. There is intended to
+    be a separate Archive_path_loaded instance per archive, but that instance should be shared among
+    several different widgets for the same archive for performance reasons.
     '''
 
     def __init__(self, owner, name):
@@ -123,36 +185,50 @@ class Archive_path_loaded(textual.signal.Signal):
 
         super().__init__(owner, name)
 
-    def publish(self, archive_path):
+    def publish(self, archive_paths):
         '''
-        Publish the given archive path to subscribers and record its path locally. But if the
-        archive path is actually LOADING_DONE, then record loading as complete.
+        Publish the given batch of Archive_path instances to subscribers and record their paths
+        locally. But if the batch is actually LOADING_DONE, then record loading as complete. Record
+        paths before publishing them so that subscribers see up-to-date directory sizes.
         '''
-        super().publish(archive_path)
-
-        if archive_path is LOADING_DONE:
+        if archive_paths is LOADING_DONE:
             self.complete = True
         else:
-            record_path(
-                archive_path, self.path_hierarchy, archive_path.file_path.split(os.path.sep)
-            )
+            for archive_path in archive_paths:
+                record_path(
+                    archive_path, self.path_hierarchy, archive_path.file_path.split(os.path.sep)
+                )
+
+        super().publish(archive_paths)
 
 
 @textual.work(thread=True)
 def load_archive_paths(browse_app, path_loaded, config, repository, archive_name):
     '''
     Given a running Browse_app instance, an Archive_path_loaded instance, a configuration dict, a
-    repository dict, and an archive name, load the paths in this archive and publish each one via
-    the Archive_path_loaded signal, so interested widgets can subscribe. Also send a "loading done"
-    signal when loading completes.
+    repository dict, and an archive name, load the paths in this archive and publish them in batches
+    via the Archive_path_loaded signal, so interested widgets can subscribe. Also send a "loading
+    done" signal when loading completes.
+
+    Publish in batches rather than one path at a time so that widgets don't have to process (and
+    repaint for) every single path.
 
     This function runs in a separate thread from the main UI. When loading is complete, publish a
     loading done signal.
     '''
+    batch = []
+
     for archive_path in borgmatic.actions.browse.archive.get_archive_paths(
         config, repository, archive_name
     ):
-        path_loaded.publish(archive_path)
+        batch.append(archive_path)
+
+        if len(batch) >= BATCH_SIZE:
+            path_loaded.publish(tuple(batch))
+            batch.clear()
+
+    if batch:
+        path_loaded.publish(tuple(batch))
 
     path_loaded.publish(LOADING_DONE)
 
