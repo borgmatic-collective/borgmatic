@@ -144,7 +144,7 @@ def add_archive_paths(
         )
 
         # If the loaded path doesn't belong to this directory list, we don't care about it.
-        if not relative_path_components:
+        if not relative_path_components or relative_path_components == ('.',):
             continue
 
         option_id = relative_path_components[0]
