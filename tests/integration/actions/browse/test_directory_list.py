@@ -1,9 +1,23 @@
+import rich.console
+import rich.text
 import textual.widgets
 import textual.widgets.option_list
 from flexmock import flexmock
 
 from borgmatic.actions.browse import directory_list as module
 from borgmatic.actions.browse.workers import Directory
+
+
+def rendered_text(renderable):
+    '''
+    Given a Rich renderable, return its rendered plain text.
+    '''
+    console = rich.console.Console(width=60, color_system=None)
+
+    with console.capture() as capture:
+        console.print(renderable, end='')
+
+    return capture.get()
 
 
 def make_option(prompt, option_id):
@@ -15,6 +29,23 @@ def make_option(prompt, option_id):
     option.prompt_text = prompt
 
     return option
+
+
+def test_make_size_path_prompt_aligns_paths_regardless_of_size_length():
+    bytes_prompt = module.make_size_path_prompt(0, 'path')
+    kilobytes_prompt = module.make_size_path_prompt(1024, 'path')
+
+    assert isinstance(bytes_prompt, rich.text.Text)
+    assert rendered_text(bytes_prompt).index('path') == rendered_text(kilobytes_prompt).index(
+        'path'
+    )
+
+
+def test_make_size_path_prompt_aligns_bytes_number_with_larger_size_numbers():
+    bytes_text = rendered_text(module.make_size_path_prompt(358, 'path'))
+    kilobytes_text = rendered_text(module.make_size_path_prompt(1024, 'path'))
+
+    assert bytes_text.index('358') + len('358') == kilobytes_text.index('1.02') + len('1.02')
 
 
 def test_add_archive_paths_with_only_duplicate_paths_bails():
