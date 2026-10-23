@@ -444,7 +444,7 @@ def test_log_outputs_kills_other_processes_and_returns_when_one_exits_with_warni
     )
     flexmock(module).should_receive('interpret_exit_code').with_args(
         ['sleep', '2'],
-        None,
+        -9,
         'borg',
         None,
     ).and_return(module.Exit_status.STILL_RUNNING)

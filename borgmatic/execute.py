@@ -602,6 +602,16 @@ def log_outputs(
         buffer_readers, process_metadatas, output_log_level, borg_local_path, capture_stderr
     )
 
+    # Raise for any process errors again to handle the edge case where a process has exited after our last check.
+    raise_for_process_errors(
+        buffer_readers,
+        process_metadatas,
+        output_log_level,
+        borg_local_path,
+        borg_exit_codes,
+        capture_stderr,
+    )
+
 
 SECRET_COMMAND_FLAG_NAMES = {'--password'}
 
