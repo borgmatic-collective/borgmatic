@@ -32,14 +32,14 @@ borgmatic restore --archive latest --data-source virtual-machine
 
 During backup, borgmatic streams each tarball to Borg, unpacking its files
 directly into the created Borg archive. Under the hood, this doesn't use Borg's
-native `import-tar`, because that's limited to a single tarball per archive (and
-no additional source directories).
+native `import-tar`, because that's limited to a single tarball per archive—and
+no additional source directories.
 
 Upon
 [restore](https://torsion.org/borgmatic/reference/command-line/actions/restore/),
 borgmatic exports the tarball from the archive, rewriting it on the fly to
-inject its original file permissions, ownership, symlinks, etc. The resulting
-tarball ends up at its original `path` (or `restore_path`).
+inject its original contained file permissions, ownership, symlinks, etc. The
+resulting tarball ends up at its original `path` (or `restore_path`).
 
 Both `create` and `restore` operate without using any temporary files for
 tarball data.
@@ -48,12 +48,12 @@ tarball data.
 ## Limitations
 
  * Within an archive, tarball contents are not stored at their original path.
-   Instead, they are stored within `borgmatic/tarballs/` so that the `restore`
-   action can find them.
+   Instead, they are stored within `borgmatic/tarballs/` (with Borg 1.4+) so
+   that the `restore` action can find them.
  * Due to the way that borgmatic streams tarballs to Borg via named pipes,
    per-file information (permissions, ownership, symlink targets, etc.) is
-   stored separately in a per-tarball manifest file. This is consumed by the
-   `restore` action.
+   stored separately from file contents in a per-tarball manifest file within
+   `borgmatic/tarballs/`. This is consumed by the `restore` action.
  * During restore, borgmatic attempts to match the compression (if any) of the
    original tarball based on its file extension. If it can't determine the
    compression method, it errors.
@@ -66,7 +66,7 @@ tarball data.
    of your `read_special` configuration option.
  * Tarballs backed up and restored with this data source hook are not
    bit-identical to their corresponding original tarballs, even though their
-   contents and file metadata should be the same.
+   file contents and metadata should be the same.
  * During the `restore` action, borgmatic removes any existing tarball already
    present at the restore path before replacing it with the restored tarball.
  * Currently, this hook only supports the following compression types on
