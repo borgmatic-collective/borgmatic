@@ -10,6 +10,7 @@ import borgmatic.borg.extract
 import borgmatic.borg.list
 import borgmatic.borg.repo_list
 import borgmatic.borg.version
+import borgmatic.execute
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +102,7 @@ def get_archive_paths(config, repository, archive_name):
         )
 
 
-READLINES_HINT_BYTES = 100000
+MAXIMUM_TOTAL_READ_SIZE = 100000
 TRUNCATION_MESSAGE = '[... truncated for display ...]'
 
 
@@ -118,7 +119,7 @@ def get_archive_file_content(config, repository, archive_name, file_path):
         local_path = config.get('local_path', 'borg')
         remote_path = config.get('remote_path')
 
-        lines = borgmatic.borg.extract.extract_archive(
+        extract_process = borgmatic.borg.extract.extract_archive(
             dry_run=False,
             repository=repository['path'],
             archive=archive_name,
@@ -131,9 +132,35 @@ def get_archive_file_content(config, repository, archive_name, file_path):
             destination_path=None,
             strip_components=None,
             extract_to_stdout=True,
-        ).stdout.readlines(READLINES_HINT_BYTES)
+        )
 
-        content = b''.join(lines)
+        chunks = []
+        read_bytes_count = 0
+        terminated = False
+
+        # Capture stdout while logging stderr.
+        with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
+            for chunk in borgmatic.execute.log_outputs(
+                processes=(extract_process,),
+                exclude_stdouts=(),
+                output_log_level=None,
+                borg_local_path=local_path,
+                borg_exit_codes=config.get('borg_exit_codes'),
+                output_raw_bytes=True,
+            ):
+                read_bytes_count += len(chunk)
+                chunks.append(chunk)
+
+                # If we've read our fill of bytes, kill the extract process so we don't have to
+                # drain and read the entire file from it.
+                if not terminated and read_bytes_count >= MAXIMUM_TOTAL_READ_SIZE:
+                    logger.debug(
+                        "Terminating Borg extract process, since we've read our fill of file preview data"
+                    )
+                    extract_process.terminate()
+                    terminated = True
+
+        content = b''.join(chunks)
 
         if binaryornot.helpers.is_binary_string(content):
             return None
@@ -141,7 +168,7 @@ def get_archive_file_content(config, repository, archive_name, file_path):
         try:
             return (
                 content.decode()
-                if len(content) < READLINES_HINT_BYTES
+                if len(content) < MAXIMUM_TOTAL_READ_SIZE
                 else f'{content.decode()}\n{TRUNCATION_MESSAGE}'
             )
         except UnicodeDecodeError:

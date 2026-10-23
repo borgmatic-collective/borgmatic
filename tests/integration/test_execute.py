@@ -70,6 +70,52 @@ def test_read_lines_yields_nothing():
     assert tuple(module.read_lines(process.stdout, process)) == ()
 
 
+def test_read_lines_uses_system_locale_when_decoding_output():
+    flexmock(module.locale).should_receive('getpreferredencoding').and_return('ISO-8859-1')
+    process = subprocess.Popen(['echo', b'\xc4pple'], stdout=subprocess.PIPE)
+
+    assert tuple(module.read_lines(process.stdout, process)) == (('\xc4pple',),)
+
+
+def test_read_byte_chunks_reads_single_chunk():
+    process = subprocess.Popen(['echo', 'hi'], stdout=subprocess.PIPE)
+
+    assert tuple(module.read_byte_chunks(process.stdout, process)) == ((b'hi\n',),)
+
+
+def test_read_byte_chunks_yields_data_longer_than_chunk_size():
+    process = subprocess.Popen(
+        ['echo', 'this line is longer than the chunk size'], stdout=subprocess.PIPE
+    )
+
+    assert tuple(
+        flexmock(module, READ_RAW_BYTES_CHUNK_SIZE=16).read_byte_chunks(process.stdout, process)
+    ) == (
+        (b'this line is lon',),
+        (b'ger than the chu',),
+        (b'nk size\n',),
+    )
+
+
+def test_read_byte_chunks_with_longer_running_process_yields_many_lines():
+    process = subprocess.Popen(
+        [
+            sys.executable,
+            '-c',
+            "import random, string; print('\\n'.join(random.choice(string.ascii_letters) for _ in range(1000)))",
+        ],
+        stdout=subprocess.PIPE,
+    )
+
+    assert tuple(module.read_byte_chunks(process.stdout, process))
+
+
+def test_read_byte_chunks_yields_nothing():
+    process = subprocess.Popen(['echo', '-n'], stdout=subprocess.PIPE)
+
+    assert tuple(module.read_byte_chunks(process.stdout, process)) == ()
+
+
 def test_log_outputs_logs_each_line_separately():
     hi_record = flexmock(
         msg='hi',
@@ -114,6 +160,44 @@ def test_log_outputs_logs_each_line_separately():
             borg_exit_codes=None,
         )
     ) == ('there',)
+
+
+def test_log_outputs_with_output_raw_bytes_captures_last_process_stdout_as_bytes():
+    hi_record = flexmock(
+        msg='hi',
+        levelno=logging.INFO,
+        levelname='INFO',
+        getMessage=lambda: 'hi',
+    )
+    flexmock(module).should_receive('log_line_to_record').with_args('hi', None).and_return(
+        hi_record
+    )
+    flexmock(module.logger).should_receive('handle').with_args(hi_record).once()
+    flexmock(module).should_receive('log_line_to_record').with_args('there', object).never()
+    flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
+
+    hi_process = subprocess.Popen(['echo', 'hi'], stdout=subprocess.PIPE)
+    flexmock(module).should_receive('output_buffers_for_process').with_args(
+        hi_process,
+        (),
+    ).and_return((hi_process.stdout,))
+
+    there_process = subprocess.Popen(['echo', 'there'], stdout=subprocess.PIPE)
+    flexmock(module).should_receive('output_buffers_for_process').with_args(
+        there_process,
+        (),
+    ).and_return((there_process.stdout,))
+
+    assert tuple(
+        module.log_outputs(
+            (hi_process, there_process),
+            exclude_stdouts=(),
+            output_log_level=None,
+            borg_local_path='borg',
+            borg_exit_codes=None,
+            output_raw_bytes=True,
+        )
+    ) == (b'there\n',)
 
 
 def test_log_outputs_logs_stderr_as_error():
@@ -594,8 +678,12 @@ def test_log_outputs_includes_error_output_when_output_spans_multiple_chunks():
     assert 'ERROR: critical failure' in error.value.output
 
 
-def test_read_lines_uses_system_locale_when_decoding_output():
-    flexmock(module.locale).should_receive('getpreferredencoding').and_return('ISO-8859-1')
-    process = subprocess.Popen(['echo', b'\xc4pple'], stdout=subprocess.PIPE)
+def test_generator_reader_as_context_manager_closes_on_exit():
+    generator = (chunk for chunk in (b'abc', b'def', b'geh'))
 
-    assert tuple(module.read_lines(process.stdout, process)) == (('\xc4pple',),)
+    with module.Generator_reader(generator) as reader:
+        pass
+
+    assert not reader.buffer
+    assert not reader.buffer_size
+    assert tuple(generator) == ()

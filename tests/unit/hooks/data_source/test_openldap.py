@@ -321,6 +321,7 @@ def test_restore_data_source_dump_restores_database():
         data_source={'name': 'dc=example,dc=com'},
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={},
         borgmatic_runtime_directory='/run/borgmatic',
     )
@@ -348,6 +349,7 @@ def test_restore_data_source_dump_with_local_path_uses_it_as_borg_local_path():
         data_source={'name': 'dc=example,dc=com'},
         dry_run=False,
         extract_process=extract_process,
+        manifest=None,
         connection_params={},
         borgmatic_runtime_directory='/run/borgmatic',
     )
@@ -363,6 +365,7 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
         data_source={'name': 'dc=example,dc=com'},
         dry_run=True,
         extract_process=flexmock(),
+        manifest=None,
         connection_params={},
         borgmatic_runtime_directory='/run/borgmatic',
     )

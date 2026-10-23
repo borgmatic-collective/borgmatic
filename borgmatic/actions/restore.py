@@ -1,11 +1,8 @@
 import collections
 import fnmatch
-import locale
 import logging
 import os
 import pathlib
-import shutil
-import tempfile
 
 import borgmatic.actions.dump
 import borgmatic.actions.pattern
@@ -13,6 +10,7 @@ import borgmatic.borg.extract
 import borgmatic.borg.list
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
+import borgmatic.execute
 import borgmatic.hooks.data_source.dump
 import borgmatic.hooks.dispatch
 
@@ -67,6 +65,10 @@ def dumps_match(first, second, default_port=None):
             )
         ):
             continue
+
+        if field_name == 'hook_name' and first_value and second_value:
+            first_value = first_value.split('_databases')[0]
+            second_value = second_value.split('_databases')[0]
 
         if first_value != second_value:
             return False
@@ -144,41 +146,6 @@ def get_configured_data_source(config, restore_dump):
     return matching_dumps[0]
 
 
-def strip_path_prefix_from_extracted_dump_destination(
-    extract_path,
-    borgmatic_runtime_directory,
-):
-    '''
-    Directory-format dump files get extracted into a temporary directory containing a path prefix
-    that depends how the files were stored in the archive. So, given the path where the dump was
-    extracted and the borgmatic runtime directory, move the dump files such that the restore doesn't
-    have to deal with that varying path prefix.
-
-    For instance, if the dump was extracted to:
-
-      /run/user/0/borgmatic/tmp1234/borgmatic/postgresql_databases/test/...
-
-    or:
-
-      /run/user/0/borgmatic/tmp1234/root/.borgmatic/postgresql_databases/test/...
-
-    then this function moves it to:
-
-      /run/user/0/borgmatic/postgresql_databases/test/...
-    '''
-    for subdirectory_path, _, _ in os.walk(extract_path):
-        databases_directory = os.path.basename(subdirectory_path)
-
-        if not databases_directory.endswith('_databases'):
-            continue
-
-        destination_path = os.path.join(borgmatic_runtime_directory, databases_directory)
-        shutil.rmtree(destination_path, ignore_errors=True)
-        shutil.move(subdirectory_path, destination_path)
-
-        break
-
-
 def restore_single_dump(
     repository,
     config,
@@ -210,55 +177,33 @@ def restore_single_dump(
 
     logger.info(f'Restoring data source {dump_metadata}')
 
-    dump_patterns = borgmatic.hooks.dispatch.call_hooks(
-        'make_data_source_dump_patterns',
-        config,
-        borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
-        borgmatic_runtime_directory,
-        data_source['name'],
-        data_source.get('hostname'),
-        data_source.get('port'),
-        data_source.get('container'),
-        data_source.get('label'),
-    )[hook_name.split('_databases', 1)[0]]
-
-    destination_path = (
-        tempfile.mkdtemp(dir=borgmatic_runtime_directory)
-        if data_source.get('format') == 'directory'
-        else None
+    manifest = borgmatic.hooks.dispatch.call_hook(
+        function_name='load_data_source_dump_manifest',
+        config=config,
+        hook_name=hook_name,
+        repository=repository,
+        local_borg_version=local_borg_version,
+        global_arguments=global_arguments,
+        local_path=local_path,
+        remote_path=remote_path,
+        archive_name=archive_name,
+        data_source=data_source,
+        borgmatic_runtime_directory=borgmatic_runtime_directory,
     )
 
-    try:
-        # Kick off a single data source extract. If using a directory format, extract to a temporary
-        # directory. Otherwise extract the single dump file to stdout.
-        extract_process = borgmatic.borg.extract.extract_archive(
-            dry_run=global_arguments.dry_run,
-            repository=repository['path'],
-            archive=archive_name,
-            paths=[
-                borgmatic.hooks.data_source.dump.convert_glob_patterns_to_borg_pattern(
-                    dump_patterns,
-                ),
-            ],
-            config=config,
-            local_borg_version=local_borg_version,
-            global_arguments=global_arguments,
-            local_path=local_path,
-            remote_path=remote_path,
-            destination_path=destination_path,
-            # A directory format dump isn't a single file, and therefore can't extract
-            # to stdout. In this case, the extract_process return value is None.
-            extract_to_stdout=bool(data_source.get('format') != 'directory'),
-        )
-
-        if destination_path and not global_arguments.dry_run:
-            strip_path_prefix_from_extracted_dump_destination(
-                destination_path,
-                borgmatic_runtime_directory,
-            )
-    finally:
-        if destination_path and not global_arguments.dry_run:
-            shutil.rmtree(destination_path, ignore_errors=True)
+    extract_process = borgmatic.hooks.dispatch.call_hook(
+        function_name='extract_data_source_dump',
+        config=config,
+        hook_name=hook_name,
+        repository=repository,
+        local_borg_version=local_borg_version,
+        global_arguments=global_arguments,
+        local_path=local_path,
+        remote_path=remote_path,
+        archive_name=archive_name,
+        data_source=data_source,
+        borgmatic_runtime_directory=borgmatic_runtime_directory,
+    )
 
     # Run a single data source restore, consuming the extract stdout (if any).
     borgmatic.hooks.dispatch.call_hook(
@@ -268,6 +213,7 @@ def restore_single_dump(
         data_source=data_source,
         dry_run=global_arguments.dry_run,
         extract_process=extract_process,
+        manifest=manifest,
         connection_params=connection_params,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     )
@@ -302,10 +248,10 @@ def collect_dumps_from_archive(
             'sh:'
             + borgmatic.hooks.data_source.dump.make_data_source_dump_path(
                 base_directory,
-                '*_databases/dumps.json',
+                '*/dumps.json',
             )
             # Probe for dump metadata files in multiple locations, as the default location is
-            # "/borgmatic/*_databases/dumps.json" with Borg 1.4+, but instead begins with the
+            # "/borgmatic/*/dumps.json" with Borg 1.4+, but instead begins with the
             # borgmatic runtime directory for older versions of Borg.
             for base_directory in (
                 'borgmatic',
@@ -318,22 +264,34 @@ def collect_dumps_from_archive(
         if not dumps_metadata_entry.get('path'):
             continue
 
-        for dump in borgmatic.hooks.data_source.dump.parse_data_source_dumps_metadata(
-            borgmatic.borg.extract.extract_archive(
-                # Don't do a dry run on the extract, because that prevents reading of the metadata.
-                False,
-                repository,
-                archive,
-                [dumps_metadata_entry['path']],
-                config,
-                local_borg_version,
-                global_arguments,
-                local_path=local_path,
-                remote_path=remote_path,
-                extract_to_stdout=True,
+        extract_process = borgmatic.borg.extract.extract_archive(
+            # Don't do a dry run on the extract, because that prevents reading of the metadata.
+            False,
+            repository,
+            archive,
+            [dumps_metadata_entry['path']],
+            config,
+            local_borg_version,
+            global_arguments,
+            local_path=local_path,
+            remote_path=remote_path,
+            extract_to_stdout=True,
+        )
+
+        # Capture stdout while logging stderr.
+        with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
+            extract_output = '\n'.join(
+                borgmatic.execute.log_outputs(
+                    processes=(extract_process,),
+                    exclude_stdouts=(),
+                    output_log_level=None,
+                    borg_local_path=local_path,
+                    borg_exit_codes=config.get('borg_exit_codes'),
+                )
             )
-            .stdout.read()
-            .decode(locale.getpreferredencoding()),
+
+        for dump in borgmatic.hooks.data_source.dump.parse_data_source_dumps_metadata(
+            extract_output,
             dumps_metadata_entry['path'],
         ):
             dumps_from_archive[dump] = None
@@ -364,7 +322,7 @@ def collect_dumps_from_archive(
             'sh:'
             + borgmatic.hooks.data_source.dump.make_data_source_dump_path(
                 base_directory,
-                '*_databases/*/*',
+                '*/*/*',
             )
             for base_directory in (
                 'borgmatic',
@@ -438,15 +396,7 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
         # Use a dict comprehension as an ordered set.
         {
             Dump(
-                hook_name=(
-                    (
-                        restore_arguments.hook
-                        if restore_arguments.hook.endswith('_databases')
-                        else f'{restore_arguments.hook}_databases'
-                    )
-                    if restore_arguments.hook
-                    else UNSPECIFIED
-                ),
+                hook_name=(restore_arguments.hook if restore_arguments.hook else UNSPECIFIED),
                 data_source_name=name,
                 hostname=restore_arguments.original_hostname or UNSPECIFIED,
                 port=restore_arguments.original_port,

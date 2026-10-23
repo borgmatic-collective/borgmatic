@@ -134,7 +134,7 @@ def get_paths(hierarchy, path_components, full_path_components=None):
                     '',
                     archive_path.size,
                 )
-                for component, archive_path in hierarchy[path_components[0]].items()
+                for component, archive_path in dict(hierarchy[path_components[0]]).items()
             )
         except KeyError:
             raise ValueError(f'Unknown file or directory: {path_components[0]}')

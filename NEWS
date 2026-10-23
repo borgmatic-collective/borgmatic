@@ -1,4 +1,8 @@
 2.1.11.dev0
+ * #1273: Add a tarballs hook for backing up and restoring tar files while retaining full Borg
+   deduplication of their contents, handy for large tarballs like VM backups. See the documentation
+   for more information:
+   https://torsion.org/borgmatic/reference/configuration/data-sources/tarballs/
  * #1368: Fix a hang in which a database dump command spewing lots of output could send borgmatic
    into a loop. This was most prevalent with MongoDB.
  * #1370: Fix "Too many open files" and "filedescriptor out of range in select()" errors when
@@ -9,8 +13,12 @@
    summed from the sizes of the files beneath them.
  * #1376: Fix a regression in which ZFS/LVM/Btrfs hooks no longer got Borg cache hits due to a
    random temporary directory created within the borgmatic runtime directory.
+ * Fix a Postgresql hook error when restoring a directory format database with an overridden
+   hostname or port.
  * Fix a bug in which borgmatic didn't correctly rename checkpoint archives when database hooks were
    enabled with Borg 2.
+ * Fix a theoretical hang in which borgmatic neglected to consume sub-process stderr output. Applies
+   to "restore", "browse", and "config bootstrap" actions.
  * Add a "--json" flag to the "diff" action for outputting one JSON object per changed path.
 
 2.1.10

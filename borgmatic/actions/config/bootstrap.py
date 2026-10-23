@@ -9,6 +9,7 @@ import borgmatic.borg.extract
 import borgmatic.borg.info
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
+import borgmatic.execute
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +64,7 @@ def load_config_paths_from_archive(
             'manifest.json',
         )
 
+        local_path = config.get('local_path', 'borg')
         extract_process = borgmatic.borg.extract.extract_archive(
             # Don't do a dry run on the extract, because that prevents reading of the manifest.
             False,
@@ -72,11 +74,22 @@ def load_config_paths_from_archive(
             config,
             local_borg_version,
             global_arguments,
-            local_path=config.get('local_path', 'borg'),
+            local_path=local_path,
             remote_path=config.get('remote_path'),
             extract_to_stdout=True,
         )
-        manifest_json = extract_process.stdout.read()
+
+        # Capture stdout while logging stderr.
+        with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
+            manifest_json = '\n'.join(
+                borgmatic.execute.log_outputs(
+                    processes=(extract_process,),
+                    exclude_stdouts=(),
+                    output_log_level=None,
+                    borg_local_path=local_path,
+                    borg_exit_codes=config.get('borg_exit_codes'),
+                )
+            )
 
         if manifest_json:
             break

@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import os
 import shlex
@@ -180,12 +181,76 @@ def make_data_source_dump_patterns(
     )
 
 
+def extract_data_source_dump(
+    hook_config,
+    config,
+    repository,
+    local_borg_version,
+    global_arguments,
+    local_path,
+    remote_path,
+    archive_name,
+    data_source,
+    borgmatic_runtime_directory,
+):  # pragma: no cover
+    '''
+    Given a hook configuration dict, a top-level configuration dict, a repository dict, the local
+    Borg version, global arguments as an argparse.Namespace instance, the local Borg path, the
+    remote Borg path, the archive name to extract from, a data source dict, and the borgmatic
+    runtime directory, calculate the dump patterns to look for in the archive and then extract the
+    corresponding dump—streaming via an extract process.
+
+    Return the extract process.
+    '''
+    return dump.extract_dump(
+        repository,
+        config,
+        local_borg_version,
+        global_arguments,
+        local_path,
+        remote_path,
+        archive_name,
+        'sqlite_databases',
+        data_source,
+        borgmatic_runtime_directory,
+        dump_patterns=make_data_source_dump_patterns(
+            hook_config,
+            config,
+            borgmatic_runtime_directory,
+            data_source['name'],
+            hostname=None,
+            port=None,
+            container=None,
+            label=data_source.get('label'),
+        ),
+    )
+
+
+def load_data_source_dump_manifest(
+    hook_config,
+    config,
+    repository,
+    local_borg_version,
+    global_arguments,
+    local_path,
+    remote_path,
+    archive_name,
+    data_source,
+    borgmatic_runtime_directory,
+):  # pragma: no cover
+    '''
+    This hook doesn't use a per-dump manifest.
+    '''
+    return
+
+
 def restore_data_source_dump(
     hook_config,
     config,
     data_source,
     dry_run,
     extract_process,
+    manifest,
     connection_params,
     borgmatic_runtime_directory,
 ):
@@ -205,11 +270,9 @@ def restore_data_source_dump(
     if dry_run:
         return
 
-    try:
+    with contextlib.suppress(FileNotFoundError):
         os.remove(database_path)
-        logger.warning(f'Removed existing SQLite database at {database_path}')
-    except FileNotFoundError:  # pragma: no cover
-        pass
+        logger.warning(f'Replacing existing SQLite database at {database_path}')
 
     sqlite_restore_command = tuple(
         shlex.quote(part)

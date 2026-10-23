@@ -39,7 +39,7 @@ def any_parent_directories(path, candidate_parents):
     path. This includes grandparents, etc.
     '''
     for parent in candidate_parents:
-        if pathlib.PurePosixPath(parent) in pathlib.PurePath(path).parents:
+        if pathlib.PurePath(parent) in pathlib.PurePath(path).parents:
             return True
 
     return False
@@ -105,32 +105,38 @@ def validate_planned_backup_paths(
         for pattern in patterns
         if pattern.type == borgmatic.borg.pattern.Pattern_type.INCLUDE
     }
-    runtime_directory_root_patterns = tuple(
-        pattern
+    runtime_directory_root_pattern_paths = {
+        pathlib.PurePath(pattern.path)
         for pattern in patterns
         if any_parent_directories(pattern.path, (borgmatic_runtime_directory,))
         if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
         # Skip root patterns that have corresponding include patterns, because those will "punch
         # through" any subsequent excludes.
         if pattern.path not in include_pattern_paths
-    )
+    }
 
     special_paths = []
     validate_runtime_directory = bool(
         not dry_run
         and os.path.exists(borgmatic_runtime_directory)
-        and runtime_directory_root_patterns
+        and runtime_directory_root_pattern_paths
     )
     runtime_directory_in_path = False
 
     # Do everything in this one loop because we only want to consume the paths generator once.
     for path in paths:
+        path_parents = pathlib.PurePath(path).parents
+
         # If all root patterns in the runtime directory are missing from the paths Borg is planning
         # to backup, then they must've gotten excluded, e.g. by user-configured excludes. Warn
         # accordingly (below).
-        if validate_runtime_directory and any(
-            any_parent_directories(path, (pattern.path,))
-            for pattern in runtime_directory_root_patterns
+        if (
+            validate_runtime_directory
+            and not runtime_directory_in_path
+            and any(
+                parent in runtime_directory_root_pattern_paths
+                for parent in (pathlib.PurePath(path), *path_parents)
+            )
         ):
             runtime_directory_in_path = True
 
@@ -139,7 +145,7 @@ def validate_planned_backup_paths(
         # own bookkeeping, instead focusing on user-configured paths.
         if (
             find_special_files
-            and not any_parent_directories(path, (borgmatic_runtime_directory,))
+            and pathlib.PurePath(borgmatic_runtime_directory) not in path_parents
             and special_file(path, working_directory)
         ):
             special_paths.append(path)
