@@ -1284,8 +1284,8 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
 
     config_validate_parser = config_parsers.add_parser(
         'validate',
-        help='Validate borgmatic configuration files specified with --config (see borgmatic --help)',
-        description='Validate borgmatic configuration files specified with --config (see borgmatic --help)',
+        help='Validate borgmatic configuration file(s). Pass --config (see borgmatic --help) to validate a subset of the files.',
+        description='Validate borgmatic configuration file(s). Pass --config (see borgmatic --help) to validate a subset of the files.',
         add_help=False,
     )
     config_validate_group = config_validate_parser.add_argument_group('config validate arguments')
@@ -1304,8 +1304,8 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
 
     config_show_parser = config_parsers.add_parser(
         'show',
-        help='Show the computed configuration for each file specified with --config (see borgmatic --help)',
-        description='Show the computed configuration for each file specified with --config (see borgmatic --help)',
+        help='Show the computed configuration for all configuration files. Pass --config (see borgmatic --help) to show a subset of the files.',
+        description='Show the computed configuration for all configuration files. Pass --config (see borgmatic --help) to show a subset of the files.',
         add_help=False,
     )
     config_show_group = config_show_parser.add_argument_group('config show arguments')
