@@ -66,7 +66,7 @@ def dumps_match(first, second, default_port=None):
         ):
             continue
 
-        if field_name == 'hook_name':
+        if field_name == 'hook_name' and first_value and second_value:
             first_value = first_value.split('_databases')[0]
             second_value = second_value.split('_databases')[0]
 

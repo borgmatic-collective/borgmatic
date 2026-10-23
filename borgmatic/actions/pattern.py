@@ -296,8 +296,8 @@ def deduplicate_runtime_directory_patterns(patterns, config, borgmatic_runtime_d
 
             if (
                 pathlib.PurePath(other_pattern.path) in pattern_parents
-                and pathlib.PurePosixPath(other_pattern.path) in runtime_directory_parents
-                and pathlib.PurePosixPath(pattern.path) in runtime_directory_parents
+                and pathlib.PurePath(other_pattern.path) in runtime_directory_parents
+                and pathlib.PurePath(pattern.path) in runtime_directory_parents
                 and device_matches
             ):
                 break

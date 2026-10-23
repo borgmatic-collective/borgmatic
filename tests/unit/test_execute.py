@@ -2128,10 +2128,30 @@ def test_generator_reader_read_with_no_size_consumes_entire_generator():
     assert reader.read() == b'abcdefgeh'
 
 
+def test_generator_reader_read_with_no_size_after_a_partial_read_consumes_rest():
+    reader = module.Generator_reader(chunk for chunk in (b'abc', b'def', b'geh'))
+
+    assert reader.read(2) == b'ab'
+    assert reader.read() == b'cdefgeh'
+
+
+def test_generator_reader_read_with_empty_size_returns_empty_bytes():
+    reader = module.Generator_reader(chunk for chunk in (b'abc', b'def', b'geh'))
+
+    assert reader.read(0) == b''
+
+
 def test_generator_reader_read_with_too_large_size_consumes_entire_generator():
     reader = module.Generator_reader(chunk for chunk in (b'abc', b'def', b'geh'))
 
     assert reader.read(100) == b'abcdefgeh'
+
+
+def test_generator_reader_read_past_end_of_generator_return_empty_bytes():
+    reader = module.Generator_reader(chunk for chunk in (b'abc', b'def', b'geh'))
+
+    assert reader.read() == b'abcdefgeh'
+    assert reader.read() == b''
 
 
 def test_generator_reader_close_drains_generator():

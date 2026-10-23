@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import shutil
+import subprocess
 import sys
 import tarfile
 
@@ -631,7 +632,7 @@ def restore_data_source_dump(
                     destination_tar.addfile(
                         member, exported_tar.extractfile(member) if member.isfile() else None
                     )
-        except tarfile.ReadError as error:
+        except (tarfile.ReadError, subprocess.CalledProcessError) as error:
             raise ValueError(f'Error exporting tarball "{destination_path}": {error}')
 
 
@@ -663,7 +664,7 @@ def main():
 
     try:
         stream_tarballs(tarballs, borgmatic_runtime_directory)
-    except ValueError as error:
+    except (ValueError, BrokenPipeError, OSError) as error:
         logger.error(f'An error occurred while streaming tarball data: {error}')
         sys.exit(1)
 

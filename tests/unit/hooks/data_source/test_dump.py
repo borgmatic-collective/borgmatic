@@ -205,9 +205,19 @@ def test_extract_dump_returns_extract_process():
         'convert_glob_patterns_to_borg_pattern',
     ).and_return(flexmock())
     extract_process = flexmock()
-    flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        extract_process,
-    ).once()
+    flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').with_args(
+        dry_run=object,
+        repository=object,
+        archive=object,
+        paths=object,
+        config=object,
+        local_borg_version=object,
+        global_arguments=object,
+        local_path=object,
+        remote_path=object,
+        destination_path=object,
+        extract_to_stdout=True,
+    ).and_return(extract_process).once()
     flexmock(module).should_receive('strip_path_prefix_from_extracted_dump_destination').never()
     flexmock(module.shutil).should_receive('rmtree').never()
 
@@ -236,7 +246,19 @@ def test_extract_dump_with_directory_format_cleans_up_destination_path():
     flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
         'convert_glob_patterns_to_borg_pattern',
     ).and_return(flexmock())
-    flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
+    flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').with_args(
+        dry_run=object,
+        repository=object,
+        archive=object,
+        paths=object,
+        config=object,
+        local_borg_version=object,
+        global_arguments=object,
+        local_path=object,
+        remote_path=object,
+        destination_path=object,
+        extract_to_stdout=False,
+    ).and_return(
         None,
     ).once()
     flexmock(module).should_receive('strip_path_prefix_from_extracted_dump_destination').once()

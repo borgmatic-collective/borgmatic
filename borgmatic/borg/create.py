@@ -39,7 +39,7 @@ def any_parent_directories(path, candidate_parents):
     path. This includes grandparents, etc.
     '''
     for parent in candidate_parents:
-        if pathlib.PurePosixPath(parent) in pathlib.PurePath(path).parents:
+        if pathlib.PurePath(parent) in pathlib.PurePath(path).parents:
             return True
 
     return False

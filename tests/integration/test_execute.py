@@ -169,11 +169,11 @@ def test_log_outputs_with_output_raw_bytes_captures_last_process_stdout_as_bytes
         levelname='INFO',
         getMessage=lambda: 'hi',
     )
-    flexmock(module).should_receive('log_line_to_record').with_args('hi', logging.INFO).and_return(
+    flexmock(module).should_receive('log_line_to_record').with_args('hi', None).and_return(
         hi_record
     )
     flexmock(module.logger).should_receive('handle').with_args(hi_record).once()
-    flexmock(module).should_receive('log_line_to_record').with_args('there', logging.INFO).never()
+    flexmock(module).should_receive('log_line_to_record').with_args('there', object).never()
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
 
     hi_process = subprocess.Popen(['echo', 'hi'], stdout=subprocess.PIPE)
@@ -192,7 +192,7 @@ def test_log_outputs_with_output_raw_bytes_captures_last_process_stdout_as_bytes
         module.log_outputs(
             (hi_process, there_process),
             exclude_stdouts=(),
-            output_log_level=logging.INFO,
+            output_log_level=None,
             borg_local_path='borg',
             borg_exit_codes=None,
             output_raw_bytes=True,

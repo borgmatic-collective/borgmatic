@@ -174,6 +174,18 @@ import borgmatic.actions.restore as module
             None,
             True,
         ),
+        (
+            module.Dump('postgresql_databases', 'foo'),
+            module.Dump('postgresql', None),
+            None,
+            False,
+        ),
+        (
+            module.Dump('postgresql_databases', None),
+            module.Dump('postgresql', 'foo'),
+            None,
+            False,
+        ),
     ),
 )
 def test_dumps_match_compares_two_dumps_while_respecting_unspecified_values(

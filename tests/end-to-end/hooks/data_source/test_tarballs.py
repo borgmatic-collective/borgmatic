@@ -191,5 +191,5 @@ def test_tarballs_dump_and_restore():
         check_test_tarballs(config)
     finally:
         os.chdir(original_working_directory)
-        shutil.rmtree(temporary_directory)
         remove_test_tarballs(config)
+        shutil.rmtree(temporary_directory)
