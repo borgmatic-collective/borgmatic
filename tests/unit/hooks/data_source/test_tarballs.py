@@ -1,9 +1,227 @@
+import os
 import sys
 
 import pytest
 from flexmock import flexmock
 
 from borgmatic.hooks.data_source import tarballs as module
+
+
+@pytest.mark.parametrize(
+    'path,expected_result',
+    (
+        ('foo/bar/baz', 'foo/bar/baz'),
+        ('foo/bar/../baz', 'foo/baz'),
+        ('foo/bar/./baz', 'foo/bar/baz'),
+        ('foo/.././bar/baz', 'bar/baz'),
+        ('foo/bar/baz/..', 'foo/bar'),
+        ('foo/bar/baz/.', 'foo/bar/baz'),
+        ('./foo/bar/baz', 'foo/bar/baz'),
+        ('.', '.'),
+    ),
+)
+def test_normalize_member_path_normalizes_allowed_paths(path, expected_result):
+    assert module.normalize_member_path(path) == expected_result
+
+
+@pytest.mark.parametrize(
+    'path',
+    (
+        '/foo/bar/baz',
+        '../foo/bar/baz',
+    ),
+)
+def test_normalize_member_path_with_unsafe_path_raises(path):
+    with pytest.raises(ValueError):
+        assert module.normalize_member_path(path)
+
+
+def test_deduplicate_members_keeps_last_of_duplicate_members():
+    members = [
+        flexmock(name='dir/foo.txt'),
+        flexmock(name='dir'),
+        flexmock(name='dir/foo/../foo.txt'),
+        flexmock(name='.'),
+    ]
+
+    flexmock(module).should_receive('normalize_member_path').replace_with(os.path.normpath)
+
+    assert module.deduplicate_members(members) == {
+        'dir': members[1],
+        'dir/foo.txt': members[2],
+    }
+
+
+def test_inject_tarball_patterns_adds_patterns_for_each_member_file_and_directory():
+    patterns = [module.borgmatic.borg.pattern.Pattern('/existing')]
+    members = {
+        'dir/foo.txt': flexmock(name='dir/foo.txt', isdir=lambda: False),
+        'dir': flexmock(name='dir', isdir=lambda: True),
+        'dir/bar.txt': flexmock(name='dir/bar.txt', isdir=lambda: False),
+        'other': flexmock(name='other', isdir=lambda: True),
+    }
+
+    flexmock(module.borgmatic.hooks.data_source.config).should_receive(
+        'inject_pattern'
+    ).replace_with(lambda patterns, pattern, override_excludes=False: patterns.insert(0, pattern))
+
+    module.inject_tarball_patterns(
+        patterns=patterns,
+        members=members,
+        borgmatic_runtime_directory='/run/borgmatic',
+        dump_directory='/run/borgmatic/tarballs/localhost/foo',
+        manifest_path='/run/borgmatic/tarballs/localhost/foo_manifest.path',
+    )
+
+    assert patterns == [
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/tarballs/localhost/foo/dir/foo.txt',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/tarballs/localhost/foo/dir/bar.txt',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/tarballs/localhost/foo/dir',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/tarballs/localhost/foo/other',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/tarballs/localhost/foo_manifest.path',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/tarballs/dumps.json',
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+        module.borgmatic.borg.pattern.Pattern(
+            '/run/borgmatic/tarballs',
+            type=module.borgmatic.borg.pattern.Pattern_type.INCLUDE,
+            style=module.borgmatic.borg.pattern.Pattern_style.PATH_PREFIX,
+            source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+        ),
+        module.borgmatic.borg.pattern.Pattern('/existing'),
+    ]
+
+
+def test_make_member_named_pipes_creates_per_member_directories_and_named_pipes():
+    members = {
+        'dir': flexmock(
+            name='dir', isdir=lambda: True, type='5', get_info=lambda: {'name': 'dir', 'type': '5'}
+        ),
+        'dir/foo.txt': flexmock(
+            name='dir/foo.txt',
+            isdir=lambda: False,
+            type='7',
+            get_info=lambda: {'name': 'dir/foo.txt', 'type': '7'},
+        ),
+    }
+    flexmock(module.os).should_receive('makedirs').with_args(
+        '/run/borgmatic/tarballs/localhost/foo/dir', mode=object, exist_ok=True
+    ).once()
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump').with_args(
+        '/run/borgmatic/tarballs/localhost/foo/dir/foo.txt'
+    ).once()
+
+    assert module.make_member_named_pipes(
+        members,
+        dump_directory='/run/borgmatic/tarballs/localhost/foo',
+        tarball_label='foo',
+        dry_run=False,
+    ) == {
+        'dir': {'name': 'dir', 'type': 53},
+        'dir/foo.txt': {'name': 'dir/foo.txt', 'type': 55},
+    }
+
+
+def test_make_member_named_pipes_with_file_exists_error_for_directory_raises():
+    members = {
+        'dir': flexmock(
+            name='dir', isdir=lambda: True, type='5', get_info=lambda: {'name': 'dir', 'type': '5'}
+        ),
+        'dir/foo.txt': flexmock(
+            name='dir/foo.txt',
+            isdir=lambda: False,
+            type='7',
+            get_info=lambda: {'name': 'dir/foo.txt', 'type': '7'},
+        ),
+    }
+    flexmock(module.os).should_receive('makedirs').with_args(
+        '/run/borgmatic/tarballs/localhost/foo/dir', mode=object, exist_ok=True
+    ).and_raise(FileExistsError)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump').with_args(
+        '/run/borgmatic/tarballs/localhost/foo/dir/foo.txt'
+    ).never()
+
+    with pytest.raises(ValueError):
+        assert module.make_member_named_pipes(
+            members,
+            dump_directory='/run/borgmatic/tarballs/localhost/foo',
+            tarball_label='foo',
+            dry_run=False,
+        )
+
+
+def test_make_member_named_pipes_with_file_exists_error_for_file_raises():
+    members = {
+        'dir': flexmock(
+            name='dir', isdir=lambda: True, type='5', get_info=lambda: {'name': 'dir', 'type': '5'}
+        ),
+        'dir/foo.txt': flexmock(
+            name='dir/foo.txt',
+            isdir=lambda: False,
+            type='7',
+            get_info=lambda: {'name': 'dir/foo.txt', 'type': '7'},
+        ),
+    }
+    flexmock(module.os).should_receive('makedirs').with_args(
+        '/run/borgmatic/tarballs/localhost/foo/dir', mode=object, exist_ok=True
+    ).once()
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump').with_args(
+        '/run/borgmatic/tarballs/localhost/foo/dir/foo.txt'
+    ).and_raise(FileExistsError)
+
+    with pytest.raises(ValueError):
+        module.make_member_named_pipes(
+            members,
+            dump_directory='/run/borgmatic/tarballs/localhost/foo',
+            tarball_label='foo',
+            dry_run=False,
+        )
+
+
+def test_make_member_named_pipes_with_dry_run_creates_nothing():
+    members = {
+        'dir': flexmock(
+            name='dir', isdir=lambda: True, type='5', get_info=lambda: {'name': 'dir', 'type': '5'}
+        ),
+        'dir/foo.txt': flexmock(
+            name='dir/foo.txt',
+            isdir=lambda: False,
+            type='7',
+            get_info=lambda: {'name': 'dir/foo.txt', 'type': '7'},
+        ),
+    }
+    flexmock(module.os).should_receive('makedirs').with_args(
+        '/run/borgmatic/tarballs/localhost/foo/dir', mode=object, exist_ok=True
+    ).never()
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump').with_args(
+        '/run/borgmatic/tarballs/localhost/foo/dir/foo.txt'
+    ).never()
+
+    assert module.make_member_named_pipes(
+        members,
+        dump_directory='/run/borgmatic/tarballs/localhost/foo',
+        tarball_label='foo',
+        dry_run=True,
+    ) == {
+        'dir': {'name': 'dir', 'type': 53},
+        'dir/foo.txt': {'name': 'dir/foo.txt', 'type': 55},
+    }
 
 
 def test_dump_data_sources_creates_member_pipes_and_manifest_and_stream_process():
@@ -60,6 +278,43 @@ def test_dump_data_sources_creates_member_pipes_and_manifest_and_stream_process(
         patterns=flexmock(),
         dry_run=False,
     ) == (stream_process,)
+
+
+def test_dump_data_sources_without_configured_tarballs_bails():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
+    flexmock(module.os.path).should_receive('exists').never()
+    flexmock(module).should_receive('make_dump_path').never()
+    flexmock(module.borgmatic.execute).should_receive('execute_command').never()
+
+    assert (
+        module.dump_data_sources(
+            tarballs=[],
+            config={},
+            config_paths=flexmock(),
+            borgmatic_runtime_directory='/run/borgmatic',
+            patterns=flexmock(),
+            dry_run=False,
+        )
+        == ()
+    )
+
+
+def test_dump_data_sources_with_duplicate_tarball_names_raises():
+    flexmock(module.dump).should_receive('raise_number_of_files_resource_limit')
+    flexmock(module.os.path).should_receive('exists').never()
+    flexmock(module).should_receive('make_dump_path').never()
+    flexmock(module.borgmatic.execute).should_receive('execute_command').never()
+    tarballs = [{'name': 'foo', 'path': 'foo.tar.gz'}, {'name': 'foo', 'path': 'foo.tar'}]
+
+    with pytest.raises(ValueError):
+        module.dump_data_sources(
+            tarballs=tarballs,
+            config={},
+            config_paths=flexmock(),
+            borgmatic_runtime_directory='/run/borgmatic',
+            patterns=flexmock(),
+            dry_run=False,
+        )
 
 
 def test_dump_data_sources_with_missing_tarball_raises():
@@ -165,7 +420,7 @@ def test_stream_tarballs_streams_each_tarball_member():
     bar_members.should_receive('__iter__').and_return(
         [flexmock(name='bar.txt', isdir=lambda: False, isfile=lambda: True)]
     )
-    bar_members.should_receive('extractfile').with_args(tuple(bar_members)[0]).and_return(
+    bar_members.should_receive('extractfile').with_args(next(iter(bar_members))).and_return(
         bar_data := flexmock()
     )
     flexmock(module.tarfile).should_receive('open').with_args(
@@ -564,6 +819,38 @@ def test_restore_data_source_dump_with_exported_member_missing_from_manifest_ski
     assert exported_members[1].key == 'value2'
 
 
+def test_restore_data_source_dump_with_tar_read_error_raises():
+    flexmock(module.os).should_receive('remove')
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module.borgmatic.execute).should_receive('Generator_reader').and_return(
+        extract_reader := flexmock()
+    )
+    flexmock(module.borgmatic.execute).should_receive('log_outputs').and_return(flexmock())
+    flexmock(module.tarfile).should_receive('open').with_args(
+        mode='r|',
+        fileobj=extract_reader,
+    ).and_raise(module.tarfile.ReadError)
+    flexmock(module).should_receive('strip_member_path_prefix').never()
+    flexmock(module.tarfile).should_receive('open').with_args(
+        'foo.tar.gz', mode='x:gz', fileobj=None
+    ).never()
+
+    with pytest.raises(ValueError):
+        module.restore_data_source_dump(
+            hook_config=flexmock(),
+            config={},
+            data_source={'name': 'foo', 'path': 'foo.tar.gz'},
+            dry_run=False,
+            extract_process=flexmock(),
+            manifest={
+                'dir': {'type': 53, 'key': 'value1'},
+                'dir/foo.txt': {'type': 53, 'key': 'value2'},
+            },
+            connection_params={},
+            borgmatic_runtime_directory=flexmock(),
+        )
+
+
 def test_main_parses_environment_variables_and_streams_tarballs():
     flexmock(module.borgmatic.logger).should_receive('configure_logging')
     flexmock(module).should_receive('stream_tarballs').with_args(
@@ -612,3 +899,18 @@ def test_main_with_missing_runtime_directory_raises():
             module.main()
     finally:
         module.os.environ.pop('BORGMATIC_TARBALLS_CONFIG', None)
+
+
+def test_main_with_value_error_exits_with_error():
+    flexmock(module.borgmatic.logger).should_receive('configure_logging')
+    flexmock(module).should_receive('stream_tarballs').and_raise(ValueError)
+    flexmock(module.sys).should_receive('exit').with_args(1).once()
+
+    try:
+        module.os.environ['BORGMATIC_TARBALLS_CONFIG'] = '[{"name": "foo", "path": "foo.tgz"}]'
+        module.os.environ['BORGMATIC_RUNTIME_DIRECTORY'] = '/run/borgmatic'
+
+        module.main()
+    finally:
+        module.os.environ.pop('BORGMATIC_TARBALLS_CONFIG', None)
+        module.os.environ.pop('BORGMATIC_RUNTIME_DIRECTORY', None)

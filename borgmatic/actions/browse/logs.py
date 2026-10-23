@@ -47,7 +47,7 @@ class Log_message(textual.message.Message):
     A log message.
     '''
 
-    def __init__(self, text):
+    def __init__(self, text):  # pragma: no cover
         '''
         Given the text of a log message, save it for use in the consumer of this message.
         '''
@@ -108,7 +108,7 @@ class Logs(textual.widgets.RichLog):
         super().__init__(markup=True, id='logs', classes='panel')
         self.border_title = '🪵 logs'
 
-    def on_log_message(self, message):
+    def on_log_message(self, message):  # pragma: no cover
         '''
         Upon receive a log message, add it to this widget.
         '''

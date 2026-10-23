@@ -1,3 +1,4 @@
+import collections
 import contextlib
 import json
 import logging
@@ -41,7 +42,7 @@ def normalize_member_path(path):
     possible.
 
     Return the normalized result. Raise if the normalized path is still unsafe, e.g. if it's an
-    absolute path or starts with "."/".." even after normalization. This is unsafe because when
+    absolute path or starts with ".." even after normalization. Such a path is unsafe because when
     joining the member path together with a parent destination path, it effectively creates an
     "escape" from that parent.
     '''
@@ -52,7 +53,7 @@ def normalize_member_path(path):
 
     pieces = normalized.split(os.path.sep)
 
-    if os.path.isabs(normalized) or '.' in pieces or '..' in pieces:
+    if os.path.isabs(normalized) or '..' in pieces:
         raise ValueError(f'Unsafe tarball member path: {path}')
 
     return normalized
@@ -61,7 +62,7 @@ def normalize_member_path(path):
 def deduplicate_members(tar_file):
     '''
     Given an open tar file, deduplicate its members and return them as a dict from normalized member
-    name to TarInfo instance for that member. Last one with a particular normalized member name
+    name to TarInfo instance for that member. The last one with a particular normalized member name
     "wins" and ends up in the resulting dict.
 
     This is necessary because Borg can't store duplicate paths—and also because we don't want to
@@ -85,9 +86,10 @@ def inject_tarball_patterns(
     patterns, members, borgmatic_runtime_directory, dump_directory, manifest_path
 ):
     '''
-    Given a patterns list, a sequence of tarball members as tarfile.TarInfo instances, the borgmatic
-    runtime directory, the current dump directory, and the tarball manifest path within it, inject
-    all the patterns necessary to backup the tarball into the patterns. This includes patterns for:
+    Given a patterns list, a dict from deduplicated tarball member name to corresponding
+    tarfile.TarInfo instance, the borgmatic runtime directory, the current dump directory, and the
+    tarball manifest path within it, inject all the patterns necessary to backup the tarball into
+    the patterns. This includes patterns for:
 
      * an exclude override for the whole tarballs export directory (to punch through excludes)
      * the tarballs hook dumps JSON file, containing metadata on all the tarball dumps
@@ -96,7 +98,7 @@ def inject_tarball_patterns(
 
     This spoon-feeding of very specific ordered tarball member paths to Borg is necessary so that it
     reads our named pipes in an expected ordered. That way, we can write to them in the same order
-    and can service them serially, without the complexity of threads or non-blocking I/O.
+    and service them serially, without the complexity of threads or non-blocking I/O.
     '''
     # Inject an exclude override for the whole tarballs directory, so we don't have to
     # add it per-member and incur the cost of Borg processing all those additional
@@ -161,11 +163,11 @@ def inject_tarball_patterns(
 
 def make_member_named_pipes(members, dump_directory, tarball_label, dry_run):
     '''
-    Given a sequences of tarball members as tarfile.TarInfo instances, the current dump directory, a
-    label for this tarball to use is any error messages, and whether this is a dry run, create a
-    named pipe per non-directory member for subsequent streaming directly to Borg, mirroring the
-    directory layout from the tarball. But if this is a dry run, then don't actually create
-    directories or pipes.
+    Given a dict from deduplicated tarball member name to corresponding tarfile.TarInfo instance,
+    the current dump directory, a label for this tarball to use in any error messages, and whether
+    this is a dry run, create a named pipe per non-directory member for subsequent streaming
+    directly to Borg, mirroring the directory layout from the tarball. But if this is a dry run,
+    then don't actually create directories or pipes.
 
     Return a dict from member path to member metadata dict, suitable for serializing as a tarball
     manifest.
@@ -196,6 +198,7 @@ def make_member_named_pipes(members, dump_directory, tarball_label, dry_run):
             try:
                 dump.create_named_pipe_for_dump(member_extract_path)
             except FileExistsError:
+                # This should never happen, because the caller should deduplicate member paths.
                 raise ValueError(
                     f'Path "{member.name}" exists multiple times in tarball "{tarball_label}" '
                 )
@@ -223,7 +226,6 @@ def dump_data_sources(
     '''
     dry_run_label = ' (dry run; not actually extracting anything)' if dry_run else ''
     dumps_metadata = []
-    seen_tarball_names = set()
 
     logger.info(f'Extracting tarballs{dry_run_label}')
     dump.raise_number_of_files_resource_limit()
@@ -232,11 +234,14 @@ def dump_data_sources(
         logger.warning('No tarballs are configured to extract')
         return ()
 
-    for tarball in tarballs:
-        if tarball['name'] in seen_tarball_names:
-            raise ValueError(f'Multiple configured tarballs have the same name "{tarball["name"]}"')
+    most_common_name, most_common_count = collections.Counter(
+        tarball['name'] for tarball in tarballs
+    ).most_common(1)[0]
 
-        seen_tarball_names.add(tarball['name'])
+    if most_common_count > 1:
+        raise ValueError(f'Multiple configured tarballs have the same name "{most_common_name}"')
+
+    for tarball in tarballs:
         tarball_label = tarball.get('label', tarball['name'])
         tarball_path = tarball['path']
         dumps_metadata.append(
@@ -583,7 +588,7 @@ def restore_data_source_dump(
 
     # Capture stdout and log stderr.
     with (
-        borgmatic.logger.Log_prefix(None) as log_prefix,  # Log command output without any prefix.
+        borgmatic.logger.Log_prefix(None),  # Log command output without any prefix.
         borgmatic.execute.Generator_reader(
             borgmatic.execute.log_outputs(
                 processes=(extract_process,),
@@ -659,7 +664,7 @@ def main():
     try:
         stream_tarballs(tarballs, borgmatic_runtime_directory)
     except ValueError as error:
-        logger.error(error)
+        logger.error(f'An error occurred while streaming tarball data: {error}')
         sys.exit(1)
 
 

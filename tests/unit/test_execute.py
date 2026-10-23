@@ -460,6 +460,33 @@ def test_log_buffer_lines_with_ready_buffer_and_running_process_handles_each_log
     )
 
 
+def test_log_buffer_lines_with_ready_buffer_and_running_process_and_raw_byte_reader_skips_logging():
+    process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
+    buffer_readers = {
+        flexmock(fileno=lambda: 5): module.Buffer_reader(
+            lines=iter(((b'hi', b'there'),)),
+            process=process,
+            raw=True,
+        )
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    poll = flexmock()
+    flexmock(module.select).should_receive('poll').and_return(poll)
+    poll.should_receive('register').with_args(5, module.select.POLLIN).once()
+    poll.should_receive('poll').and_return(((5, module.select.POLLIN),)).once()
+    flexmock(module).should_receive('parse_log_line').never()
+    flexmock(module).should_receive('handle_log_record').never()
+
+    assert tuple(
+        module.log_buffer_lines(
+            buffer_readers=buffer_readers,
+            process_metadatas=process_metadatas,
+            output_log_level=module.logging.INFO,
+            borg_local_path=flexmock(),
+        )
+    ) == (b'hi', b'there')
+
+
 def test_log_buffer_lines_with_ready_buffer_and_capture_process_yields_each_line():
     process = flexmock(poll=lambda: None, stderr=flexmock(), args=flexmock())
     buffer_readers = {
@@ -1186,6 +1213,29 @@ def test_log_remaining_buffer_lines_logs_each_line():
         )
         == ()
     )
+
+
+def test_log_remaining_buffer_lines_with_raw_bytes_reader_skips_logging():
+    process = flexmock(stderr=flexmock(), args=flexmock())
+    buffer_readers = {
+        flexmock(): module.Buffer_reader(
+            lines=((b'hi', b'there'), (b'and', b'stuff')),
+            process=process,
+            raw=True,
+        )
+    }
+    process_metadatas = {process: module.Process_metadata(last_lines=[], capture=False)}
+    flexmock(module).should_receive('parse_log_line').never()
+    flexmock(module).should_receive('handle_log_record').never()
+
+    assert tuple(
+        module.log_remaining_buffer_lines(
+            buffer_readers,
+            process_metadatas,
+            output_log_level=module.logging.INFO,
+            borg_local_path=flexmock(),
+        )
+    ) == (b'hi', b'there', b'and', b'stuff')
 
 
 def test_log_remaining_buffer_lines_with_multiple_buffers_logs_lines_from_each():
@@ -2056,3 +2106,39 @@ def test_execute_command_with_processes_kills_processes_on_error():
 
     with pytest.raises(subprocess.CalledProcessError):
         tuple(module.execute_command_with_processes(full_command, processes))
+
+
+def test_generator_reader_read_consumes_partial_chunks_across_multiple_reads():
+    reader = module.Generator_reader(chunk for chunk in (b'abc', b'def', b'geh'))
+
+    assert reader.read(2) == b'ab'
+    assert reader.read(2) == b'cd'
+    assert reader.read(2) == b'ef'
+
+
+def test_generator_reader_read_consumes_multiple_chunks():
+    reader = module.Generator_reader(chunk for chunk in (b'abc', b'def', b'geh'))
+
+    assert reader.read(6) == b'abcdef'
+
+
+def test_generator_reader_read_with_no_size_consumes_entire_generator():
+    reader = module.Generator_reader(chunk for chunk in (b'abc', b'def', b'geh'))
+
+    assert reader.read() == b'abcdefgeh'
+
+
+def test_generator_reader_read_with_too_large_size_consumes_entire_generator():
+    reader = module.Generator_reader(chunk for chunk in (b'abc', b'def', b'geh'))
+
+    assert reader.read(100) == b'abcdefgeh'
+
+
+def test_generator_reader_close_drains_generator():
+    generator = (chunk for chunk in (b'abc', b'def', b'geh'))
+    reader = module.Generator_reader(generator)
+    reader.close()
+
+    assert not reader.buffer
+    assert not reader.buffer_size
+    assert tuple(generator) == ()
