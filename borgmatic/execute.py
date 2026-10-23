@@ -305,7 +305,7 @@ def read_byte_chunks(buffer, process):
     of raw byte chunks from the buffer until it reaches EOF.
 
     It is assumed that this function's generator is used in conjunction with an external
-    select.poll() call to know when to read more lines. Otherwise, the generator will busywait if
+    select.poll() call to know when to read more chunks. Otherwise, the generator will busywait if
     it's called in a tight loop.
     '''
     while True:

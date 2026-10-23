@@ -521,12 +521,14 @@ def strip_member_path_prefix(member_path):
 
     for index in range(len(path_components) - len(MARKER_PATH_COMPONENTS)):
         if path_components[index : index + len(MARKER_PATH_COMPONENTS)] == MARKER_PATH_COMPONENTS:
-            return os.path.sep.join(
-                path_components[
-                    index
-                    + len(MARKER_PATH_COMPONENTS)
-                    + HOSTNAME_AND_DATA_SOURCE_NAME_PATH_COMPONENTS_COUNT :
-                ]
+            return normalize_member_path(
+                os.path.sep.join(
+                    path_components[
+                        index
+                        + len(MARKER_PATH_COMPONENTS)
+                        + HOSTNAME_AND_DATA_SOURCE_NAME_PATH_COMPONENTS_COUNT :
+                    ]
+                )
             )
 
     return None
@@ -537,6 +539,7 @@ EXTENSION_TO_TARFILE_COMPRESSION = {
     'tgz': 'gz',
     'bz2': 'bz2',
     'tbz': 'bz2',
+    'tbz2': 'bz2',
     'xz': 'xz',
     'txz': 'xz',
     'tar': '',
@@ -575,7 +578,7 @@ def restore_data_source_dump(
 
     file_extension = destination_path.split('.')[-1]
     try:
-        compression = EXTENSION_TO_TARFILE_COMPRESSION[file_extension]
+        compression = EXTENSION_TO_TARFILE_COMPRESSION[file_extension.lower()]
     except KeyError:
         raise ValueError(f'Unknown tarball compression for {destination_path}')
 
@@ -664,7 +667,7 @@ def main():
 
     try:
         stream_tarballs(tarballs, borgmatic_runtime_directory)
-    except (ValueError, BrokenPipeError, OSError) as error:
+    except (ValueError, BrokenPipeError, OSError, tarfile.ReadError) as error:
         logger.error(f'An error occurred while streaming tarball data: {error}')
         sys.exit(1)
 

@@ -621,6 +621,8 @@ def test_load_data_source_dump_manifest_with_invalid_json_raises():
 
 
 def test_strip_member_path_prefix_removes_prefix_from_member_path():
+    flexmock(module).should_receive('normalize_member_path').replace_with(lambda path: path)
+
     assert (
         module.strip_member_path_prefix('borgmatic/tarballs/localhost/example/foo/bar/baz.txt')
         == 'foo/bar/baz.txt'
@@ -628,6 +630,8 @@ def test_strip_member_path_prefix_removes_prefix_from_member_path():
 
 
 def test_strip_member_path_prefix_without_prefix_strips_nothing():
+    flexmock(module).should_receive('normalize_member_path').replace_with(lambda path: path)
+
     assert module.strip_member_path_prefix('foo/bar/baz.txt') is None
 
 
@@ -1134,7 +1138,7 @@ def test_main_with_missing_runtime_directory_raises():
 
 @pytest.mark.parametrize(
     'error',
-    (ValueError, BrokenPipeError, OSError),
+    (ValueError, BrokenPipeError, OSError, module.tarfile.ReadError),
 )
 def test_main_with_value_error_exits_with_error(error):
     flexmock(module.borgmatic.logger).should_receive('configure_logging')
