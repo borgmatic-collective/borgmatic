@@ -31,13 +31,12 @@ def test_load_config_paths_from_archive_returns_list_of_config_paths():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory',
     ).and_return('/source')
-    extract_process = flexmock(
-        stdout=flexmock(
-            read=lambda: '{"config_paths": ["/borgmatic/config.yaml"]}',
-        ),
-    )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        extract_process,
+        flexmock(),
+    )
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module.borgmatic.execute).should_receive('log_outputs').and_return(
+        ('{"config_paths": ["/borgmatic/config.yaml"]}',)
     )
 
     assert module.load_config_paths_from_archive(
@@ -72,17 +71,13 @@ def test_load_config_paths_from_archive_probes_for_manifest():
         'bootstrap',
         'manifest.json',
     ).once()
-    manifest_missing_extract_process = flexmock(
-        stdout=flexmock(read=lambda: None),
-    )
-    manifest_found_extract_process = flexmock(
-        stdout=flexmock(
-            read=lambda: '{"config_paths": ["/borgmatic/config.yaml"]}',
-        ),
-    )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        manifest_missing_extract_process,
-    ).and_return(manifest_missing_extract_process).and_return(manifest_found_extract_process)
+        flexmock(),
+    )
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module.borgmatic.execute).should_receive('log_outputs').and_return(('',)).and_return(
+        ('',)
+    ).and_return(('{"config_paths": ["/borgmatic/config.yaml"]}',))
 
     assert module.load_config_paths_from_archive(
         'repo',
@@ -101,10 +96,11 @@ def test_load_config_paths_from_archive_with_missing_manifest_raises_value_error
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory',
     ).and_return('/source')
-    extract_process = flexmock(stdout=flexmock(read=lambda: ''))
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        extract_process,
+        flexmock(),
     )
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module.borgmatic.execute).should_receive('log_outputs').and_return(('',))
 
     with pytest.raises(ValueError):
         module.load_config_paths_from_archive(
@@ -124,11 +120,12 @@ def test_load_config_paths_from_archive_with_broken_json_raises_value_error():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory',
     ).and_return('/source')
-    extract_process = flexmock(
-        stdout=flexmock(read=lambda: '{"config_paths": ["/oops'),
-    )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        extract_process,
+        flexmock(),
+    )
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module.borgmatic.execute).should_receive('log_outputs').and_return(
+        ('{{"config_paths": ["/oops}',)
     )
 
     with pytest.raises(ValueError):
@@ -149,12 +146,11 @@ def test_load_config_paths_from_archive_with_json_missing_key_raises_value_error
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory',
     ).and_return('/source')
-    extract_process = flexmock(
-        stdout=flexmock(read=lambda: '{}'),
-    )
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        extract_process,
+        flexmock(),
     )
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module.borgmatic.execute).should_receive('log_outputs').and_return(('{}',))
 
     with pytest.raises(ValueError):
         module.load_config_paths_from_archive(

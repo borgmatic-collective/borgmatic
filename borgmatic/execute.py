@@ -870,6 +870,14 @@ class Generator_reader:
     log_outputs(), and exposes a file-like object with a read() function to progressively consume
     that data regardless of chunk boundaries. This is useful when running a command that produces
     byte output and then sending that byte data to something that expects a file-like object.
+
+    Also works as a context manager. Example:
+
+        with borgmatic.execute.Generator_reader(chunks) as reader:
+            do_something_that_expects_a_file_object(reader)
+
+    With that context manager in place, the reader automatically drains the chunks generator upon
+    exiting the wrapped code block.
     '''
 
     def __init__(self, chunks):
@@ -877,9 +885,16 @@ class Generator_reader:
         self.buffer = []
         self.buffer_size = 0
 
+    def __enter__(self):
+        return self
+
     def read(self, size=-1):
-        # Accumulate chunks from the generator into a buffer until we've got enough data to satisfy
-        # the requested read size.
+        '''
+        Given an optional total size in bytes to read, accumulate chunks from the generator into a
+        buffer until we've got enough data to satisfy the requested read size. Return the result as
+        a combined buffer of bytes. If there are remaining unread bytes, save them for the next read
+        request.
+        '''
         while size < 0 or self.buffer_size < size:
             chunk = next(self.chunks, NO_MORE_CHUNKS)
 
@@ -897,6 +912,12 @@ class Generator_reader:
         self.buffer_size = len(self.buffer[-1])
 
         return joined_buffer[:requested_size]
+
+    def __exit__(self, exception_type, exception, traceback):
+        '''
+        On context manager exit, drain the rest of the generator.
+        '''
+        self.close()
 
     def close(self):
         '''

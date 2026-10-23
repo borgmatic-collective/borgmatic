@@ -430,7 +430,8 @@ def test_export_tar_archive_with_capture_stdout_calls_borg_with_stdout_destinati
         ('repo::archive',),
     )
     insert_execute_command_mock(
-        ('borg', 'export-tar', 'repo::archive', '-'), output_file=module.subprocess.PIPE
+        ('borg', 'export-tar', '--log-json', 'repo::archive', '-'),
+        output_file=module.subprocess.PIPE,
     )
     insert_logging_mock(logging.WARNING)
 

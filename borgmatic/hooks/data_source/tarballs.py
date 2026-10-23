@@ -93,6 +93,10 @@ def inject_tarball_patterns(
      * the tarballs hook dumps JSON file, containing metadata on all the tarball dumps
      * the per-tarball manifest, containing metadata on the members of this tarball
      * every single tarball member path (directories and non-directories separately)
+
+    This spoon-feeding of very specific ordered tarball member paths to Borg is necessary so that it
+    reads our named pipes in an expected ordered. That way, we can write to them in the same order
+    and can service them serially, without the complexity of threads or non-blocking I/O.
     '''
     # Inject an exclude override for the whole tarballs directory, so we don't have to
     # add it per-member and incur the cost of Borg processing all those additional
@@ -268,7 +272,9 @@ def dump_data_sources(
                     patterns, members, borgmatic_runtime_directory, dump_directory, manifest_path
                 )
 
-            members_metadata = make_member_named_pipes(members, dump_directory, tarball_label, dry_run)
+            members_metadata = make_member_named_pipes(
+                members, dump_directory, tarball_label, dry_run
+            )
 
         if not dry_run:
             with open(manifest_path, 'w') as manifest_file:
@@ -300,7 +306,8 @@ def stream_tarballs(tarballs, borgmatic_runtime_directory):
     '''
     Given a sequence of tarballs configuration dicts and the borgmatic runtime directory, stream
     each member of each tarball through its own named pipe in the runtime directory to Borg. It is
-    assumed that these named pipes have already been created.
+    assumed that these named pipes have already been created and that Borg has been given member
+    paths in this precise order (so that Borg will read each pipe as we're writing to it).
     '''
     for tarball in tarballs:
         tarball_path = tarball['path']
@@ -547,7 +554,7 @@ def restore_data_source_dump(
     tarball from the given extract stream using the given manifest data. If this is a dry run, then
     don't actually restore anything.
     '''
-    destination_path = connection_params['restore_path'] or data_source.get(
+    destination_path = connection_params.get('restore_path') or data_source.get(
         'restore_path',
         data_source.get('path'),
     )
@@ -575,8 +582,9 @@ def restore_data_source_dump(
         write_buffer = None
 
     # Capture stdout and log stderr.
-    with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
-        extract_reader = borgmatic.execute.Generator_reader(
+    with (
+        borgmatic.logger.Log_prefix(None) as log_prefix,  # Log command output without any prefix.
+        borgmatic.execute.Generator_reader(
             borgmatic.execute.log_outputs(
                 processes=(extract_process,),
                 exclude_stdouts=(),
@@ -585,8 +593,8 @@ def restore_data_source_dump(
                 borg_exit_codes=config.get('borg_exit_codes'),
                 output_raw_bytes=True,
             )
-        )
-
+        ) as extract_reader,
+    ):
         # Stream the "export-tar" from the Borg archive, rewrite it on-the-fly to add missing manifest
         # metadata, and write it out to a destination tarball on disk.
         try:
@@ -620,9 +628,6 @@ def restore_data_source_dump(
                     )
         except tarfile.ReadError as error:
             raise ValueError(f'Error exporting tarball "{destination_path}": {error}')
-        finally:
-            # Note that this can mask the tarfile.ReadError above if close() raises.
-            extract_reader.close()
 
 
 def main():

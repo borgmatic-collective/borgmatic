@@ -133,7 +133,10 @@ def validate_planned_backup_paths(
         if (
             validate_runtime_directory
             and not runtime_directory_in_path
-            and any(parent in runtime_directory_root_pattern_paths for parent in path_parents)
+            and any(
+                parent in runtime_directory_root_pattern_paths
+                for parent in (pathlib.PurePath(path), *path_parents)
+            )
         ):
             runtime_directory_in_path = True
 

@@ -383,10 +383,9 @@ def test_collect_dumps_from_archive_with_dumps_metadata_parses_it():
             {'path': 'borgmatic/mysql_databases/dumps.json'},
         ),
     )
-    flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        flexmock(stdout=flexmock(read=lambda: b''))
-    )
-    flexmock(module.locale).should_receive('getpreferredencoding').and_return('UTF-8')
+    flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(flexmock())
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module.borgmatic.execute).should_receive('log_outputs').and_return(('stuff',))
     dumps_metadata = [
         module.Dump('postgresql_databases', 'foo'),
         module.Dump('postgresql_databases', 'bar', 'host', 1234),

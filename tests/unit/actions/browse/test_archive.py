@@ -47,8 +47,13 @@ def test_get_archive_file_content_with_binary_file_bails():
     flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module.borgmatic.borg.version).should_receive('local_borg_version').and_return('3.0')
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        flexmock(stdout=flexmock(readlines=lambda hint: [b'foo\n', b'bar\n'])),
+        extract_process := flexmock()
     )
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module.borgmatic.execute).should_receive('log_outputs').and_return(
+        (b'foo\n', b'bar\n')
+    )
+    extract_process.should_receive('terminate').never()
     flexmock(module.binaryornot.helpers).should_receive('is_binary_string').and_return(True)
 
     assert (
@@ -62,8 +67,13 @@ def test_get_archive_file_content_decodes_content():
     flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module.borgmatic.borg.version).should_receive('local_borg_version').and_return('3.0')
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        flexmock(stdout=flexmock(readlines=lambda hint: [b'foo\n', b'bar\n'])),
+        extract_process := flexmock()
     )
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module.borgmatic.execute).should_receive('log_outputs').and_return(
+        (b'foo\n', b'bar\n')
+    )
+    extract_process.should_receive('terminate').never()
     flexmock(module.binaryornot.helpers).should_receive('is_binary_string').and_return(False)
 
     assert (
@@ -76,10 +86,15 @@ def test_get_archive_file_content_with_large_file_truncates_content():
     config = {'repositories': [{'path': 'test.borg'}]}
     flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module.borgmatic.borg.version).should_receive('local_borg_version').and_return('3.0')
-    flexmock(module).READLINES_HINT_BYTES = 3
+    flexmock(module, MAXIMUM_TOTAL_READ_SIZE=3)
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        flexmock(stdout=flexmock(readlines=lambda hint: [b'foo\n', b'bar\n'])),
+        extract_process := flexmock()
     )
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module.borgmatic.execute).should_receive('log_outputs').and_return(
+        (b'foo\n', b'bar\n')
+    )
+    extract_process.should_receive('terminate').once()
     flexmock(module.binaryornot.helpers).should_receive('is_binary_string').and_return(False)
 
     assert (
@@ -93,8 +108,13 @@ def test_get_archive_file_content_with_unicode_decode_error_does_not_raise():
     flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module.borgmatic.borg.version).should_receive('local_borg_version').and_return('3.0')
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
-        flexmock(stdout=flexmock(readlines=lambda hint: [b'foo\n', b'\xc3\n'])),
+        extract_process := flexmock()
     )
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module.borgmatic.execute).should_receive('log_outputs').and_return(
+        (b'foo\n', b'\xc3\n')
+    )
+    extract_process.should_receive('terminate').never()
     flexmock(module.binaryornot.helpers).should_receive('is_binary_string').and_return(False)
 
     assert (
