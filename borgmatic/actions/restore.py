@@ -177,8 +177,8 @@ def restore_single_dump(
 
     logger.info(f'Restoring data source {dump_metadata}')
 
-    extract_process = borgmatic.hooks.dispatch.call_hook(
-        function_name='extract_data_source_dump',
+    manifest = borgmatic.hooks.dispatch.call_hook(
+        function_name='load_data_source_dump_manifest',
         config=config,
         hook_name=hook_name,
         repository=repository,
@@ -191,8 +191,8 @@ def restore_single_dump(
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     )
 
-    manifest = borgmatic.hooks.dispatch.call_hook(
-        function_name='load_data_source_dump_manifest',
+    extract_process = borgmatic.hooks.dispatch.call_hook(
+        function_name='extract_data_source_dump',
         config=config,
         hook_name=hook_name,
         repository=repository,
