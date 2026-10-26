@@ -3,6 +3,8 @@
    deduplication of their contents, handy for large tarballs like VM backups. See the documentation
    for more information:
    https://torsion.org/borgmatic/reference/configuration/data-sources/tarballs/
+ * #1360: With the "borg" action, support the "--dry-run" flag when specified after "borg" on the
+   command-line. (The flag still won't work before "borg".)
  * #1368: Fix a hang in which a database dump command spewing lots of output could send borgmatic
    into a loop. This was most prevalent with MongoDB.
  * #1370: Fix "Too many open files" and "filedescriptor out of range in select()" errors when
