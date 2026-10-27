@@ -167,9 +167,13 @@ def get_unparsable_arguments(remaining_action_arguments):
 
 def remaining_arguments_after_parsing(parser, arguments):
     '''
-    TODO: docstring
+    Given an argument parser and a sequence of arguments, return a sequence of the remaining
+    arguments after parsing consumes any of them. Parse errors due to things like argument
+    requiredness are suppressed for these purposes. However, flags like "--help" or "-h" should
+    not be present in arguments, as errors from those can't be suppressed.
 
-    Raise argparse.ArgumentError if the arguments can't be parsed with this parser.
+    Raise argparse.ArgumentError if the arguments can't be parsed at all with this parser, for
+    instance if the action for this parser just isn't present in the arguments.
     '''
     original_exit_on_error = parser.exit_on_error
     parser.exit_on_error = False
@@ -182,11 +186,17 @@ def remaining_arguments_after_parsing(parser, arguments):
 
 class Argument_with_position(str):
     '''
-    TODO: docstring
-    '''
+    An argument string that also happens to store its position within a separate argument sequence,
+    used below in logic reliant on the positions of particular action names.
 
-    def __new__(cls, value, position):
-        instance = super().__new__(cls, value)
+    Because this is a string subclass, it works wherever a string works.
+    '''
+    def __new__(cls, argument, position):
+        '''
+        Create a new Argument_with_position with the given string argument value and argument
+        position.
+        '''
+        instance = super().__new__(cls, argument)
         instance.position = position
 
         return instance
@@ -194,12 +204,26 @@ class Argument_with_position(str):
 
 def detect_action_name(action_name, action_parser, remaining):
     '''
-    TODO: docstring
+    Given an action name, its corresponding parser as an argparse.ArgumentParser instance, and a
+    dict from action name to a sequence of Argument_with_position instances representing the
+    post-parsing remaining arguments, detect whether the action name is present in all of the
+    remaining argument sequences—meaning that it's a legitimate user-requested action name and isn't
+    just, say, a flag value that one of the parsers consumed.
+
+    For instance, a legitimate user-requested action name is something like the "restore" in
+    "borgmatic restore" but not the "restore" in "borgmatic --repository restore list".
+
+    For a detected legitimate action name, return a single-element dict from that action name as an
+    Argument_with_position instance to its corresponding parser. This means that the position of the
+    action name within the original unparsed arguments is available to the caller.
+
+    If no such action name is found, return an empty dict.
     '''
-    all_have_action_name = True
     positions = []
 
     for action_remaining in remaining.values():
+        # Find the position of the requested action name within the remaining arguments for every
+        # action.
         positions.append(
             next(
                 (argument for argument in action_remaining if argument == action_name),
@@ -207,27 +231,42 @@ def detect_action_name(action_name, action_parser, remaining):
             ).position
         )
 
+        # If not every sequence of remaining arguments has the requested action name, then it must
+        # not be a legitimate action; it got consumed as a flag value or something. Bail.
         if not action_remaining or action_name not in action_remaining:
-            all_have_action_name = False
+            return {}
 
-    if all_have_action_name:
-        return {Argument_with_position(action_name, max(positions)): action_parser}
-
-    return {}
+    # The action name didn't get consume and therefore is legitimate. Return it along with its
+    # position and parser.
+    return {Argument_with_position(action_name, max(positions)): action_parser}
 
 
 def detect_actions(unparsed_arguments, action_parsers, global_parser):
     '''
-    TODO: docstring
+    Given a sequence of unparsed arguments, a dict from action name to corresponding
+    argparse.ArgumentParser instance, and the global parser as an argparse.ArgumentParser instance,
+    detect the actual user-requested action names within the given arguments.
+
+    This is effectively a first parsing pass where we throw away the results, as we're only
+    interested here in determining the action names in use. Well, that and a few pieces of data
+    related to "borg" action parsing, since it's convenient to do here.
+
+    Return a tuple of: a dict from detected action name to corresponding parser, the position of
+    the "borg" action name in the given arguments (or None), and a sequence of the options passed to
+    the "borg" action (or None).
+
+    Note that "borg" is a singleton action, meaning that if it's detected, no other actions are
+    detected with it.
     '''
     # The "--help" flag causes argparse to print help and exit, so skip "--help" / "-h" for purposes
-    # of detecting action names.
-    # TODO: describe the following, specifically the rationale for tracking the positions
+    # of detecting action names. Also store the position for each argument for use below.
     arguments = tuple(
-        Argument_with_position(argument, index)
-        for index, argument in enumerate(unparsed_arguments)
+        Argument_with_position(argument, position)
+        for position, argument in enumerate(unparsed_arguments)
         if argument not in ('--help', '-h')
     )
+
+    # A dict from action name to its post-parsing remaining arguments.
     remaining = {}
 
     for action_name, parser in (action_parsers | {'global': global_parser}).items():
@@ -299,13 +338,13 @@ def detect_actions(unparsed_arguments, action_parsers, global_parser):
 def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parser):
     '''
     Given a sequence of arguments, a dict from action name to argparse.ArgumentParser instance,
-    and the global parser as a argparse.ArgumentParser instance, give each requested action's
+    and the global parser as an argparse.ArgumentParser instance, give each requested action's
     parser a shot at parsing all arguments. This allows common arguments like "--repository" to be
     shared across multiple action parsers.
 
-    Return the result as a tuple of: (a dict mapping from action name to an argparse.Namespace of
+    Return the result as a tuple of: a dict mapping from action name to an argparse.Namespace of
     parsed arguments, a tuple of argument tuples where each is the remaining arguments not claimed
-    by any action parser).
+    by any action parser.
     '''
     arguments = collections.OrderedDict()
     help_requested = bool('--help' in unparsed_arguments or '-h' in unparsed_arguments)
@@ -366,7 +405,7 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
 
     remaining_action_arguments.append(
         parse_and_record_action_arguments(
-            # Special case: If there's a "borg" action, ignore anything after the "borg" argument
+            # Special case: If there's a "borg" action, ignore anything after the "borg" argument,
             # so that the global parser doesn't parse Borg-specific flags.
             unparsed_arguments[:borg_action_name_position]
             if borg_action_name_position is not None

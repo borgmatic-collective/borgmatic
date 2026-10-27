@@ -134,7 +134,7 @@ is, patterns are _not_ taken into consideration. If you require this, supply the
 `--only-patterns` flag.
 
 <span class="minilink minilink-addedin">New in borgmatic version
-2.1.11</span>If you'd like the differences in machine-readable form, supply the
+2.2.0</span>If you'd like the differences in machine-readable form, supply the
 `--json` flag to output one JSON object per changed path (i.e. Borg's
 `--json-lines` output):
 

@@ -787,7 +787,7 @@ database dumps to Borg, which can be more than your system resource limits
 allow. This often happens when you have hundreds of databases and you dump
 `all`.
 
-<span class="minilink minilink-addedin">New in version 2.1.11</span> borgmatic
+<span class="minilink minilink-addedin">New in version 2.2.0</span> borgmatic
 automatically raises its own soft limit for open file descriptors, which should
 solve the "Too many open files" issue for most use cases. However, if you've
 given borgmatic a too-low hard limit (e.g. in

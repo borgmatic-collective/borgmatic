@@ -1,4 +1,4 @@
-2.1.11.dev0
+2.2.0.dev0
  * #1273: Add a tarballs hook for backing up and restoring tar files while retaining full Borg
    deduplication of their contents, handy for large tarballs like VM backups. See the documentation
    for more information:
@@ -21,6 +21,8 @@
    enabled with Borg 2.
  * Fix a theoretical hang in which borgmatic neglected to consume sub-process stderr output. Applies
    to "restore", "browse", and "config bootstrap" actions.
+ * Fix a bug in which a literal flag value of "borg" could throw off command-line parsing for the
+   "borg" action.
  * Add a "--json" flag to the "diff" action for outputting one JSON object per changed path.
 
 2.1.10

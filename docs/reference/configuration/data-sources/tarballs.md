@@ -11,7 +11,7 @@ because of the way that a tarball's files are packed together (and often
 compressed). This isn't a big deal for small tarballs, but it can really hurt
 for large ones like virtual machine exports.
 
-<span class="minilink minilink-addedin">New in version 2.1.11</span> <span
+<span class="minilink minilink-addedin">New in version 2.2.0</span> <span
 class="minilink minilink-addedin">Beta feature</span> borgmatic supports
 configuring tarballs as data sources for backups, unpacking their contained
 files directly into a Borg archive so that deduplication works properly.
