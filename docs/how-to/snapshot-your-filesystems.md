@@ -38,11 +38,6 @@ service
 file](https://projects.torsion.org/borgmatic-collective/borgmatic/raw/branch/main/sample/systemd/borgmatic.service)
 to work with ZFS. See the comments in that file for details.
 
-As long as the ZFS hook is in beta, it may be subject to breaking changes
-and/or may not work well for your use cases. But feel free to use it in
-production if you're okay with these caveats, and please [provide any
-feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
-
 For additional details about ZFS support, see [borgmatic's ZFS
 documentation](https://torsion.org/borgmatic/reference/configuration/data-sources/zfs/).
 
@@ -78,11 +73,6 @@ No other options are necessary to enable Btrfs support. But if you're using
 systemd to run borgmatic, you may need to modify the [sample systemd service
 file](https://projects.torsion.org/borgmatic-collective/borgmatic/raw/branch/main/sample/systemd/borgmatic.service)
 to work with Btrfs. See the comments in that file for details.
-
-As long as the Btrfs hook is in beta, it may be subject to breaking changes
-and/or may not work well for your use cases. But feel free to use it in
-production if you're okay with these caveats, and please [provide any
-feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
 
 For additional details about Btrfs support, see [borgmatic's Btrfs
 documentation](https://torsion.org/borgmatic/reference/configuration/data-sources/btrfs/).
@@ -129,11 +119,6 @@ No other options are necessary to enable LVM support. But if you're using
 systemd to run borgmatic, you may need to modify the [sample systemd service
 file](https://projects.torsion.org/borgmatic-collective/borgmatic/raw/branch/main/sample/systemd/borgmatic.service)
 to work with LVM. See the comments in that file for details.
-
-As long as the LVM hook is in beta, it may be subject to breaking changes
-and/or may not work well for your use cases. But feel free to use it in
-production if you're okay with these caveats, and please [provide any
-feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
 
 For additional details about LVM support, see [borgmatic's LVM
 documentation](https://torsion.org/borgmatic/reference/configuration/data-sources/lvm/).
