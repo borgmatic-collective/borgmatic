@@ -170,7 +170,7 @@ def remaining_arguments_after_parsing(parser, arguments):
     Given an argument parser and a sequence of arguments, return a sequence of the remaining
     arguments after parsing consumes any of them. Parse errors due to things like argument
     requiredness are suppressed for these purposes. However, flags like "--help" or "-h" should
-    not be present in arguments, as errors from those can't be suppressed.
+    not be present in the given arguments, as errors from those can't be suppressed.
 
     Raise argparse.ArgumentError if the arguments can't be parsed at all with this parser, for
     instance if the action for this parser just isn't present in the arguments.
@@ -184,7 +184,7 @@ def remaining_arguments_after_parsing(parser, arguments):
         parser.exit_on_error = original_exit_on_error
 
 
-class Argument_with_position(str):
+class Argument(str):
     '''
     An argument string that also happens to store its position within a separate argument sequence,
     used below in logic reliant on the positions of particular action names.
@@ -194,8 +194,7 @@ class Argument_with_position(str):
 
     def __new__(cls, argument, position):
         '''
-        Create a new Argument_with_position with the given string argument value and argument
-        position.
+        Create a new Argument with the given string argument value and argument position.
         '''
         instance = super().__new__(cls, argument)
         instance.position = position
@@ -206,16 +205,16 @@ class Argument_with_position(str):
 def detect_action_name(action_name, action_parser, remaining):
     '''
     Given an action name, its corresponding parser as an argparse.ArgumentParser instance, and a
-    dict from action name to a sequence of Argument_with_position instances representing the
-    post-parsing remaining arguments, detect whether the action name is present in all of the
-    remaining argument sequences—meaning that it's a legitimate user-requested action name and isn't
-    just, say, a flag value that one of the parsers consumed.
+    dict from action name to a sequence of Argument instances representing the post-parsing
+    remaining arguments, detect whether the action name is present in all of the remaining argument
+    sequences—meaning that it's a legitimate user-requested action name and isn't just, say, a flag
+    value that one of the parsers consumed.
 
     For instance, a legitimate user-requested action name is something like the "restore" in
     "borgmatic restore" but not the "restore" in "borgmatic --repository restore list".
 
     For a detected legitimate action name, return a single-element dict from that action name as an
-    Argument_with_position instance to its corresponding parser. This means that the position of the
+    Argument instance to its corresponding parser. This means that the position of the
     action name within the original unparsed arguments is available to the caller.
 
     If no such action name is found, return an empty dict.
@@ -228,7 +227,7 @@ def detect_action_name(action_name, action_parser, remaining):
         positions.append(
             next(
                 (argument for argument in action_remaining if argument == action_name),
-                Argument_with_position('none', -1),
+                Argument('none', -1),
             ).position
         )
 
@@ -239,7 +238,7 @@ def detect_action_name(action_name, action_parser, remaining):
 
     # The action name didn't get consume and therefore is legitimate. Return it along with its
     # position and parser.
-    return {Argument_with_position(action_name, max(positions)): action_parser}
+    return {Argument(action_name, max(positions)): action_parser}
 
 
 def detect_actions(unparsed_arguments, action_parsers, global_parser):
@@ -262,7 +261,7 @@ def detect_actions(unparsed_arguments, action_parsers, global_parser):
     # The "--help" flag causes argparse to print help and exit, so skip "--help" / "-h" for purposes
     # of detecting action names. Also store the position for each argument for use below.
     arguments = tuple(
-        Argument_with_position(argument, position)
+        Argument(argument, position)
         for position, argument in enumerate(unparsed_arguments)
         if argument not in ('--help', '-h')
     )
@@ -310,23 +309,17 @@ def detect_actions(unparsed_arguments, action_parsers, global_parser):
             continue
 
         # Gather the arguments being passed to Borg ("+ 1" means after the "borg" action name) and
-        # also, separately, the arguments that aren't being passed to Borg. For the Borg-specific
-        # arguments in particular, they're post-parsing arguments, so that flags like "--repository"
-        # and its value have already been plucked out.
-        borg_remaining = remaining['borg']
-        remaining_position = next(
-            position
-            for position, argument in enumerate(borg_remaining)
-            if argument.position == action_name.position
-        )
-        borg_arguments = [str(argument) for argument in borg_remaining[remaining_position + 1 :]]
+        # also, separately, the arguments that aren't being passed to Borg.
+        borg_arguments = [
+            str(argument) for argument in unparsed_arguments[action_name.position + 1 :]
+        ]
         non_borg_arguments = [
             str(argument) for argument in unparsed_arguments[: action_name.position]
         ]
 
         return {'borg': action_parser}, borg_arguments, non_borg_arguments
 
-    # The action name is an Argument_with_position instance, so normalize to a string.
+    # The action name is an Argument instance, so normalize to a string.
     return (
         {
             str(action_name): action_parser
@@ -2227,11 +2220,11 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     borg_group = borg_parser.add_argument_group('borg arguments')
     borg_group.add_argument(
         '--repository',
-        help='Path of repository to pass to Borg, defaults to the configured repositories, quoted globs supported',
+        help='Path of repository to pass to Borg, defaults to the configured repositories, quoted globs supported, specify before "borg"',
     )
     borg_group.add_argument(
         '--archive',
-        help='Archive name, hash, or series to pass to Borg (or "latest")',
+        help='Archive name, hash, or series to pass to Borg (or "latest"), specify before "borg"',
     )
     borg_group.add_argument(
         '--',
