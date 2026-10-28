@@ -274,7 +274,7 @@ def test_remaining_arguments_after_parsing_returns_remaining_and_restores_exit_o
     assert parser.exit_on_error is True
 
 
-def test_argument_with_position_functions_as_strings_and_has_position():
+def test_argument_functions_as_string_and_has_position():
     argument = module.Argument('foo', 9)
 
     assert argument == 'foo'
@@ -412,10 +412,80 @@ def test_detect_actions_finds_action_names_in_arguments():
         'other', object, object
     ).and_return({module.Argument('other', 4): action_parsers['other']})
 
+    (detected_action_parsers, borg_arguments, non_borg_arguments) = module.detect_actions(
+        unparsed_arguments, action_parsers, global_parser
+    )
+    assert detected_action_parsers == {
+        'action': action_parsers['action'],
+        'other': action_parsers['other'],
+    }
+    # Assert that original command-line action order is retained.
+    assert next(iter(detected_action_parsers.keys())) == 'action'
+    assert borg_arguments is None
+    assert non_borg_arguments is None
+
+
+def test_detect_actions_with_invalid_action_arguments_skips_that_action():
+    unparsed_arguments = ('--verbosity', 'action', '--foo', 'true', 'other', '--wrong')
+    arguments = tuple(
+        module.Argument(argument, position) for position, argument in enumerate(unparsed_arguments)
+    )
+    action_parsers = {
+        'nope': flexmock(),
+        'other': flexmock(),
+        'uhuh': flexmock(),
+        'action': flexmock(),
+    }
+    global_parser = flexmock()
+    flexmock(module).should_receive('get_subaction_parsers').and_return({})
+    flexmock(module).should_receive('remaining_arguments_after_parsing').with_args(
+        action_parsers['nope'], arguments
+    ).and_return(arguments)
+    flexmock(module).should_receive('remaining_arguments_after_parsing').with_args(
+        action_parsers['other'], arguments
+    ).and_raise(module.argparse.ArgumentError(flexmock(option_strings=('--wrong',)), 'error'))
+    flexmock(module).should_receive('remaining_arguments_after_parsing').with_args(
+        action_parsers['uhuh'], arguments
+    ).and_return(arguments)
+    flexmock(module).should_receive('remaining_arguments_after_parsing').with_args(
+        action_parsers['action'], arguments
+    ).and_return(
+        (
+            module.Argument('--verbosity', 0),
+            module.Argument('action', 1),
+            module.Argument('other', 4),
+            module.Argument('--bar', 5),
+            module.Argument('3', 6),
+        )
+    )
+    flexmock(module).should_receive('remaining_arguments_after_parsing').with_args(
+        global_parser, arguments
+    ).and_return(
+        (
+            module.Argument('action', 1),
+            module.Argument('--foo', 2),
+            module.Argument('true', 3),
+            module.Argument('other', 4),
+            module.Argument('--bar', 5),
+            module.Argument('3', 6),
+        )
+    )
+    flexmock(module).should_receive('detect_action_name').with_args(
+        'nope', object, object
+    ).and_return({})
+    flexmock(module).should_receive('detect_action_name').with_args(
+        'action', object, object
+    ).and_return({module.Argument('action', 1): action_parsers['action']})
+    flexmock(module).should_receive('detect_action_name').with_args(
+        'uhuh', object, object
+    ).and_return({})
+    flexmock(module).should_receive('detect_action_name').with_args(
+        'other', object, object
+    ).and_return({})
+
     assert module.detect_actions(unparsed_arguments, action_parsers, global_parser) == (
         {
             'action': action_parsers['action'],
-            'other': action_parsers['other'],
         },
         None,
         None,
@@ -528,7 +598,7 @@ def test_detect_actions_finds_subaction_in_arguments():
 
 
 def test_detect_actions_finds_only_borg_action_name_and_borg_arguments():
-    unparsed_arguments = ('--verbosity', 'borg', 'list', '--foo', 'true')
+    unparsed_arguments = ('--verbosity', 'borg', '--archive', 'latest', 'list', '--foo', 'true')
     arguments = tuple(
         module.Argument(argument, position) for position, argument in enumerate(unparsed_arguments)
     )
@@ -548,7 +618,9 @@ def test_detect_actions_finds_only_borg_action_name_and_borg_arguments():
         (
             module.Argument('--verbosity', 0),
             module.Argument('borg', 1),
-            module.Argument('list', 2),
+            module.Argument('list', 4),
+            module.Argument('--foo', 5),
+            module.Argument('true', 6),
         ),
     )
     flexmock(module).should_receive('remaining_arguments_after_parsing').with_args(
@@ -557,7 +629,7 @@ def test_detect_actions_finds_only_borg_action_name_and_borg_arguments():
         (
             module.Argument('--verbosity', 0),
             module.Argument('borg', 1),
-            module.Argument('list', 2),
+            module.Argument('list', 4),
         ),
     )
     flexmock(module).should_receive('remaining_arguments_after_parsing').with_args(
@@ -565,9 +637,11 @@ def test_detect_actions_finds_only_borg_action_name_and_borg_arguments():
     ).and_return(
         (
             module.Argument('borg', 1),
-            module.Argument('list', 2),
-            module.Argument('--foo', 3),
-            module.Argument('true', 4),
+            module.Argument('--archive', 2),
+            module.Argument('latest', 3),
+            module.Argument('list', 4),
+            module.Argument('--foo', 5),
+            module.Argument('true', 6),
         )
     )
     flexmock(module).should_receive('detect_action_name').with_args(
@@ -586,6 +660,47 @@ def test_detect_actions_finds_only_borg_action_name_and_borg_arguments():
         },
         ['list', '--foo', 'true'],
         ['--verbosity'],
+    )
+
+
+def test_detect_actions_with_invalid_borg_arguments_does_not_raise():
+    unparsed_arguments = ('--verbosity', 'borg', '--archive')
+    arguments = tuple(
+        module.Argument(argument, position) for position, argument in enumerate(unparsed_arguments)
+    )
+    action_parsers = {
+        'nope': flexmock(),
+        'borg': flexmock(),
+    }
+    global_parser = flexmock()
+    flexmock(module).should_receive('get_subaction_parsers').and_return({})
+    flexmock(module).should_receive('remaining_arguments_after_parsing').with_args(
+        action_parsers['nope'], arguments
+    ).and_return(arguments)
+    flexmock(module).should_receive('remaining_arguments_after_parsing').with_args(
+        action_parsers['borg'], arguments
+    ).and_raise(module.argparse.ArgumentError(flexmock(option_strings=('--archive',)), 'error'))
+    flexmock(module).should_receive('remaining_arguments_after_parsing').with_args(
+        global_parser, arguments
+    ).and_return(
+        (
+            module.Argument('borg', 1),
+            module.Argument('--archive', 2),
+        )
+    )
+    flexmock(module).should_receive('detect_action_name').with_args(
+        'nope', object, object
+    ).and_return({})
+    flexmock(module).should_receive('detect_action_name').with_args(
+        'borg', object, object
+    ).and_return({module.Argument('borg', 1): action_parsers['borg']})
+
+    assert module.detect_actions(unparsed_arguments, action_parsers, global_parser) == (
+        {
+            'borg': action_parsers['borg'],
+        },
+        None,
+        None,
     )
 
 
@@ -656,7 +771,7 @@ def test_parse_arguments_for_actions_consumes_action_arguments_with_alias():
         '-o': flexmock(),
     }
     global_parser = flexmock()
-    flexmock(module).ACTION_ALIASES = {'action': ['-a'], 'other': ['-o']}
+    flexmock(module, ACTION_ALIASES={'action': ['-a'], 'other': ['-o']})
 
     arguments, action_names, remaining_action_arguments = module.parse_arguments_for_actions(
         ('-a', '--foo', 'true'),

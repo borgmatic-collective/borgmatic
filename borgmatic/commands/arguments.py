@@ -233,7 +233,7 @@ def detect_action_name(action_name, action_parser, remaining):
 
         # If not every sequence of remaining arguments has the requested action name, then it must
         # not be a legitimate action; it got consumed as a flag value or something. Bail.
-        if not action_remaining or action_name not in action_remaining:
+        if action_name not in action_remaining:
             return {}
 
     # The action name didn't get consume and therefore is legitimate. Return it along with its
@@ -280,8 +280,9 @@ def detect_actions(unparsed_arguments, action_parsers, global_parser):
             with contextlib.suppress(argparse.ArgumentError):
                 remaining[action_name] = remaining_arguments_after_parsing(parser, arguments)
 
-        for subaction_name, subaction_parser in get_subaction_parsers(parser).items():
+        for subaction_name, subaction_parser in subaction_parsers.items():
             with contextlib.suppress(argparse.ArgumentError):
+                # For now, it is assumed that subaction names are unique across all actions.
                 remaining[subaction_name] = remaining_arguments_after_parsing(
                     subaction_parser, arguments
                 )
@@ -308,11 +309,22 @@ def detect_actions(unparsed_arguments, action_parsers, global_parser):
         if action_name != 'borg':
             continue
 
+        # If there's no "borg" remaining arguments, that means the Borg parser failed to parse
+        # above. Bail, and let the main parsing in the caller handle erroring appropriately.
+        if 'borg' not in remaining:
+            break
+
         # Gather the arguments being passed to Borg ("+ 1" means after the "borg" action name) and
-        # also, separately, the arguments that aren't being passed to Borg.
-        borg_arguments = [
-            str(argument) for argument in unparsed_arguments[action_name.position + 1 :]
-        ]
+        # also, separately, the arguments that aren't being passed to Borg. For the Borg-specific
+        # arguments in particular, they're post-parsing arguments, so that flags like "--repository"
+        # and its value have already been plucked out.
+        borg_remaining = remaining['borg']
+        remaining_position = next(
+            position
+            for position, argument in enumerate(borg_remaining)
+            if argument.position == action_name.position
+        )
+        borg_arguments = [str(argument) for argument in borg_remaining[remaining_position + 1 :]]
         non_borg_arguments = [
             str(argument) for argument in unparsed_arguments[: action_name.position]
         ]
@@ -323,7 +335,11 @@ def detect_actions(unparsed_arguments, action_parsers, global_parser):
     return (
         {
             str(action_name): action_parser
-            for action_name, action_parser in detected_action_parsers.items()
+            # Sort to retain the original user-specified action order.
+            for action_name, action_parser in sorted(
+                detected_action_parsers.items(),
+                key=lambda item: item[0].position,
+            )
         },
         None,
         None,
@@ -338,8 +354,8 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     shared across multiple action parsers.
 
     Return the result as a tuple of: a dict mapping from action name to an argparse.Namespace of
-    parsed arguments, a tuple of argument tuples where each is the remaining arguments not claimed
-    by any action parser.
+    parsed arguments, a tuple of the parsed action names, and a tuple of argument tuples where each
+    is the remaining arguments not claimed by any action parser.
     '''
     arguments = {}
     help_requested = bool('--help' in unparsed_arguments or '-h' in unparsed_arguments)
@@ -411,7 +427,7 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     return (
         arguments,
         tuple(detected_action_parsers.keys()),
-        tuple(remaining_action_arguments) if arguments else (unparsed_arguments,),
+        tuple(remaining_action_arguments),
     )
 
 
@@ -2220,11 +2236,11 @@ def make_parsers(schema, unparsed_arguments):  # noqa: PLR0915
     borg_group = borg_parser.add_argument_group('borg arguments')
     borg_group.add_argument(
         '--repository',
-        help='Path of repository to pass to Borg, defaults to the configured repositories, quoted globs supported, specify before "borg"',
+        help='Path of repository to pass to Borg, defaults to the configured repositories, quoted globs supported',
     )
     borg_group.add_argument(
         '--archive',
-        help='Archive name, hash, or series to pass to Borg (or "latest"), specify before "borg"',
+        help='Archive name, hash, or series to pass to Borg (or "latest")',
     )
     borg_group.add_argument(
         '--',

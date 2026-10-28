@@ -282,7 +282,7 @@ def test_parse_arguments_with_help_and_no_actions_shows_global_help(capsys):
     with pytest.raises(SystemExit) as system_exit:
         module.parse_arguments({}, '--help')
 
-        assert system_exit.value.code == 0
+    assert system_exit.value.code == 0
 
     captured = capsys.readouterr()
     assert 'global arguments:' in captured.out
@@ -295,7 +295,7 @@ def test_parse_arguments_with_help_and_action_shows_action_help(capsys):
     with pytest.raises(SystemExit) as system_exit:
         module.parse_arguments({}, 'create', '--help')
 
-        assert system_exit.value.code == 0
+    assert system_exit.value.code == 0
 
     captured = capsys.readouterr()
     assert 'global arguments:' not in captured.out
@@ -339,6 +339,16 @@ def test_parse_arguments_with_multiple_actions_leaves_other_action_disabled():
     assert 'prune' not in arguments
     assert 'create' in arguments
     assert 'check' in arguments
+
+
+def test_parse_arguments_with_multiple_actions_retains_original_ordering():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    arguments = module.parse_arguments({}, 'check', 'create')
+
+    assert 'check' in arguments
+    assert 'create' in arguments
+    assert next(iter(arguments.keys())) == 'check'
 
 
 def test_parse_arguments_disallows_invalid_argument():
@@ -671,7 +681,7 @@ def test_parse_arguments_config_with_help_shows_config_help(capsys):
     with pytest.raises(SystemExit) as system_exit:
         module.parse_arguments({}, 'config', '--help')
 
-        assert system_exit.value.code == 0
+    assert system_exit.value.code == 0
 
     captured = capsys.readouterr()
     assert 'global arguments:' not in captured.out
@@ -685,7 +695,7 @@ def test_parse_arguments_config_with_subaction_but_missing_flags_errors():
     with pytest.raises(SystemExit) as system_exit:
         module.parse_arguments({}, 'config', 'bootstrap')
 
-        assert system_exit.value.code == 2
+    assert system_exit.value.code == 2
 
 
 def test_parse_arguments_config_with_subaction_and_help_shows_subaction_help(capsys):
@@ -694,7 +704,7 @@ def test_parse_arguments_config_with_subaction_and_help_shows_subaction_help(cap
     with pytest.raises(SystemExit) as system_exit:
         module.parse_arguments({}, 'config', 'bootstrap', '--help')
 
-        assert system_exit.value.code == 0
+    assert system_exit.value.code == 0
 
     captured = capsys.readouterr()
     assert 'config bootstrap arguments:' in captured.out
