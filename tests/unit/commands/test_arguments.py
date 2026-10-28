@@ -49,45 +49,11 @@ def test_get_subactions_for_actions_with_subactions_returns_one_entry_per_action
     ) == {'action': ('foo', 'bar', 'baz'), 'other': ('quux',)}
 
 
-def test_omit_values_colliding_with_action_names_drops_action_names_that_have_been_parsed_as_values():
-    assert module.omit_values_colliding_with_action_names(
-        ('check', '--only', 'extract', '--some-list', 'borg'),
-        {'check': flexmock(only='extract', some_list=['borg'])},
-    ) == ('check', '--only', '--some-list')
-
-
-def test_omit_values_colliding_twice_with_action_names_drops_action_names_that_have_been_parsed_as_values():
-    assert module.omit_values_colliding_with_action_names(
-        ('config', 'bootstrap', '--local-path', '--remote-path', 'borg'),
-        {'bootstrap': flexmock(local_path='borg', remote_path='borg')},
-    ) == ('config', 'bootstrap', '--local-path', '--remote-path')
-
-
-def test_parse_and_record_action_arguments_without_action_name_leaves_arguments_untouched():
-    unparsed_arguments = ('--foo', '--bar')
-    flexmock(module).should_receive('omit_values_colliding_with_action_names').and_return(
-        unparsed_arguments,
-    )
-
-    assert (
-        module.parse_and_record_action_arguments(
-            unparsed_arguments,
-            flexmock(),
-            flexmock(),
-            'action',
-        )
-        == unparsed_arguments
-    )
-
-
 def test_parse_and_record_action_arguments_updates_parsed_arguments_and_returns_remaining():
     unparsed_arguments = ('action', '--foo', '--bar', '--verbosity', '1')
     other_parsed_arguments = flexmock()
     parsed_arguments = {'other': other_parsed_arguments}
     action_parsed_arguments = flexmock()
-    flexmock(module).should_receive('omit_values_colliding_with_action_names').and_return(
-        unparsed_arguments,
-    )
     action_parser = flexmock()
     flexmock(action_parser).should_receive('parse_known_args').and_return(
         action_parsed_arguments,
@@ -99,7 +65,7 @@ def test_parse_and_record_action_arguments_updates_parsed_arguments_and_returns_
         parsed_arguments,
         action_parser,
         'action',
-    ) == ('--verbosity', '1')
+    ) == ('action', '--verbosity', '1')
     assert parsed_arguments == {'other': other_parsed_arguments, 'action': action_parsed_arguments}
 
 
@@ -108,9 +74,6 @@ def test_parse_and_record_action_arguments_with_alias_updates_canonical_parsed_a
     other_parsed_arguments = flexmock()
     parsed_arguments = {'other': other_parsed_arguments}
     action_parsed_arguments = flexmock()
-    flexmock(module).should_receive('omit_values_colliding_with_action_names').and_return(
-        unparsed_arguments,
-    )
     action_parser = flexmock()
     flexmock(action_parser).should_receive('parse_known_args').and_return(
         action_parsed_arguments,
@@ -123,31 +86,8 @@ def test_parse_and_record_action_arguments_with_alias_updates_canonical_parsed_a
         action_parser,
         'action',
         canonical_name='doit',
-    ) == ('--verbosity', '1')
+    ) == ('action', '--verbosity', '1')
     assert parsed_arguments == {'other': other_parsed_arguments, 'doit': action_parsed_arguments}
-
-
-def test_parse_and_record_action_arguments_with_borg_action_consumes_arguments_after_action_name():
-    unparsed_arguments = ('--verbosity', '1', 'borg', 'list')
-    parsed_arguments = {}
-    borg_parsed_arguments = flexmock(options=flexmock())
-    flexmock(module).should_receive('omit_values_colliding_with_action_names').and_return(
-        unparsed_arguments,
-    )
-    borg_parser = flexmock()
-    flexmock(borg_parser).should_receive('parse_known_args').and_return(
-        borg_parsed_arguments,
-        ('--verbosity', '1', 'borg', 'list'),
-    )
-
-    assert module.parse_and_record_action_arguments(
-        unparsed_arguments,
-        parsed_arguments,
-        borg_parser,
-        'borg',
-    ) == ('--verbosity', '1')
-    assert parsed_arguments == {'borg': borg_parsed_arguments}
-    assert borg_parsed_arguments.options == ('list',)
 
 
 @pytest.mark.parametrize(
@@ -326,43 +266,62 @@ def test_get_unparsable_arguments_returns_remaining_arguments_that_no_action_can
 
 def test_parse_arguments_for_actions_consumes_action_arguments_after_action_name():
     action_namespace = flexmock(foo=True)
-    remaining = flexmock()
+    global_namespace = flexmock(config_paths=[])
+    flexmock(module).should_receive('detect_actions').and_return(
+        ({'action': flexmock()}, None, None)
+    )
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
-    flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object, object, object, 'action', object
+    ).replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: (
-            parsed.update(
-                {action: action_namespace},
-            )
-            or remaining
+            parsed.update({'action': action_namespace}) or ()
         ),
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'global',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: parsed.update({'global': global_namespace}) or (),
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {'action': flexmock(), 'other': flexmock()}
-    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
-    global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
-    arguments, remaining_action_arguments = module.parse_arguments_for_actions(
+    arguments, action_names, remaining_action_arguments = module.parse_arguments_for_actions(
         ('action', '--foo', 'true'),
         action_parsers,
         global_parser,
     )
 
     assert arguments == {'global': global_namespace, 'action': action_namespace}
-    assert remaining_action_arguments == (remaining, ())
+    assert action_names == ('action',)
+    assert remaining_action_arguments == ((), ())
 
 
 def test_parse_arguments_for_actions_consumes_action_arguments_with_alias():
     action_namespace = flexmock(foo=True)
-    remaining = flexmock()
+    global_namespace = flexmock(config_paths=[])
+    flexmock(module).should_receive('detect_actions').and_return(
+        ({'action': flexmock()}, None, None)
+    )
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
-    flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object, object, object, 'action', object
+    ).replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: (
-            parsed.update(
-                {canonical or action: action_namespace},
-            )
-            or remaining
+            parsed.update({'action': action_namespace}) or ()
         ),
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'global',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: parsed.update({'global': global_namespace}) or (),
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
@@ -371,43 +330,58 @@ def test_parse_arguments_for_actions_consumes_action_arguments_with_alias():
         'other': flexmock(),
         '-o': flexmock(),
     }
-    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
-    global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
     flexmock(module).ACTION_ALIASES = {'action': ['-a'], 'other': ['-o']}
 
-    arguments, remaining_action_arguments = module.parse_arguments_for_actions(
+    arguments, action_names, remaining_action_arguments = module.parse_arguments_for_actions(
         ('-a', '--foo', 'true'),
         action_parsers,
         global_parser,
     )
 
     assert arguments == {'global': global_namespace, 'action': action_namespace}
-    assert remaining_action_arguments == (remaining, ())
+    assert action_names == ('action',)
+    assert remaining_action_arguments == ((), ())
 
 
 def test_parse_arguments_for_actions_consumes_multiple_action_arguments():
     action_namespace = flexmock(foo=True)
     other_namespace = flexmock(bar=3)
+    global_namespace = flexmock(config_paths=[])
+    flexmock(module).should_receive('detect_actions').and_return(
+        ({'action': flexmock(), 'other': flexmock()}, None, None)
+    )
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
-    flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object, object, object, 'action', object
+    ).replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: (
-            parsed.update(
-                {action: action_namespace if action == 'action' else other_namespace},
-            )
-            or ()
+            parsed.update({'action': action_namespace}) or ('other', '--bar', '3')
         ),
-    ).and_return(('other', '--bar', '3')).and_return('action', '--foo', 'true')
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object, object, object, 'other', object
+    ).replace_with(
+        lambda unparsed, parsed, parser, action, canonical=None: (
+            parsed.update({'other': other_namespace}) or ()
+        ),
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'global',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: parsed.update({'global': global_namespace}) or (),
+    ).and_return(())
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
         'action': flexmock(),
         'other': flexmock(),
     }
-    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
-    global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
-    arguments, remaining_action_arguments = module.parse_arguments_for_actions(
+    arguments, action_names, remaining_action_arguments = module.parse_arguments_for_actions(
         ('action', '--foo', 'true', 'other', '--bar', '3'),
         action_parsers,
         global_parser,
@@ -418,40 +392,60 @@ def test_parse_arguments_for_actions_consumes_multiple_action_arguments():
         'action': action_namespace,
         'other': other_namespace,
     }
-    assert remaining_action_arguments == ((), (), ())
+    assert action_names == ('action', 'other')
+    assert remaining_action_arguments == (('other', '--bar', '3'), (), ())
 
 
 def test_parse_arguments_for_actions_respects_command_line_action_ordering():
     other_namespace = flexmock()
     action_namespace = flexmock(foo=True)
+    global_namespace = flexmock(config_paths=[])
+    flexmock(module).should_receive('detect_actions').and_return(
+        ({'other': flexmock(), 'action': flexmock()}, None, None)
+    )
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
-    flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object, object, object, 'other', object
+    ).replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: (
-            parsed.update(
-                {action: other_namespace if action == 'other' else action_namespace},
-            )
-            or ()
+            parsed.update({'other': other_namespace}) or ('action',)
         ),
-    ).and_return(('action',)).and_return(('other', '--foo', 'true'))
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object, object, object, 'action', object
+    ).replace_with(
+        lambda unparsed, parsed, parser, action, canonical=None: (
+            parsed.update({'action': action_namespace}) or ()
+        ),
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'global',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: parsed.update({'global': global_namespace}) or (),
+    ).and_return(())
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
         'action': flexmock(),
         'other': flexmock(),
     }
-    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
-    global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
-    arguments, remaining_action_arguments = module.parse_arguments_for_actions(
+    arguments, action_names, remaining_action_arguments = module.parse_arguments_for_actions(
         ('other', '--foo', 'true', 'action'),
         action_parsers,
         global_parser,
     )
 
-    assert arguments == collections.OrderedDict(
-        [('other', other_namespace), ('action', action_namespace), ('global', global_namespace)],
-    )
-    assert remaining_action_arguments == ((), (), ())
+    assert arguments == {
+        'other': other_namespace,
+        'action': action_namespace,
+        'global': global_namespace,
+    }
+    assert action_names == ('other', 'action')
+    assert remaining_action_arguments == (('action',), (), ())
 
 
 def test_parse_arguments_for_actions_applies_default_action_parsers():
@@ -464,15 +458,56 @@ def test_parse_arguments_for_actions_applies_default_action_parsers():
         'check': flexmock(),
     }
 
+    flexmock(module).should_receive('detect_actions').and_return(({}, None, None))
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
-    flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
-        lambda unparsed, parsed, parser, action, canonical=None: (
-            parsed.update(
-                {action: namespaces.get(action)},
-            )
-            or ()
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'create',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: (
+            parsed.update({'create': namespaces['create']}) or ()
         ),
-    ).and_return(())
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'prune',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: (
+            parsed.update({'prune': namespaces['prune']}) or ()
+        ),
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'compact',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: (
+            parsed.update({'compact': namespaces['compact']}) or ()
+        ),
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'check',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: (
+            parsed.update({'check': namespaces['check']}) or ()
+        ),
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'global',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: parsed.update({'global': global_namespace}) or (),
+    )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
         'prune': flexmock(),
@@ -482,57 +517,87 @@ def test_parse_arguments_for_actions_applies_default_action_parsers():
         'other': flexmock(),
     }
     global_parser = flexmock()
-    global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
-    arguments, remaining_action_arguments = module.parse_arguments_for_actions(
-        ('--progress'),
+    arguments, action_names, remaining_action_arguments = module.parse_arguments_for_actions(
+        ('--progress',),
         action_parsers,
         global_parser,
     )
 
     assert arguments == namespaces
+    assert action_names == ()
     assert remaining_action_arguments == ((), (), (), (), ())
 
 
 def test_parse_arguments_for_actions_consumes_global_arguments():
     action_namespace = flexmock()
+    global_namespace = flexmock(config_paths=[])
+    flexmock(module).should_receive('detect_actions').and_return(
+        ({'action': flexmock()}, None, None)
+    )
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
-    flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object, object, object, 'action', object
+    ).replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: (
-            parsed.update(
-                {action: action_namespace},
-            )
-            or ('--verbosity', 'lots')
+            parsed.update({'action': action_namespace}) or ('--verbosity', 'lots')
         ),
     )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object, object, object, 'other', object
+    ).replace_with(
+        lambda unparsed, parsed, parser, action, canonical=None: (
+            parsed.update({'other': action_namespace}) or ('--verbosity', 'lots')
+        ),
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'global',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: parsed.update({'global': global_namespace}) or (),
+    ).and_return(())
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
         'action': flexmock(),
         'other': flexmock(),
     }
-    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
-    global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
-    arguments, remaining_action_arguments = module.parse_arguments_for_actions(
+    arguments, action_names, remaining_action_arguments = module.parse_arguments_for_actions(
         ('action', '--verbosity', 'lots'),
         action_parsers,
         global_parser,
     )
 
     assert arguments == {'global': global_namespace, 'action': action_namespace}
+    assert action_names == ('action',)
     assert remaining_action_arguments == (('--verbosity', 'lots'), ())
 
 
 def test_parse_arguments_for_actions_passes_through_unknown_arguments_before_action_name():
     action_namespace = flexmock()
+    global_namespace = flexmock(config_paths=[])
+    flexmock(module).should_receive('detect_actions').and_return(
+        ({'action': flexmock()}, None, None)
+    )
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
-    flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object, object, object, 'action', object
+    ).replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: (
-            parsed.update(
-                {action: action_namespace},
-            )
-            or ('--wtf', 'yes')
+            parsed.update({'action': action_namespace}) or ('--wtf', 'yes')
+        ),
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'global',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: (
+            parsed.update({'global': global_namespace}) or ('--wtf', 'yes')
         ),
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
@@ -540,29 +605,41 @@ def test_parse_arguments_for_actions_passes_through_unknown_arguments_before_act
         'action': flexmock(),
         'other': flexmock(),
     }
-    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
-    global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
-    arguments, remaining_action_arguments = module.parse_arguments_for_actions(
+    arguments, action_names, remaining_action_arguments = module.parse_arguments_for_actions(
         ('--wtf', 'yes', 'action'),
         action_parsers,
         global_parser,
     )
 
     assert arguments == {'global': global_namespace, 'action': action_namespace}
-    assert remaining_action_arguments == (('--wtf', 'yes'), ())
+    assert action_names == ('action',)
+    assert remaining_action_arguments == (('--wtf', 'yes'), ('--wtf', 'yes'))
 
 
 def test_parse_arguments_for_actions_passes_through_unknown_arguments_after_action_name():
     action_namespace = flexmock()
+    global_namespace = flexmock(config_paths=[])
+    flexmock(module).should_receive('detect_actions').and_return(
+        ({'action': flexmock()}, None, None)
+    )
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
-    flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object, object, object, 'action', object
+    ).replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: (
-            parsed.update(
-                {action: action_namespace},
-            )
-            or ('--wtf', 'yes')
+            parsed.update({'action': action_namespace}) or ('--wtf', 'yes')
+        ),
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'global',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: (
+            parsed.update({'global': global_namespace}) or ('--wtf', 'yes')
         ),
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
@@ -570,51 +647,64 @@ def test_parse_arguments_for_actions_passes_through_unknown_arguments_after_acti
         'action': flexmock(),
         'other': flexmock(),
     }
-    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
-    global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
-    arguments, remaining_action_arguments = module.parse_arguments_for_actions(
+    arguments, action_names, remaining_action_arguments = module.parse_arguments_for_actions(
         ('action', '--wtf', 'yes'),
         action_parsers,
         global_parser,
     )
 
     assert arguments == {'global': global_namespace, 'action': action_namespace}
-    assert remaining_action_arguments == (('--wtf', 'yes'), ())
+    assert action_names == ('action',)
+    assert remaining_action_arguments == (('--wtf', 'yes'), ('--wtf', 'yes'))
 
 
 def test_parse_arguments_for_actions_with_borg_action_skips_other_action_parsers():
+    global_namespace = flexmock(config_paths=[])
     action_namespace = flexmock(options=[])
+    flexmock(module).should_receive('detect_actions').and_return(
+        ({'borg': flexmock()}, ['borg', 'list'], ['borgmatic', '--flag'])
+    )
     flexmock(module).should_receive('get_subaction_parsers').and_return({})
-    flexmock(module).should_receive('parse_and_record_action_arguments').replace_with(
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object, object, object, 'borg', object
+    ).replace_with(
         lambda unparsed, parsed, parser, action, canonical=None: (
-            parsed.update(
-                {action: action_namespace},
-            )
-            or ()
+            parsed.update({'borg': action_namespace}) or ()
         ),
-    ).and_return(())
+    )
+    flexmock(module).should_receive('parse_and_record_action_arguments').with_args(
+        object,
+        object,
+        object,
+        'global',
+    ).replace_with(
+        lambda unparsed, parsed, parser, action: parsed.update({'global': global_namespace}) or (),
+    )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {
         'borg': flexmock(),
         'list': flexmock(),
     }
-    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
-    global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
-    arguments, remaining_action_arguments = module.parse_arguments_for_actions(
-        ('borg', 'list'),
+    arguments, action_names, remaining_action_arguments = module.parse_arguments_for_actions(
+        ('borgmatic', '--flag', 'borg', 'list'),
         action_parsers,
         global_parser,
     )
 
-    assert arguments == {'global': global_namespace, 'borg': action_namespace}
+    assert arguments == {'borg': action_namespace, 'global': global_namespace}
+    assert arguments['borg'].options == ['borg', 'list']
+    assert action_names == ('borg',)
     assert remaining_action_arguments == ((), ())
 
 
-def test_parse_arguments_for_actions_raises_error_when_no_action_is_specified():
+def test_parse_arguments_for_actions_raises_error_when_no_subaction_is_specified():
+    flexmock(module).should_receive('detect_actions').and_return(
+        ({'config': flexmock()}, None, None)
+    )
     flexmock(module).should_receive('get_subaction_parsers').and_return({'bootstrap': [flexmock()]})
     flexmock(module).should_receive('parse_and_record_action_arguments').and_return(flexmock())
     flexmock(module).should_receive('get_subactions_for_actions').and_return(
@@ -622,7 +712,6 @@ def test_parse_arguments_for_actions_raises_error_when_no_action_is_specified():
     )
     action_parsers = {'config': flexmock()}
     global_parser = flexmock()
-    global_parser.should_receive('parse_known_args').and_return((flexmock(), ()))
 
     with pytest.raises(ValueError):
         module.parse_arguments_for_actions(('config',), action_parsers, global_parser)
