@@ -265,9 +265,14 @@ def test_get_unparsable_arguments_returns_remaining_arguments_that_no_action_can
 
 
 def test_remaining_arguments_after_parsing_returns_remaining_and_restores_exit_on_error():
+    def error_to_be_bypassed(message):
+        raise ValueError('oops')
+
     remaining = flexmock()
     parser = flexmock(
-        exit_on_error=True, parse_known_args=lambda arguments: (flexmock(), remaining)
+        exit_on_error=True,
+        parse_known_args=lambda arguments: (flexmock(), remaining),
+        error=error_to_be_bypassed,
     )
 
     assert module.remaining_arguments_after_parsing(parser, ('foo', 'bar')) == remaining

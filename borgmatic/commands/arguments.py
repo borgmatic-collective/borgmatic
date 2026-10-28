@@ -176,12 +176,22 @@ def remaining_arguments_after_parsing(parser, arguments):
     instance if the action for this parser just isn't present in the arguments.
     '''
     original_exit_on_error = parser.exit_on_error
+    original_error = parser.error
+
+    # Python 3.11 and below call parser.error() and raise SystemExit for some errors, so transform
+    # them into ArgumentError for the duration of the parse_known_args() call, allowing callers to
+    # handle the errors appropriately.
+    def error(message):  # pragma: no cover
+        raise argparse.ArgumentError(None, message)
+
     parser.exit_on_error = False
+    parser.error = error
 
     try:
         return parser.parse_known_args(arguments)[1]
     finally:
         parser.exit_on_error = original_exit_on_error
+        parser.error = original_error
 
 
 class Argument(str):
