@@ -1,4 +1,5 @@
-import collections
+import argparse
+import contextlib
 import io
 import itertools
 import re
@@ -70,29 +71,6 @@ def get_subactions_for_actions(action_parsers):
     }
 
 
-def omit_values_colliding_with_action_names(unparsed_arguments, parsed_arguments):
-    '''
-    Given unparsed arguments as a sequence of strings and a dict from action name to parsed
-    argparse.Namespace arguments, return the string arguments with any values omitted that happen to
-    be the same as the name of a borgmatic action.
-
-    This prevents, for instance, "check --only extract" from triggering the "extract" action.
-    '''
-    remaining_arguments = list(unparsed_arguments)
-
-    for parsed in parsed_arguments.values():
-        for value in vars(parsed).values():
-            if isinstance(value, str):
-                if value in ACTION_ALIASES and value in remaining_arguments:
-                    remaining_arguments.remove(value)
-            elif isinstance(value, list):
-                for item in value:
-                    if item in ACTION_ALIASES and item in remaining_arguments:
-                        remaining_arguments.remove(item)
-
-    return tuple(remaining_arguments)
-
-
 def parse_and_record_action_arguments(
     unparsed_arguments,
     parsed_arguments,
@@ -105,28 +83,12 @@ def parse_and_record_action_arguments(
     to parsed argparse.Namespace, a parser to parse with, an action name, and an optional canonical
     action name (in case this the action name is an alias), parse the arguments and return a list of
     any remaining string arguments that were not parsed. Also record the parsed argparse.Namespace
-    by setting it into the given parsed arguments. Return None if no parsing occurs because the
-    given action doesn't apply to the given unparsed arguments.
+    by setting it into the given parsed arguments.
     '''
-    filtered_arguments = omit_values_colliding_with_action_names(
-        unparsed_arguments,
-        parsed_arguments,
-    )
-
-    if action_name not in filtered_arguments:
-        return tuple(unparsed_arguments)
-
-    parsed, remaining = action_parser.parse_known_args(filtered_arguments)
+    parsed, remaining = action_parser.parse_known_args(unparsed_arguments)
     parsed_arguments[canonical_name or action_name] = parsed
 
-    # Special case: If this is a "borg" action, greedily consume all arguments after (+1) the "borg"
-    # argument.
-    if action_name == 'borg':
-        borg_options_index = remaining.index('borg') + 1
-        parsed_arguments['borg'].options = remaining[borg_options_index:]
-        remaining = remaining[:borg_options_index]
-
-    return tuple(argument for argument in remaining if argument != action_name)
+    return remaining
 
 
 def argument_is_flag(argument):
@@ -203,62 +165,228 @@ def get_unparsable_arguments(remaining_action_arguments):
     )
 
 
+def remaining_arguments_after_parsing(parser, arguments):
+    '''
+    Given an argument parser and a sequence of arguments, return a sequence of the remaining
+    arguments after parsing consumes any of them. Parse errors due to things like argument
+    requiredness are suppressed for these purposes. However, flags like "--help" or "-h" should
+    not be present in the given arguments, as errors from those can't be suppressed.
+
+    Raise argparse.ArgumentError if the arguments can't be parsed at all with this parser, for
+    instance if the action for this parser just isn't present in the arguments.
+    '''
+    original_exit_on_error = parser.exit_on_error
+    original_error = parser.error
+
+    # Python 3.11 and below call parser.error() and raise SystemExit for some errors, so transform
+    # them into ArgumentError for the duration of the parse_known_args() call, allowing callers to
+    # handle the errors appropriately.
+    def error(message):  # pragma: no cover
+        raise argparse.ArgumentError(None, message)
+
+    parser.exit_on_error = False
+    parser.error = error
+
+    try:
+        return parser.parse_known_args(arguments)[1]
+    finally:
+        parser.exit_on_error = original_exit_on_error
+        parser.error = original_error
+
+
+class Argument(str):
+    '''
+    An argument string that also happens to store its position within a separate argument sequence,
+    used below in logic reliant on the positions of particular action names.
+
+    Because this is a string subclass, it works wherever a string works.
+    '''
+
+    def __new__(cls, argument, position):
+        '''
+        Create a new Argument with the given string argument value and argument position.
+        '''
+        instance = super().__new__(cls, argument)
+        instance.position = position
+
+        return instance
+
+
+def detect_action_name(action_name, action_parser, remaining):
+    '''
+    Given an action name, its corresponding parser as an argparse.ArgumentParser instance, and a
+    dict from action name to a sequence of Argument instances representing the post-parsing
+    remaining arguments, detect whether the action name is present in all of the remaining argument
+    sequences—meaning that it's a legitimate user-requested action name and isn't just, say, a flag
+    value that one of the parsers consumed.
+
+    For instance, a legitimate user-requested action name is something like the "restore" in
+    "borgmatic restore" but not the "restore" in "borgmatic --repository restore list".
+
+    For a detected legitimate action name, return a single-element dict from that action name as an
+    Argument instance to its corresponding parser. This means that the position of the
+    action name within the original unparsed arguments is available to the caller.
+
+    If no such action name is found, return an empty dict.
+    '''
+    positions = []
+
+    for action_remaining in remaining.values():
+        # Find the position of the requested action name within the remaining arguments for every
+        # action.
+        positions.append(
+            next(
+                (argument for argument in action_remaining if argument == action_name),
+                Argument('none', -1),
+            ).position
+        )
+
+        # If not every sequence of remaining arguments has the requested action name, then it must
+        # not be a legitimate action; it got consumed as a flag value or something. Bail.
+        if action_name not in action_remaining:
+            return {}
+
+    # The action name didn't get consume and therefore is legitimate. Return it along with its
+    # position and parser.
+    return {Argument(action_name, max(positions)): action_parser}
+
+
+def detect_actions(unparsed_arguments, action_parsers, global_parser):
+    '''
+    Given a sequence of unparsed arguments, a dict from action name to corresponding
+    argparse.ArgumentParser instance, and the global parser as an argparse.ArgumentParser instance,
+    detect the actual user-requested action names within the given arguments.
+
+    This is effectively a first parsing pass where we throw away the results, as we're only
+    interested here in determining the action names in use. Well, that and a few pieces of data
+    related to "borg" action parsing, since it's convenient to do here.
+
+    Return a tuple of: a dict from detected action name to corresponding parser, a sequence of the
+    arguments passed to the "borg" action (or None), and a sequence of the arguments not passed to
+    the "borg" action (or None).
+
+    Note that "borg" is a singleton action, meaning that if it's detected, no other actions are
+    detected with it.
+    '''
+    # The "--help" flag causes argparse to print help and exit, so skip "--help" / "-h" for purposes
+    # of detecting action names. Also store the position for each argument for use below.
+    arguments = tuple(
+        Argument(argument, position)
+        for position, argument in enumerate(unparsed_arguments)
+        if argument not in ('--help', '-h')
+    )
+
+    # A dict from action name to its post-parsing remaining arguments.
+    remaining = {}
+
+    for action_name, parser in (action_parsers | {'global': global_parser}).items():
+        subaction_parsers = get_subaction_parsers(parser)
+
+        if not subaction_parsers:
+            # If a particular parser can't parse, skip it for purposes of determining remaining
+            # arguments. The action for that parser can still end up in the detected actions though,
+            # for instance if that action name is still present in the remaining arguments for every
+            # parser that can successfully parse.
+            with contextlib.suppress(argparse.ArgumentError):
+                remaining[action_name] = remaining_arguments_after_parsing(parser, arguments)
+
+        for subaction_name, subaction_parser in subaction_parsers.items():
+            with contextlib.suppress(argparse.ArgumentError):
+                # For now, it is assumed that subaction names are unique across all actions.
+                remaining[subaction_name] = remaining_arguments_after_parsing(
+                    subaction_parser, arguments
+                )
+
+    # Detected actions are those whose name exists in the arguments remaining after *all* action
+    # parsers have had a go at parsing. Meaning, no other parsers consume the action name, e.g. as
+    # a flag value.
+    detected_action_parsers = {}
+
+    for action_name, action_parser in action_parsers.items():
+        action_name_to_parser = detect_action_name(action_name, action_parser, remaining)
+        detected_action_parsers.update(action_name_to_parser)
+
+        if action_name_to_parser:
+            for subaction_name, subaction_parser in get_subaction_parsers(action_parser).items():
+                detected_action_parsers.update(
+                    detect_action_name(subaction_name, subaction_parser, remaining)
+                )
+
+    # If the "borg" action is used, skip all other action parsers. This avoids confusion like "borg
+    # list" triggering borgmatic's own list action. Return the actual action name rather than, say,
+    # a "borg" string literal, so the position data is retained.
+    for action_name, action_parser in detected_action_parsers.items():
+        if action_name != 'borg':
+            continue
+
+        # If there's no "borg" remaining arguments, that means the Borg parser failed to parse
+        # above. Bail, and let the main parsing in the caller handle erroring appropriately.
+        if 'borg' not in remaining:
+            break
+
+        # Gather the arguments being passed to Borg ("+ 1" means after the "borg" action name) and
+        # also, separately, the arguments that aren't being passed to Borg. For the Borg-specific
+        # arguments in particular, they're post-parsing arguments, so that flags like "--repository"
+        # and its value have already been plucked out.
+        borg_remaining = remaining['borg']
+        remaining_position = next(
+            position
+            for position, argument in enumerate(borg_remaining)
+            if argument.position == action_name.position
+        )
+        borg_arguments = [str(argument) for argument in borg_remaining[remaining_position + 1 :]]
+        non_borg_arguments = [
+            str(argument) for argument in unparsed_arguments[: action_name.position]
+        ]
+
+        return {'borg': action_parser}, borg_arguments, non_borg_arguments
+
+    # The action name is an Argument instance, so normalize to a string.
+    return (
+        {
+            str(action_name): action_parser
+            # Sort to retain the original user-specified action order.
+            for action_name, action_parser in sorted(
+                detected_action_parsers.items(),
+                key=lambda item: item[0].position,
+            )
+        },
+        None,
+        None,
+    )
+
+
 def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parser):
     '''
     Given a sequence of arguments, a dict from action name to argparse.ArgumentParser instance,
-    and the global parser as a argparse.ArgumentParser instance, give each requested action's
+    and the global parser as an argparse.ArgumentParser instance, give each requested action's
     parser a shot at parsing all arguments. This allows common arguments like "--repository" to be
     shared across multiple action parsers.
 
-    Return the result as a tuple of: (a dict mapping from action name to an argparse.Namespace of
-    parsed arguments, a tuple of argument tuples where each is the remaining arguments not claimed
-    by any action parser).
+    Return the result as a tuple of: a dict mapping from action name to an argparse.Namespace of
+    parsed arguments, a tuple of the parsed action names, and a tuple of argument tuples where each
+    is the remaining arguments not claimed by any action parser.
     '''
-    arguments = collections.OrderedDict()
+    arguments = {}
     help_requested = bool('--help' in unparsed_arguments or '-h' in unparsed_arguments)
     remaining_action_arguments = []
     alias_to_action_name = {
         alias: action_name for action_name, aliases in ACTION_ALIASES.items() for alias in aliases
     }
 
-    # If the "borg" action is used, skip all other action parsers. This avoids confusion like
-    # "borg list" triggering borgmatic's own list action.
-    if 'borg' in unparsed_arguments:
-        action_parsers = {'borg': action_parsers['borg']}
+    detected_action_parsers, borg_arguments, non_borg_arguments = detect_actions(
+        unparsed_arguments, action_parsers, global_parser
+    )
 
-    # Ask each action parser, one by one, to parse arguments.
-    for argument in unparsed_arguments:
-        action_name = argument
+    # Ask each detected action parser, one by one, to parse arguments.
+    for action_name, action_parser in detected_action_parsers.items():
         canonical_name = alias_to_action_name.get(action_name, action_name)
-        action_parser = action_parsers.get(action_name)
-
-        if not action_parser:
-            continue
-
         subaction_parsers = get_subaction_parsers(action_parser)
 
-        # But first parse with subaction parsers, if any.
         if subaction_parsers:
-            subactions_parsed = False
-
-            for subaction_name, subaction_parser in subaction_parsers.items():
-                remaining_action_arguments.append(
-                    tuple(
-                        argument
-                        for argument in parse_and_record_action_arguments(
-                            unparsed_arguments,
-                            arguments,
-                            subaction_parser,
-                            subaction_name,
-                        )
-                        if argument != action_name
-                    ),
-                )
-
-                if subaction_name in arguments:
-                    subactions_parsed = True
-
-            if not subactions_parsed:
+            if not any(
+                subaction_name in detected_action_parsers for subaction_name in subaction_parsers
+            ):
                 if help_requested:
                     action_parser.print_help()
                     sys.exit(0)
@@ -266,17 +394,21 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
                     raise ValueError(
                         f"Missing sub-action after {action_name} action. Expected one of: {', '.join(get_subactions_for_actions(action_parsers)[action_name])}",
                     )
-        # Otherwise, parse with the main action parser.
-        else:
-            remaining_action_arguments.append(
-                parse_and_record_action_arguments(
-                    unparsed_arguments,
-                    arguments,
-                    action_parser,
-                    action_name,
-                    canonical_name,
-                ),
-            )
+
+            continue
+
+        remaining_action_arguments.append(
+            parse_and_record_action_arguments(
+                unparsed_arguments,
+                arguments,
+                action_parser,
+                action_name,
+                canonical_name,
+            ),
+        )
+
+    if 'borg' in arguments:
+        arguments['borg'].options = borg_arguments
 
     # If no actions were explicitly requested, assume defaults.
     if not arguments and not help_requested:
@@ -291,12 +423,21 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
                 ),
             )
 
-    arguments['global'], remaining = global_parser.parse_known_args(unparsed_arguments)
-    remaining_action_arguments.append(remaining)
+    remaining_action_arguments.append(
+        parse_and_record_action_arguments(
+            # Special case: If there's a "borg" action, ignore anything after the "borg" argument,
+            # so that the global parser doesn't parse Borg-specific flags.
+            unparsed_arguments if non_borg_arguments is None else non_borg_arguments,
+            arguments,
+            global_parser,
+            'global',
+        ),
+    )
 
     return (
         arguments,
-        tuple(remaining_action_arguments) if arguments else unparsed_arguments,
+        tuple(detected_action_parsers.keys()),
+        tuple(remaining_action_arguments),
     )
 
 
@@ -2139,7 +2280,7 @@ def parse_arguments(schema, *unparsed_arguments):
         schema,
         unparsed_arguments,
     )
-    arguments, remaining_action_arguments = parse_arguments_for_actions(
+    arguments, action_names, remaining_action_arguments = parse_arguments_for_actions(
         unparsed_arguments,
         action_parsers.choices,
         global_parser,
@@ -2155,6 +2296,12 @@ def parse_arguments(schema, *unparsed_arguments):
             )
 
     unknown_arguments = get_unparsable_arguments(remaining_action_arguments)
+
+    # Consume detected action names from the unknown arguments.
+    action_set = set(action_names)
+    unknown_arguments = tuple(
+        argument for argument in unknown_arguments if argument not in action_set
+    )
 
     if unknown_arguments:
         if '--help' in unknown_arguments or '-h' in unknown_arguments:
@@ -2195,6 +2342,6 @@ def parse_arguments(schema, *unparsed_arguments):
         )
 
     if 'borg' in arguments and arguments['global'].dry_run:
-        raise ValueError('With the borg action, --dry-run is not supported.')
+        raise ValueError('With the borg action, --dry-run must be specified after "borg".')
 
     return arguments
