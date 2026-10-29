@@ -16,7 +16,6 @@ body:
     id: ai_use
     attributes:
       label: Use of generative AI
-      description: A attest that this pull request is not authored or co-authored by generative AI
       options:
-        - label: Yes
+        - label: I attest that this pull request is not authored or co-authored by generative AI
           required: true
