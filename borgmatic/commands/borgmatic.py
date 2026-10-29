@@ -1201,6 +1201,7 @@ def main(extra_summary_logs=()):  # pragma: no cover
             get_singular_option_value(configs, 'log_file_format'),
             log_json,
             color_enabled=should_do_markup(configs, any_json_flags or log_json),
+            stderr_only=any_json_flags,
         )
     except (FileNotFoundError, PermissionError) as error:
         configure_logging(logging.CRITICAL)

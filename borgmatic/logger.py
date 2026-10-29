@@ -495,10 +495,12 @@ def configure_logging(
     log_file_format=None,
     log_json=False,
     color_enabled=True,
+    stderr_only=False,
 ):
     '''
     Configure logging to go to both the console and (syslog or log file). Use the given log levels,
-    respectively. If color is enabled, set up log formatting accordingly.
+    respectively. If color is enabled, set up log formatting accordingly. If stderr only is set,
+    then don't output any logs on stdout; use stderr for all console logging.
 
     Raise FileNotFoundError or PermissionError if the log file could not be opened for writing.
     '''
@@ -517,7 +519,9 @@ def configure_logging(
     # grepping (non-error) output.
     console_disabled = logging.NullHandler()
     console_error_handler = logging.StreamHandler(sys.stderr)
-    console_standard_handler = logging.StreamHandler(sys.stdout)
+    console_standard_handler = (
+        console_error_handler if stderr_only else logging.StreamHandler(sys.stdout)
+    )
     console_handler = Multi_stream_handler(
         {
             logging.DISABLED: console_disabled,

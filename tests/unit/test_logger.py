@@ -995,3 +995,75 @@ def test_configure_logging_with_log_json_uses_json_formatter():
     module.configure_logging(
         console_log_level=logging.INFO, log_file=None, log_json=True, color_enabled=False
     )
+
+
+def test_configure_logging_without_stderr_only_uses_both_stderr_and_stdout():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
+    multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
+    flexmock(module.logging).should_receive('NullHandler').and_return(
+        console_disabled := flexmock()
+    )
+    flexmock(module.logging).should_receive('StreamHandler').with_args(
+        module.sys.stderr
+    ).and_return(console_error_handler := flexmock())
+    flexmock(module.logging).should_receive('StreamHandler').with_args(
+        module.sys.stdout
+    ).and_return(console_standard_handler := flexmock())
+    flexmock(module).should_receive('Multi_stream_handler').with_args(
+        {
+            logging.DISABLED: console_disabled,
+            logging.CRITICAL: console_error_handler,
+            logging.ERROR: console_error_handler,
+            logging.WARNING: console_error_handler,
+            logging.ANSWER: console_standard_handler,
+            logging.INFO: console_standard_handler,
+            logging.DEBUG: console_standard_handler,
+        }
+    ).and_return(multi_stream_handler).once()
+    flexmock(module).should_receive('flush_delayed_logging')
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.INFO,
+        handlers=list,
+    )
+
+    module.configure_logging(console_log_level=logging.INFO)
+
+
+def test_configure_logging_with_stderr_only_does_not_use_stdout():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Json_formatter').never()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
+    multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
+    flexmock(module.logging).should_receive('NullHandler').and_return(
+        console_disabled := flexmock()
+    )
+    flexmock(module.logging).should_receive('StreamHandler').with_args(
+        module.sys.stderr
+    ).and_return(console_error_handler := flexmock())
+    flexmock(module.logging).should_receive('StreamHandler').with_args(module.sys.stdout).never()
+    flexmock(module).should_receive('Multi_stream_handler').with_args(
+        {
+            logging.DISABLED: console_disabled,
+            logging.CRITICAL: console_error_handler,
+            logging.ERROR: console_error_handler,
+            logging.WARNING: console_error_handler,
+            logging.ANSWER: console_error_handler,
+            logging.INFO: console_error_handler,
+            logging.DEBUG: console_error_handler,
+        }
+    ).and_return(multi_stream_handler).once()
+    flexmock(module).should_receive('flush_delayed_logging')
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.INFO,
+        handlers=list,
+    )
+
+    module.configure_logging(console_log_level=logging.INFO, stderr_only=True)
