@@ -15,6 +15,10 @@
    summed from the sizes of the files beneath them.
  * #1376: Fix a regression in which ZFS/LVM/Btrfs hooks no longer got Borg cache hits due to a
    random temporary directory created within the borgmatic runtime directory.
+ * SECURITY: Upgrade the certifi dependency to remove trusted eMudhra certificates, thereby
+   addressing the eMudhra certificate authority compromise. This affects outgoing HTTP requests made
+   from borgmatic monitoring hooks, and only applies to the precompiled borgmatic binary (which
+   bundles certifi).
  * Fix a Postgresql hook error when restoring a directory format database with an overridden
    hostname or port.
  * Fix a bug in which borgmatic didn't correctly rename checkpoint archives when database hooks were
