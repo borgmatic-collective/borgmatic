@@ -133,7 +133,7 @@ def test_dump_data_sources_runs_mongodump_for_each_database():
     for (
         process,
         dump_command,
-    ) in zip(processes, dump_commands):
+    ) in zip(processes, dump_commands, strict=True):
         flexmock(module).should_receive('execute_command').with_args(
             dump_command,
             shell=True,

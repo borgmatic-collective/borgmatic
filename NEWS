@@ -24,6 +24,8 @@
  * Fix a bug in which a literal flag value of "borg" could throw off command-line parsing for the
    "borg" action.
  * Add a "--json" flag to the "diff" action for outputting one JSON object per changed path.
+ * Drop support for Python 3.10, which has been end-of-lifed.
+ * Fix package metadata to reflect that Python 3.9 support was dropped back in borgmatic 2.0.11.
 
 2.1.10
  * #1185: Add support for setting top-level configuration options under each repository, making

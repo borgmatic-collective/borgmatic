@@ -310,7 +310,7 @@ def test_dump_data_sources_runs_pg_dump_for_each_database():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
 
-    for name, process in zip(('foo', 'bar'), processes):
+    for name, process in zip(('foo', 'bar'), processes, strict=True):
         flexmock(module).should_receive('execute_command').with_args(
             (
                 'pg_dump',

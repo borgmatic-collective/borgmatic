@@ -145,7 +145,7 @@ def test_dump_data_sources_dumps_each_database():
         '/path/to/working/dir',
     )
 
-    for database, process in zip(databases, processes):
+    for database, process in zip(databases, processes, strict=True):
         flexmock(module).should_receive('build_dump_command').with_args(
             database,
             '/run/borgmatic/dump',

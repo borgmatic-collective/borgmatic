@@ -539,7 +539,7 @@ def test_dump_data_sources_dumps_each_database():
         dry_run=False,
     ).and_return(('bar',))
 
-    for name, process in zip(('foo', 'bar'), processes):
+    for name, process in zip(('foo', 'bar'), processes, strict=True):
         flexmock(module).should_receive('execute_dump_command').with_args(
             database={'name': name},
             config={},
@@ -751,7 +751,7 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo', 'bar'))
 
-    for name, process in zip(('foo', 'bar'), processes):
+    for name, process in zip(('foo', 'bar'), processes, strict=True):
         flexmock(module).should_receive('execute_dump_command').with_args(
             database={'name': name, 'format': 'sql'},
             config={},
@@ -804,7 +804,7 @@ def test_dump_data_sources_dumps_glob_databases_separately():
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo', 'food'))
 
-    for name, process in zip(('foo', 'food'), processes):
+    for name, process in zip(('foo', 'food'), processes, strict=True):
         flexmock(module).should_receive('execute_dump_command').with_args(
             database={'name': name},
             config={},

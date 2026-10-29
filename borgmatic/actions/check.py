@@ -557,6 +557,7 @@ def compare_spot_check_hashes(
                             line.split('  ', 1)[0].lstrip('\\')
                             for line in hash_lines
                         ),
+                        strict=False,
                     ),
                     # Represent non-existent files as having empty hashes so the comparison below still
                     # works. Same thing for filesystem links, since Borg produces empty archive hashes
@@ -591,7 +592,7 @@ def compare_spot_check_hashes(
                         working_directory=working_directory,
                     )
                     source_hashes[hash_path] = next(hash_lines).split('  ', 1)[0].lstrip('\\')
-                except (subprocess.CalledProcessError, StopIteration):  # noqa: PERF203
+                except (subprocess.CalledProcessError, StopIteration):
                     logger.warning(
                         f'Source path hashing failed for {hash_path}; treating as missing'
                     )

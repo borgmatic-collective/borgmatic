@@ -101,8 +101,6 @@ def expand_directory(directory, working_directory):
     '''
     expanded_directory = os.path.expanduser(directory)
 
-    # This would be a lot easier to do with glob(..., root_dir=working_directory), but root_dir is
-    # only available in Python 3.10+.
     normalized_directory = os.path.join(working_directory or '', expanded_directory)
     glob_paths = glob.glob(normalized_directory)
 

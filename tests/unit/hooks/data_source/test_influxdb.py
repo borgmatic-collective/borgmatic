@@ -398,7 +398,7 @@ def test_dump_data_sources_dumps_each_database():
     flexmock(module.dump).should_receive('create_parent_directory_for_dump').twice()
     flexmock(module).should_receive('make_environment').and_return({'INFLUX_TOKEN': 'mytoken'})
 
-    for database, command in zip(databases, commands):
+    for database, command in zip(databases, commands, strict=True):
         flexmock(module).should_receive('build_dump_command').with_args(
             database, object
         ).and_return(command).once()

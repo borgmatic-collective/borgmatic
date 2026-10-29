@@ -256,7 +256,9 @@ def test_get_unparsable_arguments_returns_remaining_arguments_that_no_action_can
     grouped_arguments,
     expected,
 ):
-    for action_arguments, grouped_action_arguments in zip(arguments, grouped_arguments):
+    for action_arguments, grouped_action_arguments in zip(
+        arguments, grouped_arguments, strict=True
+    ):
         flexmock(module).should_receive('group_arguments_with_values').with_args(
             action_arguments,
         ).and_return(grouped_action_arguments)

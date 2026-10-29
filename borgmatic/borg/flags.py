@@ -187,7 +187,7 @@ def omit_flag_and_value(arguments, flag):
     # its value.
     return tuple(
         argument
-        for (previous_argument, argument) in zip((None, *arguments), arguments)
+        for (previous_argument, argument) in zip((None, *arguments), arguments, strict=False)
         if flag not in {previous_argument, argument}
         if not argument.startswith(f'{flag}=')
     )

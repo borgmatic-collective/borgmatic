@@ -272,9 +272,6 @@ def add_custom_log_levels():  # pragma: no cover
 def get_log_prefix():
     '''
     Return the current log prefix set by set_log_prefix(). Return None if no such prefix exists.
-
-    It would be a whole lot easier to use logger.Formatter(defaults=...) instead, but that argument
-    doesn't exist until Python 3.10+.
     '''
     try:
         formatter = next(
