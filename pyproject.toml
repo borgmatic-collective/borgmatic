@@ -136,4 +136,4 @@ known-first-party = ["borgmatic"]
 ]
 
 [tool.codespell]
-skip = ".git,.tox,build"
+skip = ".git,.tox,build,binary"
