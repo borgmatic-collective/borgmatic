@@ -1,0 +1,22 @@
+name: "Pull request"
+about: "For submitting code, documentation changes, etc."
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to submit a pull request! Please see borgmatic's [generative AI
+        policy](https://torsion.org/borgmatic/how-to/develop-on-borgmatic/#use-of-generative-ai).
+  - type: textarea
+    id: description
+    attributes:
+      label: What this pull request does and why (including any ticket numbers)
+    validations:
+      required: true
+  - type: checkboxes
+    id: ai_use
+    attributes:
+      label: Use of generative AI
+      description: A attest that this pull request is not authored or co-authored by generative AI
+      options:
+        - label: Yes
+          required: true

@@ -24,6 +24,7 @@
  * Fix a bug in which a literal flag value of "borg" could throw off command-line parsing for the
    "borg" action.
  * Add a "--json" flag to the "diff" action for outputting one JSON object per changed path.
+ * Add a pull request template to guide the creation of any new pull request.
  * Drop support for Python 3.10, which has been end-of-lifed.
  * Fix package metadata to reflect that Python 3.9 support was dropped back in borgmatic 2.0.11.
 

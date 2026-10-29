@@ -249,7 +249,14 @@ Additionally, if LLMs were to perform a sizeable chunk of the feature
 development on this codebase, then human borgmatic developers would lose their
 understanding of the code necessary for them to maintain it effectively.
 
+For pull requests in particular: One of the reasons that borgmatic developers
+put in the time and effort to review code submitted to this project is to invest
+in other developers, so they will hopefully learn the borgmatic codebase and
+continue to work on it in the future. But if the author of a pull request is an
+LLM, there's no investment—and no learning.
+
 Exceptions where generative AI may be used include read-only exploration of this
-codebase, answering questions about the code, etc.
+codebase, answering questions about the code, diagnosing issues, etc. Just
+please write any actual code yourself!
 
 </span>
