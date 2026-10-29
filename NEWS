@@ -1,4 +1,4 @@
-2.2.0.dev0
+2.2.0
  * #1273: Add a tarballs hook for backing up and restoring tar files while retaining full Borg
    deduplication of their contents, handy for large tarballs like VM backups. See the documentation
    for more information:
