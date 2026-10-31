@@ -49,6 +49,7 @@ namespaces = false
 [tool.pytest.ini_options]
 testpaths = "tests"
 addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --no-cov-on-fail --cov-fail-under=100 --ignore=tests/end-to-end --timeout=120 --asyncio-mode=auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 line-length = 100
