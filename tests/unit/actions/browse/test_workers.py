@@ -5,12 +5,13 @@ from borgmatic.actions.browse import workers as module
 
 
 def test_add_repository_archives_publishes_for_each_archive():
+    archives = [{'archive': 'foo'}, {'archive': 'bar'}]
     flexmock(module.borgmatic.actions.browse.archive).should_receive(
         'get_repository_archives'
-    ).and_return({'archives': [{'archive': 'foo'}, {'archive': 'bar'}]})
+    ).and_return({'archives': archives})
     archive_loaded = flexmock()
-    archive_loaded.should_receive('publish').with_args('bar').once()  # Reversed order.
-    archive_loaded.should_receive('publish').with_args('foo').once()
+    archive_loaded.should_receive('publish').with_args(archives[1]).once()  # Reversed order.
+    archive_loaded.should_receive('publish').with_args(archives[0]).once()
     archive_loaded.should_receive('publish').with_args(module.LOADING_DONE).once()
 
     module.add_repository_archives.__wrapped__(
@@ -204,6 +205,7 @@ def test_load_archive_paths_publishes_a_batch_of_archive_paths():
         path_loaded=path_loaded,
         config=flexmock(),
         repository=flexmock(),
+        archive_id='b33f',
         archive_name='archive',
     )
 
@@ -222,6 +224,7 @@ def test_load_archive_paths_publishes_full_batches():
         path_loaded=path_loaded,
         config=flexmock(),
         repository=flexmock(),
+        archive_id='b33f',
         archive_name='archive',
     )
 
@@ -238,6 +241,6 @@ def test_load_file_preview_publishes_file_contents():
         file_preview_loaded=file_preview_loaded,
         config=flexmock(),
         repository=flexmock(),
-        archive_name='archive',
+        archive_id='b33f',
         file_path='foo/bar/baz.txt',
     )

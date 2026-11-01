@@ -62,7 +62,6 @@ def test_add_archive_paths_with_only_duplicate_paths_bails():
         directory_list=directory_list,
         config=config,
         repository=config['repositories'][0],
-        archive_name='archive',
         archive_paths=(
             flexmock(path_type='-', file_path='etc/foo/one.txt', link_target='', size=1),
             flexmock(path_type='-', file_path='etc/foo/two.txt', link_target='', size=1),
@@ -84,7 +83,6 @@ def test_add_archive_paths_adds_ands_sorts_and_filters_and_deduplicates():
         directory_list=directory_list,
         config=config,
         repository=config['repositories'][0],
-        archive_name='archive',
         archive_paths=(
             flexmock(path_type='d', file_path='etc/quux', link_target='', size=0),
             flexmock(path_type='-', file_path='etc/foo', link_target='', size=0),
@@ -134,7 +132,6 @@ def test_add_archive_paths_updates_existing_option_size():
         directory_list=directory_list,
         config=config,
         repository=config['repositories'][0],
-        archive_name='archive',
         archive_paths=(
             flexmock(path_type='-', file_path='etc/foo/baz.txt', link_target='', size=1024),
         ),
@@ -165,7 +162,6 @@ def test_add_archive_paths_does_not_repaint_unchanged_size():
         directory_list=directory_list,
         config=config,
         repository=config['repositories'][0],
-        archive_name='archive',
         archive_paths=(
             flexmock(path_type='-', file_path='etc/foo/bar.txt', link_target='', size=2048),
         ),
@@ -194,7 +190,6 @@ def test_add_archive_paths_ignores_link_target_for_directory_row():
         directory_list=directory_list,
         config=config,
         repository=config['repositories'][0],
-        archive_name='archive',
         archive_paths=(
             flexmock(path_type='l', file_path='etc/foo/link', link_target='/home/foo/.git', size=0),
         ),
@@ -224,7 +219,6 @@ def test_add_archive_paths_computes_one_size_update_per_directory_for_a_batch():
         directory_list=directory_list,
         config=config,
         repository=config['repositories'][0],
-        archive_name='archive',
         archive_paths=archive_paths,
     )
 
@@ -245,7 +239,6 @@ def test_add_archive_paths_highlights_first_option_if_highlight_has_not_changed(
         directory_list=directory_list,
         config=config,
         repository=config['repositories'][0],
-        archive_name='archive',
         archive_paths=(flexmock(path_type='-', file_path='etc/baz', link_target='', size=0),),
     )
 
@@ -274,7 +267,6 @@ def test_add_archive_paths_retains_loading_indicator_at_bottom():
         directory_list=directory_list,
         config=config,
         repository=config['repositories'][0],
-        archive_name='archive',
         archive_paths=(flexmock(path_type='-', file_path='etc/baz', link_target='', size=0),),
     )
 
@@ -296,7 +288,7 @@ def test_directory_list_with_root_directory_adds_loading_indicator():
     ).once()
 
     directory_list = module.Directory_list(
-        config=flexmock(), repository=flexmock(), archive_name='archive'
+        config=flexmock(), repository=flexmock(), archive_id='b33f', archive_name='archive'
     )
     assert directory_list.border_title == '📁 archive (0 B)'
     assert len(directory_list.options) == 0
@@ -315,6 +307,7 @@ def test_directory_list_with_already_complete_loading_skips_loading_indicator():
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),
+        archive_id='b33f',
         archive_name='archive',
         path_loaded=flexmock(complete=True, path_hierarchy={}),
         path_components=('etc',),
@@ -333,7 +326,7 @@ def test_directory_list_on_mount_with_root_directory_loads_archive_paths():
     flexmock(module.borgmatic.actions.browse.workers).should_receive('load_archive_paths').once()
     flexmock(module).should_receive('add_archive_paths').never()
     directory_list = module.Directory_list(
-        config=flexmock(), repository=flexmock(), archive_name='archive'
+        config=flexmock(), repository=flexmock(), archive_id='b33f', archive_name='archive'
     )
     flexmock(directory_list.path_loaded).should_receive('subscribe')
 
@@ -350,6 +343,7 @@ def test_directory_list_on_mount_with_non_root_directory_adds_archive_paths():
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),
+        archive_id='b33f',
         archive_name='archive',
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': Directory()}),
         path_components=('etc',),
@@ -368,6 +362,7 @@ def test_on_archive_path_loaded_with_loading_done_signal_removes_loading_indicat
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),
+        archive_id='b33f',
         archive_name='archive',
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': Directory()}),
         path_components=('etc',),
@@ -387,6 +382,7 @@ def test_on_archive_path_loaded_with_path_loaded_signal_adds_archive_path():
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),
+        archive_id='b33f',
         archive_name='archive',
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': Directory()}),
         path_components=('etc',),
@@ -404,6 +400,7 @@ def test_directory_list_on_option_list_option_highlighted_with_highlighted_none_
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),
+        archive_id='b33f',
         archive_name='archive',
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': Directory()}),
         path_components=('etc',),
@@ -423,6 +420,7 @@ def test_directory_list_on_option_list_option_highlighted_with_highlighted_zero_
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),
+        archive_id='b33f',
         archive_name='archive',
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': Directory()}),
         path_components=('etc',),
@@ -443,6 +441,7 @@ def test_directory_list_on_option_list_option_highlighted_with_highlighted_non_z
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),
+        archive_id='b33f',
         archive_name='archive',
         path_loaded=flexmock(complete=False, path_hierarchy={'etc': Directory()}),
         path_components=('etc',),
@@ -461,6 +460,7 @@ def test_directory_list_update_border_title_reflects_newly_loaded_directory_size
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),
+        archive_id='b33f',
         archive_name='archive',
         path_loaded=flexmock(complete=True, path_hierarchy=hierarchy),
         path_components=('etc',),
@@ -485,6 +485,7 @@ def test_directory_list_update_border_title_reflects_newly_loaded_archive_size()
     directory_list = module.Directory_list(
         config=flexmock(),
         repository=flexmock(),
+        archive_id='b33f',
         archive_name='archive',
         path_loaded=flexmock(complete=True, path_hierarchy=hierarchy),
     )

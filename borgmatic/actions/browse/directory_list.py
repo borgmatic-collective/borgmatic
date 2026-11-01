@@ -108,14 +108,13 @@ def add_archive_paths(
     directory_list,
     config,
     repository,
-    archive_name,
     archive_paths,
 ):
     '''
-    Given a DirectoryList instance, a configuration dict, a repository dict, an archive name, and a
-    sequence of ArchivePath instances, add the paths to the directory list as options, sorting and
-    deduplicating the resulting directory list's options. For paths that already have options,
-    instead update their displayed sizes, since directory sizes grow as more archive paths load.
+    Given a DirectoryList instance, a configuration dict, a repository dict, a sequence of
+    ArchivePath instances, add the paths to the directory list as options, sorting and deduplicating
+    the resulting directory list's options. For paths that already have options, instead update
+    their displayed sizes, since directory sizes grow as more archive paths load.
 
     First collapse the paths to a single representative per displayed option, since a batch usually
     contains many paths beneath the same directory and each directory's size only needs computing
@@ -206,9 +205,11 @@ class Directory_list(textual.widgets.OptionList):
 
     BINDINGS = borgmatic.actions.browse.bindings.OPTION_LIST_BINDINGS
 
-    def __init__(self, config, repository, archive_name, path_loaded=None, path_components=None):
+    def __init__(
+        self, config, repository, archive_id, archive_name, path_loaded=None, path_components=None
+    ):
         '''
-        Given a configuration dict, a repository dict, an archive name, an optional
+        Given a configuration dict, a repository dict, an archive ID, an archive name, an optional
         Archive_path_loaded instance for signalling new paths as they load, and an optional tuple of
         path components indicating this directory's position in the backed up filesystem, prepare to
         load paths from the archive for eventual display in this widget. Actual loading kicks off in
@@ -216,6 +217,7 @@ class Directory_list(textual.widgets.OptionList):
         '''
         self.config = config
         self.repository = repository
+        self.archive_id = archive_id
         self.archive_name = archive_name
         self.path_components = path_components or ()
         self.highlighted_option_changed = False
@@ -257,7 +259,6 @@ class Directory_list(textual.widgets.OptionList):
                 directory_list=self,
                 config=self.config,
                 repository=self.repository,
-                archive_name=self.archive_name,
                 archive_paths=borgmatic.actions.browse.workers.get_paths(
                     self.path_loaded.path_hierarchy, self.path_components
                 ),
@@ -268,6 +269,7 @@ class Directory_list(textual.widgets.OptionList):
                 path_loaded=self.path_loaded,
                 config=self.config,
                 repository=self.repository,
+                archive_id=self.archive_id,
                 archive_name=self.archive_name,
             )
 
@@ -310,7 +312,6 @@ class Directory_list(textual.widgets.OptionList):
             directory_list=self,
             config=self.config,
             repository=self.repository,
-            archive_name=self.archive_name,
             archive_paths=data,
         )
 

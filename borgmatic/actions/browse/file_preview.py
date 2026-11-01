@@ -31,15 +31,15 @@ class File_preview(textual.widgets.RichLog):
         ),
     )
 
-    def __init__(self, config, repository, archive_name, file_path):
+    def __init__(self, config, repository, archive_id, file_path):
         '''
-        Given a configuration dict, a repository dict, an archive name, and the path of a file in
-        the archive, prepare to load the file's contents for eventual display in this widget. Actual
+        Given a configuration dict, a repository dict, an archive ID, and the path of a file in the
+        archive, prepare to load the file's contents for eventual display in this widget. Actual
         loading kicks off in on_mount() below.
         '''
         self.config = config
         self.repository = repository
-        self.archive_name = archive_name
+        self.archive_id = archive_id
         self.file_path = file_path
 
         super().__init__(classes='panel')
@@ -66,7 +66,7 @@ class File_preview(textual.widgets.RichLog):
             file_preview_loaded=self.file_preview_loaded,
             config=self.config,
             repository=self.repository,
-            archive_name=self.archive_name,
+            archive_id=self.archive_id,
             file_path=self.file_path,
         )
 

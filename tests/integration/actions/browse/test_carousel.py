@@ -18,7 +18,7 @@ def test_make_next_panel_with_configuration_files_list_returns_repositories_list
         focused_panel=borgmatic.actions.browse.configuration_files_list.Configuration_files_list(
             configs
         ),
-        option_id='test.yaml',
+        option=flexmock(id='test.yaml'),
     )
 
     assert isinstance(
@@ -37,7 +37,7 @@ def test_make_next_panel_with_repositories_list_returns_archives_list():
 
     archives_list = module.make_next_panel(
         focused_panel=borgmatic.actions.browse.repositories_list.Repositories_list(config),
-        option_id=0,
+        option=flexmock(id=0),
     )
 
     assert isinstance(archives_list, borgmatic.actions.browse.archives_list.Archives_list)
@@ -61,7 +61,7 @@ def test_make_next_panel_with_archives_list_returns_directory_list():
         focused_panel=borgmatic.actions.browse.archives_list.Archives_list(
             config, config['repositories'][0]
         ),
-        option_id='archive',
+        option=flexmock(id='b33f', prompt_text='archive'),
     )
 
     assert isinstance(directory_list, borgmatic.actions.browse.directory_list.Directory_list)
@@ -85,11 +85,13 @@ def test_make_next_panel_with_root_directory_list_and_selected_directory_option_
         'app'
     ).and_return(flexmock())
     focused_panel = borgmatic.actions.browse.directory_list.Directory_list(
-        config, config['repositories'][0], 'archive'
+        config, config['repositories'][0], 'b33f', 'archive'
     )
     flexmock(focused_panel).should_receive('get_option').and_return(flexmock(path_type='d'))
 
-    directory_list = module.make_next_panel(focused_panel=focused_panel, option_id='etc')
+    directory_list = module.make_next_panel(
+        focused_panel=focused_panel, option=flexmock(id='etc', path_type='d')
+    )
 
     assert isinstance(directory_list, borgmatic.actions.browse.directory_list.Directory_list)
     assert directory_list.config == config
@@ -120,12 +122,15 @@ def test_make_next_panel_with_non_root_directory_list_and_selected_directory_opt
     focused_panel = borgmatic.actions.browse.directory_list.Directory_list(
         config,
         config['repositories'][0],
+        'b33f',
         'archive',
         path_components=('etc',),
     )
     flexmock(focused_panel).should_receive('get_option').and_return(flexmock(path_type='d'))
 
-    directory_list = module.make_next_panel(focused_panel=focused_panel, option_id='borgmatic')
+    directory_list = module.make_next_panel(
+        focused_panel=focused_panel, option=flexmock(id='borgmatic', path_type='d')
+    )
 
     assert isinstance(directory_list, borgmatic.actions.browse.directory_list.Directory_list)
     assert directory_list.config == config
@@ -146,17 +151,18 @@ def test_make_next_panel_with_root_directory_list_and_selected_file_option_retur
         flexmock()
     )
     focused_panel = borgmatic.actions.browse.directory_list.Directory_list(
-        config, config['repositories'][0], 'archive'
+        config, config['repositories'][0], 'b33f', 'archive'
     )
     flexmock(focused_panel).should_receive('get_option').and_return(flexmock(path_type='-'))
 
-    directory_list = module.make_next_panel(focused_panel=focused_panel, option_id='config.yaml')
+    file_preview = module.make_next_panel(
+        focused_panel=focused_panel, option=flexmock(id='config.yaml', path_type='-')
+    )
 
-    assert isinstance(directory_list, borgmatic.actions.browse.file_preview.File_preview)
-    assert directory_list.config == config
-    assert directory_list.repository == config['repositories'][0]
-    assert directory_list.archive_name == 'archive'
-    assert directory_list.file_path == 'config.yaml'
+    assert isinstance(file_preview, borgmatic.actions.browse.file_preview.File_preview)
+    assert file_preview.config == config
+    assert file_preview.repository == config['repositories'][0]
+    assert file_preview.file_path == 'config.yaml'
 
 
 def test_make_next_panel_with_non_root_directory_list_and_selected_file_option_returns_new_file_preview():
@@ -191,22 +197,24 @@ def test_make_next_panel_with_non_root_directory_list_and_selected_file_option_r
     focused_panel = borgmatic.actions.browse.directory_list.Directory_list(
         config,
         config['repositories'][0],
+        'b33f',
         'archive',
         path_components=('etc', 'borgmatic'),
     )
     flexmock(focused_panel).should_receive('get_option').and_return(flexmock(path_type='-'))
 
-    directory_list = module.make_next_panel(focused_panel=focused_panel, option_id='config.yaml')
+    file_preview = module.make_next_panel(
+        focused_panel=focused_panel, option=flexmock(id='config.yaml', path_type='-')
+    )
 
-    assert isinstance(directory_list, borgmatic.actions.browse.file_preview.File_preview)
-    assert directory_list.config == config
-    assert directory_list.repository == config['repositories'][0]
-    assert directory_list.archive_name == 'archive'
-    assert directory_list.file_path == 'etc/borgmatic/config.yaml'
+    assert isinstance(file_preview, borgmatic.actions.browse.file_preview.File_preview)
+    assert file_preview.config == config
+    assert file_preview.repository == config['repositories'][0]
+    assert file_preview.file_path == 'etc/borgmatic/config.yaml'
 
 
 def test_make_next_panel_with_unsupported_focused_panel_returns_none():
-    assert module.make_next_panel(focused_panel=flexmock(), option_id='hmmm') is None
+    assert module.make_next_panel(focused_panel=flexmock(), option=flexmock(id=0)) is None
 
 
 @pytest.mark.parametrize('path_type', ('l', 'p', 'wtf', None))
@@ -220,11 +228,13 @@ def test_make_next_panel_with_directory_list_and_unsupported_selected_option_ret
         'app'
     ).and_return(flexmock())
     focused_panel = borgmatic.actions.browse.directory_list.Directory_list(
-        config, config['repositories'][0], 'archive'
+        config, config['repositories'][0], 'b33f', 'archive'
     )
     flexmock(focused_panel).should_receive('get_option').and_return(flexmock(path_type=path_type))
 
-    assert module.make_next_panel(focused_panel=focused_panel, option_id='config.yaml') is None
+    assert (
+        module.make_next_panel(focused_panel=focused_panel, option=flexmock(id='test.txt')) is None
+    )
 
 
 async def test_carousel_previous_action_with_multiple_configs_does_not_raise():

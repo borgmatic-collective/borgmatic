@@ -11,11 +11,12 @@ import borgmatic.actions.browse.file_preview
 import borgmatic.actions.browse.repositories_list
 
 
-def make_next_panel(focused_panel, option_id):
+def make_next_panel(focused_panel, option):
     '''
-    Given a focused panel widget and the selected option ID, return the next panel corresponding to
-    that selection. This is the mechanism by which the user can successively drill down from
-    configuration file to repository to archive to root directory to non-root directory or file.
+    Given a focused panel widget and the selected option as a textual.widgets.option_list.Option
+    instance, return the next panel corresponding to that selection. This is the mechanism by which
+    the user can successively drill down from configuration file to repository to archive to root
+    directory to non-root directory or file.
 
     If the particular option ID on the focused panel doesn't have a supported next panel, then
     return None.
@@ -24,38 +25,41 @@ def make_next_panel(focused_panel, option_id):
         focused_panel, borgmatic.actions.browse.configuration_files_list.Configuration_files_list
     ):
         return borgmatic.actions.browse.repositories_list.Repositories_list(
-            config=focused_panel.configs[option_id]
+            config=focused_panel.configs[option.id]
         )
 
     if isinstance(focused_panel, borgmatic.actions.browse.repositories_list.Repositories_list):
         return borgmatic.actions.browse.archives_list.Archives_list(
-            config=focused_panel.config, repository=focused_panel.repositories[option_id]
+            config=focused_panel.config, repository=focused_panel.repositories[option.id]
         )
 
     if isinstance(focused_panel, borgmatic.actions.browse.archives_list.Archives_list):
         return borgmatic.actions.browse.directory_list.Directory_list(
-            config=focused_panel.config, repository=focused_panel.repository, archive_name=option_id
+            config=focused_panel.config,
+            repository=focused_panel.repository,
+            archive_id=option.id,
+            archive_name=option.prompt_text,
         )
 
     if isinstance(focused_panel, borgmatic.actions.browse.directory_list.Directory_list):
-        option = focused_panel.get_option(option_id)
         path_type = getattr(option, 'path_type', None)
 
         if path_type == borgmatic.actions.browse.archive.Path_type.DIRECTORY.value:
             return borgmatic.actions.browse.directory_list.Directory_list(
                 focused_panel.config,
                 focused_panel.repository,
+                focused_panel.archive_id,
                 focused_panel.archive_name,
                 path_loaded=focused_panel.path_loaded,
-                path_components=(*focused_panel.path_components, option_id),
+                path_components=(*focused_panel.path_components, option.id),
             )
 
         if path_type == borgmatic.actions.browse.archive.Path_type.FILE.value:
             return borgmatic.actions.browse.file_preview.File_preview(
                 focused_panel.config,
                 focused_panel.repository,
-                focused_panel.archive_name,
-                file_path=os.path.sep.join((*focused_panel.path_components, option_id)),
+                focused_panel.archive_id,
+                file_path=os.path.sep.join((*focused_panel.path_components, option.id)),
             )
 
     return None
@@ -97,7 +101,7 @@ class Carousel(textual.containers.Horizontal):
         self.focused_panel.styles.display = 'block'
         self.focused_panel.focus()
 
-    def action_next(self, option_id):
+    def action_next(self, option):
         '''
         Hide the current focused panel and create the next one.
         '''
@@ -107,7 +111,7 @@ class Carousel(textual.containers.Horizontal):
             next_panel = self.panels[next_panel_index]
             next_panel.styles.display = 'block'
         else:
-            next_panel = make_next_panel(self.focused_panel, option_id)
+            next_panel = make_next_panel(self.focused_panel, option)
 
             if next_panel is None:
                 self.notify('Cannot display this content', severity='warning')
@@ -142,4 +146,4 @@ class Carousel(textual.containers.Horizontal):
         if event.option_id == '..':
             self.action_previous()
         else:
-            self.action_next(event.option_id)
+            self.action_next(event.option)

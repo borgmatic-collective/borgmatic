@@ -22,7 +22,9 @@ def test_get_archive_paths_returns_each_as_archive_path_with_metadata():
         {'path': 'etc', 'type': 'd', 'linktarget': '', 'size': 0},
     )
 
-    assert tuple(module.get_archive_paths(config, config['repositories'][0], 'archive')) == (
+    assert tuple(
+        module.get_archive_paths(config, config['repositories'][0], 'b33f', 'archive')
+    ) == (
         module.Archive_path('-', 'foo.txt', '', 3),
         module.Archive_path('l', 'bar.txt', 'foo.txt', 0),
         module.Archive_path('d', 'etc', '', 0),
@@ -37,9 +39,9 @@ def test_get_archive_paths_defaults_missing_size_to_zero():
         {'path': 'foo.txt', 'type': '-', 'linktarget': ''},
     )
 
-    assert tuple(module.get_archive_paths(config, config['repositories'][0], 'archive')) == (
-        module.Archive_path('-', 'foo.txt', '', 0),
-    )
+    assert tuple(
+        module.get_archive_paths(config, config['repositories'][0], 'b33f', 'archive')
+    ) == (module.Archive_path('-', 'foo.txt', '', 0),)
 
 
 def test_get_archive_file_content_with_binary_file_bails():
