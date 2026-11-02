@@ -40,7 +40,7 @@ def test_archives_list_on_archive_loaded_adds_archive_name():
     flexmock(archives_list).should_receive('remove_option').with_args('loading-indicator').once()
     flexmock(archives_list).should_receive('add_options').once()
 
-    archives_list.on_archive_loaded('archive')
+    archives_list.on_archive_loaded({'archive': 'archive', 'id': 'b33f'})
 
 
 def test_archives_list_on_option_list_option_highlighted_with_highlighted_none_marks_it_unchanged():

@@ -57,7 +57,7 @@ def add_repository_archives(browse_app, archive_loaded, config, repository):
     # Reverse the archives, so the common case of accessing the latest archive is easy because it's
     # at the top.
     for archive in reversed(archives_data['archives']):
-        archive_loaded.publish(archive['archive'])
+        archive_loaded.publish(archive)
 
     archive_loaded.publish(LOADING_DONE)
 
@@ -203,12 +203,12 @@ class Archive_path_loaded(textual.signal.Signal):
 
 
 @textual.work(thread=True)
-def load_archive_paths(browse_app, path_loaded, config, repository, archive_name):
+def load_archive_paths(browse_app, path_loaded, config, repository, archive_id, archive_name):
     '''
     Given a running Browse_app instance, an Archive_path_loaded instance, a configuration dict, a
-    repository dict, and an archive name, load the paths in this archive and publish them in batches
-    via the Archive_path_loaded signal, so interested widgets can subscribe. Also send a "loading
-    done" signal when loading completes.
+    repository dict, an archive ID, and an archive name, load the paths in this archive and publish
+    them in batches via the Archive_path_loaded signal, so interested widgets can subscribe. Also
+    send a "loading done" signal when loading completes.
 
     Publish in batches rather than one path at a time so that widgets don't have to process (and
     repaint for) every single path.
@@ -219,7 +219,10 @@ def load_archive_paths(browse_app, path_loaded, config, repository, archive_name
     batch = []
 
     for archive_path in borgmatic.actions.browse.archive.get_archive_paths(
-        config, repository, archive_name
+        config,
+        repository,
+        archive_id,
+        archive_name,
     ):
         batch.append(archive_path)
 
@@ -250,19 +253,20 @@ def load_file_preview(
     file_preview_loaded,
     config,
     repository,
+    archive_id,
     archive_name,
     file_path,
 ):
     '''
     Given a running Browse_app instance, a File_preview_loaded instance, a configuration dict, a
-    repository dict, an archive name, and the path of a file in that archive, load the contents of
-    the file and write it into the given file preview widget.
+    repository dict, an archive ID and name, and the path of a file in that archive, load the
+    contents of the file and write it into the given file preview widget.
 
     This function runs in a separate thread from the main UI. When loading is complete, publish a
     loading done signal.
     '''
     file_contents = borgmatic.actions.browse.archive.get_archive_file_content(
-        config, repository, archive_name, file_path
+        config, repository, archive_id, archive_name, file_path
     )
 
     file_preview_loaded.publish(file_contents)

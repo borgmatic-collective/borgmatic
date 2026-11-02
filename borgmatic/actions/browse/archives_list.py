@@ -5,6 +5,22 @@ import borgmatic.actions.browse.loading
 import borgmatic.actions.browse.workers
 
 
+def make_archives_list_option(archive, latest=False):
+    '''
+    Given an archive dict with "archive" and "id" keys, make a textual.widgets.option_list.Option
+    for the archive. Include a "latest" archive indicator in the prompt if latest is True.
+
+    Return the resulting option.
+    '''
+    prompt_pieces = (archive['archive'], '[dim](latest)[/dim]') if latest else (archive['archive'],)
+    option = textual.widgets.option_list.Option(' '.join(prompt_pieces), id=archive['id'])
+
+    # Tack on the unadulterated prompt text, making it easy to get when this option is selected.
+    option.prompt_text = archive['archive']
+
+    return option
+
+
 class Archives_list(textual.widgets.OptionList):
     '''
     A widget for selecting a single Borg archive from among the archives in a repository. The item
@@ -48,19 +64,15 @@ class Archives_list(textual.widgets.OptionList):
             repository=self.repository,
         )
 
-    def on_archive_loaded(self, archive_name):
+    def on_archive_loaded(self, archive):
         '''
         When an archive loads, add it as an option to this archives list. But if we get a
         signal that all path loading is complete, stop and remove our loading indicator.
         '''
-        if archive_name is borgmatic.actions.browse.workers.LOADING_DONE:
+        if archive is borgmatic.actions.browse.workers.LOADING_DONE:
             self.loading_timer.stop()
             self.remove_option('loading-indicator')
             return
-
-        label_pieces = (
-            (archive_name, '[dim](latest)[/dim]') if len(self.options) == 1 else (archive_name,)
-        )
 
         # Textual 6.0.0+ has self.highlighted_option, but we want to support older versions.
         highlighted_option = (
@@ -71,7 +83,7 @@ class Archives_list(textual.widgets.OptionList):
         self.remove_option('loading-indicator')
         self.add_options(
             (
-                textual.widgets.option_list.Option(' '.join(label_pieces), id=archive_name),
+                make_archives_list_option(archive, latest=bool(len(self.options) == 0)),
                 loading_indicator,
             ),
         )
