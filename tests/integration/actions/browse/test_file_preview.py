@@ -8,7 +8,11 @@ def test_file_preview_does_not_raise():
     flexmock(module.borgmatic.actions.browse.loading).should_receive('add_inline_loading_indicator')
 
     module.File_preview(
-        config=flexmock(), repository=flexmock(), archive_id='b33f', file_path='foo/bar.txt'
+        config=flexmock(),
+        repository=flexmock(),
+        archive_id='b33f',
+        archive_name='archive',
+        file_path='foo/bar.txt',
     )
 
 
@@ -16,7 +20,11 @@ async def test_file_preview_on_mount_does_not_raise():
     flexmock(module.borgmatic.actions.browse.loading).should_receive('add_inline_loading_indicator')
     flexmock(module.borgmatic.actions.browse.workers).should_receive('load_file_preview')
     file_preview = module.File_preview(
-        config=flexmock(), repository=flexmock(), archive_id='b33f', file_path='foo.txt'
+        config=flexmock(),
+        repository=flexmock(),
+        archive_id='b33f',
+        archive_name='archive',
+        file_path='foo.txt',
     )
     flexmock(file_preview.file_preview_loaded).should_receive('subscribe')
 
@@ -29,7 +37,11 @@ def test_file_preview_on_file_preview_loaded_with_none_file_contents_displays_er
         'add_inline_loading_indicator'
     ).and_return(flexmock(stop=lambda: None))
     file_preview = module.File_preview(
-        config=flexmock(), repository=flexmock(), archive_id='b33f', file_path='foo.txt'
+        config=flexmock(),
+        repository=flexmock(),
+        archive_id='b33f',
+        archive_name='archive',
+        file_path='foo.txt',
     )
     flexmock(file_preview).should_receive('write').with_args(
         'Cannot display a preview for this file'
@@ -43,7 +55,11 @@ def test_file_preview_on_file_preview_loaded_with_file_contents_displays_content
         'add_inline_loading_indicator'
     ).and_return(flexmock(stop=lambda: None))
     file_preview = module.File_preview(
-        config=flexmock(), repository=flexmock(), archive_id='v3g3t4b135', file_path='foo.txt'
+        config=flexmock(),
+        repository=flexmock(),
+        archive_id='v3g3t4b135',
+        archive_name='archive',
+        file_path='foo.txt',
     )
     flexmock(file_preview).should_receive('write').with_args(
         'Cannot display a preview for this file'

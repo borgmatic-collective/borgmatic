@@ -242,5 +242,6 @@ def test_load_file_preview_publishes_file_contents():
         config=flexmock(),
         repository=flexmock(),
         archive_id='b33f',
+        archive_name='archive',
         file_path='foo/bar/baz.txt',
     )

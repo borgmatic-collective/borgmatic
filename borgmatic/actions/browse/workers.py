@@ -254,18 +254,19 @@ def load_file_preview(
     config,
     repository,
     archive_id,
+    archive_name,
     file_path,
 ):
     '''
     Given a running Browse_app instance, a File_preview_loaded instance, a configuration dict, a
-    repository dict, an archive ID, and the path of a file in that archive, load the contents of the
-    file and write it into the given file preview widget.
+    repository dict, an archive ID and name, and the path of a file in that archive, load the
+    contents of the file and write it into the given file preview widget.
 
     This function runs in a separate thread from the main UI. When loading is complete, publish a
     loading done signal.
     '''
     file_contents = borgmatic.actions.browse.archive.get_archive_file_content(
-        config, repository, archive_id, file_path
+        config, repository, archive_id, archive_name, file_path
     )
 
     file_preview_loaded.publish(file_contents)

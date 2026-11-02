@@ -59,6 +59,7 @@ def make_next_panel(focused_panel, option):
                 focused_panel.config,
                 focused_panel.repository,
                 focused_panel.archive_id,
+                focused_panel.archive_name,
                 file_path=os.path.sep.join((*focused_panel.path_components, option.id)),
             )
 

@@ -7,6 +7,7 @@ import logging
 import binaryornot.helpers
 
 import borgmatic.borg.extract
+import borgmatic.borg.feature
 import borgmatic.borg.list
 import borgmatic.borg.repo_list
 import borgmatic.borg.version
@@ -89,7 +90,11 @@ def get_archive_paths(config, repository, archive_id, archive_name):
             )
             for path_data in borgmatic.borg.list.capture_archive_listing(
                 repository['path'],
-                archive_id,
+                f'aid:{archive_id}'
+                if borgmatic.borg.feature.available(
+                    borgmatic.borg.feature.Feature.ARCHIVE_SERIES, local_borg_version
+                )
+                else archive_name,
                 config,
                 local_borg_version,
                 global_arguments,
@@ -106,11 +111,11 @@ MAXIMUM_TOTAL_READ_SIZE = 100000
 TRUNCATION_MESSAGE = '[... truncated for display ...]'
 
 
-def get_archive_file_content(config, repository, archive_id, file_path):
+def get_archive_file_content(config, repository, archive_id, archive_name, file_path):
     '''
-    Given a configuration dict, a repository dict, an archive ID in that repository, and a file path
-    in that archive, return the file's contents or None if the file can't be loaded, e.g.  because
-    it's binary or can't be decoded.
+    Given a configuration dict, a repository dict, an archive ID and name in that repository, and a
+    file path in that archive, return the file's contents or None if the file can't be loaded, e.g.
+    because it's binary or can't be decoded.
 
     If the file is too large, then truncate the returned content.
     '''
@@ -118,14 +123,19 @@ def get_archive_file_content(config, repository, archive_id, file_path):
         logger.info(f'Getting archive content of file {file_path}')
         local_path = config.get('local_path', 'borg')
         remote_path = config.get('remote_path')
+        local_borg_version = borgmatic.borg.version.local_borg_version(config, local_path)
 
         extract_process = borgmatic.borg.extract.extract_archive(
             dry_run=False,
             repository=repository['path'],
-            archive=archive_id,
+            archive=f'aid:{archive_id}'
+            if borgmatic.borg.feature.available(
+                borgmatic.borg.feature.Feature.ARCHIVE_SERIES, local_borg_version
+            )
+            else archive_name,
             paths=(file_path,),
             config=config,
-            local_borg_version=borgmatic.borg.version.local_borg_version(config, local_path),
+            local_borg_version=local_borg_version,
             global_arguments=argparse.Namespace(),
             local_path=local_path,
             remote_path=remote_path,
