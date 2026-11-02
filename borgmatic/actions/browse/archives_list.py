@@ -10,11 +10,12 @@ def make_archives_list_option(archive, latest=False):
     Given an archive dict with "archive" and "id" keys, make a textual.widgets.option_list.Option
     for the archive. Include a "latest" archive indicator in the prompt if latest is True.
 
-    Return the resulting option
+    Return the resulting option.
     '''
     prompt_pieces = (archive['archive'], '[dim](latest)[/dim]') if latest else (archive['archive'],)
-
     option = textual.widgets.option_list.Option(' '.join(prompt_pieces), id=archive['id'])
+
+    # Tack on the unadulterated prompt text, making it easy to get when this option is selected.
     option.prompt_text = archive['archive']
 
     return option
