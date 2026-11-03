@@ -14,7 +14,7 @@ unique "Ping URL" for your project. Here's an example:
 
 ```yaml
 watchgoose:
-    ping_url: https://watchgoose.com/addffa72-da17-40ae-be9c-ff591afb942a
+    ping_url: https://watchgoose.com/ping/addffa72-da17-40ae-be9c-ff591afb942a
 ```
 
 With this configuration, borgmatic pings your Watchgoose project when a
@@ -39,7 +39,7 @@ a third-party service. But to enable the feature, use the `send_logs` option:
 
 ```yaml
 watchgoose:
-    ping_url: https://watchgoose.com/addffa72-da17-40ae-be9c-ff591afb942a
+    ping_url: https://watchgoose.com/ping/addffa72-da17-40ae-be9c-ff591afb942a
     send_logs: true
 ```
 

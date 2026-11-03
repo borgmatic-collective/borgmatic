@@ -53,7 +53,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     ping_url = (
         hook_config['ping_url']
         if hook_config['ping_url'].startswith('http')
-        else f"https://watchgoose.com/{hook_config['ping_url']}"
+        else f"https://watchgoose.com/ping/{hook_config['ping_url']}"
     )
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
 

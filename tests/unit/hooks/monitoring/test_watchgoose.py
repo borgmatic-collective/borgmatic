@@ -212,7 +212,7 @@ def test_ping_monitor_with_ping_uuid_hits_corresponding_url():
         'format_buffered_logs_for_payload',
     ).and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
-        f"https://watchgoose.com/{hook_config['ping_url']}",
+        f"https://watchgoose.com/ping/{hook_config['ping_url']}",
         data=payload.encode('utf-8'),
         verify=True,
         timeout=int,
@@ -385,7 +385,7 @@ def test_ping_monitor_does_not_add_create_query_parameter_when_create_slug_false
 def test_ping_monitor_does_not_add_create_query_parameter_when_ping_url_is_uuid():
     hook_config = {'ping_url': 'b3611b24-df9c-4d36-9203-fa292820bf2a', 'create_slug': True}
     flexmock(module.requests).should_receive('post').with_args(
-        f"https://watchgoose.com/{hook_config['ping_url']}",
+        f"https://watchgoose.com/ping/{hook_config['ping_url']}",
         data=b'',
         verify=True,
         timeout=int,

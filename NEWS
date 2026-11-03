@@ -3,6 +3,8 @@
    JSON parsing. Now you can pipe "borgmatic --json" to jq or other JSON-consuming commands,
    regardless of borgmatic's verbosity level.
  * #1377: Fix the "browse" action to support Borg 2 archives that share the same name.
+ * #1384: Fix the Watchgoose monitoring hook to construct URLs correctly when the "ping_url" option
+   is set to just a UUID.
 
 2.2.0
  * #1273: Add a tarballs hook for backing up and restoring tar files while retaining full Borg

@@ -3518,7 +3518,7 @@ properties:
                 description: |
                     Watchgoose ping URL or UUID to notify when a backup
                     begins, ends, errors, or to send only logs.
-                example: https://watchgoose.com/your-uuid-here
+                example: https://watchgoose.com/ping/your-uuid-here
             verify_tls:
                 type: boolean
                 description: |
@@ -3559,9 +3559,9 @@ properties:
                 type: boolean
                 description: |
                     Create the check if it does not exist. Only works with the
-                    slug URL scheme (https://watchgoose.com/<ping-key>/<slug> as
-                    opposed to https://watchgoose.com/<uuid>). Defaults to
-                    false.
+                    slug URL scheme
+                    (https://watchgoose.com/ping/<ping-key>/<slug> as opposed to
+                    https://watchgoose.com/ping/<uuid>). Defaults to false.
                 example: true
         description: |
             Configuration for a monitoring integration with Watchgoose. Create
