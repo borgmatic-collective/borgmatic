@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import time
+import uuid
 from queue import Queue
 from subprocess import CalledProcessError
 
@@ -102,8 +103,14 @@ class Monitoring_hooks:
             get_verbosity({config_filename: config}, 'monitoring_verbosity'),
         )
         self.monitoring_hooks_are_activated = (
-            using_primary_action and self.monitoring_log_level != DISABLED
+            using_primary_action
+            and self.monitoring_log_level != DISABLED
+            and any(
+                hook_name in config
+                for hook_name in borgmatic.hooks.dispatch.get_hook_names(borgmatic.hooks.monitoring)
+            )
         )
+        self.run_identifier = str(uuid.uuid4())
 
     def __enter__(self):
         '''
@@ -120,6 +127,7 @@ class Monitoring_hooks:
             self.config_filename,
             self.monitoring_log_level,
             self.dry_run,
+            self.run_identifier,
         )
 
         try:
@@ -131,6 +139,7 @@ class Monitoring_hooks:
                 monitor.State.START,
                 self.monitoring_log_level,
                 self.dry_run,
+                self.run_identifier,
             )
         except (OSError, CalledProcessError) as error:
             raise ValueError(f'Error pinging monitor: {error}')
@@ -154,6 +163,7 @@ class Monitoring_hooks:
                 monitor.State.LOG,
                 self.monitoring_log_level,
                 self.dry_run,
+                self.run_identifier,
             )
         except (OSError, CalledProcessError) as error:
             raise ValueError(f'Error pinging monitor: {error}')
@@ -169,6 +179,7 @@ class Monitoring_hooks:
                 else monitor.State.FINISH,
                 self.monitoring_log_level,
                 self.dry_run,
+                self.run_identifier,
             )
         except (OSError, CalledProcessError) as error:
             # If the wrapped code errored, prefer raising that exception, as it's probably more
@@ -184,14 +195,54 @@ class Monitoring_hooks:
             dispatch.Hook_type.MONITORING,
             self.monitoring_log_level,
             self.dry_run,
+            self.run_identifier,
+        )
+
+
+def run_repository(
+    *, arguments, config_filename, config, config_paths, local_borg_version, repository
+):
+    '''
+    Given command-line arguments as a dict from action name to argparse.Namespace instance, the
+    configuration filename, a configuration dict, a sequence of loaded configuration paths, the
+    local Borg version, a repository configuration dict, ping the monitoring hooks and run the
+    actions for that repository.
+
+    Yield JSON output strings from executing any actions that produce JSON.
+
+    Raise an OSError, CalledProcessError, or ValueError if such an exception occurs while running
+    the repository's actions.
+    '''
+    logger.debug('Running actions for repository')
+
+    # Run repository-specific monitoring hooks (if any).
+    with Monitoring_hooks(
+        config_filename,
+        config,
+        arguments,
+        arguments['global'],
+    ):
+        local_path = config.get('local_path', 'borg')
+        remote_path = config.get('remote_path')
+
+        yield from run_actions(
+            arguments=arguments,
+            config_filename=config_filename,
+            config=config,
+            config_paths=config_paths,
+            local_path=local_path,
+            remote_path=remote_path,
+            local_borg_version=local_borg_version,
+            repository=repository,
         )
 
 
 def run_configuration(config_filename, config, config_paths, arguments):  # noqa: PLR0912, PLR0915
     '''
     Given a config filename, the corresponding parsed config dict, a sequence of loaded
-    configuration paths, and command-line arguments as a dict from subparser name to a namespace of
-    parsed arguments, execute the defined create, prune, compact, check, and/or other actions.
+    configuration paths, and command-line arguments as a dict from subparser name to a
+    argparse.Namespace instance, execute the defined create, prune, compact, check, and/or other
+    actions.
 
     Yield a combination of:
 
@@ -229,22 +280,21 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
                 )
 
             while not repo_queue.empty():
-                repository, retry_num = repo_queue.get()
+                repository, retry_number = repo_queue.get()
 
                 with Log_prefix(repository.get('label', repository['path'])):
-                    logger.debug('Running actions for repository')
-
                     # Hoist any top-level options that are specified under a particular repository
                     # to be at the top level. That way, users can specify options like "remote_path"
-                    # per repository, but downstream code still access them at the global scope.
+                    # per repository, but downstream code still accesses them at the global scope.
                     merged_config = borgmatic.config.load.merge_repository_configuration(
                         repository, config
                     )
-                    local_path = merged_config.get('local_path', 'borg')
-                    remote_path = merged_config.get('remote_path')
-                    retries = merged_config.get('retries', 0)
                     retry_wait = merged_config.get('retry_wait', 0)
-                    timeout = retry_num * retry_wait
+                    timeout = retry_number * retry_wait
+
+                    if timeout:
+                        logger.warning(f'Sleeping {timeout}s before next retry')
+                        time.sleep(timeout)
 
                     try:
                         local_borg_version = borg_version.local_borg_version(
@@ -256,27 +306,28 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
                             f'{config_filename}: Error getting local Borg version',
                             error,
                         )
+
+                        encountered_error = error
+                        error_repository = repository
+
+                        # Errors getting the local Borg version don't get retried.
                         raise
 
-                    if timeout:
-                        logger.warning(f'Sleeping {timeout}s before next retry')
-                        time.sleep(timeout)
-
                     try:
-                        yield from run_actions(
+                        yield from run_repository(
                             arguments=arguments,
                             config_filename=config_filename,
                             config=merged_config,
                             config_paths=config_paths,
-                            local_path=local_path,
-                            remote_path=remote_path,
                             local_borg_version=local_borg_version,
                             repository=repository,
                         )
                     except (OSError, CalledProcessError, ValueError) as error:
-                        if retry_num < retries:
+                        retries = merged_config.get('retries', 0)
+
+                        if retry_number < retries:
                             repo_queue.put(
-                                (repository, retry_num + 1),
+                                (repository, retry_number + 1),
                             )
                             tuple(  # Consume the generator so as to trigger logging.
                                 log_error_records(
@@ -286,7 +337,7 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
                                     log_command_error_output=True,
                                 ),
                             )
-                            logger.warning(f'Retrying... attempt {retry_num + 1}/{retries}')
+                            logger.warning(f'Retrying... attempt {retry_number + 1}/{retries}')
                             continue
 
                         if command.considered_soft_failure(error):
@@ -296,6 +347,7 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
                             'Error running actions for repository',
                             error,
                         )
+
                         encountered_error = error
                         error_repository = repository
 
@@ -354,10 +406,10 @@ def run_actions(  # noqa: PLR0912, PLR0915
     repository,
 ):
     '''
-    Given parsed command-line arguments as an argparse.ArgumentParser instance, the configuration
-    filename, a configuration dict, a sequence of loaded configuration paths, local and remote paths
-    to Borg, a local Borg version string, and a repository dict, run all actions from the
-    command-line arguments on the given repository.
+    Given parsed command-line arguments as a dict from action name to argparse.Namespace instance,
+    the configuration filename, a configuration dict, a sequence of loaded configuration paths,
+    local and remote paths to Borg, a local Borg version string, and a repository dict, run all
+    actions from the command-line arguments on the given repository.
 
     Yield JSON output strings from executing any actions that produce JSON.
 
@@ -663,7 +715,7 @@ def run_actions(  # noqa: PLR0912, PLR0915
 def load_configurations(config_filenames, arguments, overrides=None, resolve_env=True):
     '''
     Given a sequence of configuration filenames, arguments as a dict from action name to
-    argparse.Namespace, a sequence of configuration file override strings in the form of
+    argparse.Namespace instance, a sequence of configuration file override strings in the form of
     "option.suboption=value", and whether to resolve environment variables, load and validate each
     configuration file. Return the results as a tuple of: dict of configuration filename to
     corresponding parsed configuration, a sequence of paths for all loaded configuration files

@@ -33,6 +33,7 @@ def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -55,6 +56,7 @@ def test_ping_monitor_config_with_minimum_config_start_state_backup_not_send_to_
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -92,6 +94,7 @@ def test_ping_monitor_start_state_backup_default_message_successfully_send_to_pu
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -129,6 +132,7 @@ def test_ping_monitor_start_state_backup_custom_message_successfully_send_to_pus
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -168,6 +172,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -207,6 +212,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -246,6 +252,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -277,6 +284,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_high_decl
             borgmatic.hooks.monitoring.monitor.State.START,
             monitoring_log_level=1,
             dry_run=False,
+            run_identifier='b33f',
         )
 
 
@@ -344,6 +352,7 @@ def test_ping_monitor_start_state_backup_based_on_documentation_advanced_example
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -416,6 +425,7 @@ def test_ping_monitor_fail_state_backup_based_on_documentation_advanced_example_
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -485,6 +495,7 @@ def test_ping_monitor_finish_state_backup_based_on_documentation_advanced_exampl
         borgmatic.hooks.monitoring.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -507,6 +518,7 @@ def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -531,6 +543,7 @@ def test_ping_monitor_config_incorrect_state_exit_early():
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -571,6 +584,7 @@ def test_ping_monitor_push_post_error_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -593,4 +607,5 @@ def test_ping_monitor_credential_error_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )

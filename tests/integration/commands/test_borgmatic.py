@@ -16,7 +16,7 @@ def test_borgmatic_version_matches_news_version():
 
 
 def test_run_configuration_without_error_pings_monitoring_hooks_start_and_finish():
-    config = {'repositories': [{'path': 'foo'}]}
+    config = {'ntfy': 'global', 'repositories': [{'path': 'foo', 'ntfy': 'per-repo'}]}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_return([])
@@ -29,6 +29,27 @@ def test_run_configuration_without_error_pings_monitoring_hooks_start_and_finish
         module.monitor.State.START,
         object,
         object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        {'ntfy': 'per-repo', 'repositories': [{'path': 'foo', 'ntfy': 'per-repo'}]},
+        module.dispatch.Hook_type.MONITORING,
+        'test.yaml',
+        module.monitor.State.START,
+        object,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        {'ntfy': 'per-repo', 'repositories': [{'path': 'foo', 'ntfy': 'per-repo'}]},
+        module.dispatch.Hook_type.MONITORING,
+        'test.yaml',
+        module.monitor.State.FINISH,
+        object,
+        object,
+        object,
     ).once()
     flexmock(module.dispatch).should_receive('call_hooks').with_args(
         'ping_monitor',
@@ -36,6 +57,7 @@ def test_run_configuration_without_error_pings_monitoring_hooks_start_and_finish
         module.dispatch.Hook_type.MONITORING,
         'test.yaml',
         module.monitor.State.FINISH,
+        object,
         object,
         object,
     ).once()
@@ -66,7 +88,7 @@ def test_run_configuration_with_borg_version_error_pings_after_command_hook_with
 
 
 def test_run_configuration_with_action_error_pings_monitoring_hooks_start_and_fail():
-    config = {'repositories': [{'path': 'foo'}]}
+    config = {'ntfy': 'global', 'repositories': [{'path': 'foo', 'ntfy': 'per-repo'}]}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError)
@@ -79,6 +101,17 @@ def test_run_configuration_with_action_error_pings_monitoring_hooks_start_and_fa
         module.monitor.State.START,
         object,
         object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        {'ntfy': 'per-repo', 'repositories': [{'path': 'foo', 'ntfy': 'per-repo'}]},
+        module.dispatch.Hook_type.MONITORING,
+        'test.yaml',
+        module.monitor.State.START,
+        object,
+        object,
+        object,
     ).once()
     flexmock(module.dispatch).should_receive('call_hooks').with_args(
         'ping_monitor',
@@ -88,13 +121,24 @@ def test_run_configuration_with_action_error_pings_monitoring_hooks_start_and_fa
         module.monitor.State.FAIL,
         object,
         object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        {'ntfy': 'per-repo', 'repositories': [{'path': 'foo', 'ntfy': 'per-repo'}]},
+        module.dispatch.Hook_type.MONITORING,
+        'test.yaml',
+        module.monitor.State.FAIL,
+        object,
+        object,
+        object,
     ).once()
 
     list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
 
 
 def test_run_configuration_with_before_configuration_command_error_pings_monitoring_hooks_start_and_fail():
-    config = {'repositories': [{'path': 'foo'}]}
+    config = {'repositories': [{'path': 'foo'}], 'ntfy': {}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
 
     def filter_hooks(command_hooks, before=None, after=None, action_names=None, state_names=None):
@@ -115,6 +159,7 @@ def test_run_configuration_with_before_configuration_command_error_pings_monitor
         module.monitor.State.START,
         object,
         object,
+        object,
     ).once()
     flexmock(module.dispatch).should_receive('call_hooks').with_args(
         'ping_monitor',
@@ -124,13 +169,14 @@ def test_run_configuration_with_before_configuration_command_error_pings_monitor
         module.monitor.State.FAIL,
         object,
         object,
+        object,
     ).once()
 
     list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
 
 
 def test_run_configuration_with_after_configuration_command_error_pings_monitoring_hooks_start_and_fail():
-    config = {'repositories': [{'path': 'foo'}]}
+    config = {'ntfy': 'global', 'repositories': [{'path': 'foo', 'ntfy': 'per-repo'}]}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
 
@@ -151,6 +197,17 @@ def test_run_configuration_with_after_configuration_command_error_pings_monitori
         module.monitor.State.START,
         object,
         object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        {'ntfy': 'per-repo', 'repositories': [{'path': 'foo', 'ntfy': 'per-repo'}]},
+        module.dispatch.Hook_type.MONITORING,
+        'test.yaml',
+        module.monitor.State.START,
+        object,
+        object,
+        object,
     ).once()
     flexmock(module.dispatch).should_receive('call_hooks').with_args(
         'ping_monitor',
@@ -160,13 +217,24 @@ def test_run_configuration_with_after_configuration_command_error_pings_monitori
         module.monitor.State.FAIL,
         object,
         object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        {'ntfy': 'per-repo', 'repositories': [{'path': 'foo', 'ntfy': 'per-repo'}]},
+        module.dispatch.Hook_type.MONITORING,
+        'test.yaml',
+        module.monitor.State.FAIL,
+        object,
+        object,
+        object,
     ).once()
 
     list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
 
 
 def test_run_configuration_with_before_configuration_command_soft_failure_pings_monitoring_hooks_start_only():
-    config = {'repositories': [{'path': 'foo'}]}
+    config = {'repositories': [{'path': 'foo'}], 'ntfy': {}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
 
     def filter_hooks(command_hooks, before=None, after=None, action_names=None, state_names=None):
@@ -187,6 +255,7 @@ def test_run_configuration_with_before_configuration_command_soft_failure_pings_
         module.monitor.State.START,
         object,
         object,
+        object,
     ).once()
     flexmock(module.dispatch).should_receive('call_hooks').with_args(
         'ping_monitor',
@@ -194,6 +263,7 @@ def test_run_configuration_with_before_configuration_command_soft_failure_pings_
         module.dispatch.Hook_type.MONITORING,
         'test.yaml',
         module.monitor.State.FAIL,
+        object,
         object,
         object,
     ).never()

@@ -18,6 +18,7 @@ def test_ping_monitor_hits_ping_url_for_start_state():
         module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -36,6 +37,7 @@ def test_ping_monitor_hits_ping_url_for_finish_state():
         module.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -54,6 +56,7 @@ def test_ping_monitor_hits_ping_url_for_fail_state():
         module.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -68,6 +71,7 @@ def test_ping_monitor_dry_run_does_not_hit_ping_url():
         module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -85,6 +89,7 @@ def test_ping_monitor_with_connection_error_logs_warning():
         module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -108,6 +113,7 @@ def test_ping_monitor_with_other_error_logs_warning():
         module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -122,4 +128,5 @@ def test_ping_monitor_with_unsupported_monitoring_state_bails():
         module.monitor.State.LOG,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )

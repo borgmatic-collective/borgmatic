@@ -1,4 +1,7 @@
 2.2.1.dev0
+ * #1365: Add support for setting monitoring hook options under each repository, making those hooks
+   repository-specific. See the documentation for more information:
+   https://torsion.org/borgmatic/reference/configuration/repositories/
  * #1374: With the "--json" flag, send logs to stderr instead of stdout to avoid interfering with
    JSON parsing. Now you can pipe "borgmatic --json" to jq or other JSON-consuming commands,
    regardless of borgmatic's verbosity level.

@@ -23,6 +23,7 @@ def test_ping_monitor_hits_default_uptimekuma_on_fail():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -42,6 +43,7 @@ def test_ping_monitor_hits_custom_uptimekuma_on_fail():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -61,6 +63,7 @@ def test_ping_monitor_custom_uptimekuma_on_start():
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -80,6 +83,7 @@ def test_ping_monitor_custom_uptimekuma_on_finish():
         borgmatic.hooks.monitoring.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -94,6 +98,7 @@ def test_ping_monitor_does_not_hit_custom_uptimekuma_on_fail_dry_run():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -108,6 +113,7 @@ def test_ping_monitor_does_not_hit_custom_uptimekuma_on_start_dry_run():
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -122,6 +128,7 @@ def test_ping_monitor_does_not_hit_custom_uptimekuma_on_finish_dry_run():
         borgmatic.hooks.monitoring.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -142,6 +149,7 @@ def test_ping_monitor_with_connection_error_logs_warning():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -166,6 +174,7 @@ def test_ping_monitor_with_other_error_logs_warning():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -180,6 +189,7 @@ def test_ping_monitor_with_invalid_run_state():
         borgmatic.hooks.monitoring.monitor.State.LOG,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -199,6 +209,7 @@ def test_ping_monitor_skips_ssl_verification_when_verify_tls_false():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -218,4 +229,5 @@ def test_ping_monitor_executes_ssl_verification_when_verify_tls_true():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )

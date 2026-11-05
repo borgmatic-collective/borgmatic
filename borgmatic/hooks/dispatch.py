@@ -1,4 +1,5 @@
 import enum
+import functools
 import importlib
 import logging
 import pkgutil
@@ -21,6 +22,26 @@ def get_submodule_names(parent_module):  # pragma: no cover
     Given a parent module, return the names of its direct submodules as a tuple of strings.
     '''
     return tuple(module_info.name for module_info in pkgutil.iter_modules(parent_module.__path__))
+
+
+@functools.cache
+def get_hook_names(parent_module):
+    '''
+    Given a parent module, return a the names of hook within the module as a set (excluding non-hook
+    submodules).
+
+    The results of this function are cached so that it can be called multiple times without
+    incurring the cost of getting submodules and importing them multiple times.
+    '''
+    return {
+        module_name
+        for module_name in get_submodule_names(parent_module)
+        if getattr(
+            importlib.import_module(f'borgmatic.hooks.monitoring.{module_name}'),
+            'IS_A_HOOK',
+            True,
+        )
+    }
 
 
 def call_hook(function_name, config, hook_name, *args, **kwargs):

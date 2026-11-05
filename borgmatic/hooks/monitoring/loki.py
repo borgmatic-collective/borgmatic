@@ -96,11 +96,14 @@ class Loki_log_handler(logging.Handler):
     A log handler that sends logs to Loki.
     '''
 
-    def __init__(self, url, send_logs, log_level, dry_run, tls_cert_path=None, tls_key_path=None):
+    def __init__(
+        self, url, send_logs, log_level, dry_run, identifier, tls_cert_path=None, tls_key_path=None
+    ):
         '''
         Given a URL to send logs to, whether all borgmatic logs should be sent (or just explicitly
         added messages from this hook), the log level to use (influencing which logs get sent), and
-        whether this is a dry run, create an instance of Loki_log_buffer.
+        whether this is a dry run, and a unique string identifier for this handler, create an
+        instance of Loki_log_buffer.
         '''
         super().__init__()
 
@@ -108,6 +111,7 @@ class Loki_log_handler(logging.Handler):
             url, dry_run, tls_cert_path=tls_cert_path, tls_key_path=tls_key_path
         )
         self.send_logs = send_logs
+        self.identifier = identifier
         self.setLevel(log_level)
 
     def emit(self, record):
@@ -144,7 +148,9 @@ class Loki_log_handler(logging.Handler):
         self.buffer.flush()
 
 
-def initialize_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
+def initialize_monitor(
+    hook_config, config, config_filename, monitoring_log_level, dry_run, run_identifier
+):
     '''
     Add a handler to the root logger to regularly send the logs to Loki.
     '''
@@ -163,6 +169,7 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
         dry_run,
         tls_cert_path=tls.get('cert_path'),
         tls_key_path=tls.get('key_path'),
+        identifier=run_identifier,
     )
 
     for key, value in hook_config.get('labels').items():
@@ -180,23 +187,35 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
     global_logger.setLevel(min(handler.level for handler in global_logger.handlers))
 
 
-def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(
+    hook_config,
+    config,
+    config_filename,
+    state,
+    monitoring_log_level,
+    dry_run,
+    run_identifier,
+):
     '''
     Add an entry to the Loki logger with the current state.
     '''
     for handler in tuple(logging.getLogger().handlers):
-        if isinstance(handler, Loki_log_handler) and state in MONITOR_STATE_TO_LOKI:
+        if (
+            isinstance(handler, Loki_log_handler)
+            and handler.identifier == run_identifier
+            and state in MONITOR_STATE_TO_LOKI
+        ):
             handler.raw(f'{MONITOR_STATE_TO_LOKI[state]} backup')
 
 
-def destroy_monitor(hook_config, config, monitoring_log_level, dry_run):
+def destroy_monitor(hook_config, config, monitoring_log_level, dry_run, run_identifier):
     '''
     Remove the monitor handler that was added to the root logger.
     '''
     global_logger = logging.getLogger()
 
     for handler in tuple(global_logger.handlers):
-        if isinstance(handler, Loki_log_handler):
+        if isinstance(handler, Loki_log_handler) and handler.identifier == run_identifier:
             handler.flush()
             global_logger.removeHandler(handler)
 

@@ -78,6 +78,7 @@ def test_ping_monitor_minimal_config_hits_hosted_ntfy_on_fail():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -107,6 +108,7 @@ def test_ping_monitor_with_access_token_hits_hosted_ntfy_on_fail():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -139,6 +141,7 @@ def test_ping_monitor_with_username_password_and_access_token_ignores_username_p
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -169,6 +172,7 @@ def test_ping_monitor_with_username_password_hits_hosted_ntfy_on_fail():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -196,6 +200,7 @@ def test_ping_monitor_with_password_but_no_username_warns():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -223,6 +228,7 @@ def test_ping_monitor_with_username_but_no_password_warns():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -243,6 +249,7 @@ def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_start():
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -263,6 +270,7 @@ def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_finish():
         borgmatic.hooks.monitoring.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -289,6 +297,7 @@ def test_ping_monitor_minimal_config_hits_selfhosted_ntfy_on_fail():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -309,6 +318,7 @@ def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_fail_dry_run():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -333,6 +343,7 @@ def test_ping_monitor_custom_message_hits_hosted_ntfy_on_fail():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -359,6 +370,7 @@ def test_ping_monitor_custom_state_hits_hosted_ntfy_on_start():
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -386,6 +398,7 @@ def test_ping_monitor_with_connection_error_logs_warning():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -407,6 +420,7 @@ def test_ping_monitor_with_credential_error_logs_warning():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -438,4 +452,5 @@ def test_ping_monitor_with_other_error_logs_warning():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )

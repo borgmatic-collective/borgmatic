@@ -165,6 +165,7 @@ def test_ping_monitor_with_non_matching_state_bails():
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -185,6 +186,7 @@ def test_ping_monitor_config_with_api_key_only_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -205,6 +207,7 @@ def test_ping_monitor_config_with_host_only_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -225,6 +228,7 @@ def test_ping_monitor_config_with_key_only_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -245,6 +249,7 @@ def test_ping_monitor_config_with_server_only_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -264,6 +269,7 @@ def test_ping_monitor_config_user_password_no_zabbix_data_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -283,6 +289,7 @@ def test_ping_monitor_config_api_key_no_zabbix_data_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -303,6 +310,7 @@ def test_ping_monitor_config_itemid_no_auth_data_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -323,6 +331,7 @@ def test_ping_monitor_config_host_and_key_no_auth_data_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -347,6 +356,7 @@ def test_ping_monitor_config_host_and_key_with_api_key_auth_data_successful():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -371,6 +381,7 @@ def test_ping_monitor_config_adds_missing_api_endpoint_to_server_url():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -389,6 +400,7 @@ def test_ping_monitor_config_host_and_missing_key_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -407,6 +419,7 @@ def test_ping_monitor_config_key_and_missing_host_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -452,6 +465,7 @@ def test_ping_monitor_config_host_and_key_with_username_password_auth_data_succe
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -492,6 +506,7 @@ def test_ping_monitor_config_host_and_key_with_username_password_auth_data_and_a
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -516,6 +531,7 @@ def test_ping_monitor_config_host_and_key_with_username_and_missing_password_bai
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -540,6 +556,7 @@ def test_ping_monitor_config_host_and_key_with_password_and_missing_username_bai
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -564,6 +581,7 @@ def test_ping_monitor_config_itemid_with_api_key_auth_data_successful():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -603,6 +621,7 @@ def test_ping_monitor_config_itemid_with_username_password_auth_data_successful(
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -622,4 +641,5 @@ def test_ping_monitor_with_credential_error_bails():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )

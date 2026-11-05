@@ -16,6 +16,7 @@ def initialize_monitor(
     config_filename,
     monitoring_log_level,
     dry_run,
+    run_identifier,
 ):  # pragma: no cover
     '''
     No initialization is necessary for this monitor.
@@ -58,7 +59,9 @@ def send_zabbix_request(server, headers, data):
         return None
 
 
-def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):  # noqa: PLR0911, PLR0912, PLR0915
+def ping_monitor(  # noqa: PLR0911, PLR0912, PLR0915
+    hook_config, config, config_filename, state, monitoring_log_level, dry_run, run_identifier
+):
     '''
     Update the configured Zabbix item using either the itemid, or a host and key.
     If this is a dry run, then don't actually update anything.
@@ -186,7 +189,9 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             send_zabbix_request(server, headers, logout_data)
 
 
-def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  # pragma: no cover
+def destroy_monitor(
+    ping_url_or_uuid, config, monitoring_log_level, dry_run, run_identifier
+):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.
     '''

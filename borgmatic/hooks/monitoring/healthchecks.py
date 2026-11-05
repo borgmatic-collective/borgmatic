@@ -16,11 +16,12 @@ MONITOR_STATE_TO_HEALTHCHECKS = {
 }
 
 DEFAULT_PING_BODY_LIMIT_BYTES = 100000
-HANDLER_IDENTIFIER = 'healthchecks'
 TIMEOUT_SECONDS = 10
 
 
-def initialize_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
+def initialize_monitor(
+    hook_config, config, config_filename, monitoring_log_level, dry_run, run_identifier
+):
     '''
     Add a handler to the root logger that stores in memory the most recent logs emitted. That way,
     we can send them all to Healthchecks upon a finish or failure state. But skip this if the
@@ -37,14 +38,16 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
 
     borgmatic.hooks.monitoring.logs.add_handler(
         borgmatic.hooks.monitoring.logs.Forgetful_buffering_handler(
-            HANDLER_IDENTIFIER,
+            run_identifier,
             ping_body_limit,
             monitoring_log_level,
         ),
     )
 
 
-def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(
+    hook_config, config, config_filename, state, monitoring_log_level, dry_run, run_identifier
+):
     '''
     Ping the configured Healthchecks URL or UUID, modified with the monitor.State. Use the given
     configuration filename in any log entries, and log to Healthchecks with the giving log level.
@@ -78,7 +81,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     if state in {monitor.State.FINISH, monitor.State.FAIL, monitor.State.LOG}:
         payload = borgmatic.hooks.monitoring.logs.format_buffered_logs_for_payload(
-            HANDLER_IDENTIFIER,
+            run_identifier,
         )
     else:
         payload = ''
@@ -99,9 +102,11 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             logger.warning(f'Healthchecks error: {error}')
 
 
-def destroy_monitor(hook_config, config, monitoring_log_level, dry_run):  # pragma: no cover
+def destroy_monitor(
+    hook_config, config, monitoring_log_level, dry_run, run_identifier
+):  # pragma: no cover
     '''
     Remove the monitor handler that was added to the root logger. This prevents the handler from
     getting reused by other instances of this monitor.
     '''
-    borgmatic.hooks.monitoring.logs.remove_handler(HANDLER_IDENTIFIER)
+    borgmatic.hooks.monitoring.logs.remove_handler(run_identifier)

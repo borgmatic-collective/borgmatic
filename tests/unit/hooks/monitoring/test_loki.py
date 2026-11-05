@@ -62,21 +62,27 @@ def test_loki_log_buffer_add_label_gets_labels():
 
 
 def test_loki_log_handler_emit_with_send_logs_records_log_message():
-    handler = module.Loki_log_handler(flexmock(), send_logs=True, log_level=10, dry_run=False)
+    handler = module.Loki_log_handler(
+        flexmock(), send_logs=True, log_level=10, dry_run=False, identifier='b33f'
+    )
     flexmock(handler).should_receive('raw').once()
 
     handler.emit(flexmock(getMessage=lambda: 'Some test log line'))
 
 
 def test_loki_log_handler_emit_without_send_logs_skips_log_message():
-    handler = module.Loki_log_handler(flexmock(), send_logs=False, log_level=10, dry_run=False)
+    handler = module.Loki_log_handler(
+        flexmock(), send_logs=False, log_level=10, dry_run=False, identifier='b33f'
+    )
     flexmock(handler).should_receive('raw').never()
 
     handler.emit(flexmock(getMessage=lambda: 'Some test log line'))
 
 
 def test_loki_log_handler_flush_with_empty_buffer_does_not_raise():
-    handler = module.Loki_log_handler(flexmock(), send_logs=False, log_level=10, dry_run=False)
+    handler = module.Loki_log_handler(
+        flexmock(), send_logs=False, log_level=10, dry_run=False, identifier='b33f'
+    )
 
     handler.flush()
 
@@ -101,6 +107,7 @@ def test_loki_log_handler_init_with_tls_passes_paths_to_buffer():
         dry_run=False,
         tls_cert_path='/path/to/cert.crt',
         tls_key_path='/path/to/key.key',
+        identifier='b33f',
     )
 
     assert handler.buffer.tls_cert_path == '/path/to/cert.crt'
@@ -114,7 +121,7 @@ def test_initialize_monitor_with_only_cert_path_raises():
     }
 
     with pytest.raises(ValueError):
-        module.initialize_monitor(hook_config, {}, 'test.yaml', 1, False)
+        module.initialize_monitor(hook_config, {}, 'test.yaml', 1, False, run_identifier='b33f')
 
 
 def test_initialize_monitor_with_only_key_path_raises():
@@ -124,4 +131,140 @@ def test_initialize_monitor_with_only_key_path_raises():
     }
 
     with pytest.raises(ValueError):
-        module.initialize_monitor(hook_config, {}, 'test.yaml', 1, False)
+        module.initialize_monitor(hook_config, {}, 'test.yaml', 1, False, run_identifier='b33f')
+
+
+def test_ping_monitor_logs_via_matching_handler():
+    flexmock(module).should_receive('Loki_log_buffer').and_return(flexmock())
+    flexmock(module.Loki_log_handler).should_receive('setLevel')
+    handlers = [
+        module.Loki_log_handler(
+            url=flexmock(), send_logs=True, log_level=flexmock(), dry_run=False, identifier='m00n'
+        ),
+        module.Loki_log_handler(
+            url=flexmock(), send_logs=True, log_level=flexmock(), dry_run=False, identifier='b33f'
+        ),
+        flexmock(raw=lambda message: None),
+    ]
+    flexmock(handlers[0]).should_receive('raw').never()
+    flexmock(handlers[1]).should_receive('raw').once()
+    flexmock(handlers[2]).should_receive('raw').never()
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(handlers=handlers),
+    )
+
+    module.ping_monitor(
+        hook_config=flexmock(),
+        config=flexmock(),
+        config_filename=flexmock(),
+        state=module.monitor.State.START,
+        monitoring_log_level=flexmock(),
+        dry_run=False,
+        run_identifier='b33f',
+    )
+
+
+def test_ping_monitor_without_matching_handler_does_not_log():
+    flexmock(module).should_receive('Loki_log_buffer').and_return(flexmock())
+    flexmock(module.Loki_log_handler).should_receive('setLevel')
+    handlers = [
+        module.Loki_log_handler(
+            url=flexmock(), send_logs=True, log_level=flexmock(), dry_run=False, identifier='m00n'
+        ),
+        flexmock(raw=lambda message: None),
+    ]
+    flexmock(handlers[0]).should_receive('raw').never()
+    flexmock(handlers[1]).should_receive('raw').never()
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(handlers=handlers),
+    )
+
+    module.ping_monitor(
+        hook_config=flexmock(),
+        config=flexmock(),
+        config_filename=flexmock(),
+        state=module.monitor.State.START,
+        monitoring_log_level=flexmock(),
+        dry_run=False,
+        run_identifier='b33f',
+    )
+
+
+def test_ping_monitor_without_matching_state_does_not_log():
+    flexmock(module).should_receive('Loki_log_buffer').and_return(flexmock())
+    flexmock(module.Loki_log_handler).should_receive('setLevel')
+    handlers = [
+        module.Loki_log_handler(
+            url=flexmock(), send_logs=True, log_level=flexmock(), dry_run=False, identifier='b33f'
+        ),
+        flexmock(raw=lambda message: None),
+    ]
+    flexmock(handlers[0]).should_receive('raw').never()
+    flexmock(handlers[1]).should_receive('raw').never()
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(handlers=handlers),
+    )
+
+    module.ping_monitor(
+        hook_config=flexmock(),
+        config=flexmock(),
+        config_filename=flexmock(),
+        state='confusion',
+        monitoring_log_level=flexmock(),
+        dry_run=False,
+        run_identifier='b33f',
+    )
+
+
+def test_destroy_monitor_flushes_and_removes_matching_handler():
+    flexmock(module).should_receive('Loki_log_buffer').and_return(flexmock())
+    flexmock(module.Loki_log_handler).should_receive('setLevel')
+    handlers = [
+        module.Loki_log_handler(
+            url=flexmock(), send_logs=True, log_level=flexmock(), dry_run=False, identifier='m00n'
+        ),
+        module.Loki_log_handler(
+            url=flexmock(), send_logs=True, log_level=flexmock(), dry_run=False, identifier='b33f'
+        ),
+        flexmock(raw=lambda message: None, level=3),
+    ]
+    flexmock(handlers[0]).should_receive('flush').never()
+    flexmock(handlers[1]).should_receive('flush').once()
+    flexmock(handlers[2]).should_receive('flush').never()
+    global_logger = flexmock(handlers=handlers)
+    global_logger.should_receive('removeHandler').with_args(handlers[1]).once()
+    global_logger.should_receive('setLevel')
+    flexmock(module.logging).should_receive('getLogger').and_return(global_logger)
+
+    module.destroy_monitor(
+        hook_config=flexmock(),
+        config=flexmock(),
+        monitoring_log_level=flexmock(),
+        dry_run=False,
+        run_identifier='b33f',
+    )
+
+
+def test_destroy_monitor_without_matching_handler_does_not_flush_or_remove():
+    flexmock(module).should_receive('Loki_log_buffer').and_return(flexmock())
+    flexmock(module.Loki_log_handler).should_receive('setLevel')
+    handlers = [
+        module.Loki_log_handler(
+            url=flexmock(), send_logs=True, log_level=flexmock(), dry_run=False, identifier='m00n'
+        ),
+        flexmock(raw=lambda message: None, level=3),
+    ]
+    flexmock(handlers[0]).should_receive('flush').never()
+    flexmock(handlers[1]).should_receive('flush').never()
+    global_logger = flexmock(handlers=handlers)
+    global_logger.should_receive('removeHandler').never()
+    global_logger.should_receive('setLevel')
+    flexmock(module.logging).should_receive('getLogger').and_return(global_logger)
+
+    module.destroy_monitor(
+        hook_config=flexmock(),
+        config=flexmock(),
+        monitoring_log_level=flexmock(),
+        dry_run=False,
+        run_identifier='b33f',
+    )

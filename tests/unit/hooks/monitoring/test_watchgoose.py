@@ -10,7 +10,7 @@ def test_initialize_monitor_creates_log_handler_with_ping_body_limit():
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'Forgetful_buffering_handler',
     ).with_args(
-        module.HANDLER_IDENTIFIER,
+        'b33f',
         ping_body_limit - len(module.borgmatic.hooks.monitoring.logs.PAYLOAD_TRUNCATION_INDICATOR),
         monitoring_log_level,
     ).once()
@@ -22,6 +22,7 @@ def test_initialize_monitor_creates_log_handler_with_ping_body_limit():
         'test.yaml',
         monitoring_log_level,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -31,7 +32,7 @@ def test_initialize_monitor_creates_log_handler_with_default_ping_body_limit():
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'Forgetful_buffering_handler',
     ).with_args(
-        module.HANDLER_IDENTIFIER,
+        'b33f',
         module.DEFAULT_PING_BODY_LIMIT_BYTES
         - len(module.borgmatic.hooks.monitoring.logs.PAYLOAD_TRUNCATION_INDICATOR),
         monitoring_log_level,
@@ -39,7 +40,12 @@ def test_initialize_monitor_creates_log_handler_with_default_ping_body_limit():
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler')
 
     module.initialize_monitor(
-        {'send_logs': True}, {}, 'test.yaml', monitoring_log_level, dry_run=False
+        {'send_logs': True},
+        {},
+        'test.yaml',
+        monitoring_log_level,
+        dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -49,7 +55,7 @@ def test_initialize_monitor_creates_log_handler_with_zero_ping_body_limit():
 
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'Forgetful_buffering_handler',
-    ).with_args(module.HANDLER_IDENTIFIER, ping_body_limit, monitoring_log_level).once()
+    ).with_args('b33f', ping_body_limit, monitoring_log_level).once()
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler')
 
     module.initialize_monitor(
@@ -58,6 +64,7 @@ def test_initialize_monitor_creates_log_handler_with_zero_ping_body_limit():
         'test.yaml',
         monitoring_log_level,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -73,6 +80,7 @@ def test_initialize_monitor_creates_log_handler_when_send_logs_true():
         'test.yaml',
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -88,6 +96,7 @@ def test_initialize_monitor_bails_when_send_logs_false():
         'test.yaml',
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -103,6 +112,7 @@ def test_initialize_monitor_bails_when_send_logs_omitted():
         'test.yaml',
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -126,6 +136,7 @@ def test_ping_monitor_hits_ping_url_for_start_state():
         state=module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -151,6 +162,7 @@ def test_ping_monitor_hits_ping_url_for_finish_state():
         state=module.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -176,6 +188,7 @@ def test_ping_monitor_hits_ping_url_for_fail_state():
         state=module.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -201,6 +214,7 @@ def test_ping_monitor_hits_ping_url_for_log_state():
         state=module.monitor.State.LOG,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -226,6 +240,7 @@ def test_ping_monitor_with_ping_uuid_hits_corresponding_url():
         state=module.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -251,6 +266,7 @@ def test_ping_monitor_skips_ssl_verification_when_verify_tls_false():
         state=module.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -276,6 +292,7 @@ def test_ping_monitor_executes_ssl_verification_when_verify_tls_true():
         state=module.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -293,6 +310,7 @@ def test_ping_monitor_dry_run_does_not_hit_ping_url():
         state=module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -310,6 +328,7 @@ def test_ping_monitor_does_not_hit_ping_url_when_states_not_matching():
         state=module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -333,6 +352,7 @@ def test_ping_monitor_hits_ping_url_when_states_matching():
         state=module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -356,6 +376,7 @@ def test_ping_monitor_adds_create_query_parameter_when_create_slug_true():
         state=module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -379,6 +400,7 @@ def test_ping_monitor_does_not_add_create_query_parameter_when_create_slug_false
         state=module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -399,6 +421,7 @@ def test_ping_monitor_does_not_add_create_query_parameter_when_ping_url_is_uuid(
         state=module.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -416,6 +439,7 @@ def test_ping_monitor_issues_warning_when_ping_url_is_uuid_and_create_slug_true(
         state=module.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -440,6 +464,7 @@ def test_ping_monitor_with_connection_error_logs_warning():
         state=module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -468,4 +493,5 @@ def test_ping_monitor_with_other_error_logs_warning():
         state=module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )

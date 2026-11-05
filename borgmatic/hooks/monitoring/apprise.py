@@ -9,10 +9,11 @@ logger = logging.getLogger(__name__)
 
 
 DEFAULT_LOGS_SIZE_LIMIT_BYTES = 100000
-HANDLER_IDENTIFIER = 'apprise'
 
 
-def initialize_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
+def initialize_monitor(
+    hook_config, config, config_filename, monitoring_log_level, dry_run, run_identifier
+):
     '''
     Add a handler to the root logger that stores in memory the most recent logs emitted. That way,
     we can send them all to an Apprise notification service upon a finish or failure state. But skip
@@ -29,14 +30,16 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
 
     borgmatic.hooks.monitoring.logs.add_handler(
         borgmatic.hooks.monitoring.logs.Forgetful_buffering_handler(
-            HANDLER_IDENTIFIER,
+            run_identifier,
             logs_size_limit,
             monitoring_log_level,
         ),
     )
 
 
-def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(
+    hook_config, config, config_filename, state, monitoring_log_level, dry_run, run_identifier
+):
     '''
     Ping the configured Apprise service URLs. Use the given configuration filename in any log
     entries. If this is a dry run, then don't actually ping anything.
@@ -97,7 +100,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         borgmatic.hooks.monitoring.monitor.State.LOG,
     }:
         formatted_logs = borgmatic.hooks.monitoring.logs.format_buffered_logs_for_payload(
-            HANDLER_IDENTIFIER,
+            run_identifier,
         )
         if formatted_logs:
             body += f'\n\n{formatted_logs}'
@@ -113,9 +116,9 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         logger.warning('Error sending some Apprise notifications')
 
 
-def destroy_monitor(hook_config, config, monitoring_log_level, dry_run):
+def destroy_monitor(hook_config, config, monitoring_log_level, dry_run, run_identifier):
     '''
     Remove the monitor handler that was added to the root logger. This prevents the handler from
     getting reused by other instances of this monitor.
     '''
-    borgmatic.hooks.monitoring.logs.remove_handler(HANDLER_IDENTIFIER)
+    borgmatic.hooks.monitoring.logs.remove_handler(run_identifier)

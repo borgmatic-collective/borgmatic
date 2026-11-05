@@ -49,6 +49,10 @@ def test_probe_and_include_file_with_relative_path_and_missing_files_raises():
 
 
 def test_merge_repository_configuration_skips_repository_specific_options():
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('get_hook_names').and_return(
+        {'ping', 'pong'}
+    )
+
     assert module.merge_repository_configuration(
         repository_config={'path': '/foo', 'label': 'foo', 'remote_path': 'borg2'},
         config={'stuff': 'such'},
@@ -56,13 +60,37 @@ def test_merge_repository_configuration_skips_repository_specific_options():
 
 
 def test_merge_repository_configuration_overwrites_config_options():
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('get_hook_names').and_return(
+        {'ping', 'pong'}
+    )
+
     assert module.merge_repository_configuration(
         repository_config={'remote_path': 'borg2'},
         config={'stuff': 'such', 'remote_path': 'borg1'},
     ) == {'stuff': 'such', 'remote_path': 'borg2'}
 
 
+def test_merge_repository_configuration_removes_global_monitoring_config_options():
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('get_hook_names').and_return(
+        {'ping', 'pong', 'boing'}
+    )
+
+    assert module.merge_repository_configuration(
+        repository_config={'stuff': 'such', 'ping': 'baz', 'pong': 'replaced'},
+        config={'other': 'thing', 'pong': 'foo', 'boing': 'bar', 'monitoring_verbosity': 'okay'},
+    ) == {
+        'stuff': 'such',
+        'ping': 'baz',
+        'pong': 'replaced',
+        'other': 'thing',
+        'monitoring_verbosity': 'okay',
+    }
+
+
 def test_merge_repository_configuration_deep_copies_configuration():
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('get_hook_names').and_return(
+        {'ping', 'pong'}
+    )
     config = {'stuff': {'nested': 'data'}}
     merged_config = module.merge_repository_configuration(
         repository_config={'path': '/foo', 'label': 'foo'},

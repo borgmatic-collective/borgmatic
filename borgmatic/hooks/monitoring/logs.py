@@ -11,8 +11,11 @@ class Forgetful_buffering_handler(logging.Handler):
     first) once a particular capacity in bytes is reached. But if the given byte capacity is zero,
     don't throw away any messages.
 
-    The given identifier is used to distinguish the instance of this handler used for one monitoring
-    hook from those instances used for other monitoring hooks.
+    The given identifier is used to distinguish the instance of this handler used for a given "run"
+    of this monitoring hook from other runs or even other monitoring hooks. A given invocation of
+    borgmatic can have multiple separate runs, e.g. one set of start/finish pings for a monitoring
+    hook in top-level configuration and a separate set of starh/finish pings for a
+    repository-speciifc monitoring hook.
     '''
 
     def __init__(self, identifier, byte_capacity, log_level):

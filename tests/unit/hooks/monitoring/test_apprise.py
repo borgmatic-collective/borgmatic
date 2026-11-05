@@ -27,6 +27,7 @@ def test_initialize_monitor_with_send_logs_false_does_not_add_handler():
         config_filename='test.yaml',
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -35,7 +36,7 @@ def test_initialize_monitor_with_send_logs_adds_handler_with_default_logs_size_l
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'Forgetful_buffering_handler',
     ).with_args(
-        module.HANDLER_IDENTIFIER,
+        'b33f',
         module.DEFAULT_LOGS_SIZE_LIMIT_BYTES - truncation_indicator_length,
         1,
     ).once()
@@ -47,6 +48,7 @@ def test_initialize_monitor_with_send_logs_adds_handler_with_default_logs_size_l
         config_filename='test.yaml',
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -62,6 +64,7 @@ def test_initialize_monitor_without_send_logs_does_not_add_handler():
         config_filename='test.yaml',
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -81,6 +84,7 @@ def test_ping_monitor_respects_dry_run():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -100,6 +104,7 @@ def test_ping_monitor_with_no_states_does_not_notify():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -125,6 +130,7 @@ def test_ping_monitor_notifies_fail_by_default():
             state,
             monitoring_log_level=1,
             dry_run=False,
+            run_identifier='b33f',
         )
 
 
@@ -150,6 +156,7 @@ def test_ping_monitor_with_logs_appends_logs_to_body():
             state,
             monitoring_log_level=1,
             dry_run=False,
+            run_identifier='b33f',
         )
 
 
@@ -174,6 +181,7 @@ def test_ping_monitor_with_finish_default_config_notifies():
         borgmatic.hooks.monitoring.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -196,6 +204,7 @@ def test_ping_monitor_with_start_default_config_notifies():
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -218,6 +227,7 @@ def test_ping_monitor_with_fail_default_config_notifies():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -240,6 +250,7 @@ def test_ping_monitor_with_log_default_config_notifies():
         borgmatic.hooks.monitoring.monitor.State.LOG,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -266,6 +277,7 @@ def test_ping_monitor_passes_through_custom_message_title():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -292,6 +304,7 @@ def test_ping_monitor_passes_through_custom_message_body():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -318,6 +331,7 @@ def test_ping_monitor_passes_through_custom_message_body_and_appends_logs():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -340,6 +354,7 @@ def test_ping_monitor_pings_multiple_services():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -357,6 +372,7 @@ def test_ping_monitor_logs_info_for_no_services():
         borgmatic.hooks.monitoring.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -376,6 +392,7 @@ def test_ping_monitor_logs_warning_when_notify_fails():
             state,
             monitoring_log_level=1,
             dry_run=False,
+            run_identifier='b33f',
         )
 
 
@@ -387,4 +404,5 @@ def test_destroy_monitor_does_not_raise():
         config={},
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )

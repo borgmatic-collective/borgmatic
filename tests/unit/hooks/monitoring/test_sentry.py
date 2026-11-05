@@ -49,6 +49,7 @@ def test_ping_monitor_constructs_cron_url_and_pings_it(
         state,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -67,6 +68,7 @@ def test_ping_monitor_with_unconfigured_state_bails():
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -94,6 +96,7 @@ def test_ping_monitor_with_invalid_data_source_name_url_bails(data_source_name_u
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -113,6 +116,7 @@ def test_ping_monitor_with_invalid_sentry_state_bails():
         borgmatic.hooks.monitoring.monitor.State.LOG,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -130,6 +134,7 @@ def test_ping_monitor_with_dry_run_bails():
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -156,4 +161,5 @@ def test_ping_monitor_with_network_error_does_not_raise():
         borgmatic.hooks.monitoring.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )

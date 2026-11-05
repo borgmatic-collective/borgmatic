@@ -151,7 +151,10 @@ def parse_configuration(
             # particular repository to be at the top level. That way, users can specify options like
             # "remote_path" per repository, but we can still validate them against the global
             # schema.
-            borgmatic.config.load.merge_repository_configuration(repository_config, config)
+            borgmatic.config.load.merge_repository_configuration(
+                repository_config,
+                config,
+            )
             for repository_config in config.get('repositories', ())
         ),
     ):

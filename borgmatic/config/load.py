@@ -7,6 +7,9 @@ import os
 
 import ruamel.yaml
 
+import borgmatic.hooks.dispatch
+import borgmatic.hooks.monitoring
+
 logger = logging.getLogger(__name__)
 
 
@@ -406,18 +409,30 @@ def merge_repository_configuration(repository_config, config):
     '''
     Given a repository configuration snippet, and a full configuration dict, copy any unknown
     options from the repository-specific configuration into the global configuration dict. The idea
-    is that the user can stuff any general borgmatic options (e.g.  "remote_path") under a
-    particular repository to make them apply only to that repository. And we're copying them to the
-    global scope here just for ease of validation and access.
+    is that the user can stuff any general borgmatic options (e.g. "remote_path") under a particular
+    repository to make them apply only to that repository. And we're copying them to the global
+    scope here just for ease of validation and access.
 
-    Note that this is only a shallow merge of top-level keys—not the kind of fancy deep merge you
-    get with real includes.
+    As part of this, remove any global options related to monitoring hooks, so they can be
+    completely replaced with any monitoring options from the repository config. This supports
+    running per-repository monitoring hooks.
+
+    Note that the merge is only a shallow merge of top-level keys—not the kind of fancy deep merge
+    you get with real includes.
 
     Return the merged configuration as a dict without modifying the given configurations.
     '''
+    monitoring_option_names = borgmatic.hooks.dispatch.get_hook_names(borgmatic.hooks.monitoring)
+
     # Deep copy the original configuration so as not to share any nested structures, as downstream
     # code may want to modify the merged configuration without affecting the original.
-    merged_config = copy.deepcopy(config)
+    merged_config = copy.deepcopy(
+        {
+            option_name: value
+            for option_name, value in config.items()
+            if option_name not in monitoring_option_names
+        }
+    )
     merged_config.update(
         {
             option_name: value

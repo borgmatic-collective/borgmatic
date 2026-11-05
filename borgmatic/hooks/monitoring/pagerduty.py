@@ -13,11 +13,12 @@ logger = logging.getLogger(__name__)
 
 EVENTS_API_URL = 'https://events.pagerduty.com/v2/enqueue'
 DEFAULT_LOGS_PAYLOAD_LIMIT_BYTES = 10000
-HANDLER_IDENTIFIER = 'pagerduty'
 TIMEOUT_SECONDS = 10
 
 
-def initialize_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
+def initialize_monitor(
+    hook_config, config, config_filename, monitoring_log_level, dry_run, run_identifier
+):
     '''
     Add a handler to the root logger that stores in memory the most recent logs emitted. That way,
     we can send them all to PagerDuty upon a failure state. But skip this if the "send_logs" option
@@ -34,14 +35,16 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
 
     borgmatic.hooks.monitoring.logs.add_handler(
         borgmatic.hooks.monitoring.logs.Forgetful_buffering_handler(
-            HANDLER_IDENTIFIER,
+            run_identifier,
             ping_body_limit,
             monitoring_log_level,
         ),
     )
 
 
-def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(
+    hook_config, config, config_filename, state, monitoring_log_level, dry_run, run_identifier
+):
     '''
     If this is an error state, create a PagerDuty event with the configured integration key. Use
     the given configuration filename in any log entries. If this is a dry run, then don't actually
@@ -66,7 +69,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         return
 
     logs_payload = borgmatic.hooks.monitoring.logs.format_buffered_logs_for_payload(
-        HANDLER_IDENTIFIER,
+        run_identifier,
     )
 
     hostname = platform.node()
@@ -110,9 +113,11 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         logger.warning(f'PagerDuty error: {error}')
 
 
-def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  # pragma: no cover
+def destroy_monitor(
+    ping_url_or_uuid, config, monitoring_log_level, dry_run, run_identifier
+):  # pragma: no cover
     '''
     Remove the monitor handler that was added to the root logger. This prevents the handler from
     getting reused by other instances of this monitor.
     '''
-    borgmatic.hooks.monitoring.logs.remove_handler(HANDLER_IDENTIFIER)
+    borgmatic.hooks.monitoring.logs.remove_handler(run_identifier)

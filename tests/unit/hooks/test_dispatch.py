@@ -12,6 +12,28 @@ def hook_function(hook_config, config, thing, value):
     '''
 
 
+def test_get_hook_names_filters_out_non_hooks_and_caches_results():
+    module.get_hook_names.cache_clear()
+    flexmock(module).should_receive('get_submodule_names').and_return(
+        ('ping', 'pong', 'nope')
+    ).once()
+    flexmock(module.importlib).should_receive('import_module').with_args(
+        'borgmatic.hooks.monitoring.ping'
+    ).and_return(flexmock()).once()
+    flexmock(module.importlib).should_receive('import_module').with_args(
+        'borgmatic.hooks.monitoring.pong'
+    ).and_return(flexmock()).once()
+    flexmock(module.importlib).should_receive('import_module').with_args(
+        'borgmatic.hooks.monitoring.nope'
+    ).and_return(flexmock(IS_A_HOOK=False)).once()
+
+    assert module.get_hook_names(module) == {'ping', 'pong'}
+
+    # Due to caching, this second call should not cause new calls to get_submodule_names() or
+    # import_module().
+    assert module.get_hook_names(module) == {'ping', 'pong'}
+
+
 def test_call_hook_invokes_module_function_with_arguments_and_returns_value():
     config = {'super_hook': flexmock(), 'other_hook': flexmock()}
     expected_return_value = flexmock()

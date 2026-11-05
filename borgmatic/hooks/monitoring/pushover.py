@@ -17,13 +17,16 @@ def initialize_monitor(
     config_filename,
     monitoring_log_level,
     dry_run,
+    run_identifier,
 ):  # pragma: no cover
     '''
     No initialization is necessary for this monitor.
     '''
 
 
-def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(
+    hook_config, config, config_filename, state, monitoring_log_level, dry_run, run_identifier
+):
     '''
     Post a message to the configured Pushover application.
     If this is a dry run, then don't actually update anything.
@@ -95,7 +98,9 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             logger.warning(f'Pushover error: {error}')
 
 
-def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  # pragma: no cover
+def destroy_monitor(
+    ping_url_or_uuid, config, monitoring_log_level, dry_run, run_identifier
+):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.
     '''

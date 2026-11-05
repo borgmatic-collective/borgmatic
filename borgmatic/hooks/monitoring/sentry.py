@@ -16,6 +16,7 @@ def initialize_monitor(
     config_filename,
     monitoring_log_level,
     dry_run,
+    run_identifier,
 ):  # pragma: no cover
     '''
     No initialization is necessary for this monitor.
@@ -27,7 +28,9 @@ DATA_SOURCE_NAME_URL_PATTERN = re.compile(
 )
 
 
-def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(
+    hook_config, config, config_filename, state, monitoring_log_level, dry_run, run_identifier
+):
     '''
     Construct and ping a Sentry cron URL, based on the configured DSN URL and monitor slug. Use the
     given configuration filename in any log entries. If this is a dry run, then don't actually ping
@@ -82,7 +85,9 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         logger.warning(f'Sentry error: {error}')
 
 
-def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  # pragma: no cover
+def destroy_monitor(
+    ping_url_or_uuid, config, monitoring_log_level, dry_run, run_identifier
+):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.
     '''

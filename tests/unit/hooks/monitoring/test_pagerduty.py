@@ -12,7 +12,12 @@ def test_initialize_monitor_with_send_logs_creates_log_handler():
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler')
 
     module.initialize_monitor(
-        {'send_logs': True}, {}, 'test.yaml', monitoring_log_level, dry_run=False
+        {'send_logs': True},
+        {},
+        'test.yaml',
+        monitoring_log_level,
+        dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -24,7 +29,9 @@ def test_initialize_monitor_without_send_logs_creates_nothing():
     ).never()
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler').never()
 
-    module.initialize_monitor({}, {}, 'test.yaml', monitoring_log_level, dry_run=False)
+    module.initialize_monitor(
+        {}, {}, 'test.yaml', monitoring_log_level, dry_run=False, run_identifier='b33f'
+    )
 
 
 def test_initialize_monitor_creates_log_handler_when_send_logs_true():
@@ -39,6 +46,7 @@ def test_initialize_monitor_creates_log_handler_when_send_logs_true():
         'test.yaml',
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -54,6 +62,7 @@ def test_initialize_monitor_bails_when_send_logs_false():
         'test.yaml',
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -70,6 +79,7 @@ def test_ping_monitor_ignores_start_state():
         module.monitor.State.START,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -86,6 +96,7 @@ def test_ping_monitor_ignores_finish_state():
         module.monitor.State.FINISH,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -105,6 +116,7 @@ def test_ping_monitor_calls_api_for_fail_state():
         module.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -124,6 +136,7 @@ def test_ping_monitor_dry_run_does_not_call_api():
         module.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=True,
+        run_identifier='b33f',
     )
 
 
@@ -146,6 +159,7 @@ def test_ping_monitor_with_connection_error_logs_warning():
         module.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -163,6 +177,7 @@ def test_ping_monitor_with_credential_error_logs_warning():
         module.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
 
@@ -187,4 +202,5 @@ def test_ping_monitor_with_other_error_logs_warning():
         module.monitor.State.FAIL,
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )

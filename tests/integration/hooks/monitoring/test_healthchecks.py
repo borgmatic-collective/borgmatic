@@ -13,7 +13,7 @@ def test_destroy_monitor_removes_healthchecks_handler():
     flexmock(logger).should_receive('setLevel')
     module.borgmatic.hooks.monitoring.logs.add_handler(
         module.borgmatic.hooks.monitoring.logs.Forgetful_buffering_handler(
-            identifier=module.HANDLER_IDENTIFIER,
+            identifier='b33f',
             byte_capacity=100,
             log_level=1,
         ),
@@ -24,6 +24,7 @@ def test_destroy_monitor_removes_healthchecks_handler():
         config=flexmock(),
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
     assert logger.handlers == original_handlers
@@ -40,6 +41,7 @@ def test_destroy_monitor_without_healthchecks_handler_does_not_raise():
         config=flexmock(),
         monitoring_log_level=1,
         dry_run=False,
+        run_identifier='b33f',
     )
 
     assert logger.handlers == original_handlers
