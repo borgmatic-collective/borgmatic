@@ -27,7 +27,7 @@ def get_submodule_names(parent_module):  # pragma: no cover
 @functools.cache
 def get_hook_names(parent_module):
     '''
-    Given a parent module, return a the names of hook within the module as a set (excluding non-hook
+    Given a parent module, return the names of hook within the module as a set (excluding non-hook
     submodules).
 
     The results of this function are cached so that it can be called multiple times without
@@ -37,7 +37,7 @@ def get_hook_names(parent_module):
         module_name
         for module_name in get_submodule_names(parent_module)
         if getattr(
-            importlib.import_module(f'borgmatic.hooks.monitoring.{module_name}'),
+            importlib.import_module(f'{parent_module.__name__}.{module_name}'),
             'IS_A_HOOK',
             True,
         )

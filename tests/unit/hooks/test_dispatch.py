@@ -27,11 +27,11 @@ def test_get_hook_names_filters_out_non_hooks_and_caches_results():
         'borgmatic.hooks.monitoring.nope'
     ).and_return(flexmock(IS_A_HOOK=False)).once()
 
-    assert module.get_hook_names(module) == {'ping', 'pong'}
+    assert module.get_hook_names(module.borgmatic.hooks.monitoring) == {'ping', 'pong'}
 
     # Due to caching, this second call should not cause new calls to get_submodule_names() or
     # import_module().
-    assert module.get_hook_names(module) == {'ping', 'pong'}
+    assert module.get_hook_names(module.borgmatic.hooks.monitoring) == {'ping', 'pong'}
 
 
 def test_call_hook_invokes_module_function_with_arguments_and_returns_value():

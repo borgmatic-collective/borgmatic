@@ -14,8 +14,8 @@ class Forgetful_buffering_handler(logging.Handler):
     The given identifier is used to distinguish the instance of this handler used for a given "run"
     of this monitoring hook from other runs or even other monitoring hooks. A given invocation of
     borgmatic can have multiple separate runs, e.g. one set of start/finish pings for a monitoring
-    hook in top-level configuration and a separate set of starh/finish pings for a
-    repository-speciifc monitoring hook.
+    hook in top-level configuration and a separate set of start/finish pings for a
+    repository-specific monitoring hook.
     '''
 
     def __init__(self, identifier, byte_capacity, log_level):
