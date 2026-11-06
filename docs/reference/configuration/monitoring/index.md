@@ -32,7 +32,7 @@ repositories:
           ping_url: https://hc-ping.com/uuid-for-two
 ```
 
-This works for all of the monitoring integrations listed above. Specify each integration's complete configuration (including required options like `ping_url` for Healthchecks) under the repository.
+This works for all of the monitoring integrations listed above. Specify each integration's complete configuration under the repository.
 
 With this configuration, borgmatic pings each repository's monitoring endpoint independently: a start ping before it processes that repository and a finish or fail ping afterward. If one repository fails, only its own check reports the failure, and borgmatic continues with the remaining repositories. If you've configured `retries`, borgmatic retries a failing repository within the same run, so you still get just one start ping and one finish or fail ping per repository.
 
