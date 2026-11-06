@@ -87,7 +87,7 @@ repositories:
           ping_url: https://hc-ping.com/uuid-for-two
 ```
 
-A repository without monitoring options of its own doesn't ping anything on its own. Monitoring hooks at the top level still ping once for the whole run, as before. See the [monitoring documentation](https://torsion.org/borgmatic/how-to/monitor-your-backups/#per-repository-monitoring) for more information on how monitoring hooks behave in this case.
+A repository without monitoring options of its own doesn't ping anything on its own. Monitoring hooks at the top level still ping once for the whole run, as before. See the [monitoring documentation](https://torsion.org/borgmatic/reference/configuration/monitoring/#per-repository-monitoring) for more information on how monitoring hooks behave in this case.
 
 ## SSH
 
