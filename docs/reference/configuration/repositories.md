@@ -72,7 +72,11 @@ logic, so in that case per-repository `verbosity` values get silently ignored.
 
 ### Monitoring hooks
 
-<span class="minilink minilink-addedin">New in version 2.2.1</span> Monitoring hook options (for instance `healthchecks` or `ntfy`) are an exception to the merging described above. A monitoring hook configured under a repository is not merged with any top-level monitoring configuration. Instead, borgmatic pings it only around the processing of that one repository. For example:
+<span class="minilink minilink-addedin">New in version 2.2.1</span> Monitoring
+hook options (for instance `healthchecks` or `ntfy`) are an exception to the
+merging described above. A monitoring hook configured under a repository is not
+merged with any top-level monitoring configuration. Instead, borgmatic pings it
+only around the processing of that one repository. For example:
 
 ```yaml
 repositories:
@@ -87,7 +91,12 @@ repositories:
           ping_url: https://hc-ping.com/uuid-for-two
 ```
 
-A repository without monitoring options of its own doesn't ping anything on its own. Monitoring hooks at the top level still ping once for the whole run, as before. See the [monitoring documentation](https://torsion.org/borgmatic/reference/configuration/monitoring/#per-repository-monitoring) for more information on how monitoring hooks behave in this case.
+A repository without monitoring options of its own doesn't ping anything on its
+own. Monitoring hooks at the top level still ping once for the whole run, as
+before. See the [monitoring
+documentation](https://torsion.org/borgmatic/reference/configuration/monitoring/#per-repository-monitoring)
+for more information on how monitoring hooks behave in this case.
+
 
 ## SSH
 
