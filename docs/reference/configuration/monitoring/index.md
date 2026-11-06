@@ -34,7 +34,7 @@ repositories:
 
 This works for all of the monitoring integrations listed above. Specify each integration's complete configuration under the repository.
 
-With this configuration, borgmatic pings each repository's monitoring endpoint independently: a start ping before it processes that repository and a finish or fail ping afterward. If one repository fails, only its own check reports the failure, and borgmatic continues with the remaining repositories. If you've configured `retries`, borgmatic retries a failing repository within the same run, so you still get just one start ping and one finish or fail ping per repository.
+With this configuration, borgmatic pings each repository's monitoring endpoint independently: a start ping before it processes that repository and a finish or fail ping afterward. If one repository fails, only its own check reports the failure, and borgmatic continues with the remaining repositories.
 
 A few things to keep in mind:
 
@@ -43,3 +43,4 @@ A few things to keep in mind:
  * A repository without monitoring configuration of its own doesn't inherit the top-level monitoring configuration. Its own processing isn't pinged separately.
  * The monitoring options of a repository are not merged with top-level monitoring options. Everything an integration needs must be set under the repository.
  * This is different from other repository-specific options, which override the corresponding top-level option for that repository.
+ * If you've configured the general `retries` option, borgmatic retries a failing repository within the same monitoring run, so you still get just one start ping and one finish or fail ping per repository.
