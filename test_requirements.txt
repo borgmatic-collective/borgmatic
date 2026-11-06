@@ -7,25 +7,25 @@ certifi==2026.10.23       # via apprise, requests, -r test_requirements.in
 charset-normalizer==3.5.2  # via requests, -r test_requirements.in
 click>=8.1.8
 codespell==2.4.3          # via -r test_requirements.in
-coverage==7.17.0          # via pytest-cov, -r test_requirements.in
+coverage==7.17.2          # via pytest-cov, -r test_requirements.in
 flexmock==0.13.0          # via -r test_requirements.in
 idna==3.20                # via requests, -r test_requirements.in
 iniconfig==2.3.1          # via pytest, -r test_requirements.in
 jsonschema==4.26.0        # via -r test_requirements.in
 jsonschema-specifications==2025.9.1  # via jsonschema, -r test_requirements.in
 linkify-it-py==2.2.0      # via markdown-it-py
-markdown==3.11.2          # via apprise, -r test_requirements.in
+markdown==3.11.3          # via apprise, -r test_requirements.in
 markdown-it-py==4.2.0     # via mdit-py-plugins, rich, textual
 mdit-py-plugins==0.6.1    # via textual
 mdurl==0.1.2              # via markdown-it-py
-oauthlib==4.0.0           # via requests-oauthlib, -r test_requirements.in
+oauthlib==4.0.1           # via requests-oauthlib, -r test_requirements.in
 packaging==26.3           # via pytest, -r test_requirements.in
-platformdirs==4.14.0      # via textual
+platformdirs==4.14.5      # via textual
 pluggy==1.7.0             # via pytest, pytest-cov, -r test_requirements.in
 psutil==7.2.2             # via -r test_requirements.in
 pygments==2.21.0          # via pytest, rich, textual, -r test_requirements.in
 pytest==9.2.0             # via pytest-asyncio, pytest-cov, pytest-timeout, -r test_requirements.in
-pytest-asyncio==1.4.1     # via -r test_requirements.in
+pytest-asyncio==1.4.1.post1  # via -r test_requirements.in
 pytest-cov==7.1.0         # via -r test_requirements.in
 pytest-timeout==2.4.0     # via -r test_requirements.in
 pyyaml>5.0.0

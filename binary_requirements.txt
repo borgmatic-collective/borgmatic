@@ -9,8 +9,8 @@ click==8.5.0              # via apprise, -r binary_requirements.in
 idna==3.20                # via requests, -r binary_requirements.in
 jsonschema==4.26.0        # via borgmatic, -r binary_requirements.in
 jsonschema-specifications==2025.9.1  # via jsonschema, -r binary_requirements.in
-markdown==3.11.2          # via apprise, -r binary_requirements.in
-oauthlib==4.0.0           # via requests-oauthlib, -r binary_requirements.in
+markdown==3.11.3          # via apprise, -r binary_requirements.in
+oauthlib==4.0.1           # via requests-oauthlib, -r binary_requirements.in
 packaging==26.3           # via borgmatic, -r binary_requirements.in
 psutil==7.2.2             # via borgmatic
 pyyaml==6.0.3             # via apprise, -r binary_requirements.in
