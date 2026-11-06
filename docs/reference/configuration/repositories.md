@@ -34,7 +34,6 @@ parallel.) That means—in each repository—borgmatic creates a single new back
 archive containing all of your [source
 directories](https://torsion.org/borgmatic/reference/configuration/patterns-and-excludes/).
 
-
 ## Repository-specific configuration
 
 <span class="minilink minilink-addedin">New in version 2.1.10</span> If you want
@@ -71,6 +70,24 @@ Note that this feature doesn't make sense for every configuration option. For
 instance, borgmatic consumes options like `verbosity` before any per-repository
 logic, so in that case per-repository `verbosity` values get silently ignored.
 
+### Monitoring hooks
+
+<span class="minilink minilink-addedin">New in version 2.2.1</span> Monitoring hook options (for instance `healthchecks` or `ntfy`) are an exception to the merging described above. A monitoring hook configured under a repository is not merged with any top-level monitoring configuration. Instead, borgmatic pings it only around the processing of that one repository. For example:
+
+```yaml
+repositories:
+    - path: ssh://user@one.example.org/./repo.borg
+      label: one
+      healthchecks:
+          ping_url: https://hc-ping.com/uuid-for-one
+
+    - path: ssh://user@two.example.org/./repo.borg
+      label: two
+      healthchecks:
+          ping_url: https://hc-ping.com/uuid-for-two
+```
+
+A repository without monitoring options of its own doesn't ping anything on its own. Monitoring hooks at the top level still ping once for the whole run, as before. See the [monitoring documentation](https://torsion.org/borgmatic/reference/configuration/monitoring/#per-repository-monitoring) for more information on how monitoring hooks behave in this case.
 
 ## SSH
 
