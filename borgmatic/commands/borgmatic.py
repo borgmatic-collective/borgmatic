@@ -6,7 +6,6 @@ import os
 import sys
 import time
 import uuid
-from queue import Queue
 from subprocess import CalledProcessError
 
 import ruamel.yaml
@@ -199,45 +198,100 @@ class Monitoring_hooks:
         )
 
 
-def run_repository(
-    *, arguments, config_filename, config, config_paths, local_borg_version, repository
-):
+def run_repository(*, arguments, config_filename, config, config_paths, repository):
     '''
     Given command-line arguments as a dict from action name to argparse.Namespace instance, the
-    configuration filename, a configuration dict, a sequence of loaded configuration paths, the
-    local Borg version, a repository configuration dict, ping the monitoring hooks and run the
-    actions for that repository.
+    configuration filename, a configuration dict, a sequence of loaded configuration paths, and a
+    repository configuration dict, ping the monitoring hooks and run the actions for that
+    repository. If configured, this includes retrying failures for this repository as well.
 
     Yield JSON output strings from executing any actions that produce JSON.
 
     Raise an OSError, CalledProcessError, or ValueError if such an exception occurs while running
-    the repository's actions.
+    the repository's actions, getting the local Borg version, or running monitoring hooks.
     '''
-    logger.debug('Running actions for repository')
+    last_error = None
 
-    # Run repository-specific monitoring hooks (if any).
-    with Monitoring_hooks(
-        config_filename,
-        config,
-        arguments,
-        arguments['global'],
-    ):
-        local_path = config.get('local_path', 'borg')
-        remote_path = config.get('remote_path')
+    with Log_prefix(repository.get('label', repository['path'])):
+        logger.debug('Running actions for repository')
 
-        yield from run_actions(
-            arguments=arguments,
-            config_filename=config_filename,
-            config=config,
-            config_paths=config_paths,
-            local_path=local_path,
-            remote_path=remote_path,
-            local_borg_version=local_borg_version,
-            repository=repository,
-        )
+        # Hoist any top-level options that are specified under a particular repository
+        # to be at the top level. That way, users can specify options like "remote_path"
+        # per repository, but downstream code still accesses them at the global scope.
+        merged_config = borgmatic.config.load.merge_repository_configuration(repository, config)
+        retries = merged_config.get('retries', 0)
+        retry_wait = merged_config.get('retry_wait', 0)
+        local_path = merged_config.get('local_path', 'borg')
+        remote_path = merged_config.get('remote_path')
+
+        # Run repository-specific monitoring hooks (if any).
+        with Monitoring_hooks(
+            config_filename,
+            merged_config,
+            arguments,
+            arguments['global'],
+        ):
+            try:
+                local_borg_version = borg_version.local_borg_version(
+                    merged_config,
+                    local_path,
+                )
+                logger.debug(f'Borg {local_borg_version}')
+            except (OSError, CalledProcessError, ValueError) as error:
+                yield from log_error_records(
+                    'Error getting local Borg version',
+                    error,
+                )
+
+                raise
+
+            for retry_number in range(retries + 1):
+                timeout = retry_number * retry_wait
+
+                if timeout:
+                    logger.warning(f'Sleeping {timeout}s before next retry')
+                    time.sleep(timeout)
+
+                try:
+                    yield from run_actions(
+                        arguments=arguments,
+                        config_filename=config_filename,
+                        config=merged_config,
+                        config_paths=config_paths,
+                        local_path=local_path,
+                        remote_path=remote_path,
+                        local_borg_version=local_borg_version,
+                        repository=repository,
+                    )
+                except (OSError, CalledProcessError, ValueError) as error:
+                    if retry_number < retries:
+                        tuple(  # Consume the generator so as to trigger logging.
+                            log_error_records(
+                                'Error running actions for repository',
+                                error,
+                                levelno=logging.WARNING,
+                                log_command_error_output=True,
+                            ),
+                        )
+                        logger.warning(f'Retrying... attempt {retry_number + 1}/{retries}')
+                        continue
+
+                    if command.considered_soft_failure(error):
+                        continue
+
+                    yield from log_error_records(
+                        'Error running actions for repository',
+                        error,
+                    )
+
+                    last_error = error
+
+            # If retries are exhausted, raise any error from the last retry.
+            if last_error is not None:
+                raise last_error
 
 
-def run_configuration(config_filename, config, config_paths, arguments):  # noqa: PLR0912, PLR0915
+def run_configuration(config_filename, config, config_paths, arguments):
     '''
     Given a config filename, the corresponding parsed config dict, a sequence of loaded
     configuration paths, and command-line arguments as a dict from subparser name to a
@@ -250,7 +304,6 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
       * logging.LogRecord instances containing errors from any actions or backup hooks that fail
     '''
     global_arguments = arguments['global']
-    repo_queue = Queue()
     encountered_error = None
     error_repository = None
     skip_actions = get_skip_actions(config, arguments)
@@ -274,82 +327,18 @@ def run_configuration(config_filename, config, config_paths, arguments):  # noqa
                 log_file=config.get('log_file', ''),
             ),
         ):
-            for repo in config['repositories']:
-                repo_queue.put(
-                    (repo, 0),
-                )
-
-            while not repo_queue.empty():
-                repository, retry_number = repo_queue.get()
-
-                with Log_prefix(repository.get('label', repository['path'])):
-                    # Hoist any top-level options that are specified under a particular repository
-                    # to be at the top level. That way, users can specify options like "remote_path"
-                    # per repository, but downstream code still accesses them at the global scope.
-                    merged_config = borgmatic.config.load.merge_repository_configuration(
-                        repository, config
+            for repository in config['repositories']:
+                try:
+                    yield from run_repository(
+                        arguments=arguments,
+                        config_filename=config_filename,
+                        config=config,
+                        config_paths=config_paths,
+                        repository=repository,
                     )
-                    retry_wait = merged_config.get('retry_wait', 0)
-                    timeout = retry_number * retry_wait
-
-                    if timeout:
-                        logger.warning(f'Sleeping {timeout}s before next retry')
-                        time.sleep(timeout)
-
-                    try:
-                        local_borg_version = borg_version.local_borg_version(
-                            merged_config, merged_config.get('local_path', 'borg')
-                        )
-                        logger.debug(f'Borg {local_borg_version}')
-                    except (OSError, CalledProcessError, ValueError) as error:
-                        yield from log_error_records(
-                            f'{config_filename}: Error getting local Borg version',
-                            error,
-                        )
-
-                        encountered_error = error
-                        error_repository = repository
-
-                        # Errors getting the local Borg version don't get retried.
-                        raise
-
-                    try:
-                        yield from run_repository(
-                            arguments=arguments,
-                            config_filename=config_filename,
-                            config=merged_config,
-                            config_paths=config_paths,
-                            local_borg_version=local_borg_version,
-                            repository=repository,
-                        )
-                    except (OSError, CalledProcessError, ValueError) as error:
-                        retries = merged_config.get('retries', 0)
-
-                        if retry_number < retries:
-                            repo_queue.put(
-                                (repository, retry_number + 1),
-                            )
-                            tuple(  # Consume the generator so as to trigger logging.
-                                log_error_records(
-                                    'Error running actions for repository',
-                                    error,
-                                    levelno=logging.WARNING,
-                                    log_command_error_output=True,
-                                ),
-                            )
-                            logger.warning(f'Retrying... attempt {retry_number + 1}/{retries}')
-                            continue
-
-                        if command.considered_soft_failure(error):
-                            continue
-
-                        yield from log_error_records(
-                            'Error running actions for repository',
-                            error,
-                        )
-
-                        encountered_error = error
-                        error_repository = repository
+                except (OSError, CalledProcessError, ValueError) as error:
+                    encountered_error = error
+                    error_repository = repository
 
             # Re-raise any error, so that the Monitoring_hooks context manager wrapping this
             # code can see the error and act accordingly. Do this here rather than as soon as

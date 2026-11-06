@@ -8,6 +8,9 @@
  * #1377: Fix the "browse" action to support Borg 2 archives that share the same name.
  * #1384: Fix the Watchgoose monitoring hook to construct URLs correctly when the "ping_url" option
    is set to just a UUID.
+ * Repository retries are no longer round-robin with retries interleaved between repositories. Now,
+   each repository's actions are retried until they succeed or the repository's retries are
+   exhausted. This simplifies per-repository monitoring hooks.
 
 2.2.0
  * #1273: Add a tarballs hook for backing up and restoring tar files while retaining full Borg

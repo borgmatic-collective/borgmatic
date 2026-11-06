@@ -396,12 +396,14 @@ properties:
         example: 160
     retries:
         type: integer
+        minimum: 0
         description: |
             Number of times to retry a failing backup before giving up. Defaults
             to 0 (i.e., does not attempt retry).
         example: 3
     retry_wait:
         type: integer
+        minimum: 0
         description: |
             Wait time between retries (in seconds) to allow transient issues
             to pass. Increases after each retry by that same wait time as a
