@@ -15,7 +15,7 @@ documentation for configuration information:
 
 ## Per-repository monitoring
 
-<span class="minilink minilink-addedin">New in version 2.2.1</span> By default, you configure a monitoring integration at the top level of your configuration. borgmatic then pings it once before the actions for all of your repositories begin and once after they have all finished or failed. With multiple repositories, a single monitoring check represents the whole run.
+<span class="minilink minilink-addedin">New in version 2.2.1</span> by default, you configure a monitoring integration at the top level of your configuration. borgmatic then pings it once before the actions for all of your repositories begin and once after they have all finished or failed. With multiple repositories, a single monitoring check represents the whole run.
 
 If you'd rather have separate monitoring for each repository, put the integration's options under that repository instead:
 
