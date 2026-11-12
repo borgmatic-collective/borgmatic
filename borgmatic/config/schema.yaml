@@ -1373,6 +1373,7 @@ properties:
                               - repository
                               - configuration
                               - everything
+                              - data_source_dumps
                           description: |
                               Name for the point in borgmatic's execution that
                               the commands should be run before (required if
@@ -1385,6 +1386,9 @@ properties:
                               repositories in the current configuration file.
                                * "everything" runs before all configuration
                               files.
+                               * "data_source_dumps" runs before database dumps
+                              and filesystem snapshots for all data source
+                              hooks.
                           example: action
                       when:
                           type: array
@@ -1438,6 +1442,7 @@ properties:
                               - repository
                               - configuration
                               - everything
+                              - data_source_dumps
                               - error
                           description: |
                               Name for the point in borgmatic's execution that
@@ -1451,6 +1456,9 @@ properties:
                               repositories in the current configuration file.
                                * "everything" runs after all configuration
                               files.
+                               * "data_source_dumps" runs after database dumps
+                              and filesystem snapshots for all data source
+                              hooks.
                                * "error" runs after an error occurs.
                           example: action
                       when:

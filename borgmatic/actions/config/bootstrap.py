@@ -83,7 +83,8 @@ def load_config_paths_from_archive(
         with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
             manifest_json = '\n'.join(
                 borgmatic.execute.log_outputs(
-                    processes=(extract_process,),
+                    main_process=extract_process,
+                    stream_processes=(),
                     exclude_stdouts=(),
                     output_log_level=None,
                     borg_local_path=local_path,

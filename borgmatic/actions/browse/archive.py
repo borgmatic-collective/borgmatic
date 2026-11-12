@@ -151,7 +151,8 @@ def get_archive_file_content(config, repository, archive_id, archive_name, file_
         # Capture stdout while logging stderr.
         with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
             for chunk in borgmatic.execute.log_outputs(
-                processes=(extract_process,),
+                main_process=extract_process,
+                stream_processes=(),
                 exclude_stdouts=(),
                 output_log_level=None,
                 borg_local_path=local_path,

@@ -230,6 +230,7 @@ class Before_after_hooks:
         self.dry_run = dry_run
         self.action_names = action_names
         self.context = context
+        self.ran_after_hooks = False
 
     def __enter__(self):
         '''
@@ -257,10 +258,27 @@ class Before_after_hooks:
 
             raise ValueError(f'Error running before {self.before_after} hook: {error}')
 
+        return self
+
     def __exit__(self, exception_type, exception, traceback):
         '''
-        Run the configured "after" command hooks that match the initialized data points.
+        Run the configured "after" command hooks that match the initialized data points. If these
+        hooks have already run (e.g. due to a manual run_after_hooks() call), then don't run them
+        again.
         '''
+        self.run_after_hooks(exception_type)
+
+    def run_after_hooks(self, exception_type=None):
+        '''
+        Given an optional exception type, run the configured "after" command hooks. Running these
+        hooks is idempotent, so if run prior to the context manager exiting, then they don't run
+        again later when it actually exits.
+        '''
+        if self.ran_after_hooks:
+            return
+
+        self.ran_after_hooks = True
+
         try:
             execute_hooks(
                 borgmatic.hooks.command.filter_hooks(

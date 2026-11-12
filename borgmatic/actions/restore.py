@@ -282,7 +282,8 @@ def collect_dumps_from_archive(
         with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
             extract_output = '\n'.join(
                 borgmatic.execute.log_outputs(
-                    processes=(extract_process,),
+                    main_process=extract_process,
+                    stream_processes=(),
                     exclude_stdouts=(),
                     output_log_level=None,
                     borg_local_path=local_path,

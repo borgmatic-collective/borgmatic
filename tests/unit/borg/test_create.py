@@ -1304,18 +1304,20 @@ def test_create_archive_calls_borg_with_flags():
     )
     insert_logging_mock(logging.WARNING)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 
@@ -1339,18 +1341,20 @@ def test_create_archive_calls_borg_with_environment():
     )
     insert_logging_mock(logging.WARNING)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 
@@ -1373,18 +1377,20 @@ def test_create_archive_with_log_info_calls_borg_with_info_flag():
     )
     insert_logging_mock(logging.INFO)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 
@@ -1405,19 +1411,21 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
     ).and_yield()
     insert_logging_mock(logging.INFO)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
-        json=True,
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+            json=True,
+        )
     )
 
 
@@ -1440,18 +1448,20 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_flag():
     )
     insert_logging_mock(logging.DEBUG)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 
@@ -1472,19 +1482,21 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
     ).and_yield()
     insert_logging_mock(logging.DEBUG)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
-        json=True,
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+            json=True,
+        )
     )
 
 
@@ -1509,19 +1521,21 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats():
     )
     insert_logging_mock(logging.INFO)
 
-    module.create_archive(
-        dry_run=True,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'statistics': 'standard',
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=True,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+                'statistics': 'standard',
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 
@@ -1546,19 +1560,21 @@ def test_create_archive_with_quick_stats_and_dry_run_calls_borg_without_quick_st
     )
     insert_logging_mock(logging.INFO)
 
-    module.create_archive(
-        dry_run=True,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'statistics': 'quick',
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=True,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+                'statistics': 'quick',
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 
@@ -1583,19 +1599,21 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
     )
     insert_logging_mock(logging.WARNING)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'working_directory': '/working/dir',
-            'exclude_patterns': None,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'working_directory': '/working/dir',
+                'exclude_patterns': None,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 
@@ -1619,19 +1637,21 @@ def test_create_archive_with_exit_codes_calls_borg_using_them():
     )
     insert_logging_mock(logging.WARNING)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'borg_exit_codes': borg_exit_codes,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+                'borg_exit_codes': borg_exit_codes,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 
@@ -1654,19 +1674,21 @@ def test_create_archive_with_stats_calls_borg_with_stats_flag_and_answer_output_
     )
     insert_logging_mock(logging.WARNING)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'statistics': 'standard',
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+                'statistics': 'standard',
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 
@@ -1693,19 +1715,21 @@ def test_create_archive_with_files_calls_borg_with_answer_output_log_level():
     )
     insert_logging_mock(logging.WARNING)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'list_details': True,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+                'list_details': True,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 
@@ -1728,19 +1752,21 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_flag
     )
     insert_logging_mock(logging.INFO)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'progress': True,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+                'progress': True,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 
@@ -1763,19 +1789,21 @@ def test_create_archive_with_progress_calls_borg_with_progress_flag():
     )
     insert_logging_mock(logging.WARNING)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'progress': True,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+                'progress': True,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 
@@ -1815,20 +1843,22 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
     ).and_yield()
     insert_logging_mock(logging.WARNING)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'progress': True,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
-        stream_processes=processes,
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+                'progress': True,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+            stream_processes=processes,
+        )
     )
 
 
@@ -1849,22 +1879,22 @@ def test_create_archive_with_json_calls_borg_with_json_flag():
     ).and_yield('[]')
     insert_logging_mock(logging.WARNING)
 
-    json_output = module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
-        json=True,
-    )
-
-    assert json_output == '[]'
+    assert tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+            json=True,
+        )
+    ) == ('[]',)
 
 
 def test_create_archive_with_stats_and_json_calls_borg_without_stats_flag():
@@ -1884,23 +1914,23 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_flag():
     ).and_yield('[]')
     insert_logging_mock(logging.WARNING)
 
-    json_output = module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo*'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'statistics': 'standard',
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
-        json=True,
-    )
-
-    assert json_output == '[]'
+    assert tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo*'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+                'statistics': 'standard',
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+            json=True,
+        )
+    ) == ('[]',)
 
 
 def test_create_archive_with_quick_stats_and_json_calls_borg_without_quick_stats_flag():
@@ -1919,23 +1949,23 @@ def test_create_archive_with_quick_stats_and_json_calls_borg_without_quick_stats
         borg_exit_codes=None,
     ).and_yield('[]')
 
-    json_output = module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo*'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'statistics': 'quick',
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
-        json=True,
-    )
-
-    assert json_output == '[]'
+    assert tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo*'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+                'statistics': 'quick',
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+            json=True,
+        )
+    ) == ('[]',)
 
 
 def test_create_archive_with_comment_calls_borg_with_comment_flag():
@@ -1957,20 +1987,22 @@ def test_create_archive_with_comment_calls_borg_with_comment_flag():
     )
     insert_logging_mock(logging.WARNING)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
-        json=False,
-        comment='a comment',
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+            json=False,
+            comment='a comment',
+        )
     )
 
 
@@ -1995,19 +2027,21 @@ def test_create_archive_calls_borg_with_working_directory():
     )
     insert_logging_mock(logging.WARNING)
 
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'working_directory': '/working/dir',
-        },
-        patterns=[Pattern('foo'), Pattern('bar')],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(),
-        borgmatic_runtime_directory='/borgmatic/run',
+    tuple(
+        module.create_archive(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+                'working_directory': '/working/dir',
+            },
+            patterns=[Pattern('foo'), Pattern('bar')],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(),
+            borgmatic_runtime_directory='/borgmatic/run',
+        )
     )
 
 

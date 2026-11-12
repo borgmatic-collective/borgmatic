@@ -37,11 +37,12 @@ Each command in the `commands:` list has the following options:
     * `repository` runs before or after all actions for each repository. This replaces the deprecated `before_actions` and `after_actions`.
     * `configuration` runs before or after all actions and repositories in the current configuration file.
     * `everything` runs before or after all configuration files. Errors here do not trigger `error` hooks or the `fail` state in monitoring hooks. This replaces the deprecated `before_everything` and `after_everything`.
+    * `data_source_dumps` <span class="minilink minilink-addedin">New in version 2.2.1</span> runs before or after database dumps and filesystem snapshots for all data source hooks. Only triggered for the `create` action.
     * `error` runs after an error occurs—and it's only available for `after`. This replaces the deprecated `on_error` hook.
  * `when`: Only trigger the hook when borgmatic is run with particular actions (`create`, `prune`, etc.) listed here. Defaults to running for all actions.
- * `states`: <span class="minilink minilink-addedin">New in version 2.0.3</span> Only trigger the hook if borgmatic encounters one of the states (execution results) listed here. This state is evaluated only for the scope of the configured `action`, `repository`, etc., rather than for the entire borgmatic run. Only available for `after` hooks. Defaults to running the hook for all states. One or more of:
-    * `finish`: No errors occurred.
-    * `fail`: An error occurred.
+ * `states`: <span class="minilink minilink-addedin">New in version 2.0.3</span> Only trigger the hook if borgmatic encounters one of the states (execution results) listed here. This state is evaluated only for the scope of the configured `action`, `repository`, etc., rather than for the entire borgmatic run. Meaning, only an error occurring *prior* to the hook firing matches a configured `fail` state. Only available for `after` hooks. Defaults to running the hook for all states. One or more of:
+    * `finish`: No errors occurred prior to this hook firing.
+    * `fail`: An error occurred prior to this hook firing.
  * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
 
 When command hooks run, they respect the `working_directory` option if it is
@@ -69,10 +70,14 @@ borgmatic for the `create` and `prune` actions. Here's the order of execution:
     * Run `before: configuration` hooks (from the first configuration file).
         * Run `before: repository` hooks (for the first repository).
             * Run `before: action` hooks for `create`.
-            * Actually run the `create` action (e.g. `borg create`).
+              * Run `before: data_source_dumps` hooks for `create`.
+                * Perform database dumps and filesystem snapshots.
+              * Run `after: data_source_dumps` hooks for `create`. (But see
+                notes below).
+              * Actually run the `create` action (e.g. `borg create`).
             * Run `after: action` hooks for `create`.
             * Run `before: action` hooks for `prune`.
-            * Actually run the `prune` action (e.g. `borg prune`).
+              * Actually run the `prune` action (e.g. `borg prune`).
             * Run `after: action` hooks for `prune`.
         * Run `after: repository` hooks (for the first repository).
     * Run `after: configuration` hooks (from the first configuration file).
@@ -93,6 +98,24 @@ execute.
 And if there are multiple hooks defined for a particular step (e.g. `before:
 action` for `create`), then those hooks are run in the order they're defined in
 configuration.
+
+
+## Data source dumps
+
+<span class="minilink minilink-addedin">New in version 2.2.1</span> A few
+notes on the `data_source_dumps` hook in particular:
+
+ * When database dumps are configured, `after: data_source_dumps` can actually
+   fire *after* `borg create` starts but before it completes. That's because
+   borgmatic streams (most) database dumps to Borg, such that Borg and the
+   database dump process are running concurrently. In that case, `after:
+   data_source_dumps` fires as soon as all dump processes exit, even if `borg
+   create` is still running.
+ * When streaming database dumps are *not* configured but filesystem snapshots
+   are, then `after: data_source_dumps` always fires after snapshots complete
+   and before `borg create` starts. That's because all snapshot processes
+   complete before Borg starts; there's no streaming.
+ * This hook fires even when no data sources are configured.
 
 
 ## Variable interpolation

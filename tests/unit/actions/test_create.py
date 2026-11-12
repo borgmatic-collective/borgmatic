@@ -1,6 +1,5 @@
 import contextlib
 import json
-import os
 
 import pytest
 from flexmock import flexmock
@@ -14,13 +13,24 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
-    flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return({})
     flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').with_args(
+        command_hooks=object,
+        before_after='data_source_dumps',
+        umask=object,
+        working_directory=object,
+        dry_run=False,
+        action_names=('create',),
+        hook='context',
+    ).and_return(dumps_hooks := flexmock())
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
-    flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
+    flexmock(dumps_hooks).should_receive('run_after_hooks').once().ordered()
+    flexmock(module.borgmatic.borg.create).should_receive(
+        'create_archive'
+    ).and_yield().once().ordered()
     create_arguments = flexmock(
         repository=None,
         progress=flexmock(),
@@ -43,6 +53,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
             dry_run_label='',
             local_path=None,
             remote_path=None,
+            hook_context={'hook': 'context'},
         ),
     )
 
@@ -74,6 +85,7 @@ def test_run_create_with_both_list_and_json_errors():
                 dry_run_label='',
                 local_path=None,
                 remote_path=None,
+                hook_context={},
             ),
         )
 
@@ -105,6 +117,7 @@ def test_run_create_with_both_list_and_progress_errors():
                 dry_run_label='',
                 local_path=None,
                 remote_path=None,
+                hook_context={},
             ),
         )
 
@@ -114,17 +127,23 @@ def test_run_create_produces_json():
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
-    flexmock(module.borgmatic.borg.create).should_receive('create_archive').once().and_return(
-        flexmock(),
-    )
-    parsed_json = flexmock()
-    flexmock(module.borgmatic.actions.json).should_receive('parse_json').and_return(parsed_json)
+    parsed_json = '[]'
+    flexmock(module.borgmatic.actions.json).should_receive('parse_json').with_args(
+        '[\n]', None
+    ).and_return(parsed_json)
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return({})
     flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        dumps_hooks := flexmock()
+    )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
-    flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
+    flexmock(dumps_hooks).should_receive('run_after_hooks').once().ordered()
+    flexmock(module.borgmatic.borg.create).should_receive('create_archive').and_yield(
+        '[',
+        ']',
+    ).once().ordered()
     create_arguments = flexmock(
         repository=flexmock(),
         progress=flexmock(),
@@ -147,6 +166,7 @@ def test_run_create_produces_json():
             dry_run_label='',
             local_path=None,
             remote_path=None,
+            hook_context={},
         ),
     ) == [parsed_json]
 
@@ -159,15 +179,20 @@ def test_run_create_with_active_dumps_roundtrips_via_checkpoint_archive():
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
-    flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'dump': mock_dump_process},
     )
     flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        dumps_hooks := flexmock()
+    )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
-    flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
+    flexmock(module.borgmatic.borg.create).should_receive('create_archive').and_yield(
+        module.borgmatic.execute.ALL_STREAM_PROCESSES_EXITED
+    ).once().ordered()
+    flexmock(dumps_hooks).should_receive('run_after_hooks').once().ordered()
     flexmock(module.borgmatic.borg.repo_list).should_receive('get_latest_archive').and_return(
         {'id': 'id1', 'name': 'archive.checkpoint'},
     )
@@ -203,6 +228,7 @@ def test_run_create_with_active_dumps_roundtrips_via_checkpoint_archive():
             dry_run_label='',
             local_path=None,
             remote_path=None,
+            hook_context={},
         ),
     )
 
@@ -238,17 +264,21 @@ def test_run_create_with_active_dumps_json_updates_archive_info():
         flexmock(),
     )
 
-    flexmock(module.borgmatic.borg.create).should_receive('create_archive').and_return(
-        json.dumps(borg_create_result),
-    ).once()
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'dump': mock_dump_process},
     )
     flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        dumps_hooks := flexmock()
+    )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
-    flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
+    flexmock(module.borgmatic.borg.create).should_receive('create_archive').and_yield(
+        module.borgmatic.execute.ALL_STREAM_PROCESSES_EXITED,
+        json.dumps(borg_create_result),
+    ).once().ordered()
+    flexmock(dumps_hooks).should_receive('run_after_hooks').once().ordered()
 
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
@@ -286,8 +316,74 @@ def test_run_create_with_active_dumps_json_updates_archive_info():
             dry_run_label='',
             local_path=None,
             remote_path=None,
+            hook_context={},
         ),
     ) == [expected_create_result]
+
+
+class Mock_before_after_hooks:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception, traceback):
+        self.exit()
+
+    def exit(self):
+        pass
+
+
+def test_run_create_with_active_dumps_and_create_archive_error_calls_fail_hook():
+    mock_dump_process = flexmock()
+    mock_dump_process.should_receive('poll').and_return(None).and_return(0)
+
+    flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
+        flexmock(),
+    )
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
+        {'dump': mock_dump_process},
+    )
+    flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').and_return(flexmock())
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        dumps_hooks := Mock_before_after_hooks()
+    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(())
+    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return([])
+    flexmock(module.borgmatic.borg.create).should_receive('create_archive').and_raise(
+        OSError
+    ).once().ordered()
+    flexmock(dumps_hooks).should_receive('exit').once().ordered()
+    flexmock(module.borgmatic.borg.repo_list).should_receive('get_latest_archive').never()
+    flexmock(module).should_receive('rename_checkpoint_archive').never()
+
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
+
+    create_arguments = flexmock(
+        repository=None,
+        progress=flexmock(),
+        statistics=flexmock(),
+        json=False,
+        comment=None,
+        list_details=flexmock(),
+    )
+
+    with pytest.raises(OSError):
+        list(
+            module.run_create(
+                config_filename='test.yaml',
+                repository={'path': 'repo'},
+                config={},
+                config_paths=['/tmp/test.yaml'],
+                local_borg_version=None,
+                create_arguments=create_arguments,
+                global_arguments=global_arguments,
+                dry_run_label='',
+                local_path=None,
+                remote_path=None,
+                hook_context={},
+            ),
+        )
 
 
 def mock_call_hooks(
@@ -319,12 +415,14 @@ def test_run_create_with_active_dumps_removes_data_source_dumps_with_original_pa
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
     )
-    flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').replace_with(
         mock_call_hooks
     )
     flexmock(module.borgmatic.actions.dump).should_receive('Dump_cleanup').replace_with(
         mock_dump_cleanup
+    )
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        dumps_hooks := flexmock()
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(
@@ -333,7 +431,10 @@ def test_run_create_with_active_dumps_removes_data_source_dumps_with_original_pa
     flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').replace_with(
         lambda patterns, *args, **kwargs: list(patterns)
     )
-    flexmock(os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
+    flexmock(module.borgmatic.borg.create).should_receive('create_archive').and_yield(
+        module.borgmatic.execute.ALL_STREAM_PROCESSES_EXITED
+    ).once().ordered()
+    flexmock(dumps_hooks).should_receive('run_after_hooks').once().ordered()
     flexmock(module.borgmatic.borg.repo_list).should_receive('get_latest_archive').and_return(
         {'id': 'id1', 'name': 'archive.checkpoint'},
     )
@@ -369,6 +470,7 @@ def test_run_create_with_active_dumps_removes_data_source_dumps_with_original_pa
             dry_run_label='',
             local_path=None,
             remote_path=None,
+            hook_context={},
         ),
     )
 

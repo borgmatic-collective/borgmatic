@@ -386,6 +386,38 @@ def test_before_after_hooks_calls_command_hooks():
         pass
 
 
+def test_before_after_hooks_with_run_after_hooks_call_only_runs_after_hooks_once():
+    commands = [
+        {'before': 'repository', 'run': ['foo', 'bar']},
+        {'after': 'repository', 'run': ['baz']},
+    ]
+    flexmock(module).should_receive('filter_hooks').with_args(
+        commands,
+        before='action',
+        action_names=['create'],
+    ).and_return(flexmock()).once()
+    flexmock(module).should_receive('filter_hooks').with_args(
+        commands,
+        after='action',
+        action_names=['create'],
+        state_names=['finish'],
+    ).and_return(flexmock()).once()
+    flexmock(module).should_receive('execute_hooks').twice()
+
+    with module.Before_after_hooks(
+        command_hooks=commands,
+        before_after='action',
+        umask=1234,
+        working_directory='/working',
+        dry_run=False,
+        action_names=['create'],
+        context1='stuff',
+        context2='such',
+    ) as before_after_hooks:
+        before_after_hooks.run_after_hooks()
+        before_after_hooks.run_after_hooks()
+
+
 def test_before_after_hooks_with_before_error_runs_after_hook_and_raises():
     commands = [
         {'before': 'repository', 'run': ['foo', 'bar']},
@@ -487,6 +519,44 @@ def test_before_after_hooks_with_wrapped_code_error_runs_after_hook_and_raises()
             context2='such',
         ),
     ):
+        raise ValueError()
+
+
+def test_before_after_hooks_with_run_after_hooks_call_and_wrapped_code_error_runs_after_hook_once_and_raises():
+    commands = [
+        {'before': 'repository', 'run': ['foo', 'bar']},
+        {'after': 'repository', 'run': ['baz']},
+    ]
+    flexmock(module).should_receive('filter_hooks').with_args(
+        commands,
+        before='action',
+        action_names=['create'],
+    ).and_return(flexmock()).once()
+    flexmock(module).should_receive('filter_hooks').with_args(
+        commands,
+        after='action',
+        action_names=['create'],
+        # Expect a "finish" rather than a "fail", because run_after_hooks() is invoked manually
+        # before the exception is raised.
+        state_names=['finish'],
+    ).and_return(flexmock()).once()
+    flexmock(module).should_receive('execute_hooks').twice()
+
+    with (
+        pytest.raises(ValueError),
+        module.Before_after_hooks(
+            command_hooks=commands,
+            before_after='action',
+            umask=1234,
+            working_directory='/working',
+            dry_run=False,
+            action_names=['create'],
+            context1='stuff',
+            context2='such',
+        ) as before_after_hooks,
+    ):
+        before_after_hooks.run_after_hooks()
+        before_after_hooks.run_after_hooks()
         raise ValueError()
 
 

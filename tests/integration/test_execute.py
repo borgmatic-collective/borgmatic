@@ -151,15 +151,21 @@ def test_log_outputs_logs_each_line_separately():
         (),
     ).and_return((there_process.stdout,))
 
-    assert tuple(
+    values = tuple(
         module.log_outputs(
-            (hi_process, there_process),
+            main_process=there_process,
+            stream_processes=(hi_process,),
             exclude_stdouts=(),
             output_log_level=logging.INFO,
             borg_local_path='borg',
             borg_exit_codes=None,
         )
-    ) == ('there',)
+    )
+
+    assert len(tuple(value for value in values if value is module.ALL_STREAM_PROCESSES_EXITED)) == 1
+    assert tuple(value for value in values if value is not module.ALL_STREAM_PROCESSES_EXITED) == (
+        'there',
+    )
 
 
 def test_log_outputs_with_output_raw_bytes_captures_last_process_stdout_as_bytes():
@@ -188,16 +194,22 @@ def test_log_outputs_with_output_raw_bytes_captures_last_process_stdout_as_bytes
         (),
     ).and_return((there_process.stdout,))
 
-    assert tuple(
+    values = tuple(
         module.log_outputs(
-            (hi_process, there_process),
+            main_process=there_process,
+            stream_processes=(hi_process,),
             exclude_stdouts=(),
             output_log_level=None,
             borg_local_path='borg',
             borg_exit_codes=None,
             output_raw_bytes=True,
         )
-    ) == (b'there\n',)
+    )
+
+    assert len(tuple(value for value in values if value is module.ALL_STREAM_PROCESSES_EXITED)) == 1
+    assert tuple(value for value in values if value is not module.ALL_STREAM_PROCESSES_EXITED) == (
+        b'there\n',
+    )
 
 
 def test_log_outputs_logs_stderr_as_error():
@@ -224,7 +236,8 @@ def test_log_outputs_logs_stderr_as_error():
     assert (
         tuple(
             module.log_outputs(
-                (echo_process,),
+                main_process=echo_process,
+                stream_processes=(),
                 exclude_stdouts=(),
                 output_log_level=logging.INFO,
                 borg_local_path='borg',
@@ -261,15 +274,21 @@ def test_log_outputs_skips_logs_for_process_with_none_stdout():
         (),
     ).and_return((there_process.stdout,))
 
-    assert tuple(
+    values = tuple(
         module.log_outputs(
-            (hi_process, there_process),
+            main_process=there_process,
+            stream_processes=(hi_process,),
             exclude_stdouts=(),
             output_log_level=logging.INFO,
             borg_local_path='borg',
             borg_exit_codes=None,
         )
-    ) == ('there',)
+    )
+
+    assert len(tuple(value for value in values if value is module.ALL_STREAM_PROCESSES_EXITED)) == 1
+    assert tuple(value for value in values if value is not module.ALL_STREAM_PROCESSES_EXITED) == (
+        'there',
+    )
 
 
 def test_log_outputs_returns_output_without_logging_for_output_log_level_none():
@@ -288,9 +307,10 @@ def test_log_outputs_returns_output_without_logging_for_output_log_level_none():
         (),
     ).and_return((there_process.stdout,))
 
-    output_lines = tuple(
+    values = tuple(
         module.log_outputs(
-            (hi_process, there_process),
+            main_process=there_process,
+            stream_processes=(hi_process,),
             exclude_stdouts=(),
             output_log_level=None,
             borg_local_path='borg',
@@ -298,7 +318,10 @@ def test_log_outputs_returns_output_without_logging_for_output_log_level_none():
         )
     )
 
-    assert output_lines == ('there',)
+    assert len(tuple(value for value in values if value is module.ALL_STREAM_PROCESSES_EXITED)) == 1
+    assert tuple(value for value in values if value is not module.ALL_STREAM_PROCESSES_EXITED) == (
+        'there',
+    )
 
 
 def test_log_outputs_includes_error_output_in_exception():
@@ -312,7 +335,8 @@ def test_log_outputs_includes_error_output_in_exception():
     with pytest.raises(subprocess.CalledProcessError) as error:
         tuple(
             module.log_outputs(
-                (process,),
+                main_process=process,
+                stream_processes=(),
                 exclude_stdouts=(),
                 output_log_level=logging.INFO,
                 borg_local_path='borg',
@@ -342,7 +366,8 @@ def test_log_outputs_logs_multiline_error_output():
     with pytest.raises(subprocess.CalledProcessError):
         tuple(
             module.log_outputs(
-                (process,),
+                main_process=process,
+                stream_processes=(),
                 exclude_stdouts=(),
                 output_log_level=logging.INFO,
                 borg_local_path='borg',
@@ -362,7 +387,8 @@ def test_log_outputs_skips_error_output_in_exception_for_process_with_none_stdou
     with pytest.raises(subprocess.CalledProcessError) as error:
         tuple(
             module.log_outputs(
-                (process,),
+                main_process=process,
+                stream_processes=(),
                 exclude_stdouts=(),
                 output_log_level=logging.INFO,
                 borg_local_path='borg',
@@ -414,7 +440,8 @@ def test_log_outputs_kills_other_processes_and_raises_when_one_errors():
     with pytest.raises(subprocess.CalledProcessError) as error:
         tuple(
             module.log_outputs(
-                (process, other_process),
+                main_process=other_process,
+                stream_processes=(process,),
                 exclude_stdouts=(),
                 output_log_level=logging.INFO,
                 borg_local_path='borg',
@@ -460,7 +487,8 @@ def test_log_outputs_kills_other_processes_and_returns_when_one_exits_with_warni
     assert (
         tuple(
             module.log_outputs(
-                (process, other_process),
+                main_process=other_process,
+                stream_processes=(process,),
                 exclude_stdouts=(),
                 output_log_level=logging.INFO,
                 borg_local_path='borg',
@@ -469,6 +497,51 @@ def test_log_outputs_kills_other_processes_and_returns_when_one_exits_with_warni
         )
         == ()
     )
+
+
+def test_log_outputs_yields_sentinel_as_soon_as_all_stream_processes_exit():
+    flexmock(module.logger).should_receive('log')
+    flexmock(module).should_receive('command_for_process').and_return('grep')
+
+    process = subprocess.Popen(['true'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    flexmock(module).should_receive('interpret_exit_code').with_args(
+        ['true'],
+        0,
+        'borg',
+        None,
+    ).and_return(module.Exit_status.SUCCESS)
+    other_process = subprocess.Popen(
+        ['sleep', '2'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    flexmock(module).should_receive('interpret_exit_code').with_args(
+        ['sleep', '2'],
+        object,  # Depending on timing, the exit code can vary. So don't expect a particular code.
+        'borg',
+        None,
+    ).and_return(module.Exit_status.STILL_RUNNING)
+    flexmock(module).should_receive('output_buffers_for_process').with_args(process, ()).and_return(
+        (process.stdout,),
+    )
+    flexmock(module).should_receive('output_buffers_for_process').with_args(
+        other_process,
+        (),
+    ).and_return((other_process.stdout,))
+
+    for value in module.log_outputs(
+        main_process=other_process,
+        stream_processes=(process,),
+        exclude_stdouts=(),
+        output_log_level=logging.INFO,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ):
+        assert value == module.ALL_STREAM_PROCESSES_EXITED
+        break
+
+    # Now that we have what we need, no need to wait for the sleep to finish.
+    other_process.kill()
 
 
 def test_log_outputs_vents_other_processes_when_one_exits():
@@ -514,18 +587,19 @@ def test_log_outputs_vents_other_processes_when_one_exits():
         other_process.stdout.fileno(), int
     ).at_least().once()
 
-    assert (
-        tuple(
-            module.log_outputs(
-                (process, other_process),
-                exclude_stdouts=(process.stdout,),
-                output_log_level=logging.INFO,
-                borg_local_path='borg',
-                borg_exit_codes=None,
-            )
+    values = tuple(
+        module.log_outputs(
+            main_process=other_process,
+            stream_processes=(process,),
+            exclude_stdouts=(process.stdout,),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
         )
-        == ()
     )
+
+    assert len(tuple(value for value in values if value is module.ALL_STREAM_PROCESSES_EXITED)) == 1
+    assert tuple(value for value in values if value is not module.ALL_STREAM_PROCESSES_EXITED) == ()
 
 
 def test_log_outputs_does_not_error_when_one_process_exits():
@@ -556,18 +630,19 @@ def test_log_outputs_does_not_error_when_one_process_exits():
         (process.stdout,),
     ).and_return((other_process.stdout,))
 
-    assert (
-        tuple(
-            module.log_outputs(
-                (process, other_process),
-                exclude_stdouts=(process.stdout,),
-                output_log_level=logging.INFO,
-                borg_local_path='borg',
-                borg_exit_codes=None,
-            )
+    values = tuple(
+        module.log_outputs(
+            main_process=other_process,
+            stream_processes=(process,),
+            exclude_stdouts=(process.stdout,),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
         )
-        == ()
     )
+
+    assert len(tuple(value for value in values if value is module.ALL_STREAM_PROCESSES_EXITED)) == 1
+    assert tuple(value for value in values if value is not module.ALL_STREAM_PROCESSES_EXITED) == ()
 
 
 def test_log_outputs_truncates_long_error_output():
@@ -586,7 +661,8 @@ def test_log_outputs_truncates_long_error_output():
     with pytest.raises(subprocess.CalledProcessError) as error:
         tuple(
             flexmock(module, ERROR_OUTPUT_MAX_LINE_COUNT=0).log_outputs(
-                (process,),
+                main_process=process,
+                stream_processes=(),
                 exclude_stdouts=(),
                 output_log_level=logging.INFO,
                 borg_local_path='borg',
@@ -608,7 +684,8 @@ def test_log_outputs_with_no_output_logs_nothing():
     assert (
         tuple(
             module.log_outputs(
-                (process,),
+                main_process=process,
+                stream_processes=(),
                 exclude_stdouts=(),
                 output_log_level=logging.INFO,
                 borg_local_path='borg',
@@ -630,7 +707,8 @@ def test_log_outputs_with_unfinished_process_waits_for_it():
     assert (
         tuple(
             module.log_outputs(
-                (process,),
+                main_process=process,
+                stream_processes=(),
                 exclude_stdouts=(),
                 output_log_level=logging.INFO,
                 borg_local_path='borg',
@@ -666,7 +744,8 @@ def test_log_outputs_includes_error_output_when_output_spans_multiple_chunks():
     with pytest.raises(subprocess.CalledProcessError) as error:
         tuple(
             module.log_outputs(
-                (process,),
+                main_process=process,
+                stream_processes=(),
                 exclude_stdouts=(),
                 output_log_level=logging.INFO,
                 borg_local_path='borg',

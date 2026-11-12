@@ -8,6 +8,8 @@ import borgmatic.borg.flags
 import borgmatic.borg.rename
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
+import borgmatic.execute
+import borgmatic.hooks.command
 import borgmatic.hooks.dispatch
 from borgmatic.actions import pattern
 
@@ -25,9 +27,11 @@ def run_create(
     dry_run_label,
     local_path,
     remote_path,
+    hook_context,
 ):
     '''
-    Run the "create" action for the given repository.
+    Run the "create" action for the given repository. The hook context is a dict of additional hook
+    data passed as kwargs to Before_after_hooks().
 
     If create_arguments.json is True, yield the JSON output from creating the archive.
     '''
@@ -56,8 +60,19 @@ def run_create(
 
         # Use the original patterns so as to disregard any modifications made by any data source
         # hooks, e.g. via dump_data_sources() below.
-        with borgmatic.actions.dump.Dump_cleanup(
-            config, borgmatic_runtime_directory, original_patterns, global_arguments.dry_run
+        with (
+            borgmatic.actions.dump.Dump_cleanup(
+                config, borgmatic_runtime_directory, original_patterns, global_arguments.dry_run
+            ),
+            borgmatic.hooks.command.Before_after_hooks(
+                command_hooks=config.get('commands'),
+                before_after='data_source_dumps',
+                umask=config.get('umask'),
+                working_directory=working_directory,
+                dry_run=global_arguments.dry_run,
+                action_names=('create',),
+                **hook_context,
+            ) as dumps_hooks,
         ):
             active_dumps = borgmatic.hooks.dispatch.call_hooks(
                 'dump_data_sources',
@@ -83,13 +98,18 @@ def run_create(
                 process for processes in active_dumps.values() for process in processes
             ]
 
+            # If there are no stream processes, we can run the "after" dumps hooks early.
+            if not stream_processes:
+                dumps_hooks.run_after_hooks()
+
             # If we have stream processes, we first create an archive with .checkpoint suffix. This is
             # to make sure we only create a real archive if all the streaming processes completed
             # successfully (create_archive will fail if a streaming process fails, but the archive might
             # have already been created at this point).
             use_checkpoint = bool(stream_processes)
+            json_lines = []
 
-            json_output = borgmatic.borg.create.create_archive(
+            for value in borgmatic.borg.create.create_archive(
                 global_arguments.dry_run,
                 repository['path'],
                 config,
@@ -103,7 +123,11 @@ def run_create(
                 json=create_arguments.json,
                 comment=create_arguments.comment,
                 stream_processes=stream_processes,
-            )
+            ):
+                if value is borgmatic.execute.ALL_STREAM_PROCESSES_EXITED:
+                    dumps_hooks.run_after_hooks()
+                elif create_arguments.json:
+                    json_lines.append(value)
 
             if use_checkpoint:
                 rename_checkpoint_archive(
@@ -115,8 +139,10 @@ def run_create(
                     remote_path,
                 )
 
-            if json_output:
-                output = borgmatic.actions.json.parse_json(json_output, repository.get('label'))
+            if json_lines:
+                output = borgmatic.actions.json.parse_json(
+                    '\n'.join(json_lines), repository.get('label')
+                )
                 if use_checkpoint:
                     # Patch archive name and ID
                     renamed_archive = borgmatic.borg.repo_list.get_latest_archive(

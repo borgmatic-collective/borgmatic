@@ -8,6 +8,8 @@
  * #1377: Fix the "browse" action to support Borg 2 archives that share the same name.
  * #1384: Fix the Watchgoose monitoring hook to construct URLs correctly when the "ping_url" option
    is set to just a UUID.
+ * #1386: Add a "data_source_dumps" command hook, run before or after database dumps and filesystem
+   snapshots for all data source hooks.
  * Repository retries are no longer round-robin with retries interleaved between repositories. Now,
    each repository's actions are retried until they succeed or the repository's retries are
    exhausted. This simplifies per-repository monitoring hooks.

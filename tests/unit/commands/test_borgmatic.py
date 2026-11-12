@@ -1236,6 +1236,7 @@ def test_run_actions_adds_label_file_to_hook_context():
         dry_run_label='',
         local_path=object,
         remote_path=object,
+        hook_context=object,
     ).once().and_return(expected)
 
     result = tuple(
@@ -1273,6 +1274,7 @@ def test_run_actions_adds_log_file_to_hook_context():
         dry_run_label='',
         local_path=object,
         remote_path=object,
+        hook_context=object,
     ).once().and_return(expected)
 
     result = tuple(

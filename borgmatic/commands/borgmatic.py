@@ -490,6 +490,7 @@ def run_actions(  # noqa: PLR0912, PLR0915
                         dry_run_label,
                         local_path,
                         remote_path,
+                        hook_context,
                     )
                 elif action_name == 'recreate':
                     borgmatic.actions.recreate.run_recreate(

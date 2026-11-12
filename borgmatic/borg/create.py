@@ -360,10 +360,13 @@ def create_archive(
     argparse.Namespace instance, the borgmatic runtime directory, a string suffix to add to the
     archive name, the local Borg path, the remote Borg path, whether to output JSON, and comment
     text to add to the created archive, and a sequence of processes streaming data to Borg, create a
-    Borg archive and return Borg's JSON output (if any).
+    Borg archive and yield Borg's captured output (if any), one line at a time.
 
     If a sequence of stream processes is given (instances of subprocess.Popen), then execute the
-    create command while also triggering the given processes to produce output.
+    create command while also triggering the given processes to produce output. Additionally, an
+    ALL_STREAM_PROCESSES_EXITED sentinel gets interleaved in the yielded data once all stream
+    processes have exited. This is so that callers can take action on stream processes finishing,
+    even if the main Borg process is still going.
     '''
     borgmatic.logger.add_custom_log_levels()
 
@@ -417,31 +420,27 @@ def create_archive(
     borg_exit_codes = config.get('borg_exit_codes')
 
     if stream_processes:
-        output = '\n'.join(
-            execute_command_with_processes(
-                create_flags + create_positional_arguments,
-                stream_processes,
-                output_log_level,
-                output_file,
-                working_directory=working_directory,
-                environment=environment.make_environment(config),
-                borg_local_path=local_path,
-                borg_exit_codes=borg_exit_codes,
-            )
+        yield from execute_command_with_processes(
+            create_flags + create_positional_arguments,
+            stream_processes,
+            output_log_level,
+            output_file,
+            working_directory=working_directory,
+            environment=environment.make_environment(config),
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
         )
-        return output if json else None
+        return
 
     if output_log_level is None:
-        output = '\n'.join(
-            execute_command_and_capture_output(
-                create_flags + create_positional_arguments,
-                working_directory=working_directory,
-                environment=environment.make_environment(config),
-                borg_local_path=local_path,
-                borg_exit_codes=borg_exit_codes,
-            )
+        yield from execute_command_and_capture_output(
+            create_flags + create_positional_arguments,
+            working_directory=working_directory,
+            environment=environment.make_environment(config),
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
         )
-        return output if json else None
+        return
 
     execute_command(
         create_flags + create_positional_arguments,
@@ -452,5 +451,3 @@ def create_archive(
         borg_local_path=local_path,
         borg_exit_codes=borg_exit_codes,
     )
-
-    return None

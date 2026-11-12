@@ -480,7 +480,8 @@ def load_data_source_dump_manifest(
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
         extract_stdout = '\n'.join(
             borgmatic.execute.log_outputs(
-                processes=(extract_process,),
+                main_process=extract_process,
+                stream_processes=(),
                 exclude_stdouts=(),
                 output_log_level=None,
                 borg_local_path=local_path,
@@ -595,7 +596,8 @@ def restore_data_source_dump(
         borgmatic.logger.Log_prefix(None),  # Log command output without any prefix.
         borgmatic.execute.Generator_reader(
             borgmatic.execute.log_outputs(
-                processes=(extract_process,),
+                main_process=extract_process,
+                stream_processes=(),
                 exclude_stdouts=(),
                 output_log_level=None,
                 borg_local_path=config.get('local_path', 'borg'),

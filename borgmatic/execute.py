@@ -527,8 +527,12 @@ def log_remaining_buffer_lines(
                     yield log_record.getMessage()
 
 
+ALL_STREAM_PROCESSES_EXITED = object()
+
+
 def log_outputs(
-    processes,
+    main_process,
+    stream_processes,
     exclude_stdouts,
     output_log_level,
     borg_local_path,
@@ -537,15 +541,20 @@ def log_outputs(
     output_raw_bytes=False,
 ):
     '''
-    Given a sequence of subprocess.Popen() instances for multiple processes, log the outputs (stderr
-    and stdout). Use the requested output log level for stdout, but always log stderr to the ERROR
-    log level. Additionally, raise a CalledProcessError if a process exits with an error (or a
-    warning for exit code 1, if that process does not match the Borg local path).
+    Given a subprocess.Popen() main process and a sequence of subprocess.Popen() instances for
+    related stream processes, log the outputs (stderr and stdout). Use the requested output log
+    level for stdout, but always log stderr to the ERROR log level. Additionally, raise a
+    CalledProcessError if a process exits with an error (or a warning for exit code 1, if that
+    process does not match the Borg local path).
 
-    If the output log level is None, then instead of logging, capture the output for the last
+    If the output log level is None, then instead of logging, capture the output for the main
     process given and yield it one line at a time (or as raw byte chunks if output raw bytes is
     True). This includes stderr if capture stderr is set. But if the output log level is not None,
     don't yield anything.
+
+    One exception to that: If stream processes are given, then yield an ALL_STREAM_PROCESSES_EXITED
+    sentinel once all stream processes have exited. This is so that callers can take action on
+    stream processes finishing, even if the main process is still going.
 
     This yielding means that this function is a generator, and must be consumed in order to execute.
 
@@ -554,19 +563,19 @@ def log_outputs(
     buffers. Also note that stdout for a process can be None if output is intentionally not
     captured, in which case it won't be logged.
     '''
-    # Map from output buffer to Process_metadata instance. By convention, the last process is the
-    # process to capture.
+    # Map from output buffer to Process_metadata instance.
     process_metadatas = {
-        process: Process_metadata(last_lines=[], capture=bool(process == processes[-1]))
-        for process in processes
+        process: Process_metadata(last_lines=[], capture=False) for process in stream_processes
     }
+    process_metadatas[main_process] = Process_metadata(last_lines=[], capture=True)
+    all_stream_processes_exited = False
 
     # Map from buffer to Buffer_reader instance.
     buffer_readers = {
         buffer: Buffer_reader(read_byte_chunks(buffer, process), process, raw=True)
         if output_raw_bytes and process_metadatas[process].capture and buffer == process.stdout
         else Buffer_reader(read_lines(buffer, process), process, raw=False)
-        for process in processes
+        for process in process_metadatas
         if process.stdout or process.stderr
         for buffer in output_buffers_for_process(process, exclude_stdouts)
     }
@@ -594,7 +603,15 @@ def log_outputs(
         ):
             break
 
-        if all(process.poll() is not None for process in processes):
+        if (
+            stream_processes
+            and not all_stream_processes_exited
+            and all(process.poll() is not None for process in stream_processes)
+        ):
+            all_stream_processes_exited = True
+            yield ALL_STREAM_PROCESSES_EXITED
+
+        if all(process.poll() is not None for process in process_metadatas):
             break
 
     # Now that all processes have exited, drain and consume any last output.
@@ -717,11 +734,12 @@ def execute_command(
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
         tuple(
             log_outputs(
-                (process,),
-                (input_file, output_file),
-                output_log_level,
-                borg_local_path,
-                borg_exit_codes,
+                main_process=process,
+                stream_processes=(),
+                exclude_stdouts=(input_file, output_file),
+                output_log_level=output_log_level,
+                borg_local_path=borg_local_path,
+                borg_exit_codes=borg_exit_codes,
             )
         )
 
@@ -787,11 +805,12 @@ def execute_command_and_capture_output(
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
         yield from log_outputs(
-            (process,),
-            (input_file,),
-            output_log_level,
-            borg_local_path,
-            borg_exit_codes,
+            main_process=process,
+            stream_processes=(),
+            exclude_stdouts=(input_file,),
+            output_log_level=output_log_level,
+            borg_local_path=borg_local_path,
+            borg_exit_codes=borg_exit_codes,
             capture_stderr=capture_stderr,
         )
 
@@ -819,6 +838,10 @@ def execute_command_with_processes(
     if output log level is None, instead suppress logging and return the captured output for (only)
     the given command as a generator that yields one line at a time. The generator must be consumed
     in order for the called command to execute—regardless of the output log level.
+
+    One exception to that: If additional processes are given, then yield an
+    ALL_STREAM_PROCESSES_EXITED sentinel once all of those processes have exited. This is so that
+    callers can take action on stream processes finishing, even if the main process is still going.
 
     If an open input file object is given, then read stdin from the file. If shell is True, execute
     the command within a shell. If an environment variables dict is given, then pass it into the
@@ -863,11 +886,12 @@ def execute_command_with_processes(
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
         yield from log_outputs(
-            (*processes, command_process),
-            (input_file, output_file),
-            output_log_level,
-            borg_local_path,
-            borg_exit_codes,
+            main_process=command_process,
+            stream_processes=processes,
+            exclude_stdouts=(input_file, output_file),
+            output_log_level=output_log_level,
+            borg_local_path=borg_local_path,
+            borg_exit_codes=borg_exit_codes,
         )
 
 
