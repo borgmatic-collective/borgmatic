@@ -356,7 +356,7 @@ def test_log_outputs_logs_multiline_error_output():
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
     process = subprocess.Popen(
-        ['python', '-c', 'foopydoo'],
+        [sys.executable, '-c', 'foopydoo'],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
@@ -722,7 +722,7 @@ def test_log_outputs_with_unfinished_process_waits_for_it():
 def test_log_outputs_includes_error_output_when_output_spans_multiple_chunks():
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.ERROR)
-    flexmock(module).should_receive('command_for_process').and_return('python')
+    flexmock(module).should_receive('command_for_process').and_return(sys.executable)
 
     process = subprocess.Popen(
         [
