@@ -418,12 +418,12 @@ def test_log_outputs_kills_other_processes_and_raises_when_one_errors():
         None,
     ).and_return(module.Exit_status.ERROR)
     other_process = subprocess.Popen(
-        ['sleep', '2'],
+        ['sleep', '20'],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
     flexmock(module).should_receive('interpret_exit_code').with_args(
-        ['sleep', '2'],
+        ['sleep', '20'],
         None,
         'borg',
         None,
@@ -465,12 +465,12 @@ def test_log_outputs_kills_other_processes_and_returns_when_one_exits_with_warni
         None,
     ).and_return(module.Exit_status.WARNING)
     other_process = subprocess.Popen(
-        ['sleep', '2'],
+        ['sleep', '20'],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
     flexmock(module).should_receive('interpret_exit_code').with_args(
-        ['sleep', '2'],
+        ['sleep', '20'],
         object,  # Depending on timing, the exit code can vary. So don't expect a particular code.
         'borg',
         None,
@@ -511,12 +511,12 @@ def test_log_outputs_yields_sentinel_as_soon_as_all_stream_processes_exit():
         None,
     ).and_return(module.Exit_status.SUCCESS)
     other_process = subprocess.Popen(
-        ['sleep', '2'],
+        ['sleep', '20'],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
     flexmock(module).should_receive('interpret_exit_code').with_args(
-        ['sleep', '2'],
+        ['sleep', '20'],
         object,  # Depending on timing, the exit code can vary. So don't expect a particular code.
         'borg',
         None,
