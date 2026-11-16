@@ -13,6 +13,7 @@
  * Repository retries are no longer round-robin with retries interleaved between repositories. Now,
    each repository's actions are retried until they succeed or the repository's retries are
    exhausted. This simplifies per-repository monitoring hooks.
+ * Add support for Python 3.15.
 
 2.2.0
  * #1273: Add a tarballs hook for backing up and restoring tar files while retaining full Borg
