@@ -10,6 +10,7 @@
    is set to just a UUID.
  * #1386: Add a "data_source_dumps" command hook, run before or after database dumps and filesystem
    snapshots for all data source hooks.
+ * #1387: Fix the "spot" check to correctly hash source paths containing Borg's "slashdot" hack.
  * Repository retries are no longer round-robin with retries interleaved between repositories. Now,
    each repository's actions are retried until they succeed or the repository's retries are
    exhausted. This simplifies per-repository monitoring hooks.

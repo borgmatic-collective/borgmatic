@@ -350,23 +350,126 @@ def upgrade_check_times(config, borg_repository_id):
         shutil.move(temporary_path, new_path)
 
 
+def collect_and_process_patterns(
+    repository, archive, config, local_borg_version, global_arguments, borgmatic_runtime_directory
+):
+    '''
+    Given a repository configuration dict, an archive name, a configuration dict, the local Borg
+    version, global arguments as an argparse.Namespace instance, and the borgmatic runtime
+    directory, collect, process, and return the configured patterns.
+    '''
+    working_directory = borgmatic.config.paths.get_working_directory(config)
+    bootstrap_config_paths = borgmatic.actions.config.bootstrap.load_config_paths_from_archive(
+        repository['path'],
+        archive,
+        config,
+        local_borg_version,
+        global_arguments,
+        borgmatic_runtime_directory,
+    )
+
+    return borgmatic.actions.pattern.process_patterns(
+        borgmatic.actions.pattern.collect_patterns(config, working_directory)
+        + tuple(
+            borgmatic.borg.pattern.Pattern(
+                config_path,
+                source=borgmatic.borg.pattern.Pattern_source.INTERNAL,
+            )
+            for config_path in bootstrap_config_paths
+        ),
+        config,
+        working_directory,
+    )
+
+
+def make_borg_archive_path(path):
+    '''
+    Given a path, return a copy with any run of leading ".." or "/" path components removed. The
+    intent is to mirror what Borg does when storing paths as relative to the root of the archive
+    (without a leading "/").
+
+    Return "." if no path components remain.
+    '''
+    components = path.split(os.path.sep)
+
+    for index, component in enumerate(components):
+        if component in {'..', ''}:
+            continue
+
+        return os.path.sep.join(components[index:]) or '.'
+
+    return '.'
+
+
+def make_source_to_archive_root_map(patterns):
+    '''
+    Given a sequence of processed patterns, return a sequence of tuples mapping from each root
+    pattern path (normalized) to that path rewritten in the same way that Borg rewrites paths for
+    storing in a Borg archive. This means that slashdot hacks ("/./") are applied, leading slashes
+    are removed, etc.
+    '''
+    root_paths = []
+
+    for pattern in patterns:
+        if pattern.type != borgmatic.borg.pattern.Pattern_type.ROOT:
+            continue
+
+        slashdot_position = pattern.path.find('/./')
+        normalized_source_path = os.path.normpath(pattern.path)
+
+        # If there's no slashdot hack in the path, just use the normalized path.
+        if slashdot_position <= 0:
+            root_paths.append(
+                (normalized_source_path, make_borg_archive_path(normalized_source_path))
+            )
+
+            continue
+
+        strip_prefix = os.path.normpath(pattern.path[:slashdot_position]) + os.path.sep
+
+        # If basically the entire path gets stripped off, that just leaves "." to store in the
+        # archive. This can happen due to normalization, e.g. when the pattern path is something
+        # like "/foo/./bar/..".
+        if normalized_source_path + os.path.sep == strip_prefix:
+            root_paths.append((normalized_source_path, '.'))
+
+            continue
+
+        if normalized_source_path.startswith(strip_prefix):
+            root_paths.append(
+                (
+                    normalized_source_path,
+                    make_borg_archive_path(normalized_source_path.removeprefix(strip_prefix)),
+                )
+            )
+
+            continue
+
+        # After normalization, the slashdot isn't there anymore. There must have been a subsequent
+        # ".." that removed it. Example: "/foo/./..".
+        root_paths.append((normalized_source_path, make_borg_archive_path(normalized_source_path)))
+
+    # Sort by longest source paths first, as they're the most specific matches. This is important
+    # for edge cases where Borg stores a given file based on source path but not another (e.g. due
+    # to the "one_file_system" option being set).
+    return tuple(sorted(root_paths, key=lambda paths: len(paths[0]), reverse=True))
+
+
 def collect_spot_check_source_paths(
     repository,
     config,
+    patterns,
     local_borg_version,
     global_arguments,
     local_path,
     remote_path,
     borgmatic_runtime_directory,
-    bootstrap_config_paths,
 ):
     '''
-    Given a repository configuration dict, a configuration dict, the local Borg version, global
-    arguments as an argparse.Namespace instance, the local Borg path, the remote Borg path, and the
-    bootstrap configuration paths as read from an archive's manifest, collect the source paths that
-    Borg would use in an actual create (but only include files). As part of this, include the
-    bootstrap configuration paths, so that any configuration files included in the archive to
-    support bootstrapping are also spot checked.
+    Given a repository configuration dict, a configuration dict, processed patterns from the
+    configuration, the local Borg version, global arguments as an argparse.Namespace instance, the
+    local Borg path, the remote Borg path, and the borgmatic runtime directory, collect the source
+    paths that Borg would use in an actual create (but only include files).
     '''
     stream_processes = any(
         borgmatic.hooks.dispatch.call_hooks(
@@ -382,18 +485,7 @@ def collect_spot_check_source_paths(
         repository_path=repository['path'],
         # Omit "progress" because it interferes with "list_details".
         config=dict(config, progress=False, list_details=True),
-        patterns=borgmatic.actions.pattern.process_patterns(
-            borgmatic.actions.pattern.collect_patterns(config, working_directory)
-            + tuple(
-                borgmatic.borg.pattern.Pattern(
-                    config_path,
-                    source=borgmatic.borg.pattern.Pattern_source.INTERNAL,
-                )
-                for config_path in bootstrap_config_paths
-            ),
-            config,
-            working_directory,
-        ),
+        patterns=patterns,
         local_borg_version=local_borg_version,
         global_arguments=global_arguments,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
@@ -401,7 +493,6 @@ def collect_spot_check_source_paths(
         remote_path=remote_path,
         stream_processes=stream_processes,
     )
-    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     path_lines = borgmatic.execute.execute_command_and_capture_output(
         create_flags + create_positional_arguments,
@@ -447,14 +538,15 @@ def collect_spot_check_archive_paths(
     Given a repository configuration dict, the name of the latest archive, a configuration dict, the
     local Borg version, global arguments as an argparse.Namespace instance, the local Borg path, the
     remote Borg path, and the borgmatic runtime directory, collect the paths from the given archive
-    (but only include files and symlinks and exclude borgmatic runtime directories).
+    (but only include files and symlinks and exclude borgmatic runtime directories) and return them
+    as a set.
 
     These paths do not have a leading slash, as that's how Borg stores them. As a result, we don't
     know whether they came from absolute or relative source directories.
     '''
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
-    return tuple(
+    return {
         entry['path']
         for entry in borgmatic.borg.list.capture_archive_listing(
             repository['path'],
@@ -471,10 +563,7 @@ def collect_spot_check_archive_paths(
         not in pathlib.Path(entry['path']).parents
         if pathlib.Path(borgmatic_runtime_directory.lstrip(os.path.sep))
         not in pathlib.Path(entry['path']).parents
-    )
-
-
-SAMPLE_PATHS_SUBSET_COUNT = 5000
+    }
 
 
 def compare_spot_check_hashes(
@@ -486,13 +575,16 @@ def compare_spot_check_hashes(
     local_path,
     remote_path,
     source_paths,
+    archive_paths,
+    source_to_archive_root_paths,
 ):
     '''
     Given a repository configuration dict, the name of the latest archive, a configuration dict, the
     local Borg version, global arguments as an argparse.Namespace instance, the local Borg path, the
-    remote Borg path, and spot check source paths, compare the hashes for a sampling of the source
-    paths with hashes from corresponding paths in the given archive. Return a sequence of the paths
-    that fail that hash comparison.
+    remote Borg path, a sequence of spot check source paths, a set of Borg archive paths, and a
+    sequence of tuples mapping from source root path to archive root path, compare the hashes for a
+    sampling of the source paths with hashes from corresponding paths in the given archive. Return a
+    sequence of the paths that fail that hash comparison.
     '''
     # Based on the configured sample percentage, come up with a list of random sample files from the
     # source directories.
@@ -517,6 +609,8 @@ def compare_spot_check_hashes(
     source_sample_paths_iterator = iter(source_sample_paths)
     source_hashes = {}
     archive_hashes = {}
+    hard_link_archive_paths = set()
+    source_to_archive_paths = {}
 
     # Only hash a few thousand files at a time (a subset of the total paths) to avoid an "Argument
     # list too long" shell error.
@@ -598,6 +692,18 @@ def compare_spot_check_hashes(
                     )
                     source_hashes[hash_path] = ''
 
+        source_to_archive_paths.update(
+            {
+                source_path: map_source_path_to_archive_path(
+                    source_path, archive_paths, source_to_archive_root_paths
+                )
+                for source_path in source_sample_paths_subset
+            }
+        )
+        archive_sample_paths_subset = tuple(
+            source_to_archive_paths[source_path] for source_path in source_sample_paths_subset
+        )
+
         # Get the hash for each file in the archive.
         for entry in borgmatic.borg.list.capture_archive_listing(
             repository['path'],
@@ -605,7 +711,7 @@ def compare_spot_check_hashes(
             config,
             local_borg_version,
             global_arguments,
-            list_paths=source_sample_paths_subset,
+            list_paths=archive_sample_paths_subset,
             path_format='{xxh64}{path}{linktarget}{target}',
             local_path=local_path,
             remote_path=remote_path,
@@ -614,9 +720,10 @@ def compare_spot_check_hashes(
                 continue
 
             # Borg can't get hashes of stored hard links. So if this is a hard link path (and not
-            # deemed as the "original" by Borg), then skip hashing of it.
+            # deemed as the "original" by Borg), then save it off so we can skip hashing of it
+            # below.
             if entry.get('linktarget') or entry.get('target'):
-                source_hashes.pop(os.path.join('/', entry['path']), None)
+                hard_link_archive_paths.add(entry['path'])
                 continue
 
             archive_hashes[entry['path']] = entry['xxh64']
@@ -624,15 +731,75 @@ def compare_spot_check_hashes(
     # Compare the source hashes with the archive hashes to see how many match.
     failing_paths = []
 
-    for path, source_hash in source_hashes.items():
-        archive_hash = archive_hashes.get(path.lstrip(os.path.sep))
+    for source_path, source_hash in source_hashes.items():
+        archive_path = source_to_archive_paths[source_path]
+
+        if archive_path in hard_link_archive_paths:
+            continue
+
+        archive_hash = archive_hashes.get(archive_path)
 
         if archive_hash is not None and archive_hash == source_hash:
             continue
 
-        failing_paths.append(path)
+        failing_paths.append(source_path)
 
     return tuple(failing_paths)
+
+
+def replace_root_path_prefix(source_path, source_root_path, archive_root_path):
+    '''
+    Given a source path, replace the given source root prefix with the given archive root prefix and
+    return the resulting archive path.
+    '''
+    return make_borg_archive_path(
+        os.path.normpath(
+            archive_root_path
+            if source_path == source_root_path
+            else os.path.join(
+                archive_root_path,
+                source_path.removeprefix(source_root_path + os.path.sep),
+            )
+        )
+    )
+
+
+def map_source_path_to_archive_path(source_path, archive_paths, source_to_archive_root_paths):
+    '''
+    Given a normalized source path, a set of Borg paths actually found in the archive, and a
+    sequence of tuples mapping from normalized source root paths to archive root paths, return the
+    given normalized source path rewritten as a Borg archive path. This means replacing the source
+    root prefix in the normalized source path with the corresponding archive root prefix, preferring
+    the longest candidate path that actually exists in the given archive paths—falling back to the
+    longest candidate. If there's no such source root prefix, then just return the source path with
+    any leading "/" or ".." stripped.
+    '''
+    candidate_archive_paths = (
+        archive_path
+        for source_root_path, archive_root_path in source_to_archive_root_paths
+        # We only care about root paths that actually prefix this source path.
+        if source_path.startswith(source_root_path + os.path.sep) or source_path == source_root_path
+        for archive_path in (
+            replace_root_path_prefix(source_path, source_root_path, archive_root_path),
+        )
+    )
+
+    try:
+        return next(
+            iter(
+                sorted(
+                    candidate_archive_paths,
+                    # Prefer archive paths that are actually in the archive. (False sorts before
+                    # True, hence the "not".)
+                    key=lambda archive_path: not bool(archive_path in archive_paths),
+                )
+            )
+        )
+    except StopIteration:
+        return make_borg_archive_path(source_path)
+
+
+SAMPLE_PATHS_SUBSET_COUNT = 5000
 
 
 MAX_SPOT_CHECK_PATHS_LENGTH = 1000
@@ -679,22 +846,23 @@ def spot_check(
     )
     logger.debug(f'Using archive {archive} for spot check')
 
+    patterns = collect_and_process_patterns(
+        repository,
+        archive,
+        config,
+        local_borg_version,
+        global_arguments,
+        borgmatic_runtime_directory,
+    )
     source_paths = collect_spot_check_source_paths(
         repository,
         config,
+        patterns,
         local_borg_version,
         global_arguments,
         local_path,
         remote_path,
         borgmatic_runtime_directory,
-        bootstrap_config_paths=borgmatic.actions.config.bootstrap.load_config_paths_from_archive(
-            repository['path'],
-            archive,
-            config,
-            local_borg_version,
-            global_arguments,
-            borgmatic_runtime_directory,
-        ),
     )
     logger.debug(f'{len(source_paths)} total source paths for spot check')
 
@@ -712,7 +880,7 @@ def spot_check(
 
     if len(source_paths) == 0:
         truncated_archive_paths = textwrap.shorten(
-            ', '.join(set(archive_paths)) or 'none',
+            ', '.join(sorted(archive_paths)) or 'none',
             width=MAX_SPOT_CHECK_PATHS_LENGTH,
             placeholder=' ...',
         )
@@ -721,19 +889,37 @@ def spot_check(
             'Spot check failed; there are no source paths to compare against the archive',
         )
 
+    source_to_archive_root_paths = make_source_to_archive_root_map(patterns)
+
     # Calculate the percentage delta between the source paths count and the archive paths count, and
     # compare that delta to the configured count tolerance percentage.
     count_delta_percentage = abs(len(source_paths) - len(archive_paths)) / len(source_paths) * 100
 
     if count_delta_percentage > spot_check_config['count_tolerance_percentage']:
-        rootless_source_paths = {path.lstrip(os.path.sep) for path in source_paths}
+        source_to_archive_paths = {
+            source_path: map_source_path_to_archive_path(
+                source_path, archive_paths, source_to_archive_root_paths
+            )
+            for source_path in source_paths
+        }
+        exclusive_source_paths = tuple(
+            source_path
+            for source_path, archive_path in source_to_archive_paths.items()
+            if archive_path not in archive_paths
+        )
         truncated_exclusive_source_paths = textwrap.shorten(
-            ', '.join(rootless_source_paths - set(archive_paths)) or 'none',
+            ', '.join(exclusive_source_paths) or 'none',
             width=MAX_SPOT_CHECK_PATHS_LENGTH,
             placeholder=' ...',
         )
+        mapped_archive_paths = set(source_to_archive_paths.values())
+        exclusive_archive_paths = sorted(
+            archive_path
+            for archive_path in archive_paths
+            if archive_path not in mapped_archive_paths
+        )
         truncated_exclusive_archive_paths = textwrap.shorten(
-            ', '.join(set(archive_paths) - rootless_source_paths) or 'none',
+            ', '.join(exclusive_archive_paths) or 'none',
             width=MAX_SPOT_CHECK_PATHS_LENGTH,
             placeholder=' ...',
         )
@@ -750,6 +936,8 @@ def spot_check(
         local_path,
         remote_path,
         source_paths,
+        archive_paths,
+        source_to_archive_root_paths,
     )
 
     # Error if the percentage of failing hashes exceeds the configured tolerance percentage.
