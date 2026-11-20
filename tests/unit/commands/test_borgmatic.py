@@ -1013,7 +1013,7 @@ def test_run_configuration_skips_remaining_actions_for_actions_soft_failure_but_
     flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
+    error = subprocess.CalledProcessError(module.borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     log = flexmock()
     config = {'repositories': [{'path': 'foo'}, {'path': 'bar'}]}
     flexmock(module).should_receive('run_repository').twice().and_raise(error).and_yield(log)
@@ -1116,7 +1116,7 @@ def test_run_configuration_bails_for_on_error_hook_soft_failure():
     flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
+    error = subprocess.CalledProcessError(module.borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     flexmock(module.command).should_receive('filter_hooks')
     flexmock(module.command).should_receive('execute_hooks').and_raise(error)
     expected_results = [flexmock()]
@@ -1143,7 +1143,7 @@ def test_run_actions_runs_repo_create():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.repo_create).should_receive('run_repo_create').once()
+    flexmock(module.borgmatic.actions.repo_create).should_receive('run_repo_create').once()
 
     tuple(
         module.run_actions(
@@ -1170,7 +1170,7 @@ def test_run_actions_with_matching_repository_flag_runs_repo_create():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.repo_create).should_receive('run_repo_create').once()
+    flexmock(module.borgmatic.actions.repo_create).should_receive('run_repo_create').once()
 
     tuple(
         module.run_actions(
@@ -1197,7 +1197,7 @@ def test_run_actions_with_non_matching_repository_flag_bails():
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').never()
     flexmock(module.command).should_receive('Before_after_hooks').never()
-    flexmock(borgmatic.actions.repo_create).should_receive('run_repo_create').never()
+    flexmock(module.borgmatic.actions.repo_create).should_receive('run_repo_create').never()
 
     tuple(
         module.run_actions(
@@ -1225,7 +1225,7 @@ def test_run_actions_adds_label_file_to_hook_context():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
-    flexmock(borgmatic.actions.create).should_receive('run_create').with_args(
+    flexmock(module.borgmatic.actions.create).should_receive('run_create').with_args(
         config_filename=object,
         repository={'path': 'repo', 'label': 'my repo'},
         config={'repositories': []},
@@ -1263,7 +1263,7 @@ def test_run_actions_adds_log_file_to_hook_context():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
-    flexmock(borgmatic.actions.create).should_receive('run_create').with_args(
+    flexmock(module.borgmatic.actions.create).should_receive('run_create').with_args(
         config_filename=object,
         repository={'path': 'repo'},
         config={'repositories': [], 'log_file': 'foo'},
@@ -1300,7 +1300,7 @@ def test_run_actions_runs_transfer():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.transfer).should_receive('run_transfer').once()
+    flexmock(module.borgmatic.actions.transfer).should_receive('run_transfer').once()
 
     tuple(
         module.run_actions(
@@ -1325,7 +1325,7 @@ def test_run_actions_runs_create():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
-    flexmock(borgmatic.actions.create).should_receive('run_create').and_yield(expected).once()
+    flexmock(module.borgmatic.actions.create).should_receive('run_create').and_yield(expected).once()
 
     result = tuple(
         module.run_actions(
@@ -1363,7 +1363,7 @@ def test_run_actions_with_skip_actions_does_not_run_action_or_action_command_hoo
         repositories=object,
         repository=object,
     ).never()
-    flexmock(borgmatic.actions.create).should_receive('run_create').never()
+    flexmock(module.borgmatic.actions.create).should_receive('run_create').never()
 
     tuple(
         module.run_actions(
@@ -1388,7 +1388,7 @@ def test_run_actions_runs_recreate():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
 
-    flexmock(borgmatic.actions.recreate).should_receive('run_recreate').once()
+    flexmock(module.borgmatic.actions.recreate).should_receive('run_recreate').once()
 
     tuple(
         module.run_actions(
@@ -1412,7 +1412,7 @@ def test_run_actions_runs_prune():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.prune).should_receive('run_prune').once()
+    flexmock(module.borgmatic.actions.prune).should_receive('run_prune').once()
 
     tuple(
         module.run_actions(
@@ -1436,7 +1436,7 @@ def test_run_actions_runs_compact():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.compact).should_receive('run_compact').once()
+    flexmock(module.borgmatic.actions.compact).should_receive('run_compact').once()
 
     tuple(
         module.run_actions(
@@ -1461,7 +1461,7 @@ def test_run_actions_runs_check_when_repository_enabled_for_checks():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(True)
-    flexmock(borgmatic.actions.check).should_receive('run_check').once()
+    flexmock(module.borgmatic.actions.check.run).should_receive('run_check').once()
 
     tuple(
         module.run_actions(
@@ -1486,7 +1486,7 @@ def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(False)
-    flexmock(borgmatic.actions.check).should_receive('run_check').never()
+    flexmock(module.borgmatic.actions.check.run).should_receive('run_check').never()
 
     tuple(
         module.run_actions(
@@ -1510,7 +1510,7 @@ def test_run_actions_runs_extract():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.extract).should_receive('run_extract').once()
+    flexmock(module.borgmatic.actions.extract).should_receive('run_extract').once()
 
     tuple(
         module.run_actions(
@@ -1534,7 +1534,7 @@ def test_run_actions_runs_export_tar():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.export_tar).should_receive('run_export_tar').once()
+    flexmock(module.borgmatic.actions.export_tar).should_receive('run_export_tar').once()
 
     tuple(
         module.run_actions(
@@ -1558,7 +1558,7 @@ def test_run_actions_runs_mount():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.mount).should_receive('run_mount').once()
+    flexmock(module.borgmatic.actions.mount).should_receive('run_mount').once()
 
     tuple(
         module.run_actions(
@@ -1582,7 +1582,7 @@ def test_run_actions_runs_restore():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.restore).should_receive('run_restore').once()
+    flexmock(module.borgmatic.actions.restore).should_receive('run_restore').once()
 
     tuple(
         module.run_actions(
@@ -1607,7 +1607,7 @@ def test_run_actions_runs_repo_list():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
-    flexmock(borgmatic.actions.repo_list).should_receive('run_repo_list').and_yield(expected).once()
+    flexmock(module.borgmatic.actions.repo_list).should_receive('run_repo_list').and_yield(expected).once()
 
     result = tuple(
         module.run_actions(
@@ -1633,7 +1633,7 @@ def test_run_actions_runs_list():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
-    flexmock(borgmatic.actions.list).should_receive('run_list').and_yield(expected).once()
+    flexmock(module.borgmatic.actions.list).should_receive('run_list').and_yield(expected).once()
 
     result = tuple(
         module.run_actions(
@@ -1659,7 +1659,7 @@ def test_run_actions_runs_repo_info():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
-    flexmock(borgmatic.actions.repo_info).should_receive('run_repo_info').and_yield(expected).once()
+    flexmock(module.borgmatic.actions.repo_info).should_receive('run_repo_info').and_yield(expected).once()
 
     result = tuple(
         module.run_actions(
@@ -1685,7 +1685,7 @@ def test_run_actions_runs_info():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
-    flexmock(borgmatic.actions.info).should_receive('run_info').and_yield(expected).once()
+    flexmock(module.borgmatic.actions.info).should_receive('run_info').and_yield(expected).once()
 
     result = tuple(
         module.run_actions(
@@ -1710,7 +1710,7 @@ def test_run_actions_runs_break_lock():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.break_lock).should_receive('run_break_lock').once()
+    flexmock(module.borgmatic.actions.break_lock).should_receive('run_break_lock').once()
 
     tuple(
         module.run_actions(
@@ -1734,7 +1734,7 @@ def test_run_actions_runs_export_key():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.export_key).should_receive('run_export_key').once()
+    flexmock(module.borgmatic.actions.export_key).should_receive('run_export_key').once()
 
     tuple(
         module.run_actions(
@@ -1758,7 +1758,7 @@ def test_run_actions_runs_import_key():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.import_key).should_receive('run_import_key').once()
+    flexmock(module.borgmatic.actions.import_key).should_receive('run_import_key').once()
 
     tuple(
         module.run_actions(
@@ -1782,7 +1782,7 @@ def test_run_actions_runs_change_passphrase():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.change_passphrase).should_receive('run_change_passphrase').once()
+    flexmock(module.borgmatic.actions.change_passphrase).should_receive('run_change_passphrase').once()
 
     tuple(
         module.run_actions(
@@ -1809,7 +1809,7 @@ def test_run_actions_runs_delete():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.delete).should_receive('run_delete').once()
+    flexmock(module.borgmatic.actions.delete).should_receive('run_delete').once()
 
     tuple(
         module.run_actions(
@@ -1833,7 +1833,7 @@ def test_run_actions_runs_repo_delete():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.repo_delete).should_receive('run_repo_delete').once()
+    flexmock(module.borgmatic.actions.repo_delete).should_receive('run_repo_delete').once()
 
     tuple(
         module.run_actions(
@@ -1860,7 +1860,7 @@ def test_run_actions_runs_borg():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.borg).should_receive('run_borg').once()
+    flexmock(module.borgmatic.actions.borg).should_receive('run_borg').once()
 
     tuple(
         module.run_actions(
@@ -1884,8 +1884,8 @@ def test_run_actions_runs_multiple_actions_in_argument_order():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.borg).should_receive('run_borg').once().ordered()
-    flexmock(borgmatic.actions.restore).should_receive('run_restore').once().ordered()
+    flexmock(module.borgmatic.actions.borg).should_receive('run_borg').once().ordered()
+    flexmock(module.borgmatic.actions.restore).should_receive('run_restore').once().ordered()
 
     tuple(
         module.run_actions(
@@ -1929,8 +1929,8 @@ def test_run_actions_runs_action_hooks_for_one_action_at_a_time():
             repository=object,
         ).and_return(flexmock()).once()
 
-    flexmock(borgmatic.actions.borg).should_receive('run_borg')
-    flexmock(borgmatic.actions.restore).should_receive('run_restore')
+    flexmock(module.borgmatic.actions.borg).should_receive('run_borg')
+    flexmock(module.borgmatic.actions.restore).should_receive('run_restore')
 
     tuple(
         module.run_actions(
@@ -2998,7 +2998,7 @@ def test_run_actions_runs_diff():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.diff).should_receive('run_diff').once()
+    flexmock(module.borgmatic.actions.diff).should_receive('run_diff').once()
 
     tuple(
         module.run_actions(
