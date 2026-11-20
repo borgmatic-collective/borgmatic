@@ -4,7 +4,9 @@ from borgmatic.actions.browse import workers as module
 
 
 def test_archive_path_loaded_publish_records_complete():
-    signal = module.Archive_path_loaded(owner=flexmock(), name='Bob')
+    signal = module.Archive_path_loaded(
+        owner=flexmock(is_attached=True, ancestors_with_self=[]), name='Bob'
+    )
     signal.publish(module.LOADING_DONE)
 
     assert signal.complete
@@ -12,7 +14,9 @@ def test_archive_path_loaded_publish_records_complete():
 
 def test_archive_path_loaded_publish_records_published_paths():
     archive_path = module.borgmatic.actions.browse.archive.Archive_path('-', 'foo/bar.txt', '', 5)
-    signal = module.Archive_path_loaded(owner=flexmock(), name='Bob')
+    signal = module.Archive_path_loaded(
+        owner=flexmock(is_attached=True, ancestors_with_self=[]), name='Bob'
+    )
     signal.publish((archive_path,))
 
     assert signal.path_hierarchy == {'foo': {'bar.txt': archive_path}}
