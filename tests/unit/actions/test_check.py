@@ -604,7 +604,7 @@ def test_collect_spot_check_source_paths_parses_borg_output_and_includes_bootstr
         dry_run=True,
         repository_path='repo',
         config=object,
-        patterns=[Pattern('foo'), Pattern('bar')],
+        patterns=object,
         local_borg_version=object,
         global_arguments=object,
         borgmatic_runtime_directory='/run/borgmatic',
@@ -629,12 +629,12 @@ def test_collect_spot_check_source_paths_parses_borg_output_and_includes_bootstr
     assert module.collect_spot_check_source_paths(
         repository={'path': 'repo'},
         config={'working_directory': '/'},
+        patterns=flexmock(),
         local_borg_version=flexmock(),
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
-        bootstrap_config_paths=('extra.yaml',),
     ) == ('/etc/path', '/etc/other')
 
 
@@ -655,7 +655,7 @@ def test_collect_spot_check_source_paths_omits_progress_from_create_dry_run_comm
         dry_run=True,
         repository_path='repo',
         config={'working_directory': '/', 'progress': False, 'list_details': True},
-        patterns=[Pattern('foo'), Pattern('bar')],
+        patterns=object,
         local_borg_version=object,
         global_arguments=object,
         borgmatic_runtime_directory='/run/borgmatic',
@@ -680,12 +680,12 @@ def test_collect_spot_check_source_paths_omits_progress_from_create_dry_run_comm
     assert module.collect_spot_check_source_paths(
         repository={'path': 'repo'},
         config={'working_directory': '/', 'progress': True},
+        patterns=flexmock(),
         local_borg_version=flexmock(),
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
-        bootstrap_config_paths=(),
     ) == ('/etc/path', '/etc/other')
 
 
@@ -706,7 +706,7 @@ def test_collect_spot_check_source_paths_passes_through_stream_processes_false()
         dry_run=True,
         repository_path='repo',
         config=object,
-        patterns=[Pattern('foo'), Pattern('bar')],
+        patterns=object,
         local_borg_version=object,
         global_arguments=object,
         borgmatic_runtime_directory='/run/borgmatic',
@@ -731,12 +731,12 @@ def test_collect_spot_check_source_paths_passes_through_stream_processes_false()
     assert module.collect_spot_check_source_paths(
         repository={'path': 'repo'},
         config={'working_directory': '/'},
+        patterns=flexmock(),
         local_borg_version=flexmock(),
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
-        bootstrap_config_paths=(),
     ) == ('/etc/path', '/etc/other')
 
 
@@ -757,7 +757,7 @@ def test_collect_spot_check_source_paths_without_working_directory_parses_borg_o
         dry_run=True,
         repository_path='repo',
         config=object,
-        patterns=[Pattern('foo'), Pattern('bar')],
+        patterns=object,
         local_borg_version=object,
         global_arguments=object,
         borgmatic_runtime_directory='/run/borgmatic',
@@ -782,12 +782,12 @@ def test_collect_spot_check_source_paths_without_working_directory_parses_borg_o
     assert module.collect_spot_check_source_paths(
         repository={'path': 'repo'},
         config={},
+        patterns=flexmock(),
         local_borg_version=flexmock(),
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
-        bootstrap_config_paths=(),
     ) == ('/etc/path', '/etc/other')
 
 
@@ -808,7 +808,7 @@ def test_collect_spot_check_source_paths_skips_directories():
         dry_run=True,
         repository_path='repo',
         config=object,
-        patterns=[Pattern('foo'), Pattern('bar')],
+        patterns=object,
         local_borg_version=object,
         global_arguments=object,
         borgmatic_runtime_directory='/run/borgmatic',
@@ -835,12 +835,12 @@ def test_collect_spot_check_source_paths_skips_directories():
         module.collect_spot_check_source_paths(
             repository={'path': 'repo'},
             config={'working_directory': '/'},
+            patterns=flexmock(),
             local_borg_version=flexmock(),
             global_arguments=flexmock(),
             local_path=flexmock(),
             remote_path=flexmock(),
             borgmatic_runtime_directory='/run/borgmatic',
-            bootstrap_config_paths=(),
         )
         == ()
     )
@@ -866,7 +866,7 @@ def test_collect_spot_check_archive_paths_excludes_directories_and_pipes():
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/user/1001/borgmatic',
-    ) == ('etc/path', 'etc/other')
+    ) == {'etc/path', 'etc/other'}
 
 
 def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_directory_as_stored_with_prefix_truncation():
@@ -887,7 +887,7 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/user/0/borgmatic',
-    ) == ('etc/path',)
+    ) == {'etc/path'}
 
 
 def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_directory():
@@ -908,7 +908,7 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_dire
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/user/0/borgmatic',
-    ) == ('etc/path',)
+    ) == {'etc/path'}
 
 
 def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_directory():
@@ -929,7 +929,7 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/user/0/borgmatic',
-    ) == ('etc/path',)
+    ) == {'etc/path'}
 
 
 def test_collect_spot_check_source_paths_uses_working_directory():
@@ -949,7 +949,7 @@ def test_collect_spot_check_source_paths_uses_working_directory():
         dry_run=True,
         repository_path='repo',
         config={'working_directory': '/working/dir', 'progress': False, 'list_details': True},
-        patterns=[Pattern('foo'), Pattern('bar')],
+        patterns=object,
         local_borg_version=object,
         global_arguments=object,
         borgmatic_runtime_directory='/run/borgmatic',
@@ -977,12 +977,12 @@ def test_collect_spot_check_source_paths_uses_working_directory():
     assert module.collect_spot_check_source_paths(
         repository={'path': 'repo'},
         config={'working_directory': '/working/dir'},
+        patterns=flexmock(),
         local_borg_version=flexmock(),
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
-        bootstrap_config_paths=(),
     ) == ('foo', 'bar')
 
 
@@ -1010,7 +1010,7 @@ def test_collect_spot_check_source_paths_deduplicates_borg_output_paths():
         dry_run=True,
         repository_path='repo',
         config=object,
-        patterns=[Pattern('foo'), Pattern('bar')],
+        patterns=object,
         local_borg_version=object,
         global_arguments=object,
         borgmatic_runtime_directory='/run/borgmatic',
@@ -1036,12 +1036,12 @@ def test_collect_spot_check_source_paths_deduplicates_borg_output_paths():
     assert module.collect_spot_check_source_paths(
         repository={'path': 'repo'},
         config={'working_directory': '/'},
+        patterns=flexmock(),
         local_borg_version=flexmock(),
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
-        bootstrap_config_paths=('extra.yaml',),
     ) == ('/etc/path', '/etc/other')
 
 
@@ -1086,6 +1086,8 @@ def test_compare_spot_check_hashes_returns_paths_having_failing_hashes():
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('/foo', '/bar', '/baz', '/quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/baz', 'baz'), ('/quux', 'quux')),
     ) == ('/bar',)
 
 
@@ -1129,6 +1131,8 @@ def test_compare_spot_check_hashes_handles_weird_backslashed_hashes_from_xxh64su
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('/foo', '/bar', '/baz', '/quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/baz', 'baz'), ('/quux', 'quux')),
     ) == ('/bar',)
 
 
@@ -1172,6 +1176,8 @@ def test_compare_spot_check_hashes_handles_incorrect_path_names_from_xxh64sum():
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('/foo', '/bar', '/baz', '/quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/baz', 'baz'), ('/quux', 'quux')),
     ) == ('/bar',)
 
 
@@ -1225,6 +1231,8 @@ def test_compare_spot_check_hashes_with_xxh64sum_failure_falls_back_to_individua
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('/foo', '/bar', '/baz', '/quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/baz', 'baz'), ('/quux', 'quux')),
     ) == ('/foo',)
 
 
@@ -1268,6 +1276,8 @@ def test_compare_spot_check_hashes_returns_relative_paths_having_failing_hashes(
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('foo', 'bar', 'baz', 'quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/baz', 'baz'), ('/quux', 'quux')),
     ) == ('bar',)
 
 
@@ -1311,6 +1321,8 @@ def test_compare_spot_check_hashes_handles_data_sample_percentage_above_100():
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('/foo', '/bar'),
+        archive_paths={'foo', 'bar'},
+        source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar')),
     ) == ('/foo', '/bar')
 
 
@@ -1351,6 +1363,8 @@ def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('/foo', '/bar', '/baz', '/quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/baz', 'baz'), ('/quux', 'quux')),
     ) == ('/bar',)
 
 
@@ -1389,6 +1403,8 @@ def test_compare_spot_check_hashes_considers_path_missing_from_archive_as_not_ma
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('/foo', '/bar', '/baz', '/quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/baz', 'baz'), ('/quux', 'quux')),
     ) == ('/bar',)
 
 
@@ -1431,6 +1447,8 @@ def test_compare_spot_check_hashes_skips_hardlink_path_in_archive():
             local_path=flexmock(),
             remote_path=flexmock(),
             source_paths=('/foo', '/bar', '/link'),
+            archive_paths={'foo', 'bar', 'link'},
+            source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/link', 'link')),
         )
         == ()
     )
@@ -1470,6 +1488,8 @@ def test_compare_spot_check_hashes_considers_symlink_path_as_not_matching():
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('/foo', '/bar', '/baz', '/quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/baz', 'baz'), ('/quux', 'quux')),
     ) == ('/bar',)
 
 
@@ -1507,6 +1527,8 @@ def test_compare_spot_check_hashes_considers_borg_2_symlink_path_as_not_matching
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('/foo', '/bar', '/baz', '/quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/baz', 'baz'), ('/quux', 'quux')),
     ) == ('/bar',)
 
 
@@ -1544,6 +1566,8 @@ def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching()
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('/foo', '/bar', '/baz', '/quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/baz', 'baz'), ('/quux', 'quux')),
     ) == ('/bar',)
 
 
@@ -1597,6 +1621,8 @@ def test_compare_spot_check_hashes_with_too_many_paths_feeds_them_to_commands_in
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('/foo', '/bar', '/baz', '/quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/baz', 'baz'), ('/quux', 'quux')),
     ) == ('/quux',)
 
 
@@ -1642,6 +1668,8 @@ def test_compare_spot_check_hashes_uses_working_directory_to_access_source_paths
         local_path=flexmock(),
         remote_path=flexmock(),
         source_paths=('foo', 'bar', 'baz', 'quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(('foo', 'foo'), ('bar', 'bar'), ('baz', 'baz'), ('quux', 'quux')),
     ) == ('bar',)
 
 
