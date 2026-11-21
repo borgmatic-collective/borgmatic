@@ -51,6 +51,7 @@ def test_collect_and_process_patterns_collects_archive_and_bootstrap_patterns():
         ('../..', '.'),
         ('/', '.'),
         ('//', '.'),
+        ('', '.'),
     ),
 )
 def test_make_borg_archive_path_strips_leading_slashes_and_dot_dots(path, expected_result):
@@ -116,6 +117,7 @@ def test_make_source_to_archive_root_map_sorts_results_by_longest_source_path():
     (
         ('/foo/bar', '/foo', 'foo', 'foo/bar'),
         ('/foo', '/foo', 'foo', 'foo'),
+        ('/foo', '/foo', '.', '.'),
     ),
 )
 def test_replace_root_path_prefix_swaps_source_root_for_archive_root(
@@ -142,6 +144,12 @@ def test_replace_root_path_prefix_swaps_source_root_for_archive_root(
             ('foo/bar/baz.txt',),
             (('/foo', '.'), ('/foo/bar', 'foo/bar')),
             'foo/bar/baz.txt',
+        ),
+        (
+            '/foo/bar/baz.txt',
+            ('.',),
+            (('/foo', '.'), ('/foo/bar', 'foo/bar')),
+            './bar/baz.txt',
         ),
         ('/foo/bar', ('foo', 'baz'), (('/hmm', 'hmm'),), 'foo/bar'),
     ),
