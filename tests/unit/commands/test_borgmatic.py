@@ -4,7 +4,6 @@ import subprocess
 import pytest
 from flexmock import flexmock
 
-import borgmatic.hooks.command
 from borgmatic.commands import borgmatic as module
 
 
@@ -1013,7 +1012,9 @@ def test_run_configuration_skips_remaining_actions_for_actions_soft_failure_but_
     flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    error = subprocess.CalledProcessError(module.borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
+    error = subprocess.CalledProcessError(
+        module.borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again'
+    )
     log = flexmock()
     config = {'repositories': [{'path': 'foo'}, {'path': 'bar'}]}
     flexmock(module).should_receive('run_repository').twice().and_raise(error).and_yield(log)
@@ -1116,7 +1117,9 @@ def test_run_configuration_bails_for_on_error_hook_soft_failure():
     flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    error = subprocess.CalledProcessError(module.borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
+    error = subprocess.CalledProcessError(
+        module.borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again'
+    )
     flexmock(module.command).should_receive('filter_hooks')
     flexmock(module.command).should_receive('execute_hooks').and_raise(error)
     expected_results = [flexmock()]
@@ -1325,7 +1328,9 @@ def test_run_actions_runs_create():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
-    flexmock(module.borgmatic.actions.create).should_receive('run_create').and_yield(expected).once()
+    flexmock(module.borgmatic.actions.create).should_receive('run_create').and_yield(
+        expected
+    ).once()
 
     result = tuple(
         module.run_actions(
@@ -1607,7 +1612,9 @@ def test_run_actions_runs_repo_list():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
-    flexmock(module.borgmatic.actions.repo_list).should_receive('run_repo_list').and_yield(expected).once()
+    flexmock(module.borgmatic.actions.repo_list).should_receive('run_repo_list').and_yield(
+        expected
+    ).once()
 
     result = tuple(
         module.run_actions(
@@ -1659,7 +1666,9 @@ def test_run_actions_runs_repo_info():
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
-    flexmock(module.borgmatic.actions.repo_info).should_receive('run_repo_info').and_yield(expected).once()
+    flexmock(module.borgmatic.actions.repo_info).should_receive('run_repo_info').and_yield(
+        expected
+    ).once()
 
     result = tuple(
         module.run_actions(
@@ -1782,7 +1791,9 @@ def test_run_actions_runs_change_passphrase():
         flexmock(),
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(module.borgmatic.actions.change_passphrase).should_receive('run_change_passphrase').once()
+    flexmock(module.borgmatic.actions.change_passphrase).should_receive(
+        'run_change_passphrase'
+    ).once()
 
     tuple(
         module.run_actions(

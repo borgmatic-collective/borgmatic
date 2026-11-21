@@ -1,8 +1,6 @@
-import pytest
 from flexmock import flexmock
 
 from borgmatic.actions.check import run as module
-from borgmatic.borg.pattern import Pattern
 
 
 def test_parse_checks_returns_them_as_tuple():
@@ -44,6 +42,14 @@ def test_parse_checks_prefers_override_checks_to_configured_checks():
     assert checks == ('repository', 'extract')
 
 
+def test_make_archives_check_id_with_flags_returns_a_value_and_does_not_raise():
+    assert module.make_archives_check_id(('--match-archives', 'sh:foo-*'))
+
+
+def test_make_archives_check_id_with_empty_flags_returns_none():
+    assert module.make_archives_check_id(()) is None
+
+
 def test_run_check_checks_archives_for_configured_repository():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.borg.check).should_receive('get_repository_id').and_return(flexmock())
@@ -51,7 +57,9 @@ def test_run_check_checks_archives_for_configured_repository():
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
     flexmock(module).should_receive('make_archives_check_id').and_return(None)
-    flexmock(module.borgmatic.actions.check.frequency).should_receive('filter_checks_on_frequency').and_return(
+    flexmock(module.borgmatic.actions.check.frequency).should_receive(
+        'filter_checks_on_frequency'
+    ).and_return(
         {'repository', 'archives'},
     )
     flexmock(module.borgmatic.borg.check).should_receive('check_archives').once()
@@ -86,7 +94,9 @@ def test_run_check_with_repair_skips_check_times():
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
     flexmock(module).should_receive('make_archives_check_id').and_return(None)
-    flexmock(module.borgmatic.actions.check.frequency).should_receive('filter_checks_on_frequency').and_return(
+    flexmock(module.borgmatic.actions.check.frequency).should_receive(
+        'filter_checks_on_frequency'
+    ).and_return(
         {'repository', 'archives'},
     )
     flexmock(module.borgmatic.borg.check).should_receive('check_archives').once()
@@ -115,13 +125,22 @@ def test_run_check_with_repair_skips_check_times():
 
 
 def test_run_check_runs_configured_extract_check():
+    config = {'repositories': ['repo'], 'checks': [{'name': 'extract'}]}
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.borg.check).should_receive('get_repository_id').and_return(flexmock())
     flexmock(module.borgmatic.actions.check.frequency).should_receive('upgrade_check_times')
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
     flexmock(module).should_receive('make_archives_check_id').and_return(None)
-    flexmock(module.borgmatic.actions.check.frequency).should_receive('filter_checks_on_frequency').and_return({'extract'})
+    flexmock(module.borgmatic.actions.check.frequency).should_receive(
+        'filter_checks_on_frequency'
+    ).with_args(
+        config,
+        object,
+        object,
+        object,
+        object,
+    ).and_return({'extract'})
     flexmock(module.borgmatic.borg.check).should_receive('check_archives').never()
     flexmock(module.borgmatic.borg.extract).should_receive('extract_last_archive_dry_run').once()
     flexmock(module.borgmatic.actions.check.frequency).should_receive('make_check_time_path')
@@ -138,7 +157,7 @@ def test_run_check_runs_configured_extract_check():
     module.run_check(
         config_filename='test.yaml',
         repository={'path': 'repo'},
-        config={'repositories': ['repo']},
+        config=config,
         local_borg_version=None,
         check_arguments=check_arguments,
         global_arguments=global_arguments,
@@ -148,13 +167,22 @@ def test_run_check_runs_configured_extract_check():
 
 
 def test_run_check_runs_configured_spot_check():
+    config = {'repositories': ['repo'], 'checks': [{'name': 'spot'}]}
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.borg.check).should_receive('get_repository_id').and_return(flexmock())
     flexmock(module.borgmatic.actions.check.frequency).should_receive('upgrade_check_times')
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
     flexmock(module).should_receive('make_archives_check_id').and_return(None)
-    flexmock(module.borgmatic.actions.check.frequency).should_receive('filter_checks_on_frequency').and_return({'spot'})
+    flexmock(module.borgmatic.actions.check.frequency).should_receive(
+        'filter_checks_on_frequency'
+    ).with_args(
+        config,
+        object,
+        object,
+        object,
+        object,
+    ).and_return({'spot'})
     flexmock(module.borgmatic.borg.check).should_receive('check_archives').never()
     flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
         flexmock(),
@@ -174,7 +202,7 @@ def test_run_check_runs_configured_spot_check():
     module.run_check(
         config_filename='test.yaml',
         repository={'path': 'repo'},
-        config={'repositories': ['repo']},
+        config=config,
         local_borg_version=None,
         check_arguments=check_arguments,
         global_arguments=global_arguments,
@@ -184,13 +212,22 @@ def test_run_check_runs_configured_spot_check():
 
 
 def test_run_check_without_checks_runs_nothing_except_hooks():
+    config = {'repositories': ['repo']}
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.borg.check).should_receive('get_repository_id').and_return(flexmock())
     flexmock(module.borgmatic.actions.check.frequency).should_receive('upgrade_check_times')
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
     flexmock(module).should_receive('make_archives_check_id').and_return(None)
-    flexmock(module.borgmatic.actions.check.frequency).should_receive('filter_checks_on_frequency').and_return({})
+    flexmock(module.borgmatic.actions.check.frequency).should_receive(
+        'filter_checks_on_frequency'
+    ).with_args(
+        config | {'checks': module.DEFAULT_CHECKS},
+        object,
+        object,
+        object,
+        object,
+    ).and_return({})
     flexmock(module.borgmatic.borg.check).should_receive('check_archives').never()
     flexmock(module.borgmatic.actions.check.frequency).should_receive('make_check_time_path')
     flexmock(module.borgmatic.actions.check.frequency).should_receive('write_check_time').never()
@@ -207,7 +244,7 @@ def test_run_check_without_checks_runs_nothing_except_hooks():
     module.run_check(
         config_filename='test.yaml',
         repository={'path': 'repo'},
-        config={'repositories': ['repo']},
+        config=config,
         local_borg_version=None,
         check_arguments=check_arguments,
         global_arguments=global_arguments,

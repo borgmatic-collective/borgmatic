@@ -1,14 +1,9 @@
-import calendar
-import contextlib
-import datetime
-import hashlib
 import itertools
 import logging
 import os
 import pathlib
 import random
 import shlex
-import shutil
 import subprocess
 import textwrap
 
@@ -24,7 +19,6 @@ import borgmatic.borg.pattern
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
 import borgmatic.execute
-
 
 SAMPLE_PATHS_SUBSET_COUNT = 5000
 MAX_SPOT_CHECK_PATHS_LENGTH = 1000
@@ -409,7 +403,9 @@ def spot_check(
             'Spot check failed; there are no source paths to compare against the archive',
         )
 
-    source_to_archive_root_paths = borgmatic.actions.check.paths.make_source_to_archive_root_map(patterns)
+    source_to_archive_root_paths = borgmatic.actions.check.paths.make_source_to_archive_root_map(
+        patterns
+    )
 
     # Calculate the percentage delta between the source paths count and the archive paths count, and
     # compare that delta to the configured count tolerance percentage.

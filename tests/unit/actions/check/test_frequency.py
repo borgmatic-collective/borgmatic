@@ -2,7 +2,6 @@ import pytest
 from flexmock import flexmock
 
 from borgmatic.actions.check import frequency as module
-from borgmatic.borg.pattern import Pattern
 
 
 @pytest.mark.parametrize(
@@ -37,6 +36,15 @@ def test_parse_frequency_parses_into_timedeltas(frequency, expected_result):
 def test_parse_frequency_raises_on_parse_error(frequency):
     with pytest.raises(ValueError):
         module.parse_frequency(frequency)
+
+
+def test_filter_checks_on_frequency_retains_unconfigured_check():
+    assert module.filter_checks_on_frequency(
+        config={'checks': [{'name': 'spot'}]},
+        borg_repository_id='repo',
+        checks=('data',),
+        force=False,
+    ) == ('data',)
 
 
 def test_filter_checks_on_frequency_retains_check_without_frequency():

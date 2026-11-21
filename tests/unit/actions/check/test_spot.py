@@ -485,9 +485,9 @@ def test_compare_spot_check_hashes_returns_paths_having_failing_hashes():
         'hash1  /foo',
         'hash2  /bar',
     )
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
         {},
@@ -539,9 +539,9 @@ def test_compare_spot_check_hashes_handles_weird_backslashed_hashes_from_xxh64su
         '\\hash1  /foo',
         '\\hash2  /bar',
     )
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
         {'xxh64': 'nothash2', 'path': 'bar', 'linktarget': ''},
@@ -592,9 +592,9 @@ def test_compare_spot_check_hashes_handles_incorrect_path_names_from_xxh64sum():
         'hash1  /foo/wrong/path',
         'hash2  /bar/wrong/path',
     )
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
         {'xxh64': 'nothash2', 'path': 'bar', 'linktarget': ''},
@@ -655,9 +655,9 @@ def test_compare_spot_check_hashes_with_xxh64sum_failure_falls_back_to_individua
         'hash2  /bar',
     ).once()
 
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
         {'xxh64': 'hash2', 'path': 'bar', 'linktarget': ''},
@@ -708,9 +708,9 @@ def test_compare_spot_check_hashes_returns_relative_paths_having_failing_hashes(
         'hash1  foo',
         'hash2  bar',
     )
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
         {'xxh64': 'nothash2', 'path': 'bar', 'linktarget': ''},
@@ -761,9 +761,9 @@ def test_compare_spot_check_hashes_handles_data_sample_percentage_above_100():
         'hash1  /foo',
         'hash2  /bar',
     )
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'nothash1', 'path': 'foo', 'linktarget': ''},
         {'xxh64': 'nothash2', 'path': 'bar', 'linktarget': ''},
@@ -809,9 +809,9 @@ def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
         ('/usr/local/bin/xxhsum', '-H64', '/foo', '/bar'),
         working_directory=None,
     ).and_yield('hash1  /foo', 'hash2  /bar')
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
         {'xxh64': 'nothash2', 'path': 'bar', 'linktarget': ''},
@@ -859,9 +859,9 @@ def test_compare_spot_check_hashes_considers_path_missing_from_archive_as_not_ma
         'hash1  /foo',
         'hash2  /bar',
     )
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''}
     )
@@ -908,9 +908,9 @@ def test_compare_spot_check_hashes_skips_hardlink_path_in_archive():
         'hash2  /bar',
         'hash1  /link',
     )
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
         {'xxh64': 'hash2', 'path': 'bar', 'linktarget': ''},
@@ -954,9 +954,9 @@ def test_compare_spot_check_hashes_considers_symlink_path_as_not_matching():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
     ).with_args(('xxh64sum', '/foo'), working_directory=None).and_yield('hash1  /foo')
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
         {'xxh64': 'hash2', 'path': 'bar', 'linktarget': ''},
@@ -1001,9 +1001,9 @@ def test_compare_spot_check_hashes_considers_borg_2_symlink_path_as_not_matching
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
     ).with_args(('xxh64sum', '/foo'), working_directory=None).and_yield('hash1  /foo')
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'target': ''},
         {'xxh64': 'hash2', 'path': 'bar', 'target': ''},
@@ -1048,9 +1048,9 @@ def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching()
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
     ).with_args(('xxh64sum', '/foo'), working_directory=None).and_yield('hash1  /foo')
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
         {'xxh64': 'hash2', 'path': 'bar', 'linktarget': ''},
@@ -1104,9 +1104,9 @@ def test_compare_spot_check_hashes_with_too_many_paths_feeds_them_to_commands_in
         'hash3  /baz',
         'hash4  /quux',
     )
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
         {'xxh64': 'hash2', 'path': 'bar', 'linktarget': ''},
@@ -1161,9 +1161,9 @@ def test_compare_spot_check_hashes_uses_working_directory_to_access_source_paths
         'hash1  foo',
         'hash2  bar',
     )
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path)
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
         {'xxh64': 'nothash2', 'path': 'bar', 'linktarget': ''},
@@ -1254,7 +1254,9 @@ def test_spot_check_data_tolerance_percentage_greater_than_data_sample_percentag
 
 
 def test_spot_check_with_count_delta_greater_than_count_tolerance_percentage_errors():
-    flexmock(module.borgmatic.actions.check.paths).should_receive('collect_and_process_patterns').and_return(flexmock())
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'collect_and_process_patterns'
+    ).and_return(flexmock())
     flexmock(module).should_receive('collect_spot_check_source_paths').and_return(
         ('/foo', '/bar', '/baz', '/quux'),
     )
@@ -1264,10 +1266,12 @@ def test_spot_check_with_count_delta_greater_than_count_tolerance_percentage_err
     flexmock(module).should_receive('collect_spot_check_archive_paths').and_return(
         ('/foo', '/bar'),
     ).once()
-    flexmock(module.borgmatic.actions.check.paths).should_receive('make_source_to_archive_root_map').and_return(flexmock())
-    flexmock(module.borgmatic.actions.check.paths).should_receive('map_source_path_to_archive_path').replace_with(
-        lambda source_path, *other: source_path.lstrip('/')
-    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'make_source_to_archive_root_map'
+    ).and_return(flexmock())
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
 
     with pytest.raises(ValueError):
         module.spot_check(
@@ -1291,7 +1295,9 @@ def test_spot_check_with_count_delta_greater_than_count_tolerance_percentage_err
 
 
 def test_spot_check_with_failing_percentage_greater_than_data_tolerance_percentage_errors():
-    flexmock(module.borgmatic.actions.check.paths).should_receive('collect_and_process_patterns').and_return(flexmock())
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'collect_and_process_patterns'
+    ).and_return(flexmock())
     flexmock(module).should_receive('collect_spot_check_source_paths').and_return(
         ('/foo', '/bar', '/baz', '/quux'),
     )
@@ -1302,7 +1308,9 @@ def test_spot_check_with_failing_percentage_greater_than_data_tolerance_percenta
     flexmock(module).should_receive('compare_spot_check_hashes').and_return(
         ('/bar', '/baz', '/quux'),
     ).once()
-    flexmock(module.borgmatic.actions.check.paths).should_receive('make_source_to_archive_root_map').and_return(flexmock())
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'make_source_to_archive_root_map'
+    ).and_return(flexmock())
 
     with pytest.raises(ValueError):
         module.spot_check(
@@ -1326,7 +1334,9 @@ def test_spot_check_with_failing_percentage_greater_than_data_tolerance_percenta
 
 
 def test_spot_check_with_high_enough_tolerances_does_not_raise():
-    flexmock(module.borgmatic.actions.check.paths).should_receive('collect_and_process_patterns').and_return(flexmock())
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'collect_and_process_patterns'
+    ).and_return(flexmock())
     flexmock(module).should_receive('collect_spot_check_source_paths').and_return(
         ('/foo', '/bar', '/baz', '/quux'),
     )
@@ -1337,7 +1347,9 @@ def test_spot_check_with_high_enough_tolerances_does_not_raise():
     flexmock(module).should_receive('compare_spot_check_hashes').and_return(
         ('/bar', '/baz', '/quux'),
     ).once()
-    flexmock(module.borgmatic.actions.check.paths).should_receive('make_source_to_archive_root_map').and_return(flexmock())
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'make_source_to_archive_root_map'
+    ).and_return(flexmock())
 
     module.spot_check(
         repository={'path': 'repo'},
@@ -1360,13 +1372,17 @@ def test_spot_check_with_high_enough_tolerances_does_not_raise():
 
 
 def test_spot_check_without_any_source_paths_errors():
-    flexmock(module.borgmatic.actions.check.paths).should_receive('collect_and_process_patterns').and_return(flexmock())
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'collect_and_process_patterns'
+    ).and_return(flexmock())
     flexmock(module).should_receive('collect_spot_check_source_paths').and_return(())
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'archive',
     )
     flexmock(module).should_receive('collect_spot_check_archive_paths').and_return(('/foo', '/bar'))
-    flexmock(module.borgmatic.actions.check.paths).should_receive('make_source_to_archive_root_map').never()
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'make_source_to_archive_root_map'
+    ).never()
     flexmock(module).should_receive('compare_spot_check_hashes').never()
 
     with pytest.raises(ValueError):

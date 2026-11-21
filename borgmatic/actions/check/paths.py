@@ -1,16 +1,4 @@
-import calendar
-import contextlib
-import datetime
-import hashlib
-import itertools
-import logging
 import os
-import pathlib
-import random
-import shlex
-import shutil
-import subprocess
-import textwrap
 
 import borgmatic.actions.config.bootstrap
 import borgmatic.actions.pattern
@@ -31,7 +19,8 @@ def collect_and_process_patterns(
     '''
     Given a repository configuration dict, an archive name, a configuration dict, the local Borg
     version, global arguments as an argparse.Namespace instance, and the borgmatic runtime
-    directory, collect, process, and return the configured patterns.
+    directory, collect, process, and return the configured patterns plus any patterns for bootstrap
+    configuration paths.
     '''
     working_directory = borgmatic.config.paths.get_working_directory(config)
     bootstrap_config_paths = borgmatic.actions.config.bootstrap.load_config_paths_from_archive(
@@ -60,10 +49,10 @@ def collect_and_process_patterns(
 def make_borg_archive_path(path):
     '''
     Given a path, return a copy with any run of leading ".." or "/" path components removed. The
-    intent is to mirror what Borg does when storing paths as relative to the root of the archive
-    (without a leading "/").
+    intent is to mirror what Borg does when storing paths; they're relative to the root of the
+    archive, without a leading "/".
 
-    Return "." if no path components remain.
+    Return "." if no path components remain after the removals.
     '''
     components = path.split(os.path.sep)
 
@@ -80,8 +69,29 @@ def make_source_to_archive_root_map(patterns):
     '''
     Given a sequence of processed patterns, return a sequence of tuples mapping from each root
     pattern path (normalized) to that path rewritten in the same way that Borg rewrites paths for
-    storing in a Borg archive. This means that slashdot hacks ("/./") are applied, leading slashes
-    are removed, etc.
+    storing in an archive. This means that slashdot hacks ("/./") are applied, leading slashes are
+    removed, etc.
+
+    For example, given the following patterns:
+
+        (
+            Pattern('/foo'),
+            Pattern('/bar/./baz'),
+            Pattern('/bar/baz'),
+            Pattern('/bar/baz/quux'),
+        )
+
+    ... produces the following return value:
+
+        (
+            ('/bar/baz/quux', 'bar/baz/quux'),
+            ('/bar/baz', 'bar/baz'),
+            ('/bar/baz', 'baz'),
+            ('/foo', 'foo'),
+        )
+
+    Note how there are edge cases that produce multiple values with the same normalized source path.
+    That's why the return value is a sequence of tuples rather than a dict.
     '''
     root_paths = []
 
@@ -122,18 +132,20 @@ def make_source_to_archive_root_map(patterns):
 
         # After normalization, the slashdot isn't there anymore. There must have been a subsequent
         # ".." that removed it. Example: "/foo/./..".
-        root_paths.append((normalized_source_path, make_borg_archive_path(normalized_source_path)))
+        root_paths.append(
+            (normalized_source_path, make_borg_archive_path(normalized_source_path) or '.')
+        )
 
     # Sort by longest source paths first, as they're the most specific matches. This is important
-    # for edge cases where Borg stores a given file based on source path but not another (e.g. due
-    # to the "one_file_system" option being set).
+    # for edge cases where there are two source paths referring to the same file, but Borg only
+    # stores one of them (e.g. due to the "one_file_system" option excluding it).
     return tuple(sorted(root_paths, key=lambda paths: len(paths[0]), reverse=True))
 
 
 def replace_root_path_prefix(source_path, source_root_path, archive_root_path):
     '''
-    Given a source path, replace the given source root prefix with the given archive root prefix and
-    return the resulting archive path.
+    Return a copy of the given source path, modified to replace the given source root prefix with
+    the given archive root prefix.
     '''
     return make_borg_archive_path(
         os.path.normpath(
@@ -153,9 +165,9 @@ def map_source_path_to_archive_path(source_path, archive_paths, source_to_archiv
     sequence of tuples mapping from normalized source root paths to archive root paths, return the
     given normalized source path rewritten as a Borg archive path. This means replacing the source
     root prefix in the normalized source path with the corresponding archive root prefix, preferring
-    the longest candidate path that actually exists in the given archive paths—falling back to the
-    longest candidate. If there's no such source root prefix, then just return the source path with
-    any leading "/" or ".." stripped.
+    the longest candidate path that actually exists in the given archive paths (falling back to the
+    longest candidate). If there's no such source root prefix, then just return the source path with
+    any leading run of "/" and ".." stripped.
     '''
     candidate_archive_paths = (
         archive_path

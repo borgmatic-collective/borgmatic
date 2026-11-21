@@ -1,16 +1,5 @@
-import calendar
-import contextlib
-import datetime
 import hashlib
-import itertools
 import logging
-import os
-import pathlib
-import random
-import shlex
-import shutil
-import subprocess
-import textwrap
 
 import borgmatic.actions.check.frequency
 import borgmatic.actions.check.spot
@@ -25,7 +14,6 @@ import borgmatic.borg.pattern
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
 import borgmatic.execute
-
 
 DEFAULT_CHECKS = (
     {'name': 'repository', 'frequency': '1 month'},

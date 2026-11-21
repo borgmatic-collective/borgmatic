@@ -1,16 +1,11 @@
 import calendar
 import contextlib
 import datetime
-import hashlib
 import itertools
 import logging
 import os
 import pathlib
-import random
-import shlex
 import shutil
-import subprocess
-import textwrap
 
 import borgmatic.actions.config.bootstrap
 import borgmatic.actions.pattern
@@ -23,7 +18,6 @@ import borgmatic.borg.pattern
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
 import borgmatic.execute
-
 
 logger = logging.getLogger(__name__)
 
