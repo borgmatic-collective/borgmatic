@@ -2,7 +2,6 @@ import pytest
 from flexmock import flexmock
 
 from borgmatic.actions.check import spot as module
-from borgmatic.borg.pattern import Pattern
 
 
 def test_collect_spot_check_source_paths_parses_borg_output_and_includes_bootstrap_config_paths():
@@ -11,19 +10,6 @@ def test_collect_spot_check_source_paths_parses_borg_output_and_includes_bootstr
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
-    )
-    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(
-        (Pattern('collected'),),
-    )
-    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').with_args(
-        (
-            Pattern('collected', source=module.borgmatic.borg.pattern.Pattern_source.HOOK),
-            Pattern('extra.yaml', source=module.borgmatic.borg.pattern.Pattern_source.INTERNAL),
-        ),
-        config=object,
-        working_directory=None,
-    ).and_return(
-        [Pattern('foo'), Pattern('bar')],
     )
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
@@ -70,12 +56,6 @@ def test_collect_spot_check_source_paths_omits_progress_from_create_dry_run_comm
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
-    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(
-        (Pattern('collected'),),
-    )
-    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(
-        [Pattern('foo'), Pattern('bar')],
-    )
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
         repository_path='repo',
@@ -120,12 +100,6 @@ def test_collect_spot_check_source_paths_passes_through_stream_processes_false()
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
-    )
-    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(
-        (Pattern('collected'),),
-    )
-    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(
-        [Pattern('foo'), Pattern('bar')],
     )
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
@@ -172,12 +146,6 @@ def test_collect_spot_check_source_paths_without_working_directory_parses_borg_o
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
-    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(
-        (Pattern('collected'),),
-    )
-    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(
-        [Pattern('foo'), Pattern('bar')],
-    )
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
         repository_path='repo',
@@ -222,12 +190,6 @@ def test_collect_spot_check_source_paths_skips_directories():
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
-    )
-    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(
-        (Pattern('collected'),),
-    )
-    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(
-        [Pattern('foo'), Pattern('bar')],
     )
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
@@ -364,12 +326,6 @@ def test_collect_spot_check_source_paths_uses_working_directory():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
     )
-    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(
-        (Pattern('collected'),),
-    )
-    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(
-        [Pattern('foo'), Pattern('bar')],
-    )
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
         repository_path='repo',
@@ -417,19 +373,6 @@ def test_collect_spot_check_source_paths_deduplicates_borg_output_paths():
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock(),
-    )
-    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(
-        (Pattern('collected'),),
-    )
-    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').with_args(
-        (
-            Pattern('collected', source=module.borgmatic.borg.pattern.Pattern_source.HOOK),
-            Pattern('extra.yaml', source=module.borgmatic.borg.pattern.Pattern_source.INTERNAL),
-        ),
-        config=object,
-        working_directory=None,
-    ).and_return(
-        [Pattern('foo'), Pattern('bar')],
     )
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
@@ -903,14 +846,14 @@ def test_compare_spot_check_hashes_skips_hardlink_path_in_archive():
     flexmock(module.os.path).should_receive('islink').and_return(False)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output',
-    ).with_args(('xxh64sum', '/foo', '/bar', '/link'), working_directory=None).and_yield(
+    ).with_args(('xxh64sum', '/foo', '/bar', '/hard/./link'), working_directory=None).and_yield(
         'hash1  /foo',
         'hash2  /bar',
-        'hash1  /link',
+        'hash1  /hard/./link',
     )
     flexmock(module.borgmatic.actions.check.paths).should_receive(
         'map_source_path_to_archive_path'
-    ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
+    ).replace_with(lambda source_path, *other: source_path.split('/./')[-1].lstrip('/'))
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
         {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
         {'xxh64': 'hash2', 'path': 'bar', 'linktarget': ''},
@@ -933,9 +876,9 @@ def test_compare_spot_check_hashes_skips_hardlink_path_in_archive():
             global_arguments=flexmock(),
             local_path=flexmock(),
             remote_path=flexmock(),
-            source_paths=('/foo', '/bar', '/link'),
+            source_paths=('/foo', '/bar', '/hard/./link'),
             archive_paths={'foo', 'bar', 'link'},
-            source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/link', 'link')),
+            source_to_archive_root_paths=(('/foo', 'foo'), ('/bar', 'bar'), ('/hard/link', 'link')),
         )
         == ()
     )
@@ -1200,6 +1143,60 @@ def test_compare_spot_check_hashes_uses_working_directory_to_access_source_paths
     ) == ('bar',)
 
 
+def test_compare_spot_check_hashes_with_slashdot_hack_returns_paths_having_failing_hashes():
+    flexmock(module.random).should_receive('SystemRandom').and_return(
+        flexmock(sample=lambda population, count: population[:count]),
+    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        None,
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('islink').and_return(False)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output',
+    ).with_args(('xxh64sum', '/base/./foo', '/base/./bar'), working_directory=None).and_yield(
+        'hash1  /base/./foo',
+        'hash2  /base/./bar',
+    )
+    flexmock(module.borgmatic.actions.check.paths).should_receive(
+        'map_source_path_to_archive_path'
+    ).replace_with(lambda source_path, *other: source_path.split('/./')[-1].lstrip('/'))
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_yield(
+        {'xxh64': 'hash1', 'path': 'foo', 'linktarget': ''},
+        {},
+        {'xxh64': 'nothash2', 'path': 'bar', 'linktarget': ''},
+    )
+
+    assert module.compare_spot_check_hashes(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={
+            'checks': [
+                {
+                    'name': 'archives',
+                    'frequency': '2 weeks',
+                },
+                {
+                    'name': 'spot',
+                    'data_sample_percentage': 50,
+                },
+            ],
+        },
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+        source_paths=('/base/./foo', '/base/./bar', '/other/./baz', '/other/./quux'),
+        archive_paths={'foo', 'bar', 'baz', 'quux'},
+        source_to_archive_root_paths=(
+            ('/foo', 'foo'),
+            ('/bar', 'bar'),
+            ('/baz', 'baz'),
+            ('/quux', 'quux'),
+        ),
+    ) == ('/base/./bar',)
+
+
 def test_spot_check_without_spot_configuration_errors():
     with pytest.raises(ValueError):
         module.spot_check(
@@ -1273,7 +1270,7 @@ def test_spot_check_with_count_delta_greater_than_count_tolerance_percentage_err
         'map_source_path_to_archive_path'
     ).replace_with(lambda source_path, *other: source_path.lstrip('/'))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as error:
         module.spot_check(
             repository={'path': 'repo'},
             config={
@@ -1292,6 +1289,11 @@ def test_spot_check_with_count_delta_greater_than_count_tolerance_percentage_err
             remote_path=flexmock(),
             borgmatic_runtime_directory='/run/borgmatic',
         )
+
+    assert (
+        str(error.value)
+        == 'Spot check failed\n50.00% file count delta between source paths (4 total) and latest archive (2 total); tolerance is 1%\nOnly in source paths: /foo, /bar, /baz, /quux\nOnly in latest archive: /bar, /foo'
+    )
 
 
 def test_spot_check_with_failing_percentage_greater_than_data_tolerance_percentage_errors():

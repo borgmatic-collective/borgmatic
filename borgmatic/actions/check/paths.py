@@ -2,15 +2,8 @@ import os
 
 import borgmatic.actions.config.bootstrap
 import borgmatic.actions.pattern
-import borgmatic.borg.check
-import borgmatic.borg.create
-import borgmatic.borg.environment
-import borgmatic.borg.extract
-import borgmatic.borg.list
 import borgmatic.borg.pattern
-import borgmatic.borg.repo_list
 import borgmatic.config.paths
-import borgmatic.execute
 
 
 def collect_and_process_patterns(
@@ -85,8 +78,8 @@ def make_source_to_archive_root_map(patterns):
 
         (
             ('/bar/baz/quux', 'bar/baz/quux'),
-            ('/bar/baz', 'bar/baz'),
             ('/bar/baz', 'baz'),
+            ('/bar/baz', 'bar/baz'),
             ('/foo', 'foo'),
         )
 
@@ -125,15 +118,20 @@ def make_source_to_archive_root_map(patterns):
                 (
                     normalized_source_path,
                     make_borg_archive_path(normalized_source_path.removeprefix(strip_prefix)),
-                )
+                ),
             )
 
             continue
 
         # After normalization, the slashdot isn't there anymore. There must have been a subsequent
         # ".." that removed it. Example: "/foo/./..".
-        root_paths.append(
-            (normalized_source_path, make_borg_archive_path(normalized_source_path) or '.')
+        root_paths.extend(
+            (
+                # For matching paths under the slashdot prefix.
+                (strip_prefix.removesuffix(os.path.sep), '.'),
+                # For matching paths outside the slashdot prefix.
+                (normalized_source_path, make_borg_archive_path(normalized_source_path) or '.'),
+            )
         )
 
     # Sort by longest source paths first, as they're the most specific matches. This is important
@@ -162,12 +160,13 @@ def replace_root_path_prefix(source_path, source_root_path, archive_root_path):
 def map_source_path_to_archive_path(source_path, archive_paths, source_to_archive_root_paths):
     '''
     Given a normalized source path, a set of Borg paths actually found in the archive, and a
-    sequence of tuples mapping from normalized source root paths to archive root paths, return the
-    given normalized source path rewritten as a Borg archive path. This means replacing the source
-    root prefix in the normalized source path with the corresponding archive root prefix, preferring
-    the longest candidate path that actually exists in the given archive paths (falling back to the
-    longest candidate). If there's no such source root prefix, then just return the source path with
-    any leading run of "/" and ".." stripped.
+    sequence of tuples mapping from normalized source root paths to archive root paths (tuples
+    sorted by longest normalized source path), return the given normalized source path rewritten as
+    a Borg archive path. This means replacing the source root prefix in the normalized source path
+    with the corresponding archive root prefix, preferring the longest candidate path that actually
+    exists in the given archive paths (falling back to the longest candidate). If there's no such
+    source root prefix, then just return the source path with any leading run of "/" and ".."
+    stripped.
     '''
     candidate_archive_paths = (
         archive_path

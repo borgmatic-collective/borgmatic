@@ -8,17 +8,13 @@ import subprocess
 import textwrap
 
 import borgmatic.actions.check.paths
-import borgmatic.actions.config.bootstrap
-import borgmatic.actions.pattern
-import borgmatic.borg.check
 import borgmatic.borg.create
 import borgmatic.borg.environment
-import borgmatic.borg.extract
 import borgmatic.borg.list
-import borgmatic.borg.pattern
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
 import borgmatic.execute
+import borgmatic.hooks.dispatch
 
 SAMPLE_PATHS_SUBSET_COUNT = 5000
 MAX_SPOT_CHECK_PATHS_LENGTH = 1000

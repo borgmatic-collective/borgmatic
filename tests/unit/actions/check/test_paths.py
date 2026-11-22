@@ -59,25 +59,29 @@ def test_make_borg_archive_path_strips_leading_slashes_and_dot_dots(path, expect
 
 
 @pytest.mark.parametrize(
-    'pattern_path,expected_pair',
+    'pattern_path,expected_pairs',
     (
-        ('/foo/bar', ('/foo/bar', 'foo/bar')),
-        ('/./foo/bar', ('/foo/bar', 'foo/bar')),
-        ('/foo/./bar', ('/foo/bar', 'bar')),
-        ('/foo/./bar/..', ('/foo', '.')),
-        ('/foo/./..', ('/', '.')),
+        ('/foo/bar', (('/foo/bar', 'foo/bar'),)),
+        ('/./foo/bar', (('/foo/bar', 'foo/bar'),)),
+        ('/foo/./bar', (('/foo/bar', 'bar'),)),
+        ('/foo/./bar/..', (('/foo', '.'),)),
+        ('/foo/./..', (('/foo', '.'), ('/', '.'))),
+        ('/tmp/base/foo/./..', (('/tmp/base/foo', '.'), ('/tmp/base', 'tmp/base'))),
     ),
 )
 def test_make_source_to_archive_root_map_produces_normalized_source_root_and_borg_equivalent(
-    pattern_path, expected_pair
+    pattern_path, expected_pairs
 ):
     flexmock(module).should_receive('make_borg_archive_path').replace_with(
         lambda path: path.lstrip('/')
     )
 
-    assert module.make_source_to_archive_root_map(
-        (module.borgmatic.borg.pattern.Pattern(pattern_path),)
-    ) == (expected_pair,)
+    assert (
+        module.make_source_to_archive_root_map(
+            (module.borgmatic.borg.pattern.Pattern(pattern_path),)
+        )
+        == expected_pairs
+    )
 
 
 def test_make_source_to_archive_root_map_skips_non_root_pattern():
@@ -142,14 +146,14 @@ def test_replace_root_path_prefix_swaps_source_root_for_archive_root(
         (
             '/foo/bar/baz.txt',
             ('foo/bar/baz.txt',),
-            (('/foo', '.'), ('/foo/bar', 'foo/bar')),
+            (('/foo/bar', 'foo/bar'), ('/foo', '.')),
             'foo/bar/baz.txt',
         ),
         (
             '/foo/bar/baz.txt',
             ('.',),
-            (('/foo', '.'), ('/foo/bar', 'foo/bar')),
-            './bar/baz.txt',
+            (('/foo/bar', 'foo/bar'), ('/foo', '.')),
+            'foo/bar/baz.txt',
         ),
         ('/foo/bar', ('foo', 'baz'), (('/hmm', 'hmm'),), 'foo/bar'),
     ),
