@@ -558,7 +558,7 @@ def test_log_outputs_vents_other_processes_when_one_exits():
         [
             sys.executable,
             '-c',
-            "import random, string; print(''.join(random.choice(string.ascii_letters) for _ in range(40000)))",
+            "import random, string; print(''.join(random.choice(string.ascii_letters) for _ in range(1000000)))",
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
