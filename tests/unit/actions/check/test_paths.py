@@ -67,6 +67,7 @@ def test_make_borg_archive_path_strips_leading_slashes_and_dot_dots(path, expect
         ('/foo/./bar/..', (('/foo', '.'),)),
         ('/foo/./..', (('/foo', '.'), ('/', '.'))),
         ('/tmp/base/foo/./..', (('/tmp/base/foo', '.'), ('/tmp/base', 'tmp/base'))),
+        ('/tmp/base/foo/./../bar', (('/tmp/base/bar', 'tmp/base/bar'),)),
     ),
 )
 def test_make_source_to_archive_root_map_produces_normalized_source_root_and_borg_equivalent(

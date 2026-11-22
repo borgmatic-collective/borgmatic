@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 import borgmatic.actions.config.bootstrap
 import borgmatic.actions.pattern
@@ -125,13 +126,15 @@ def make_source_to_archive_root_map(patterns):
 
         # After normalization, the slashdot isn't there anymore. There must have been a subsequent
         # ".." that removed it. Example: "/foo/./..".
-        root_paths.extend(
-            (
-                # For matching paths under the slashdot prefix.
-                (strip_prefix.removesuffix(os.path.sep), '.'),
-                # For matching paths outside the slashdot prefix.
-                (normalized_source_path, make_borg_archive_path(normalized_source_path) or '.'),
-            )
+        strip_prefix_only = strip_prefix.removesuffix(os.path.sep)
+
+        if pathlib.PurePath(strip_prefix_only).is_relative_to(normalized_source_path):
+            # For matching paths under the slashdot prefix.
+            root_paths.append((strip_prefix_only, '.'))
+
+        root_paths.append(
+            # For matching paths outside the slashdot prefix.
+            (normalized_source_path, make_borg_archive_path(normalized_source_path) or '.'),
         )
 
     # Sort by longest source paths first, as they're the most specific matches. This is important
