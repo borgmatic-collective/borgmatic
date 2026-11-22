@@ -14,7 +14,7 @@ import borgmatic.actions.borg
 import borgmatic.actions.break_lock
 import borgmatic.actions.browse.run
 import borgmatic.actions.change_passphrase
-import borgmatic.actions.check
+import borgmatic.actions.check.run
 import borgmatic.actions.compact
 import borgmatic.actions.config.bootstrap
 import borgmatic.actions.config.generate
@@ -529,7 +529,7 @@ def run_actions(  # noqa: PLR0912, PLR0915
                     )
                 elif action_name == 'check':
                     if checks.repository_enabled_for_checks(repository, config):
-                        borgmatic.actions.check.run_check(
+                        borgmatic.actions.check.run.run_check(
                             config_filename,
                             repository,
                             config,
