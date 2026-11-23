@@ -1,4 +1,5 @@
 import collections
+import contextlib
 import glob
 import hashlib
 import json
@@ -421,11 +422,13 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, p
             if not os.path.isdir(snapshot_mount_path) or not os.listdir(snapshot_mount_path):
                 continue
 
-            # This might fail if the directory is already mounted, but we swallow errors here since
-            # we'll do another recursive delete below. The point of doing it here is that we don't
-            # want to try to unmount a non-mounted directory (which *will* fail).
+            # This might fail if the directory is already mounted, but we swallow errors here (upon
+            # the first error, so we don't try and fail to delete every file) since we'll do another
+            # recursive delete below. The point of doing it here is that we don't want to try to
+            # unmount a non-mounted directory (which *will* fail).
             if not dry_run:
-                shutil.rmtree(snapshot_mount_path, ignore_errors=True)
+                with contextlib.suppress(OSError):
+                    shutil.rmtree(snapshot_mount_path)
 
                 # If the delete was successful, that means there's nothing to unmount.
                 if not os.path.isdir(snapshot_mount_path):

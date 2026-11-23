@@ -958,6 +958,48 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_after_rmtre
     )
 
 
+def test_remove_data_source_dumps_swallows_rmtree_errors():
+    flexmock(module).should_receive('get_all_dataset_mount_points').and_return(
+        {'dataset': '/mnt/dataset'}
+    )
+    flexmock(module).should_receive('get_all_snapshots').and_return(
+        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid'),
+    )
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'replace_temporary_subdirectory_with_glob',
+    ).and_return('/run/borgmatic')
+    flexmock(module.hashlib).should_receive('shake_256').and_return(
+        flexmock(hexdigest=lambda length: 'b33f')
+    )
+    flexmock(module.glob).should_receive('glob').replace_with(
+        lambda path: [path.replace('*', 'b33f')],
+    )
+    flexmock(module.os.path).should_receive('isdir').with_args(
+        '/run/borgmatic/zfs_snapshots/b33f',
+    ).and_return(True)
+    flexmock(module.os.path).should_receive('isdir').with_args(
+        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset',
+    ).and_return(True)
+    flexmock(module.shutil).should_receive('rmtree').with_args(str).and_raise(OSError).once()
+    flexmock(module.shutil).should_receive('rmtree').with_args(str, ignore_errors=True).once()
+    flexmock(module).should_receive('unmount_snapshot').with_args(
+        'umount',
+        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset',
+    ).once()
+    flexmock(module).should_receive('destroy_snapshot').with_args(
+        'zfs',
+        'dataset@borgmatic-1234',
+    ).once()
+
+    module.remove_data_source_dumps(
+        hook_config={},
+        config={'source_directories': '/mnt/dataset', 'zfs': {}},
+        borgmatic_runtime_directory='/run/borgmatic',
+        patterns=flexmock(),
+        dry_run=False,
+    )
+
+
 def test_remove_data_source_dumps_with_dry_run_skips_unmount_and_destroy():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_return(
         {'dataset': '/mnt/dataset'}
