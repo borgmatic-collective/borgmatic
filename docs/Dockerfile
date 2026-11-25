@@ -35,7 +35,7 @@ COPY . /source
 RUN NODE_ENV=${ENVIRONMENT} PORT=${PORT} FONT=${FONT} npx eleventy --input=/source/docs --output=/output
 RUN npx -y pagefind --site /output
 
-FROM docker.io/nginx:1.26.1-alpine
+FROM docker.io/nginx:1.31.9-alpine
 
 COPY --from=html /output /usr/share/nginx/html
 COPY --from=borgmatic /etc/borgmatic/config.yaml /usr/share/nginx/html/reference/config.yaml
