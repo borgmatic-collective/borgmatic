@@ -1,5 +1,4 @@
 name: build
-run-name: ${{ forgejo.actor }} is building
 on:
   push:
     branches: [main]
