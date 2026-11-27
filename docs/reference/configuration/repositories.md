@@ -196,7 +196,12 @@ regime and [sold tech
 services](https://progressive.international/wire/2025-08-26-un-calls-out-google-and-amazon-for-abetting-gaza-genocide/en/)
 to Israel used directly in their genocide in Gaza. Additionally, U.S.
 Immigration and Customs Enforcement (ICE) is [powered by
-Amazon](https://medium.com/@noazureforapartheid/microsoft-powers-ice-why-doesnt-microsoft-want-to-talk-about-its-contracts-with-immigration-and-bc04fae8d43b).</span>
+Amazon](https://medium.com/@noazureforapartheid/microsoft-powers-ice-why-doesnt-microsoft-want-to-talk-about-its-contracts-with-immigration-and-bc04fae8d43b).
+</span>
+
+<span class="elv-info-warn">Additionally, be aware that Backblaze [shares customer information with
+advertisers](https://arstechnica.com/information-technology/2026/11/backblaze-explains-why-its-sharing-customer-information-with-advertisers/).
+</span>
 
 
 ## Related documentation
