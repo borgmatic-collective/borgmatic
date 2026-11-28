@@ -331,6 +331,9 @@ Process_metadata = collections.namedtuple(
 )
 
 
+BUFFER_POLL_TIMEOUT_MILLISECONDS = 500
+
+
 def log_buffer_lines(
     buffer_readers,
     process_metadatas,
@@ -358,24 +361,10 @@ def log_buffer_lines(
         poll.register(file_descriptor, select.POLLIN)
 
     for ready_buffer in (
-        file_descriptor_to_buffer[file_descriptor] for file_descriptor, _ in poll.poll()
+        file_descriptor_to_buffer[file_descriptor]
+        for file_descriptor, _ in poll.poll(BUFFER_POLL_TIMEOUT_MILLISECONDS)
     ):
         reader = buffer_readers[ready_buffer]
-
-        # The "ready" process has exited, but it might be a pipe destination with other
-        # processes (pipe sources) waiting to be read from. So as a measure to prevent
-        # hangs, vent all processes when one exits.
-        if reader.process and reader.process.poll() is not None:
-            for other_process in process_metadatas:
-                if (
-                    other_process.poll() is None
-                    and other_process.stdout
-                    and other_process.stdout not in buffer_readers
-                ):
-                    # Add the process's output to buffer_readers to ensure it'll get read.
-                    buffer_readers[other_process.stdout] = Buffer_reader(
-                        read_lines(other_process.stdout, other_process), other_process, raw=False
-                    )
 
         try:
             lines = next(reader.lines)
@@ -580,6 +569,11 @@ def log_outputs(
         for buffer in output_buffers_for_process(process, exclude_stdouts)
     }
 
+    # For tracking buffers that we've added for venting to buffer_readers below. This prevents a
+    # buffer from getting added here, removed in log_buffer_lines(), added again here, and so on. If
+    # it's added and vented once, that's sufficient.
+    seen_buffers = set(buffer_readers)
+
     # Log output lines for each process until they all exit or one errors.
     while True:
         yield from log_buffer_lines(
@@ -589,6 +583,24 @@ def log_outputs(
             borg_local_path,
             capture_stderr,
         )
+
+        # The main process has exited, but it might be a pipe destination for other processes (pipe
+        # sources) waiting to be read from. So as a measure to prevent hangs, vent previously
+        # excluded outputs of stream processes when the main process (the pipe consumer) exits. Note
+        # that this can cause a substantial read and discard, e.g. if a "borg extract" is one of the
+        # stream processes.
+        if main_process.poll() is not None:
+            for stream_process in stream_processes:
+                if (
+                    stream_process.poll() is None
+                    and stream_process.stdout
+                    and stream_process.stdout not in seen_buffers
+                ):
+                    # Add the process's output to buffer_readers to ensure it'll get read.
+                    seen_buffers.add(stream_process.stdout)
+                    buffer_readers[stream_process.stdout] = Buffer_reader(
+                        read_lines(stream_process.stdout, stream_process), stream_process, raw=False
+                    )
 
         if (
             raise_for_process_errors(

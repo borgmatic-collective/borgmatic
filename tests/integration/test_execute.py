@@ -117,6 +117,7 @@ def test_read_byte_chunks_yields_nothing():
 
 
 def test_log_outputs_logs_each_line_separately():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     hi_record = flexmock(
         msg='hi',
         levelno=logging.INFO,
@@ -169,6 +170,7 @@ def test_log_outputs_logs_each_line_separately():
 
 
 def test_log_outputs_with_output_raw_bytes_captures_last_process_stdout_as_bytes():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     hi_record = flexmock(
         msg='hi',
         levelno=logging.INFO,
@@ -213,6 +215,7 @@ def test_log_outputs_with_output_raw_bytes_captures_last_process_stdout_as_bytes
 
 
 def test_log_outputs_logs_stderr_as_error():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module).should_receive('log_line_to_record').with_args(str, logging.INFO).never()
     error_record = flexmock(
         msg='error',
@@ -249,6 +252,7 @@ def test_log_outputs_logs_stderr_as_error():
 
 
 def test_log_outputs_skips_logs_for_process_with_none_stdout():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module).should_receive('log_line_to_record').with_args('hi', logging.INFO).never()
     there_record = flexmock(
         msg='there',
@@ -292,6 +296,7 @@ def test_log_outputs_skips_logs_for_process_with_none_stdout():
 
 
 def test_log_outputs_returns_output_without_logging_for_output_log_level_none():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module.logger).should_receive('log').never()
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
 
@@ -325,6 +330,7 @@ def test_log_outputs_returns_output_without_logging_for_output_log_level_none():
 
 
 def test_log_outputs_includes_error_output_in_exception():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.ERROR)
     flexmock(module).should_receive('command_for_process').and_return('grep')
@@ -352,6 +358,7 @@ def test_log_outputs_logs_multiline_error_output():
     Make sure that all error output lines get logged, not just (for instance) the first few lines
     of a process' traceback.
     '''
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.ERROR)
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
@@ -377,6 +384,7 @@ def test_log_outputs_logs_multiline_error_output():
 
 
 def test_log_outputs_skips_error_output_in_exception_for_process_with_none_stdout():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.ERROR)
     flexmock(module).should_receive('command_for_process').and_return('grep')
@@ -401,6 +409,7 @@ def test_log_outputs_skips_error_output_in_exception_for_process_with_none_stdou
 
 
 def test_log_outputs_kills_other_processes_and_raises_when_one_errors():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
@@ -454,6 +463,7 @@ def test_log_outputs_kills_other_processes_and_raises_when_one_errors():
 
 
 def test_log_outputs_kills_other_processes_and_returns_when_one_exits_with_warning():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
@@ -500,6 +510,7 @@ def test_log_outputs_kills_other_processes_and_returns_when_one_exits_with_warni
 
 
 def test_log_outputs_yields_sentinel_as_soon_as_all_stream_processes_exit():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
@@ -544,17 +555,19 @@ def test_log_outputs_yields_sentinel_as_soon_as_all_stream_processes_exit():
     other_process.kill()
 
 
-def test_log_outputs_vents_other_processes_when_one_exits():
+@pytest.mark.timeout(15)
+def test_log_outputs_vents_stream_processes_when_main_process_exits():
     '''
     Execute a command to generate a longish random string and pipe it into another command that
     exits quickly. The test is basically to ensure we don't hang forever waiting for the exited
     process to read the pipe, and that the string-generating process eventually gets vented and
     exits.
     '''
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
-    process = subprocess.Popen(
+    stream_process = subprocess.Popen(
         [
             sys.executable,
             '-c',
@@ -563,46 +576,161 @@ def test_log_outputs_vents_other_processes_when_one_exits():
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    other_process = subprocess.Popen(
+    main_process = subprocess.Popen(
         ['true'],
-        stdin=process.stdout,
+        stdin=stream_process.stdout,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
     flexmock(module).should_receive('output_buffers_for_process').with_args(
-        process,
-        (process.stdout,),
-    ).and_return((process.stderr,))
+        stream_process,
+        (stream_process.stdout,),
+    ).and_return((stream_process.stderr,))
     flexmock(module).should_receive('output_buffers_for_process').with_args(
-        other_process,
-        (process.stdout,),
-    ).and_return((other_process.stdout,))
+        main_process,
+        (stream_process.stdout,),
+    ).and_return((main_process.stdout,))
     flexmock(module.os).should_call('read').with_args(
-        process.stderr.fileno(), int
+        stream_process.stderr.fileno(), int
     ).at_least().once()
     flexmock(module.os).should_call('read').with_args(
-        process.stdout.fileno(), int
+        stream_process.stdout.fileno(), int
     ).at_least().once()
     flexmock(module.os).should_call('read').with_args(
-        other_process.stdout.fileno(), int
+        main_process.stdout.fileno(), int
     ).at_least().once()
 
     values = tuple(
         module.log_outputs(
-            main_process=other_process,
-            stream_processes=(process,),
-            exclude_stdouts=(process.stdout,),
+            main_process=main_process,
+            stream_processes=(stream_process,),
+            exclude_stdouts=(stream_process.stdout,),
             output_log_level=logging.INFO,
             borg_local_path='borg',
             borg_exit_codes=None,
         )
     )
 
-    assert len(tuple(value for value in values if value is module.ALL_STREAM_PROCESSES_EXITED)) == 1
+    assert tuple(value for value in values if value is not module.ALL_STREAM_PROCESSES_EXITED) == ()
+
+
+@pytest.mark.timeout(15)
+def test_log_outputs_vents_stream_processes_when_main_process_closes_its_output_buffers_and_then_exits():
+    '''
+    Execute a command to generate a longish random string and pipe it into another command that
+    closes its output buffers and then exits quickly. The test is basically to ensure we don't hang
+    forever waiting for the exited process to read the pipe, and that the string-generating process
+    eventually gets vented and exits.
+    '''
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
+    flexmock(module.logger).should_receive('log')
+    flexmock(module).should_receive('command_for_process').and_return('grep')
+
+    stream_process = subprocess.Popen(
+        [
+            sys.executable,
+            '-c',
+            "import random, string; print(''.join(random.choice(string.ascii_letters) for _ in range(1000000)))",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    main_process = subprocess.Popen(
+        [sys.executable, '-c', 'import os, time; os.close(1); os.close(2); time.sleep(0.5)'],
+        stdin=stream_process.stdout,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    flexmock(module).should_receive('output_buffers_for_process').with_args(
+        stream_process,
+        (stream_process.stdout,),
+    ).and_return((stream_process.stderr,))
+    flexmock(module).should_receive('output_buffers_for_process').with_args(
+        main_process,
+        (stream_process.stdout,),
+    ).and_return((main_process.stdout,))
+    flexmock(module.os).should_call('read').with_args(
+        stream_process.stderr.fileno(), int
+    ).at_least().once()
+    flexmock(module.os).should_call('read').with_args(
+        stream_process.stdout.fileno(), int
+    ).at_least().once()
+    flexmock(module.os).should_call('read').with_args(
+        main_process.stdout.fileno(), int
+    ).at_least().once()
+
+    values = tuple(
+        module.log_outputs(
+            main_process=main_process,
+            stream_processes=(stream_process,),
+            exclude_stdouts=(stream_process.stdout,),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
+        )
+    )
+
+    assert tuple(value for value in values if value is not module.ALL_STREAM_PROCESSES_EXITED) == ()
+
+
+@pytest.mark.timeout(15)
+def test_log_outputs_does_not_double_vent_stream_process_when_it_closes_its_output_buffers():
+    '''
+    Ensure that a stream process is only vented at most once—that its output buffers aren't
+    re-registered for venting multiple times.
+    '''
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
+    flexmock(module.logger).should_receive('log')
+    flexmock(module).should_receive('command_for_process').and_return('grep')
+
+    stream_process = subprocess.Popen(
+        [sys.executable, '-c', 'import os, time; os.close(1); os.close(2); time.sleep(0.5)'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    main_process = subprocess.Popen(
+        ['true'],
+        stdin=stream_process.stdout,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    flexmock(module).should_receive('output_buffers_for_process').with_args(
+        stream_process,
+        (stream_process.stdout,),
+    ).and_return((stream_process.stderr,))
+    flexmock(module).should_call('read_lines').with_args(stream_process.stdout, object).once()
+    flexmock(module).should_call('read_lines').with_args(stream_process.stderr, object).once()
+    flexmock(module).should_receive('output_buffers_for_process').with_args(
+        main_process,
+        (stream_process.stdout,),
+    ).and_return((main_process.stdout,))
+    flexmock(module).should_call('read_lines').with_args(main_process.stdout, object).once()
+    flexmock(module.os).should_call('read').with_args(
+        stream_process.stderr.fileno(), int
+    ).at_least().once()
+    flexmock(module.os).should_call('read').with_args(
+        stream_process.stdout.fileno(), int
+    ).at_least().once()
+    flexmock(module.os).should_call('read').with_args(
+        main_process.stdout.fileno(), int
+    ).at_least().once()
+
+    values = tuple(
+        module.log_outputs(
+            main_process=main_process,
+            stream_processes=(stream_process,),
+            exclude_stdouts=(stream_process.stdout,),
+            output_log_level=logging.INFO,
+            borg_local_path='borg',
+            borg_exit_codes=None,
+        )
+    )
+
     assert tuple(value for value in values if value is not module.ALL_STREAM_PROCESSES_EXITED) == ()
 
 
 def test_log_outputs_does_not_error_when_one_process_exits():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
@@ -646,6 +774,7 @@ def test_log_outputs_does_not_error_when_one_process_exits():
 
 
 def test_log_outputs_truncates_long_error_output():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
@@ -675,6 +804,7 @@ def test_log_outputs_truncates_long_error_output():
 
 
 def test_log_outputs_with_no_output_logs_nothing():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module.logger).should_receive('log').never()
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
 
@@ -697,6 +827,7 @@ def test_log_outputs_with_no_output_logs_nothing():
 
 
 def test_log_outputs_with_unfinished_process_waits_for_it():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module.logger).should_receive('log').never()
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
 
@@ -720,6 +851,7 @@ def test_log_outputs_with_unfinished_process_waits_for_it():
 
 
 def test_log_outputs_includes_error_output_when_output_spans_multiple_chunks():
+    flexmock(module, BUFFER_POLL_TIMEOUT_MILLISECONDS=10)
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.ERROR)
     flexmock(module).should_receive('command_for_process').and_return(sys.executable)
